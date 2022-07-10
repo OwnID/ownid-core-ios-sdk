@@ -1,0 +1,59 @@
+import Foundation
+
+public protocol LoggerProtocol {
+    func add(_ logger: ExtensionLoggerProtocol)
+    func remove(_ logger: ExtensionLoggerProtocol)
+    func log(_ entry: OwnID.CoreSDK.StandardMetricLogEntry)
+}
+
+public extension String {
+    var logValue: String {
+        if isEmpty {
+            return self
+        }
+        var prefixCount = count - 3
+        if prefixCount <= 3 {
+            prefixCount = 2
+        }
+        return String(self.prefix(prefixCount))
+    }
+}
+
+public protocol ExtensionLoggerProtocol {
+    var identifier: UUID { get }
+    
+    func log(_ entry: OwnID.CoreSDK.StandardMetricLogEntry)
+}
+
+extension OwnID.CoreSDK {
+    final class Logger: LoggerProtocol {
+        static let shared = Logger()
+        private init() { }
+        private var sessionRequestSequenceNumber = 0
+        var logLevel: LogLevel = .information
+        
+        private var extendedLoggers = [ExtensionLoggerProtocol]()
+        
+        func add(_ logger: ExtensionLoggerProtocol) {
+            extendedLoggers.append(logger)
+        }
+        
+        func remove(_ logger: ExtensionLoggerProtocol) {
+            if let index = extendedLoggers.firstIndex(where: { $0.identifier == logger.identifier }) {
+                extendedLoggers.remove(at: index)
+            }
+        }
+        
+        func log(_ entry: StandardMetricLogEntry) {
+            guard entry.level.rawValue >= logLevel.rawValue else { return }
+            entry.metadata[LoggerValues.correlationIDKey] = LoggerValues.instanceID.uuidString
+            entry.metadata["sessionRequestSequenceNumber"] = String(sessionRequestSequenceNumber)
+            entry.version = UserAgentManager.shared.userFacingSDKVersion
+            entry.userAgent = UserAgentManager.shared.mainSDKUserAgent
+            sessionRequestSequenceNumber += 1
+            extendedLoggers.forEach { logger in
+                logger.log(entry)
+            }
+        }
+    }
+}
