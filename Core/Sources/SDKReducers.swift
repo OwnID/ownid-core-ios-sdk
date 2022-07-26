@@ -63,7 +63,7 @@ extension OwnID.CoreSDK {
     
     private static func testConfiguration() -> Effect<SDKAction> {
         let action = SDKAction.configure(appID: "gephu5k2dnff2v",
-                                         redirectionURL: "com.ownid.demo.gigya://ios",
+                                         redirectionURL: "com.ownid.demo.gigya://ownid/redirect/",
                                          userFacingSDK: (OwnID.CoreSDK.sdkName, OwnID.CoreSDK.version),
                                          underlyingSDKs: [],
                                          isTestingEnvironment: true,

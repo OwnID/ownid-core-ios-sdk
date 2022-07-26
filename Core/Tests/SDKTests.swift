@@ -22,7 +22,7 @@ final class SDKTests: XCTestCase {
         //Arrange (given)
         let additionalName = "additionalName"
         let appID = "gephu5k2dnff2v"
-        let redirect = "commmmm.ownid.demo.gigya://ios"
+        let redirect = "commmmm.ownid.demo.gigya://ownid/redirect/"
         OwnID.CoreSDK.shared.configureForTests()
         OwnID.CoreSDK.shared.configure(appID: appID, redirectionURL: redirect, userFacingSDK: (additionalName, OwnID.CoreSDK.version), underlyingSDKs: [])
         

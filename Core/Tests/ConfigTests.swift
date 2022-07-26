@@ -10,23 +10,23 @@ final class ConfigTests: XCTestCase {
         let config = """
             {
               "OwnIDAppID": "gephu5k2dnff2v",
-              "OwnIDRedirectionURL": "com.ownid.demo.gigya://ios"
+              "OwnIDRedirectionURL": "com.ownid.demo.gigya://ownid/redirect/"
             }
             """
             .data(using: .utf8)!
         let configuration = try! JSONDecoder().decode(OwnID.CoreSDK.Configuration.self, from: config)
         
         //Assert (then)
-        XCTAssertEqual(configuration.redirectionURL, "com.ownid.demo.gigya://ios")
+        XCTAssertEqual(configuration.redirectionURL, "com.ownid.demo.gigya://ownid/redirect/")
     }
     
     func testSuccessfulConfigDirectInit() throws {
         //Arrange (given)
         let appID = "gephu5k2dnff2v"
-        let configuration = try! OwnID.CoreSDK.Configuration(appID: appID, redirectionURL: "com.ownid.demo.gigya://ios", environment: .none)
+        let configuration = try! OwnID.CoreSDK.Configuration(appID: appID, redirectionURL: "com.ownid.demo.gigya://ownid/redirect/", environment: .none)
         
         //Assert (then)
-        XCTAssertEqual(configuration.redirectionURL, "com.ownid.demo.gigya://ios")
+        XCTAssertEqual(configuration.redirectionURL, "com.ownid.demo.gigya://ownid/redirect/")
     }
     
     func testErrorConfigInit1() throws {
@@ -109,7 +109,7 @@ final class ConfigTests: XCTestCase {
         let config = """
             {
               "OwnIDAppID": "gephu5k2dnff2v",
-              "OwnIDRedirectionURL": "com.ownid.demo.gigya://ios",
+              "OwnIDRedirectionURL": "com.ownid.demo.gigya://ownid/redirect/",
             }
             """
             .data(using: .utf8)!
@@ -124,7 +124,7 @@ final class ConfigTests: XCTestCase {
         let config = """
             {
               "OwnIDAppID": "gephu5k2dnff2v",
-              "OwnIDRedirectionURL": "com.ownid.demo.gigya://ios",
+              "OwnIDRedirectionURL": "com.ownid.demo.gigya://ownid/redirect/",
             }
             """
             .data(using: .utf8)!
@@ -137,7 +137,7 @@ final class ConfigTests: XCTestCase {
     func testNotOwnIDSuffixDirectInit() throws {
         //Arrange (given)
         let appID = "gephu5k2dnff2v"
-        let configuration = try? OwnID.CoreSDK.Configuration(appID: appID, redirectionURL: "com.ownid.demo.gigya://ios", environment: .none)
+        let configuration = try? OwnID.CoreSDK.Configuration(appID: appID, redirectionURL: "com.ownid.demo.gigya://ownid/redirect/", environment: .none)
         
         //Assert (then)
         XCTAssertNotNil(configuration)
