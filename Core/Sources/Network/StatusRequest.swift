@@ -54,6 +54,7 @@ extension OwnID.CoreSDK.Status {
                     request.httpMethod = "POST"
                     request.httpBody = body
                     request.addUserAgent()
+                    request.addAPIVersion()
                     return request
                 }
                 .eraseToAnyPublisher()
