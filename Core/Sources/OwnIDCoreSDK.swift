@@ -4,6 +4,7 @@ import Combine
 public extension OwnID.CoreSDK {
     static let sdkName = String(describing: OwnID.self)
     static let version = "0.0.1"
+    static let APIVersion = "1"
 }
 
 /// OwnID class represents core part of SDK. It performs initialization and creates views. It reads OwnIDConfiguration from disc, parses it and loads to memory for later usage. It is a singleton so the URL returned from browser can be linked to corresponding view.
@@ -14,6 +15,10 @@ public extension OwnID {
     }
     
     final class CoreSDK {
+        fileprivate var serverURL: ServerURL {
+            getConfiguration(for: configurationName).ownIDServerURL
+        }
+        
         public static let shared = CoreSDK()
         public let translationsModule = TranslationsSDK.Manager()
         @ObservedObject var store: Store<SDKState, SDKAction>
@@ -145,10 +150,6 @@ public extension OwnID.CoreSDK {
 }
 
 public extension OwnID.CoreSDK {
-    var serverURL: ServerURL {
-        getConfiguration(for: configurationName).ownIDServerURL
-    }
-    
     var environment: String? {
         getConfiguration(for: configurationName).environment
     }
