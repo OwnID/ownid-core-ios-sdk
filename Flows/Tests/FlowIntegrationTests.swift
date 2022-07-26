@@ -1,6 +1,6 @@
 import XCTest
 import Combine
-import MockSDK
+import TestsMocks
 @testable import OwnIDCoreSDK
 @testable import OwnIDFlowsSDK
 

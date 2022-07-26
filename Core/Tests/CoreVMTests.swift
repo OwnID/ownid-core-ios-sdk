@@ -1,6 +1,6 @@
 import XCTest
 import Combine
-import MockSDK
+import TestsMocks
 @testable import OwnIDCoreSDK
 
 /// Tests show that for fixed input there is fixed output
