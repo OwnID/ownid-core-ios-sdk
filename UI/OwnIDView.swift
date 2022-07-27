@@ -30,6 +30,9 @@ public extension OwnID.UISDK {
                 imageButtonView
                     .layoutPriority(1)
             }
+            .overlay(alignment: .top) {
+                TooltipView()
+            }
         }
     }
 }
