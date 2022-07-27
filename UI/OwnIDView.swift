@@ -23,14 +23,14 @@ public extension OwnID.UISDK {
         }
         
         public var body: some View {
-            HStack(spacing: 8) {
-                if isOrViewEnabled {
-                    OwnID.UISDK.OrView()
+            ZStack {
+                HStack(spacing: 8) {
+                    if isOrViewEnabled {
+                        OwnID.UISDK.OrView()
+                    }
+                    imageButtonView
+                        .layoutPriority(1)
                 }
-                imageButtonView
-                    .layoutPriority(1)
-            }
-            .overlay(alignment: .top) {
                 TooltipView()
             }
         }

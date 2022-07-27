@@ -11,12 +11,13 @@ public extension OwnID.UISDK {
         public init() { }
         
         public var body: some View {
-            RectangleWithTextView()
-                .padding(.init(top: 0, leading: 0, bottom: 8, trailing: 0))
-                .overlay(alignment: .bottom) {
-                    BeakView()
-                        .frame(width: 14, height: 8)
-                }
+            ZStack(alignment: .bottom) {
+                RectangleWithTextView()
+                    .padding(.init(top: 0, leading: 0, bottom: 8, trailing: 0))
+                BeakView()
+                    .frame(width: 14, height: 8)
+            }.background(.ultraThinMaterial)
+                .edgesIgnoringSafeArea(.all)
         }
     }
 }
