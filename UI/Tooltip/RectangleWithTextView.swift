@@ -2,9 +2,9 @@ import SwiftUI
 import OwnIDCoreSDK
 
 public extension OwnID.UISDK {
-    struct TooltipView: View {
+    struct RectangleWithTextView: View {
         private let radius: CGFloat = 6
-        static func == (lhs: OwnID.UISDK.TooltipView, rhs: OwnID.UISDK.TooltipView) -> Bool {
+        static func == (lhs: OwnID.UISDK.RectangleWithTextView, rhs: OwnID.UISDK.RectangleWithTextView) -> Bool {
             lhs.id == rhs.id
         }
         private let id = UUID()
