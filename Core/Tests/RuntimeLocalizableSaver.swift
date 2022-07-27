@@ -4,6 +4,10 @@ import Combine
 
 /// Tests show that for fixed input there is fixed output
 final class RuntimeLocalizableSaverTests: XCTestCase {
+    override class func setUp() {
+        OwnID.CoreSDK.shared.configureForTests()
+    }
+    
     func testSavingToLocalizableStringsBundle() {
         //Arrange (given)
         let userDefinedLanguage = "zh-Hant-HK"
