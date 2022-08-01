@@ -41,9 +41,9 @@ public extension OwnID.UISDK {
                     }
             }
             .overlay(alignment: .center) {
-                    RectangleWithTextView()
-                        .frame(width: 300, height: textWithRegtangleHeight)
-                        .offset(x: 0, y: -(beakHeight + buttonOffset + textWithRegtangleHeight))
+                RectangleWithTextView()
+                    .frame(width: 300, height: textWithRegtangleHeight)
+                    .offset(x: 0, y: -(beakHeight + buttonOffset + textWithRegtangleHeight))
             }
         }
     }
