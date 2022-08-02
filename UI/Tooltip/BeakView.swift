@@ -9,10 +9,14 @@ public extension OwnID.UISDK {
         private let id = UUID()
         public init() { }
         public var body: some View {
-            Triangle()
-//                .fill(OwnID.Colors.biometricsButtonBackground)
-                .stroke(Color.red, style: StrokeStyle(lineWidth: 1, lineCap: .round, lineJoin: .round))
-                .rotationEffect(.degrees(180))
+            ZStack {
+                Triangle()
+                    .fill(OwnID.Colors.biometricsButtonBackground)
+                    .rotationEffect(.degrees(180))
+                Triangle()
+                    .stroke(OwnID.Colors.biometricsButtonBorder, style: StrokeStyle(lineWidth: 1, lineCap: .round, lineJoin: .round))
+                    .rotationEffect(.degrees(180))
+            }
         }
     }
 }

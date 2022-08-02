@@ -27,58 +27,133 @@ public extension OwnID.UISDK {
             self.isOrViewEnabled = visualConfig.isOrViewEnabled
         }
         
-        @State private var textOffsetFromScreenSide: CGFloat = 0
-        
+        private let radius: CGFloat = 6
         public var body: some View {
             HStack(spacing: 8) {
                 if isOrViewEnabled {
                     OwnID.UISDK.OrView()
                 }
-                    ZStack {
-                        imageButtonView
-                            .layoutPriority(1)
-                            .coordinateSpace(name: coordinateSpaceName)
-                        Text("⬇️")
-                            .fixedSize()
-                            .background(.green)
-                            .offset(x: 0, y: -50)
-                        Text("Login with FaceID / TouchID start of the best")
-                            .fixedSize()
-                            .background(.red)
-                            .offset(x: textOffsetFromScreenSide, y: 0)
-                            .background(BackgroundGeometry())
-                            .onPreferenceChange(GeometryFramePreferenceKey.self, perform: { textOffsetFromScreenSide = calculateSpacingDistance(viewFrame: $0) })
+                TooltipContainerLayout {
+                    TooltipTextAndArrowLayout {
+                        Text("Login with FaceID / TouchID")
+                            .padding(.init(top: 10, leading: 16, bottom: 10, trailing: 16))
+                            .background(
+                                RoundedRectangle(cornerRadius: radius)
+                                    .fill(OwnID.Colors.biometricsButtonBackground)
+                            )
+                            .overlay(
+                                RoundedRectangle(cornerRadius: radius)
+                                    .stroke(OwnID.Colors.biometricsButtonBorder, lineWidth: 1)
+                            )
+                            .popupTextContainerType(.text)
+                        BeakView()
+                            .popupTextContainerType(.arrow)
                     }
+                    .compositingGroup()
+                    .popupContainerType(.textAndArrowContainer)
+                    imageButtonView
+                        .layoutPriority(1)
+                        .popupContainerType(.button)
+                }
             }
         }
-        
-        private func calculateSpacingDistance(viewFrame: CGRect) -> CGFloat {
-            if viewFrame.maxX >= UIScreen.main.bounds.size.width {
-                let spacingToScreenSide: CGFloat = 10
-                let offsetFromScreenSide = UIScreen.main.bounds.size.width - viewFrame.maxX
-                return offsetFromScreenSide - spacingToScreenSide
-            }
-            return 0
+    }
+}
+
+
+struct TooltipContainerLayout: Layout {
+    func sizeThatFits(
+        proposal: ProposedViewSize,
+        subviews: Subviews,
+        cache: inout Void
+    ) -> CGSize {
+        guard !subviews.isEmpty else { return .zero }
+        let buttonSize = subviews.first(where: { $0[TooltipContainerViewTypeKey.self] == .button })?.sizeThatFits(.unspecified) ?? .zero
+        return buttonSize
+    }
+    
+    func placeSubviews(
+        in bounds: CGRect,
+        proposal: ProposedViewSize,
+        subviews: Subviews,
+        cache: inout Void
+    ) {
+        guard let textAndArrowContainerSubview = subviews.first(where: { $0[TooltipContainerViewTypeKey.self] == .textAndArrowContainer }) else { return }
+        let buttonSize = subviews.first(where: { $0[TooltipContainerViewTypeKey.self] == .button })?.sizeThatFits(.unspecified) ?? .zero
+        textAndArrowContainerSubview.place(at: .init(x: bounds.origin.x, y: bounds.origin.y - buttonSize.height - 5), proposal: .unspecified)
+    }
+    
+    private func calculateTextSpacingFromScreen(viewFrame: CGRect) -> CGFloat {
+        if viewFrame.maxX >= UIScreen.main.bounds.size.width {
+            let spacingToScreenSide: CGFloat = 10
+            let offsetFromScreenSide = UIScreen.main.bounds.size.width - viewFrame.maxX
+            return offsetFromScreenSide - spacingToScreenSide
         }
+        return 0
     }
 }
 
-struct GeometryFramePreferenceKey: PreferenceKey {
-    static var defaultValue = CGRect()
-
-    static func reduce(value: inout CGRect, nextValue: () -> CGRect) {
-        value = nextValue()
+struct TooltipTextAndArrowLayout: Layout {
+    func sizeThatFits(
+        proposal: ProposedViewSize,
+        subviews: Subviews,
+        cache: inout Void
+    ) -> CGSize {
+        guard !subviews.isEmpty else { return .zero }
+        let textViewSize = subviews.first(where: { $0[TooltiptextAndArrowContainerViewTypeKey.self] == .text })?.sizeThatFits(.unspecified) ?? .zero
+        return textViewSize
     }
-
-    typealias Value = CGRect
-}
-
-struct BackgroundGeometry: View {
-    var body: some View {
-        GeometryReader { geometry in
-            Rectangle()
-                .fill(.clear)
-                .preference(key: GeometryFramePreferenceKey.self, value: geometry.frame(in: .global))
+    
+    func placeSubviews(
+        in bounds: CGRect,
+        proposal: ProposedViewSize,
+        subviews: Subviews,
+        cache: inout Void
+    ) {
+        guard !subviews.isEmpty else { return }
+        guard let textSubview = subviews.first(where: { $0[TooltiptextAndArrowContainerViewTypeKey.self] == .text }) else { return }
+        guard let arrowSubview = subviews.first(where: { $0[TooltiptextAndArrowContainerViewTypeKey.self] == .arrow }) else { return }
+        let arrowHeight = arrowSubview.sizeThatFits(.unspecified).height
+        let offsetFromScreenSide = calculateTextSpacingFromScreen(viewFrame: bounds)
+        let textX = bounds.origin.x + offsetFromScreenSide
+        let textY = bounds.origin.y - arrowHeight
+        textSubview.place(at: .init(x: textX, y: textY), proposal: .unspecified)
+        arrowSubview.place(at: .init(x: bounds.minX, y: bounds.maxY), proposal: .unspecified)
+    }
+    
+    private func calculateTextSpacingFromScreen(viewFrame: CGRect) -> CGFloat {
+        if viewFrame.maxX >= UIScreen.main.bounds.size.width {
+            let spacingToScreenSide: CGFloat = 10
+            let offsetFromScreenSide = UIScreen.main.bounds.size.width - viewFrame.maxX
+            return offsetFromScreenSide - spacingToScreenSide
         }
+        return 0
     }
 }
+
+enum TooltipContainerViewType {
+    case button, textAndArrowContainer
+}
+
+enum TooltiptextAndArrowContainerViewType {
+    case text, arrow
+}
+
+struct TooltipContainerViewTypeKey: LayoutValueKey {
+    static let defaultValue: TooltipContainerViewType = .button
+}
+
+struct TooltiptextAndArrowContainerViewTypeKey: LayoutValueKey {
+    static let defaultValue: TooltiptextAndArrowContainerViewType = .text
+}
+
+extension View {
+    func popupContainerType(_ value: TooltipContainerViewType) -> some View {
+        layoutValue(key: TooltipContainerViewTypeKey.self, value: value)
+    }
+    
+    func popupTextContainerType(_ value: TooltiptextAndArrowContainerViewType) -> some View {
+        layoutValue(key: TooltiptextAndArrowContainerViewTypeKey.self, value: value)
+    }
+}
+
