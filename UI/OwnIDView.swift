@@ -15,6 +15,7 @@ public extension OwnID.UISDK {
         private let textWithRegtangleHeight: CGFloat = 43
         
         private let imageButtonView: ImageButton
+        private let coordinateSpaceName = String(describing: OwnID.UISDK.ImageButton.self)
         
         public var eventPublisher: OwnID.UISDK.EventPubliser {
             imageButtonView.eventPublisher
@@ -27,23 +28,26 @@ public extension OwnID.UISDK {
         }
         
         public var body: some View {
-            
             HStack(spacing: 8) {
                 if isOrViewEnabled {
                     OwnID.UISDK.OrView()
                 }
-                imageButtonView
-                    .layoutPriority(1)
-                    .overlay(alignment: .top) {
-                        BeakView()
-                            .frame(width: beakWidth, height: beakHeight)
-                            .offset(x: 0, y: -(beakHeight + buttonOffset))
+                GeometryReader { geometryReader in
+                    ZStack {
+                        imageButtonView
+                            .layoutPriority(1)
+                            .coordinateSpace(name: coordinateSpaceName)
+                        
+                        Text("*")
+                            .fixedSize()
+                            .background(.green)
+                            .offset(x: 0, y: -geometryReader.frame(in: .local).maxY)
+                        Text("Login with FaceID / TouchID ede fe")
+                            .fixedSize()
+                            .background(.red)
+                            .offset(x: -100, y: -80)
                     }
-            }
-            .overlay(alignment: .center) {
-                RectangleWithTextView()
-                    .frame(width: 300, height: textWithRegtangleHeight)
-                    .offset(x: 0, y: -(beakHeight + buttonOffset + textWithRegtangleHeight))
+                }
             }
         }
     }
