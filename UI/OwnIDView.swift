@@ -27,7 +27,6 @@ public extension OwnID.UISDK {
             self.isOrViewEnabled = visualConfig.isOrViewEnabled
         }
         
-        private let radius: CGFloat = 6
         public var body: some View {
             HStack(spacing: 8) {
                 if isOrViewEnabled {
@@ -35,21 +34,13 @@ public extension OwnID.UISDK {
                 }
                 TooltipContainerLayout {
                     TooltipTextAndArrowLayout {
-                        Text("Login with FaceID / TouchID")
-                            .padding(.init(top: 10, leading: 16, bottom: 10, trailing: 16))
-                            .background(
-                                RoundedRectangle(cornerRadius: radius)
-                                    .fill(OwnID.Colors.biometricsButtonBackground)
-                            )
-                            .overlay(
-                                RoundedRectangle(cornerRadius: radius)
-                                    .stroke(OwnID.Colors.biometricsButtonBorder, lineWidth: 1)
-                            )
+                        RectangleWithTextView()
                             .popupTextContainerType(.text)
                         BeakView()
                             .popupTextContainerType(.arrow)
                     }
                     .compositingGroup()
+                    .shadow(color: .black.opacity(0.05), radius: 5, y: 4)
                     .popupContainerType(.textAndArrowContainer)
                     imageButtonView
                         .layoutPriority(1)
@@ -80,7 +71,7 @@ struct TooltipContainerLayout: Layout {
     ) {
         guard let textAndArrowContainerSubview = subviews.first(where: { $0[TooltipContainerViewTypeKey.self] == .textAndArrowContainer }) else { return }
         let buttonSize = subviews.first(where: { $0[TooltipContainerViewTypeKey.self] == .button })?.sizeThatFits(.unspecified) ?? .zero
-        textAndArrowContainerSubview.place(at: .init(x: bounds.origin.x, y: bounds.origin.y - buttonSize.height - 5), proposal: .unspecified)
+        textAndArrowContainerSubview.place(at: .init(x: bounds.origin.x + (buttonSize.width / 2.5), y: bounds.origin.y - buttonSize.height - 10), proposal: .unspecified)
     }
     
     private func calculateTextSpacingFromScreen(viewFrame: CGRect) -> CGFloat {
@@ -114,9 +105,10 @@ struct TooltipTextAndArrowLayout: Layout {
         guard let textSubview = subviews.first(where: { $0[TooltiptextAndArrowContainerViewTypeKey.self] == .text }) else { return }
         guard let arrowSubview = subviews.first(where: { $0[TooltiptextAndArrowContainerViewTypeKey.self] == .arrow }) else { return }
         let arrowHeight = arrowSubview.sizeThatFits(.unspecified).height
+        let textHeight = textSubview.sizeThatFits(.unspecified).height
         let offsetFromScreenSide = calculateTextSpacingFromScreen(viewFrame: bounds)
         let textX = bounds.origin.x + offsetFromScreenSide
-        let textY = bounds.origin.y - arrowHeight
+        let textY = bounds.maxY - arrowHeight - (textHeight / 1.29)
         textSubview.place(at: .init(x: textX, y: textY), proposal: .unspecified)
         arrowSubview.place(at: .init(x: bounds.minX, y: bounds.maxY), proposal: .unspecified)
     }
