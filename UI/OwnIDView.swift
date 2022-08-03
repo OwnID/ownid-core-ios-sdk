@@ -114,10 +114,36 @@ struct TooltipTextAndArrowLayout: Layout {
     }
     
     private func calculateTextSpacingFromScreen(viewFrame: CGRect) -> CGFloat {
+        let spacingToScreenSide: CGFloat = 10
+        
+        if !UIScreen.main.bounds.contains(.init(x: viewFrame.midX / 1.5, y: viewFrame.maxY)) {
+            let offsetFromScreenSide = -(viewFrame.midX * 1.2)
+            let combinedOffset = offsetFromScreenSide - spacingToScreenSide
+            return combinedOffset
+        }
+        
+        if !UIScreen.main.bounds.contains(.init(x: viewFrame.midX / 2, y: viewFrame.maxY)) {
+            let offsetFromScreenSide = -(viewFrame.midX / 2)
+            let combinedOffset = offsetFromScreenSide - spacingToScreenSide
+            return combinedOffset
+        }
+        
+        if !UIScreen.main.bounds.contains(.init(x: viewFrame.midX, y: viewFrame.maxY)) {
+            let offsetFromScreenSide = -viewFrame.midX
+            let combinedOffset = offsetFromScreenSide - spacingToScreenSide
+            return combinedOffset
+        }
+        
+        if !UIScreen.main.bounds.contains(.init(x: viewFrame.maxX, y: viewFrame.maxY)) {
+            let offsetFromScreenSide = -viewFrame.maxX
+            let combinedOffset = offsetFromScreenSide - spacingToScreenSide
+            return combinedOffset
+        }
+        
         if viewFrame.maxX >= UIScreen.main.bounds.size.width {
-            let spacingToScreenSide: CGFloat = 10
             let offsetFromScreenSide = UIScreen.main.bounds.size.width - viewFrame.maxX
-            return offsetFromScreenSide - spacingToScreenSide
+            let combinedOffset = offsetFromScreenSide - spacingToScreenSide
+            return combinedOffset
         }
         return 0
     }
