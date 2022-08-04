@@ -116,16 +116,25 @@ struct TooltipTextAndArrowLayout: Layout {
     private func calculateTextSpacingFromScreen(viewBounds: CGRect) -> CGFloat {
         let spacingToScreenSide: CGFloat = 10
         #warning("add here switch case for different settings react included")
-        if viewBounds.maxX >= UIScreen.main.bounds.maxX {
-            let offsetFromScreenSide = UIScreen.main.bounds.maxX - viewBounds.maxX
-            let combinedOffset = offsetFromScreenSide - spacingToScreenSide
-            return combinedOffset
+        if Locale.current.isRTL {
+            if viewBounds.minX <= UIScreen.main.bounds.minX {
+                print("0")
+                let offsetFromScreenSide = UIScreen.main.bounds.minX - viewBounds.minX
+                let combinedOffset = offsetFromScreenSide + spacingToScreenSide
+                return combinedOffset
+            }
+        } else {
+            if viewBounds.maxX >= UIScreen.main.bounds.maxX {
+                let offsetFromScreenSide = UIScreen.main.bounds.maxX - viewBounds.maxX
+                let combinedOffset = offsetFromScreenSide - spacingToScreenSide
+                return combinedOffset
+            }
         }
         
         if !UIScreen.main.bounds.contains(.init(x: viewBounds.midX / 1.25, y: viewBounds.maxY)) {
             print("1")
             let offsetFromScreenSide = -(viewBounds.midX * 1.25)
-            let combinedOffset = offsetFromScreenSide - spacingToScreenSide
+            let combinedOffset = Locale.current.isRTL ? offsetFromScreenSide + spacingToScreenSide : offsetFromScreenSide - spacingToScreenSide
             return combinedOffset
         }
         
