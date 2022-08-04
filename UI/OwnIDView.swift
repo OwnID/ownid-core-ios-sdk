@@ -115,55 +115,52 @@ struct TooltipTextAndArrowLayout: Layout {
     
     private func calculateTextSpacingFromScreen(viewBounds: CGRect) -> CGFloat {
         let spacingToScreenSide: CGFloat = 10
-        #warning("add here switch case for different settings react included")
-        if Locale.current.isRTL {
-            if viewBounds.minX <= UIScreen.main.bounds.minX {
-                print("0")
-                let offsetFromScreenSide = UIScreen.main.bounds.minX - viewBounds.minX
-                let combinedOffset = offsetFromScreenSide + spacingToScreenSide
-                return combinedOffset
+        let nativePlatform = true
+        if nativePlatform {
+            if Locale.current.isRTL {
+                if viewBounds.minX <= UIScreen.main.bounds.minX {
+                    print("0")
+                    let offsetFromScreenSide = UIScreen.main.bounds.minX - viewBounds.minX
+                    let combinedOffset = offsetFromScreenSide + spacingToScreenSide
+                    return combinedOffset
+                }
+            } else {
+                if viewBounds.maxX >= UIScreen.main.bounds.maxX {
+                    let offsetFromScreenSide = UIScreen.main.bounds.maxX - viewBounds.maxX
+                    let combinedOffset = offsetFromScreenSide - spacingToScreenSide
+                    return combinedOffset
+                }
             }
         } else {
-            if viewBounds.maxX >= UIScreen.main.bounds.maxX {
-                let offsetFromScreenSide = UIScreen.main.bounds.maxX - viewBounds.maxX
+            if !UIScreen.main.bounds.contains(.init(x: viewBounds.midX / 1.25, y: viewBounds.maxY)) {
+                let offsetFromScreenSide = -(viewBounds.midX * 1.25)
+                let combinedOffset = Locale.current.isRTL ? offsetFromScreenSide + spacingToScreenSide : offsetFromScreenSide - spacingToScreenSide
+                return combinedOffset
+            }
+            
+            if !UIScreen.main.bounds.contains(.init(x: viewBounds.midX / 1.5, y: viewBounds.maxY)) {
+                let offsetFromScreenSide = -(viewBounds.midX * 1.5)
                 let combinedOffset = offsetFromScreenSide - spacingToScreenSide
                 return combinedOffset
             }
-        }
-        
-        if !UIScreen.main.bounds.contains(.init(x: viewBounds.midX / 1.25, y: viewBounds.maxY)) {
-            print("1")
-            let offsetFromScreenSide = -(viewBounds.midX * 1.25)
-            let combinedOffset = Locale.current.isRTL ? offsetFromScreenSide + spacingToScreenSide : offsetFromScreenSide - spacingToScreenSide
-            return combinedOffset
-        }
-        
-        if !UIScreen.main.bounds.contains(.init(x: viewBounds.midX / 1.5, y: viewBounds.maxY)) {
-            print("2")
-            let offsetFromScreenSide = -(viewBounds.midX * 1.5)
-            let combinedOffset = offsetFromScreenSide - spacingToScreenSide
-            return combinedOffset
-        }
-
-        if !UIScreen.main.bounds.contains(.init(x: viewBounds.midX / 2, y: viewBounds.maxY)) {
-            print("3")
-            let offsetFromScreenSide = -(viewBounds.midX / 2)
-            let combinedOffset = offsetFromScreenSide - spacingToScreenSide
-            return combinedOffset
-        }
-
-        if !UIScreen.main.bounds.contains(.init(x: viewBounds.midX, y: viewBounds.maxY)) {
-            print("4")
-            let offsetFromScreenSide = -viewBounds.midX
-            let combinedOffset = offsetFromScreenSide - spacingToScreenSide
-            return combinedOffset
-        }
-
-        if !UIScreen.main.bounds.contains(.init(x: viewBounds.maxX, y: viewBounds.maxY)) {
-            print("5")
-            let offsetFromScreenSide = -viewBounds.maxX
-            let combinedOffset = offsetFromScreenSide - spacingToScreenSide
-            return combinedOffset
+            
+            if !UIScreen.main.bounds.contains(.init(x: viewBounds.midX / 2, y: viewBounds.maxY)) {
+                let offsetFromScreenSide = -(viewBounds.midX / 2)
+                let combinedOffset = offsetFromScreenSide - spacingToScreenSide
+                return combinedOffset
+            }
+            
+            if !UIScreen.main.bounds.contains(.init(x: viewBounds.midX, y: viewBounds.maxY)) {
+                let offsetFromScreenSide = -viewBounds.midX
+                let combinedOffset = offsetFromScreenSide - spacingToScreenSide
+                return combinedOffset
+            }
+            
+            if !UIScreen.main.bounds.contains(.init(x: viewBounds.maxX, y: viewBounds.maxY)) {
+                let offsetFromScreenSide = -viewBounds.maxX
+                let combinedOffset = offsetFromScreenSide - spacingToScreenSide
+                return combinedOffset
+            }
         }
         return 0
     }
@@ -200,10 +197,10 @@ private extension Locale {
         guard let language = language.languageCode else { return false }
         let direction = Locale.Language(identifier: language.identifier).characterDirection
         switch direction {
-            case .leftToRight:
-                return false
-            default:
-                return true
+        case .leftToRight:
+            return false
+        default:
+            return true
         }
     }
 }
