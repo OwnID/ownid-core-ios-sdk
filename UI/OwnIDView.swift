@@ -106,48 +106,53 @@ struct TooltipTextAndArrowLayout: Layout {
         guard let arrowSubview = subviews.first(where: { $0[TooltiptextAndArrowContainerViewTypeKey.self] == .arrow }) else { return }
         let arrowHeight = arrowSubview.sizeThatFits(.unspecified).height
         let textHeight = textSubview.sizeThatFits(.unspecified).height
-        let offsetFromScreenSide = calculateTextSpacingFromScreen(viewFrame: bounds)
-        let textX = bounds.origin.x + offsetFromScreenSide
+        let offsetFromScreenSide = calculateTextSpacingFromScreen(viewBounds: bounds)
+        let textX = Locale.current.isRTL ? bounds.origin.x - offsetFromScreenSide : bounds.origin.x + offsetFromScreenSide
         let textY = bounds.maxY - arrowHeight - (textHeight / 1.29)
         textSubview.place(at: .init(x: textX, y: textY), proposal: .unspecified)
         arrowSubview.place(at: .init(x: bounds.minX, y: bounds.maxY), proposal: .unspecified)
     }
     
-    private func calculateTextSpacingFromScreen(viewFrame: CGRect) -> CGFloat {
+    private func calculateTextSpacingFromScreen(viewBounds: CGRect) -> CGFloat {
         let spacingToScreenSide: CGFloat = 10
-        
-        if !UIScreen.main.bounds.contains(.init(x: viewFrame.midX / 1.25, y: viewFrame.maxY)) {
-            let offsetFromScreenSide = -(viewFrame.midX * 1.25)
+        #warning("add here switch case for different settings react included")
+        if viewBounds.maxX >= UIScreen.main.bounds.maxX {
+            let offsetFromScreenSide = UIScreen.main.bounds.maxX - viewBounds.maxX
             let combinedOffset = offsetFromScreenSide - spacingToScreenSide
             return combinedOffset
         }
         
-        if !UIScreen.main.bounds.contains(.init(x: viewFrame.midX / 1.5, y: viewFrame.maxY)) {
-            let offsetFromScreenSide = -(viewFrame.midX * 1.5)
-            let combinedOffset = offsetFromScreenSide - spacingToScreenSide
-            return combinedOffset
-        }
-
-        if !UIScreen.main.bounds.contains(.init(x: viewFrame.midX / 2, y: viewFrame.maxY)) {
-            let offsetFromScreenSide = -(viewFrame.midX / 2)
-            let combinedOffset = offsetFromScreenSide - spacingToScreenSide
-            return combinedOffset
-        }
-
-        if !UIScreen.main.bounds.contains(.init(x: viewFrame.midX, y: viewFrame.maxY)) {
-            let offsetFromScreenSide = -viewFrame.midX
-            let combinedOffset = offsetFromScreenSide - spacingToScreenSide
-            return combinedOffset
-        }
-
-        if !UIScreen.main.bounds.contains(.init(x: viewFrame.maxX, y: viewFrame.maxY)) {
-            let offsetFromScreenSide = -viewFrame.maxX
+        if !UIScreen.main.bounds.contains(.init(x: viewBounds.midX / 1.25, y: viewBounds.maxY)) {
+            print("1")
+            let offsetFromScreenSide = -(viewBounds.midX * 1.25)
             let combinedOffset = offsetFromScreenSide - spacingToScreenSide
             return combinedOffset
         }
         
-        if viewFrame.maxX >= UIScreen.main.bounds.size.width {
-            let offsetFromScreenSide = UIScreen.main.bounds.size.width - viewFrame.maxX
+        if !UIScreen.main.bounds.contains(.init(x: viewBounds.midX / 1.5, y: viewBounds.maxY)) {
+            print("2")
+            let offsetFromScreenSide = -(viewBounds.midX * 1.5)
+            let combinedOffset = offsetFromScreenSide - spacingToScreenSide
+            return combinedOffset
+        }
+
+        if !UIScreen.main.bounds.contains(.init(x: viewBounds.midX / 2, y: viewBounds.maxY)) {
+            print("3")
+            let offsetFromScreenSide = -(viewBounds.midX / 2)
+            let combinedOffset = offsetFromScreenSide - spacingToScreenSide
+            return combinedOffset
+        }
+
+        if !UIScreen.main.bounds.contains(.init(x: viewBounds.midX, y: viewBounds.maxY)) {
+            print("4")
+            let offsetFromScreenSide = -viewBounds.midX
+            let combinedOffset = offsetFromScreenSide - spacingToScreenSide
+            return combinedOffset
+        }
+
+        if !UIScreen.main.bounds.contains(.init(x: viewBounds.maxX, y: viewBounds.maxY)) {
+            print("5")
+            let offsetFromScreenSide = -viewBounds.maxX
             let combinedOffset = offsetFromScreenSide - spacingToScreenSide
             return combinedOffset
         }
@@ -181,3 +186,15 @@ extension View {
     }
 }
 
+private extension Locale {
+    var isRTL: Bool {
+        guard let language = language.languageCode else { return false }
+        let direction = Locale.Language(identifier: language.identifier).characterDirection
+        switch direction {
+            case .leftToRight:
+                return false
+            default:
+                return true
+        }
+    }
+}
