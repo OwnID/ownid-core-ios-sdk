@@ -32,6 +32,7 @@ public extension OwnID.UISDK {
                 if isOrViewEnabled {
                     OwnID.UISDK.OrView()
                 }
+                #warning("move into subviews with content block")
                 TooltipContainerLayout {
                     TooltipTextAndArrowLayout {
                         RectangleWithTextView()
@@ -51,7 +52,7 @@ public extension OwnID.UISDK {
     }
 }
 
-
+#warning("move to own file")
 struct TooltipContainerLayout: Layout {
     func sizeThatFits(
         proposal: ProposedViewSize,
@@ -84,6 +85,7 @@ struct TooltipContainerLayout: Layout {
     }
 }
 
+#warning("move to own file")
 struct TooltipTextAndArrowLayout: Layout {
     func sizeThatFits(
         proposal: ProposedViewSize,
@@ -113,6 +115,7 @@ struct TooltipTextAndArrowLayout: Layout {
         arrowSubview.place(at: .init(x: bounds.minX, y: bounds.maxY), proposal: .unspecified)
     }
     
+#warning("move to own file")
     private func calculateTextSpacingFromScreen(viewBounds: CGRect) -> CGFloat {
         let spacingToScreenSide: CGFloat = 10
         let nativePlatform = true
@@ -132,6 +135,7 @@ struct TooltipTextAndArrowLayout: Layout {
                 }
             }
         } else {
+#warning("devide into functions or factory or something")
             if !UIScreen.main.bounds.contains(.init(x: viewBounds.midX / 1.25, y: viewBounds.maxY)) {
                 let offsetFromScreenSide = -(viewBounds.midX * 1.25)
                 let combinedOffset = Locale.current.isRTL ? offsetFromScreenSide + spacingToScreenSide : offsetFromScreenSide - spacingToScreenSide
@@ -166,6 +170,7 @@ struct TooltipTextAndArrowLayout: Layout {
     }
 }
 
+#warning("move to own file")
 enum TooltipContainerViewType {
     case button, textAndArrowContainer
 }
@@ -182,6 +187,7 @@ struct TooltiptextAndArrowContainerViewTypeKey: LayoutValueKey {
     static let defaultValue: TooltiptextAndArrowContainerViewType = .text
 }
 
+#warning("move to own file")
 extension View {
     func popupContainerType(_ value: TooltipContainerViewType) -> some View {
         layoutValue(key: TooltipContainerViewTypeKey.self, value: value)
@@ -192,6 +198,7 @@ extension View {
     }
 }
 
+#warning("move to own file")
 private extension Locale {
     var isRTL: Bool {
         guard let language = language.languageCode else { return false }
