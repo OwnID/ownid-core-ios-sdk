@@ -16,7 +16,7 @@ public final class APISessionStub: APISessionProtocol {
     
     public func performInitRequest(type: OwnID.CoreSDK.RequestType, token: OwnID.CoreSDK.JWTToken?) -> AnyPublisher<OwnID.CoreSDK.Init.Response, OwnID.CoreSDK.Error> {
         if isInitSuccess {
-            return Result.Publisher(OwnID.CoreSDK.Init.Response(url: "22", context: "22", nonce: "22", expiration: 0))
+            return Result.Publisher(OwnID.CoreSDK.Init.Response(url: "22", context: "22", nonce: "22"))
                 .delay(for: 1, scheduler: RunLoop.main)
                 .eraseToAnyPublisher()
         } else {
@@ -57,11 +57,11 @@ public final class LinkAPISessionStub: APISessionProtocol {
     
     public func performInitRequest(type: OwnID.CoreSDK.RequestType, token: OwnID.CoreSDK.JWTToken?) -> AnyPublisher<OwnID.CoreSDK.Init.Response, OwnID.CoreSDK.Error> {
         if isRequestStarted {
-            return Result.Publisher(OwnID.CoreSDK.Init.Response(url: "22", context: "22", nonce: "22", expiration: 0))
+            return Result.Publisher(OwnID.CoreSDK.Init.Response(url: "22", context: "22", nonce: "22"))
                 .delay(for: 1, scheduler: RunLoop.main)
                 .eraseToAnyPublisher()
         } else {
-            return Result.Publisher(OwnID.CoreSDK.Init.Response(url: "22", context: .none, nonce: .none, expiration: .none))
+            return Result.Publisher(OwnID.CoreSDK.Init.Response(url: "22", context: .none, nonce: .none))
                 .delay(for: 1, scheduler: RunLoop.main)
                 .eraseToAnyPublisher()
         }
