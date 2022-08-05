@@ -17,7 +17,7 @@ public extension OwnID.UISDK {
         private let imageButtonView: ImageButton
         private let coordinateSpaceName = String(describing: OwnID.UISDK.ImageButton.self)
         
-        private let isNativePlatform: Bool
+        private let tooltipVisualLookConfig: TooltipVisualLookConfig
         
         public var eventPublisher: OwnID.UISDK.EventPubliser {
             imageButtonView.eventPublisher
@@ -27,7 +27,7 @@ public extension OwnID.UISDK {
         public init(viewState: Binding<ButtonState>, visualConfig: VisualLookConfig) {
             self.imageButtonView = ImageButton(viewState: viewState, visualConfig: visualConfig)
             self.isOrViewEnabled = visualConfig.isOrViewEnabled
-            self.isNativePlatform = visualConfig.isNativePlatform
+            self.tooltipVisualLookConfig = visualConfig.tooltipVisualLookConfig
         }
         
         public var body: some View {
@@ -36,7 +36,7 @@ public extension OwnID.UISDK {
                     OwnID.UISDK.OrView()
                 }
                 TooltipContainerLayout {
-                    TooltipTextAndArrowLayout(isNativePlatform: isNativePlatform) {
+                    TooltipTextAndArrowLayout(isNativePlatform: tooltipVisualLookConfig.isNativePlatform) {
                         RectangleWithTextView()
                             .popupTextContainerType(.text)
                         BeakView()
