@@ -32,54 +32,18 @@ extension OwnID.UISDK {
         }
         
         private func calculateTextSpacingFromScreen(viewBounds: CGRect) -> CGFloat {
-            let spacingToScreenSide: CGFloat = 10
+            let layoutCalculation: XAxisOffsetCalculating
             let nativePlatform = true
             if nativePlatform {
                 if Locale.current.isRTL {
-//                    if viewBounds.minX <= UIScreen.main.bounds.minX {
-//                        let offsetFromScreenSide = UIScreen.main.bounds.minX - viewBounds.minX
-//                        let combinedOffset = offsetFromScreenSide + spacingToScreenSide
-//                        return combinedOffset
-//                    }
+                    layoutCalculation = NativeRTLLayoutCalculation()
                 } else {
-//                    if viewBounds.maxX >= UIScreen.main.bounds.maxX {
-//                        let offsetFromScreenSide = UIScreen.main.bounds.maxX - viewBounds.maxX
-//                        let combinedOffset = offsetFromScreenSide - spacingToScreenSide
-//                        return combinedOffset
-//                    }
+                    layoutCalculation = NativeLTRLayoutCalculation()
                 }
             } else {
-//                if !UIScreen.main.bounds.contains(.init(x: viewBounds.midX / 1.25, y: viewBounds.maxY)) {
-//                    let offsetFromScreenSide = -(viewBounds.midX * 1.25)
-//                    let combinedOffset = Locale.current.isRTL ? offsetFromScreenSide + spacingToScreenSide : offsetFromScreenSide - spacingToScreenSide
-//                    return combinedOffset
-//                }
-//
-//                if !UIScreen.main.bounds.contains(.init(x: viewBounds.midX / 1.5, y: viewBounds.maxY)) {
-//                    let offsetFromScreenSide = -(viewBounds.midX * 1.5)
-//                    let combinedOffset = offsetFromScreenSide - spacingToScreenSide
-//                    return combinedOffset
-//                }
-//
-//                if !UIScreen.main.bounds.contains(.init(x: viewBounds.midX / 2, y: viewBounds.maxY)) {
-//                    let offsetFromScreenSide = -(viewBounds.midX / 2)
-//                    let combinedOffset = offsetFromScreenSide - spacingToScreenSide
-//                    return combinedOffset
-//                }
-//
-//                if !UIScreen.main.bounds.contains(.init(x: viewBounds.midX, y: viewBounds.maxY)) {
-//                    let offsetFromScreenSide = -viewBounds.midX
-//                    let combinedOffset = offsetFromScreenSide - spacingToScreenSide
-//                    return combinedOffset
-//                }
-//
-//                if !UIScreen.main.bounds.contains(.init(x: viewBounds.maxX, y: viewBounds.maxY)) {
-//                    let offsetFromScreenSide = -viewBounds.maxX
-//                    let combinedOffset = offsetFromScreenSide - spacingToScreenSide
-//                    return combinedOffset
-//                }
+                layoutCalculation = ReactNativeRTLLayoutCalculation()
             }
-            return 0
+            return layoutCalculation.calculateXAxisOffset(viewBounds: viewBounds)
         }
     }
 }
