@@ -8,13 +8,13 @@ public extension OwnID.UISDK {
                     borderColor: Color = OwnID.Colors.biometricsButtonBorder,
                     shadowColor: Color = OwnID.Colors.biometricsButtonBorder.opacity(0.7),
                     isOrViewEnabled: Bool = true,
-                    isNativePlatform: Bool = true) {
+                    tooltipVisualLookConfig: TooltipVisualLookConfig = TooltipVisualLookConfig()) {
             self.biometryIconColor = biometryIconColor
             self.backgroundColor = backgroundColor
             self.borderColor = borderColor
             self.shadowColor = shadowColor
             self.isOrViewEnabled = isOrViewEnabled
-            self.isNativePlatform = isNativePlatform
+            self.tooltipVisualLookConfig = tooltipVisualLookConfig
         }
         
         public var biometryIconColor: Color
@@ -22,6 +22,6 @@ public extension OwnID.UISDK {
         public var borderColor: Color
         public var shadowColor: Color
         public var isOrViewEnabled: Bool
-        public var isNativePlatform: Bool
+        public var tooltipVisualLookConfig: TooltipVisualLookConfig
     }
 }
