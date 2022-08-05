@@ -14,7 +14,7 @@ public extension OwnID.UISDK {
                     .fill(OwnID.Colors.biometricsButtonBackground)
                 Triangle()
                     .stroke(OwnID.Colors.biometricsButtonBorder, style: StrokeStyle(lineWidth: 1, lineCap: .round, lineJoin: .round))
-                TriangleTopLine()
+                TriangleSide()
                     .stroke(OwnID.Colors.biometricsButtonBackground, style: StrokeStyle(lineWidth: 1.3, lineCap: .round, lineJoin: .round))
             }
             .frame(width: 14, height: 8)
