@@ -3,6 +3,8 @@ import OwnIDCoreSDK
 
 extension OwnID.UISDK {
     struct TooltipTextAndArrowLayout: Layout {
+        let isNativePlatform: Bool
+        
         func sizeThatFits(
             proposal: ProposedViewSize,
             subviews: Subviews,
@@ -22,19 +24,22 @@ extension OwnID.UISDK {
             guard !subviews.isEmpty else { return }
             guard let textSubview = subviews.first(where: { $0[TooltiptextAndArrowContainerViewTypeKey.self] == .text }) else { return }
             guard let arrowSubview = subviews.first(where: { $0[TooltiptextAndArrowContainerViewTypeKey.self] == .arrow }) else { return }
+            
             let arrowHeight = arrowSubview.sizeThatFits(.unspecified).height
             let textHeight = textSubview.sizeThatFits(.unspecified).height
+            
             let offsetFromScreenSide = calculateTextSpacingFromScreen(viewBounds: bounds)
+            
             let textX = Locale.current.isRTL ? bounds.origin.x - offsetFromScreenSide : bounds.origin.x + offsetFromScreenSide
             let textY = bounds.maxY - arrowHeight - (textHeight / 1.29)
+            
             textSubview.place(at: .init(x: textX, y: textY), proposal: .unspecified)
             arrowSubview.place(at: .init(x: bounds.minX, y: bounds.maxY), proposal: .unspecified)
         }
         
         private func calculateTextSpacingFromScreen(viewBounds: CGRect) -> CGFloat {
             let layoutCalculation: XAxisOffsetCalculating
-            let nativePlatform = true
-            if nativePlatform {
+            if isNativePlatform {
                 if Locale.current.isRTL {
                     layoutCalculation = NativeRTLLayoutCalculation()
                 } else {
