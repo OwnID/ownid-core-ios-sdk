@@ -35,7 +35,7 @@ public extension OwnID.UISDK {
                 if isOrViewEnabled {
                     OwnID.UISDK.OrView()
                 }
-                TooltipContainerLayout {
+                TooltipContainerLayout(tooltipPosition: tooltipVisualLookConfig.tooltipPosition) {
                     TooltipTextAndArrowLayout(isNativePlatform: tooltipVisualLookConfig.isNativePlatform) {
                         RectangleWithTextView()
                             .popupTextContainerType(.text)
