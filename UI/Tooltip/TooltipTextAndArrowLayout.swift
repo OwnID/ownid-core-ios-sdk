@@ -49,35 +49,35 @@ extension OwnID.UISDK {
 //                    }
                 }
             } else {
-                if !UIScreen.main.bounds.contains(.init(x: viewBounds.midX / 1.25, y: viewBounds.maxY)) {
-                    let offsetFromScreenSide = -(viewBounds.midX * 1.25)
-                    let combinedOffset = Locale.current.isRTL ? offsetFromScreenSide + spacingToScreenSide : offsetFromScreenSide - spacingToScreenSide
-                    return combinedOffset
-                }
-                
-                if !UIScreen.main.bounds.contains(.init(x: viewBounds.midX / 1.5, y: viewBounds.maxY)) {
-                    let offsetFromScreenSide = -(viewBounds.midX * 1.5)
-                    let combinedOffset = offsetFromScreenSide - spacingToScreenSide
-                    return combinedOffset
-                }
-                
-                if !UIScreen.main.bounds.contains(.init(x: viewBounds.midX / 2, y: viewBounds.maxY)) {
-                    let offsetFromScreenSide = -(viewBounds.midX / 2)
-                    let combinedOffset = offsetFromScreenSide - spacingToScreenSide
-                    return combinedOffset
-                }
-                
-                if !UIScreen.main.bounds.contains(.init(x: viewBounds.midX, y: viewBounds.maxY)) {
-                    let offsetFromScreenSide = -viewBounds.midX
-                    let combinedOffset = offsetFromScreenSide - spacingToScreenSide
-                    return combinedOffset
-                }
-                
-                if !UIScreen.main.bounds.contains(.init(x: viewBounds.maxX, y: viewBounds.maxY)) {
-                    let offsetFromScreenSide = -viewBounds.maxX
-                    let combinedOffset = offsetFromScreenSide - spacingToScreenSide
-                    return combinedOffset
-                }
+//                if !UIScreen.main.bounds.contains(.init(x: viewBounds.midX / 1.25, y: viewBounds.maxY)) {
+//                    let offsetFromScreenSide = -(viewBounds.midX * 1.25)
+//                    let combinedOffset = Locale.current.isRTL ? offsetFromScreenSide + spacingToScreenSide : offsetFromScreenSide - spacingToScreenSide
+//                    return combinedOffset
+//                }
+//
+//                if !UIScreen.main.bounds.contains(.init(x: viewBounds.midX / 1.5, y: viewBounds.maxY)) {
+//                    let offsetFromScreenSide = -(viewBounds.midX * 1.5)
+//                    let combinedOffset = offsetFromScreenSide - spacingToScreenSide
+//                    return combinedOffset
+//                }
+//
+//                if !UIScreen.main.bounds.contains(.init(x: viewBounds.midX / 2, y: viewBounds.maxY)) {
+//                    let offsetFromScreenSide = -(viewBounds.midX / 2)
+//                    let combinedOffset = offsetFromScreenSide - spacingToScreenSide
+//                    return combinedOffset
+//                }
+//
+//                if !UIScreen.main.bounds.contains(.init(x: viewBounds.midX, y: viewBounds.maxY)) {
+//                    let offsetFromScreenSide = -viewBounds.midX
+//                    let combinedOffset = offsetFromScreenSide - spacingToScreenSide
+//                    return combinedOffset
+//                }
+//
+//                if !UIScreen.main.bounds.contains(.init(x: viewBounds.maxX, y: viewBounds.maxY)) {
+//                    let offsetFromScreenSide = -viewBounds.maxX
+//                    let combinedOffset = offsetFromScreenSide - spacingToScreenSide
+//                    return combinedOffset
+//                }
             }
             return 0
         }

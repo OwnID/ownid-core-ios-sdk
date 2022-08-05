@@ -18,7 +18,6 @@ public extension OwnID.CoreSDK.Init {
         public let url: String
         public let context: String?
         public let nonce: String?
-        public let expiration: Int?
     }
 }
 
