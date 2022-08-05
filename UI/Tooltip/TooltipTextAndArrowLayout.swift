@@ -41,7 +41,7 @@ extension OwnID.UISDK {
                     layoutCalculation = NativeLTRLayoutCalculation()
                 }
             } else {
-                layoutCalculation = ReactNativeRTLLayoutCalculation()
+                layoutCalculation = ReactNativeUnifiedLayoutCalculation()
             }
             return layoutCalculation.calculateXAxisOffset(viewBounds: viewBounds)
         }

@@ -2,7 +2,7 @@ import SwiftUI
 import OwnIDCoreSDK
 
 extension OwnID.UISDK {
-    struct ReactNativeRTLLayoutCalculation: XAxisOffsetCalculating {
+    struct ReactNativeUnifiedLayoutCalculation: XAxisOffsetCalculating {
         func calculateXAxisOffset(viewBounds: CGRect, screenBounds: CGRect) -> CGFloat {
             let xAndOffetValues = [
                 (x: viewBounds.midX / 1.25, operation: viewBounds.midX * 1.25),
