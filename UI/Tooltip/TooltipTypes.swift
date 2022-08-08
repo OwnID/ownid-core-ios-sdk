@@ -22,3 +22,18 @@ public extension OwnID.UISDK {
         public var shouldShowTooltip: Bool = true
     }
 }
+
+extension OwnID.UISDK.TooltipPositionType {
+    var beakViewRotationAngle: Double {
+        switch self {
+        case .top:
+            return 180
+        case .bottom:
+            return 0
+        case .left:
+            return 90
+        case .right:
+            return -90
+        }
+    }
+}
