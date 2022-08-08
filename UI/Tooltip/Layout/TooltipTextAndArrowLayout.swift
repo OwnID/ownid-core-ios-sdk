@@ -44,9 +44,8 @@ extension OwnID.UISDK {
                 textSubview.place(at: .init(x: textX, y: textY), proposal: .unspecified)
                 
             case .left:
-                let offsetFromButton = 4.0
-                let textX = bounds.minX - textSize.width - beakSize.width - offsetFromButton
-                let textY = bounds.midY + (textSize.height / magicYTextOffsetNumber)
+                let textX = bounds.minX - textSize.width - beakSize.width
+                let textY = bounds.origin.y
                 textSubview.place(at: .init(x: textX, y: textY), proposal: .unspecified)
                 
             case .right:

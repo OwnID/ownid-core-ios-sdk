@@ -23,11 +23,18 @@ extension OwnID.UISDK {
         ) {
             guard let textAndArrowContainerSubview = subviews.first(where: { $0[TooltipContainerViewTypeKey.self] == .textAndArrowContainer }) else { return }
             let buttonSize = subviews.first(where: { $0[TooltipContainerViewTypeKey.self] == .button })?.sizeThatFits(.unspecified) ?? .zero
+            let magicOffsetDividerNumber = 2.5
+            let actualButtonWidth = buttonSize.width / magicOffsetDividerNumber
+            let spaceFromButton = 10.0
             switch tooltipPosition {
-            case .left, .right,.top:
-                textAndArrowContainerSubview.place(at: .init(x: bounds.origin.x + (buttonSize.width / 2.5), y: bounds.origin.y - buttonSize.height - 10), proposal: .unspecified)
+            case .left, .right:
+                textAndArrowContainerSubview.place(at: .init(x: bounds.origin.x - actualButtonWidth, y: bounds.origin.y), proposal: .unspecified)
+                
+            case .top:
+                textAndArrowContainerSubview.place(at: .init(x: bounds.origin.x + actualButtonWidth, y: bounds.origin.y - buttonSize.height - spaceFromButton), proposal: .unspecified)
+                
             case .bottom:
-                textAndArrowContainerSubview.place(at: .init(x: bounds.origin.x + (buttonSize.width / 2.5), y: bounds.origin.y + buttonSize.height + 10), proposal: .unspecified)
+                textAndArrowContainerSubview.place(at: .init(x: bounds.origin.x + actualButtonWidth, y: bounds.origin.y + buttonSize.height + spaceFromButton), proposal: .unspecified)
             }
         }
     }
