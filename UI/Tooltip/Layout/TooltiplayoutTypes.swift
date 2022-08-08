@@ -8,7 +8,7 @@ extension OwnID.UISDK {
     }
     
     enum TooltiptextAndArrowContainerViewType {
-        case text, arrow
+        case text, beak
     }
     
     struct TooltipContainerViewTypeKey: LayoutValueKey {

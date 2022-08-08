@@ -3,7 +3,7 @@ import OwnIDCoreSDK
 
 extension OwnID.UISDK {
     struct TooltipTextAndArrowLayout: Layout {
-        let isNativePlatform: Bool
+        let tooltipVisualLookConfig: TooltipVisualLookConfig
         
         func sizeThatFits(
             proposal: ProposedViewSize,
@@ -23,9 +23,9 @@ extension OwnID.UISDK {
         ) {
             guard !subviews.isEmpty else { return }
             guard let textSubview = subviews.first(where: { $0[TooltiptextAndArrowContainerViewTypeKey.self] == .text }) else { return }
-            guard let arrowSubview = subviews.first(where: { $0[TooltiptextAndArrowContainerViewTypeKey.self] == .arrow }) else { return }
+            guard let beakSubview = subviews.first(where: { $0[TooltiptextAndArrowContainerViewTypeKey.self] == .beak }) else { return }
             
-            let arrowHeight = arrowSubview.sizeThatFits(.unspecified).height
+            let arrowHeight = beakSubview.sizeThatFits(.unspecified).height
             let textHeight = textSubview.sizeThatFits(.unspecified).height
             
             let offsetFromScreenSide = calculateTextSpacingFromScreen(viewBounds: bounds)
@@ -34,19 +34,30 @@ extension OwnID.UISDK {
             let textY = bounds.maxY - arrowHeight - (textHeight / 1.29)
             
             textSubview.place(at: .init(x: textX, y: textY), proposal: .unspecified)
-            arrowSubview.place(at: .init(x: bounds.minX, y: bounds.maxY), proposal: .unspecified)
+            
+            switch tooltipVisualLookConfig.tooltipPosition {
+            case .top:
+                beakSubview.place(at: .init(x: bounds.minX, y: bounds.maxY), proposal: .unspecified)
+            case .bottom:
+                beakSubview.place(at: .init(x: bounds.minX, y: bounds.origin.y), proposal: .unspecified)
+            case .left:
+                break
+            case .right:
+                break
+            }
         }
         
         private func calculateTextSpacingFromScreen(viewBounds: CGRect) -> CGFloat {
             let layoutCalculation: XAxisOffsetCalculating
-            if isNativePlatform {
-                if Locale.current.isRTL {
+            let isRTL = Locale.current.isRTL
+            if tooltipVisualLookConfig.isNativePlatform {
+                if isRTL {
                     layoutCalculation = NativeRTLLayoutCalculation()
                 } else {
                     layoutCalculation = NativeLTRLayoutCalculation()
                 }
             } else {
-                layoutCalculation = ReactNativeUnifiedLayoutCalculation()
+                layoutCalculation = ReactNativeUnifiedLayoutCalculation(isRTL: isRTL)
             }
             return layoutCalculation.calculateXAxisOffset(viewBounds: viewBounds)
         }

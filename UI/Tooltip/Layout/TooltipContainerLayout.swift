@@ -30,14 +30,5 @@ extension OwnID.UISDK {
                 textAndArrowContainerSubview.place(at: .init(x: bounds.origin.x + (buttonSize.width / 2.5), y: bounds.origin.y + buttonSize.height + 10), proposal: .unspecified)
             }
         }
-        
-        private func calculateTextSpacingFromScreen(viewFrame: CGRect) -> CGFloat {
-            if viewFrame.maxX >= UIScreen.main.bounds.size.width {
-                let spacingToScreenSide: CGFloat = 10
-                let offsetFromScreenSide = UIScreen.main.bounds.size.width - viewFrame.maxX
-                return offsetFromScreenSide - spacingToScreenSide
-            }
-            return 0
-        }
     }
 }

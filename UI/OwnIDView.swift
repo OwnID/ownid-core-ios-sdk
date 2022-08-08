@@ -36,11 +36,11 @@ public extension OwnID.UISDK {
                     OwnID.UISDK.OrView()
                 }
                 TooltipContainerLayout(tooltipPosition: tooltipVisualLookConfig.tooltipPosition) {
-                    TooltipTextAndArrowLayout(isNativePlatform: tooltipVisualLookConfig.isNativePlatform) {
+                    TooltipTextAndArrowLayout(tooltipVisualLookConfig: tooltipVisualLookConfig) {
                         RectangleWithTextView()
                             .popupTextContainerType(.text)
                         BeakView()
-                            .popupTextContainerType(.arrow)
+                            .popupTextContainerType(.beak)
                     }
                     .compositingGroup()
                     .shadow(color: .black.opacity(0.05), radius: 5, y: 4)
