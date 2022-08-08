@@ -28,23 +28,23 @@ public extension OwnID.CoreSDK {
 }
 
 public extension OwnID.CoreSDK.MetricLogEntry {
-    static func registerTrackMetric(action: String, context: String? = "empty") -> OwnID.CoreSDK.MetricLogEntry {
-        let metric = OwnID.CoreSDK.MetricLogEntry.init(action: action, type: .track, category: .registration, context: context ?? "empty")
+    static func registerTrackMetric(action: String, context: String? = "no_context") -> OwnID.CoreSDK.MetricLogEntry {
+        let metric = OwnID.CoreSDK.MetricLogEntry.init(action: action, type: .track, category: .registration, context: context ?? "no_context")
         return metric
     }
     
-    static func registerClickMetric(action: String, context: String? = "empty") -> OwnID.CoreSDK.MetricLogEntry {
-        let metric = OwnID.CoreSDK.MetricLogEntry.init(action: action, type: .click, category: .registration, context: context ?? "empty")
+    static func registerClickMetric(action: String, context: String? = "no_context") -> OwnID.CoreSDK.MetricLogEntry {
+        let metric = OwnID.CoreSDK.MetricLogEntry.init(action: action, type: .click, category: .registration, context: context ?? "no_context")
         return metric
     }
     
-    static func loginTrackMetric(action: String, context: String? = "empty") -> OwnID.CoreSDK.MetricLogEntry {
-        let metric = OwnID.CoreSDK.MetricLogEntry.init(action: action, type: .track, category: .login, context: context ?? "empty")
+    static func loginTrackMetric(action: String, context: String? = "no_context") -> OwnID.CoreSDK.MetricLogEntry {
+        let metric = OwnID.CoreSDK.MetricLogEntry.init(action: action, type: .track, category: .login, context: context ?? "no_context")
         return metric
     }
     
-    static func loginClickMetric(action: String, context: String? = "empty") -> OwnID.CoreSDK.MetricLogEntry {
-        let metric = OwnID.CoreSDK.MetricLogEntry.init(action: action, type: .click, category: .login, context: context ?? "empty")
+    static func loginClickMetric(action: String, context: String? = "no_context") -> OwnID.CoreSDK.MetricLogEntry {
+        let metric = OwnID.CoreSDK.MetricLogEntry.init(action: action, type: .click, category: .login, context: context ?? "no_context")
         return metric
     }
 }
