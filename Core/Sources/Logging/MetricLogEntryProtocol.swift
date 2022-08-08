@@ -10,8 +10,6 @@ public protocol MetricLogEntryProtocol: Encodable {
     
     var requestPath: String? { get set }
     
-    var level: OwnID.CoreSDK.LogLevel { get set }
-    
     var message: String { get set }
     
     var codeInitiator: String { get set }
@@ -29,7 +27,7 @@ extension OwnID.CoreSDK {
     open class StandardMetricLogEntry: MetricLogEntryProtocol {
         public init(context: String,
                     requestPath: String? = nil,
-                    level: OwnID.CoreSDK.LogLevel,
+                    level: OwnID.CoreSDK.LogLevel? = .none,
                     message: String,
                     codeInitiator: String,
                     sdkName: String,
@@ -49,7 +47,7 @@ extension OwnID.CoreSDK {
         
         public var requestPath: String?
         
-        public var level: OwnID.CoreSDK.LogLevel
+        public var level: OwnID.CoreSDK.LogLevel?
         
         public var message: String
         

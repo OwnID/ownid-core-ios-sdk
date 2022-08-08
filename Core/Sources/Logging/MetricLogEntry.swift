@@ -19,7 +19,7 @@ public extension OwnID.CoreSDK {
                     type: EventType,
                     category: EventCategory,
                     context: String) {
-            super.init(context: context, level: .information, message: "", codeInitiator: "\(Self.self)", sdkName: OwnID.CoreSDK.sdkName, version: OwnID.CoreSDK.UserAgentManager.shared.userFacingSDKVersion)
+            super.init(context: context, message: "", codeInitiator: "\(Self.self)", sdkName: OwnID.CoreSDK.sdkName, version: OwnID.CoreSDK.UserAgentManager.shared.userFacingSDKVersion)
             self.type = type
             self.action = action
             self.category = category
