@@ -19,7 +19,6 @@ public extension OwnID.UISDK {
             }
             .frame(width: 14, height: 8)
             .compositingGroup()
-            .rotationEffect(.degrees(180))
         }
     }
 }

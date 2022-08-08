@@ -39,7 +39,7 @@ extension OwnID.UISDK {
             case .top:
                 beakSubview.place(at: .init(x: bounds.minX, y: bounds.maxY), proposal: .unspecified)
             case .bottom:
-                beakSubview.place(at: .init(x: bounds.minX, y: bounds.origin.y), proposal: .unspecified)
+                beakSubview.place(at: .init(x: bounds.minX, y: bounds.origin.y - 5.55), proposal: .unspecified)
             case .left:
                 break
             case .right:

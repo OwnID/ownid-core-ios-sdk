@@ -40,6 +40,7 @@ public extension OwnID.UISDK {
                         RectangleWithTextView()
                             .popupTextContainerType(.text)
                         BeakView()
+                            .rotationEffect(.degrees(tooltipVisualLookConfig.tooltipPosition.beakViewRotationAngle))
                             .popupTextContainerType(.beak)
                     }
                     .compositingGroup()
