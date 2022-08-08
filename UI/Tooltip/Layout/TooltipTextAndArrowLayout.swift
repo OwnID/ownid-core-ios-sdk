@@ -31,7 +31,8 @@ extension OwnID.UISDK {
             let offsetFromScreenSide = calculateTextSpacingFromScreen(viewBounds: bounds)
             
             let textX = Locale.current.isRTL ? bounds.origin.x - offsetFromScreenSide : bounds.origin.x + offsetFromScreenSide
-            let textY = bounds.maxY - arrowHeight - (textHeight / 1.29)
+            let magicYTextOffsetNumber = 1.29
+            let textY = bounds.maxY - arrowHeight - (textHeight / magicYTextOffsetNumber)
             
             textSubview.place(at: .init(x: textX, y: textY), proposal: .unspecified)
             
@@ -39,7 +40,8 @@ extension OwnID.UISDK {
             case .top:
                 beakSubview.place(at: .init(x: bounds.minX, y: bounds.maxY), proposal: .unspecified)
             case .bottom:
-                beakSubview.place(at: .init(x: bounds.minX, y: bounds.origin.y - 5.55), proposal: .unspecified)
+                let magicBottomYOffsetNumber = 5.5
+                beakSubview.place(at: .init(x: bounds.minX, y: bounds.origin.y - magicBottomYOffsetNumber), proposal: .unspecified)
             case .left:
                 break
             case .right:
