@@ -9,10 +9,6 @@ public extension OwnID.UISDK {
         }
         private let id = UUID()
         private let isOrViewEnabled: Bool
-        private let beakHeight: CGFloat = 8
-        private let beakWidth: CGFloat = 14
-        private let buttonOffset: CGFloat = 4
-        private let textWithRegtangleHeight: CGFloat = 43
         
         private let imageButtonView: ImageButton
         private let coordinateSpaceName = String(describing: OwnID.UISDK.ImageButton.self)
