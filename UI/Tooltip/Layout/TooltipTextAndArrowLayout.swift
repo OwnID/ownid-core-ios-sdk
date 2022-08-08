@@ -25,27 +25,29 @@ extension OwnID.UISDK {
             guard let textSubview = subviews.first(where: { $0[TooltiptextAndArrowContainerViewTypeKey.self] == .text }) else { return }
             guard let beakSubview = subviews.first(where: { $0[TooltiptextAndArrowContainerViewTypeKey.self] == .beak }) else { return }
             
-            let beakHeight = beakSubview.sizeThatFits(.unspecified).height
-            place(textSubview, beakHeight, bounds)
+            let beakSize = beakSubview.sizeThatFits(.unspecified)
+            place(textSubview, beakSize, bounds)
             place(beakSubview, bounds)
         }
         
         
-        private func place(_ textSubview: LayoutSubviews.Element, _ beakHeight: CGFloat, _ bounds: CGRect) {
+        private func place(_ textSubview: LayoutSubviews.Element, _ beakSize: CGSize, _ bounds: CGRect) {
+            let textSize = textSubview.sizeThatFits(.unspecified)
+            let magicYTextOffsetNumber = 1.29
+            let XOffsetFromScreenSide = calculateTextXOffsetFromScreen(viewBounds: bounds)
             switch tooltipVisualLookConfig.tooltipPosition {
             case .top,
                     .bottom:
-                let textHeight = textSubview.sizeThatFits(.unspecified).height
-                let XOffsetFromScreenSide = calculateTextXOffsetFromScreen(viewBounds: bounds)
-                
                 let textX = Locale.current.isRTL ? bounds.origin.x - XOffsetFromScreenSide : bounds.origin.x + XOffsetFromScreenSide
-                let magicYTextOffsetNumber = 1.29
-                let textY = bounds.maxY - beakHeight - (textHeight / magicYTextOffsetNumber)
+                let textY = bounds.maxY - beakSize.height - (textSize.height / magicYTextOffsetNumber)
                 
                 textSubview.place(at: .init(x: textX, y: textY), proposal: .unspecified)
                 
             case .left:
-                break
+                let offsetFromButton = 4.0
+                let textX = bounds.minX - textSize.width - beakSize.width - offsetFromButton
+                let textY = bounds.midY + (textSize.height / magicYTextOffsetNumber)
+                textSubview.place(at: .init(x: textX, y: textY), proposal: .unspecified)
                 
             case .right:
                 break
