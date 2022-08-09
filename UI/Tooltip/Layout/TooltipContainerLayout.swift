@@ -25,10 +25,16 @@ extension OwnID.UISDK {
             let buttonSize = subviews.first(where: { $0[TooltipContainerViewTypeKey.self] == .button })?.sizeThatFits(.unspecified) ?? .zero
             let magicOffsetDividerNumber = 2.5
             let actualButtonWidth = buttonSize.width / magicOffsetDividerNumber
+            #warning("should spaceFromButton 5.0 for all?")
             let spaceFromButton = 10.0
             switch tooltipPosition {
-            case .left, .right:
+            case .left:
+                #warning("use here buttonSize.width")
                 textAndArrowContainerSubview.place(at: .init(x: bounds.origin.x - actualButtonWidth, y: bounds.origin.y), proposal: .unspecified)
+                
+            case .right:
+                let spaceFromButton = 5.0
+                textAndArrowContainerSubview.place(at: .init(x: bounds.origin.x + buttonSize.width + spaceFromButton, y: bounds.origin.y), proposal: .unspecified)
                 
             case .top:
                 textAndArrowContainerSubview.place(at: .init(x: bounds.origin.x + actualButtonWidth, y: bounds.origin.y - buttonSize.height - spaceFromButton), proposal: .unspecified)

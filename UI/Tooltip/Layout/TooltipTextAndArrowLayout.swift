@@ -50,7 +50,10 @@ extension OwnID.UISDK {
                 textSubview.place(at: .init(x: textX, y: textY), proposal: .unspecified)
                 
             case .right:
-                break
+                let magicBeakWidthDividerNumber = 1.4
+                let textX = bounds.origin.x + (beakSize.width / magicBeakWidthDividerNumber)// - textSize.width + (beakSize.width / magicBeakWidthDividerNumber)
+                let textY = bounds.origin.y
+                textSubview.place(at: .init(x: textX, y: textY), proposal: .unspecified)
             }
         }
         
@@ -67,7 +70,7 @@ extension OwnID.UISDK {
                 beakSubview.place(at: .init(x: bounds.minX, y: bounds.midY - (beakSize.height / 2)), proposal: .unspecified)
                 
             case .right:
-                break
+                beakSubview.place(at: .init(x: bounds.minX, y: bounds.midY - (beakSize.height / 2)), proposal: .unspecified)
             }
         }
         
