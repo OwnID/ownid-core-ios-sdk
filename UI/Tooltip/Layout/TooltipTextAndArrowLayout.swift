@@ -30,15 +30,13 @@ extension OwnID.UISDK {
             placeBeak(beakSubview, beakSize, bounds)
         }
         
-        
         private func placeText(_ textSubview: LayoutSubviews.Element, _ beakSize: CGSize, _ bounds: CGRect) {
             let textSize = textSubview.sizeThatFits(.unspecified)
-            let magicYTextOffsetNumber = 1.29
-            let XOffsetFromScreenSide = calculateTextXOffsetFromScreen(viewBounds: bounds)
             switch tooltipVisualLookConfig.tooltipPosition {
             case .top,
                     .bottom:
-                let textX = Locale.current.isRTL ? bounds.origin.x - XOffsetFromScreenSide : bounds.origin.x + XOffsetFromScreenSide
+                let magicYTextOffsetNumber = 1.29
+                let textX = calculateTextXPosition(viewBounds: bounds)
                 let textY = bounds.maxY - beakSize.height - (textSize.height / magicYTextOffsetNumber)
                 
                 textSubview.place(at: .init(x: textX, y: textY), proposal: .unspecified)
@@ -51,7 +49,7 @@ extension OwnID.UISDK {
                 
             case .right:
                 let magicBeakWidthDividerNumber = 1.4
-                let textX = bounds.origin.x + (beakSize.width / magicBeakWidthDividerNumber)// - textSize.width + (beakSize.width / magicBeakWidthDividerNumber)
+                let textX = bounds.origin.x + (beakSize.width / magicBeakWidthDividerNumber)
                 let textY = bounds.origin.y
                 textSubview.place(at: .init(x: textX, y: textY), proposal: .unspecified)
             }
@@ -74,7 +72,7 @@ extension OwnID.UISDK {
             }
         }
         
-        private func calculateTextXOffsetFromScreen(viewBounds: CGRect) -> CGFloat {
+        private func calculateTextXPosition(viewBounds: CGRect) -> CGFloat {
             let layoutCalculation: XAxisOffsetCalculating
             let isRTL = Locale.current.isRTL
             if tooltipVisualLookConfig.isNativePlatform {
