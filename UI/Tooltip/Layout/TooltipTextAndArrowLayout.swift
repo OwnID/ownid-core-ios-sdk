@@ -57,7 +57,8 @@ extension OwnID.UISDK {
         private func placeBeak(_ beakSubview: LayoutSubviews.Element, _ beakSize: CGSize, _ bounds: CGRect) {
             switch tooltipVisualLookConfig.tooltipPosition {
             case .top:
-                beakSubview.place(at: .init(x: bounds.minX, y: bounds.maxY), proposal: .unspecified)
+                let x = bounds.minX - (beakSize.width / 2) // puts beak top pin directly in the center of the start point
+                beakSubview.place(at: .init(x: x, y: bounds.maxY), proposal: .unspecified)
                 
             case .bottom:
                 let x = bounds.minX - (beakSize.width / 2) // puts beak top pin directly in the center of the start point
