@@ -35,9 +35,8 @@ extension OwnID.UISDK {
             switch tooltipVisualLookConfig.tooltipPosition {
             case .top,
                     .bottom:
-                let magicYTextOffsetNumber = 1.29
                 let textX = calculateTextXPosition(viewBounds: bounds)
-                let textY = bounds.maxY - beakSize.height - (textSize.height / magicYTextOffsetNumber)
+                let textY = bounds.minY
                 textSubview.place(at: .init(x: textX, y: textY), proposal: .unspecified)
                 
             case .left:
@@ -58,11 +57,12 @@ extension OwnID.UISDK {
             switch tooltipVisualLookConfig.tooltipPosition {
             case .top:
                 let x = bounds.minX - (beakSize.width / 2) // puts beak top pin directly in the center of the start point
-                beakSubview.place(at: .init(x: x, y: bounds.maxY), proposal: .unspecified)
+                let y = bounds.maxY - (BeakView.bottomlineWidth / 2)
+                beakSubview.place(at: .init(x: x, y: y), proposal: .unspecified)
                 
             case .bottom:
                 let x = bounds.minX - (beakSize.width / 2) // puts beak top pin directly in the center of the start point
-                let y = bounds.minY - beakSize.height + (BeakView.bottomlineWidth * 2)
+                let y = bounds.minY - beakSize.height + (BeakView.bottomlineWidth / 2)
                 beakSubview.place(at: .init(x: x, y: y), proposal: .unspecified)
                 
             case .left:
