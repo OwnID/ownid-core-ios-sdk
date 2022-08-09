@@ -38,7 +38,6 @@ extension OwnID.UISDK {
                 let magicYTextOffsetNumber = 1.29
                 let textX = calculateTextXPosition(viewBounds: bounds)
                 let textY = bounds.maxY - beakSize.height - (textSize.height / magicYTextOffsetNumber)
-                
                 textSubview.place(at: .init(x: textX, y: textY), proposal: .unspecified)
                 
             case .left:
