@@ -37,10 +37,14 @@ extension OwnID.UISDK {
                 textAndArrowContainerSubview.place(at: .init(x: bounds.origin.x + buttonSize.width + spaceFromButton, y: bounds.origin.y), proposal: .unspecified)
                 
             case .top:
-                textAndArrowContainerSubview.place(at: .init(x: bounds.origin.x + actualButtonWidth, y: bounds.origin.y - buttonSize.height - spaceFromButton), proposal: .unspecified)
+                let x = bounds.origin.x + actualButtonWidth
+                let y = bounds.origin.y - buttonSize.height - spaceFromButton
+                textAndArrowContainerSubview.place(at: .init(x: x, y: y), proposal: .unspecified)
                 
             case .bottom:
-                textAndArrowContainerSubview.place(at: .init(x: bounds.origin.x + actualButtonWidth, y: bounds.origin.y + buttonSize.height + spaceFromButton), proposal: .unspecified)
+                let x = bounds.origin.x + actualButtonWidth
+                let y = bounds.origin.y + buttonSize.height + spaceFromButton
+                textAndArrowContainerSubview.place(at: .init(x: x, y: y), proposal: .unspecified)
             }
         }
     }
