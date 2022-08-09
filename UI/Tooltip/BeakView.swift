@@ -7,6 +7,9 @@ public extension OwnID.UISDK {
             lhs.id == rhs.id
         }
         private let id = UUID()
+        
+        static let bottomlineWidth = 1.3
+        
         public init() { }
         public var body: some View {
             ZStack {
@@ -15,7 +18,7 @@ public extension OwnID.UISDK {
                 Triangle()
                     .stroke(OwnID.Colors.biometricsButtonBorder, style: StrokeStyle(lineWidth: 1, lineCap: .round, lineJoin: .round))
                 TriangleSide()
-                    .stroke(OwnID.Colors.biometricsButtonBackground, style: StrokeStyle(lineWidth: 1.3, lineCap: .round, lineJoin: .round))
+                    .stroke(OwnID.Colors.biometricsButtonBackground, style: StrokeStyle(lineWidth: Self.bottomlineWidth, lineCap: .round, lineJoin: .round))
             }
             .frame(width: 14, height: 8)
             .compositingGroup()
