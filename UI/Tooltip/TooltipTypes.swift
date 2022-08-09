@@ -2,6 +2,19 @@ import Foundation
 import OwnIDCoreSDK
 
 public extension OwnID.UISDK {
+    /// The side of the button that tooltip should be placed on.
+    /**
+
+                          top
+            X──────────────X──────────────X
+            |                             |
+            |                             |
+      left  X           button            X  right
+            |                             |
+            |                             |
+            X──────────────X──────────────X
+                         bottom
+     */
     enum TooltipPositionType {
         case top, bottom, left, right
     }
