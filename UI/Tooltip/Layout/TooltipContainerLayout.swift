@@ -23,27 +23,30 @@ extension OwnID.UISDK {
         ) {
             guard let textAndArrowContainerSubview = subviews.first(where: { $0[TooltipContainerViewTypeKey.self] == .textAndArrowContainer }) else { return }
             let buttonSize = subviews.first(where: { $0[TooltipContainerViewTypeKey.self] == .button })?.sizeThatFits(.unspecified) ?? .zero
-            let magicOffsetDividerNumber = 2.5
-            let actualButtonWidth = buttonSize.width / magicOffsetDividerNumber
-            #warning("should spaceFromButton 5.0 for all?")
-            let spaceFromButton = 10.0
+            
+            let ySpaceFromButton = 10.0
+            let xSpaceFromButton = 5.0
+            let halfOfButtonWidth = (buttonSize.width / 2)
+            
             switch tooltipPosition {
             case .left:
-                #warning("use here buttonSize.width")
-                textAndArrowContainerSubview.place(at: .init(x: bounds.origin.x - actualButtonWidth, y: bounds.origin.y), proposal: .unspecified)
+                let x = bounds.origin.x - halfOfButtonWidth - xSpaceFromButton
+                let y = bounds.origin.y
+                textAndArrowContainerSubview.place(at: .init(x: x, y: y), proposal: .unspecified)
                 
             case .right:
-                let spaceFromButton = 5.0
-                textAndArrowContainerSubview.place(at: .init(x: bounds.origin.x + buttonSize.width + spaceFromButton, y: bounds.origin.y), proposal: .unspecified)
+                let x = bounds.origin.x + buttonSize.width + xSpaceFromButton
+                let y = bounds.origin.y
+                textAndArrowContainerSubview.place(at: .init(x: x, y: y), proposal: .unspecified)
                 
             case .top:
-                let x = bounds.origin.x + (buttonSize.width / 2) //ensures that container start positioned in center of the button
-                let y = bounds.origin.y - buttonSize.height - spaceFromButton
+                let x = bounds.origin.x + halfOfButtonWidth //ensures that container start positioned in center of the button
+                let y = bounds.origin.y - buttonSize.height - ySpaceFromButton
                 textAndArrowContainerSubview.place(at: .init(x: x, y: y), proposal: .unspecified)
                 
             case .bottom:
-                let x = bounds.origin.x + (buttonSize.width / 2) //ensures that container start positioned in center of the button
-                let y = bounds.origin.y + buttonSize.height + spaceFromButton
+                let x = bounds.origin.x + halfOfButtonWidth //ensures that container start positioned in center of the button
+                let y = bounds.origin.y + buttonSize.height + ySpaceFromButton
                 textAndArrowContainerSubview.place(at: .init(x: x, y: y), proposal: .unspecified)
             }
         }
