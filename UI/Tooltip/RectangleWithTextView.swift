@@ -1,17 +1,28 @@
 import SwiftUI
 import OwnIDCoreSDK
 
-public extension OwnID.UISDK {
+extension OwnID.UISDK {
     struct RectangleWithTextView: View {
         private let radius: CGFloat = 6
         static func == (lhs: OwnID.UISDK.RectangleWithTextView, rhs: OwnID.UISDK.RectangleWithTextView) -> Bool {
             lhs.id == rhs.id
         }
         private let id = UUID()
-        public init() { }
         
-        public var body: some View {
-            Text("Login with FaceID / TouchID")
+        private let localizationChangedClosure: (() -> String)
+        @State private var translationText: String
+        
+        init() {
+            let localizationChangedClosure = { "tooltip-ios".ownIDLocalized() }
+            self.localizationChangedClosure = localizationChangedClosure
+            _translationText = State(initialValue: localizationChangedClosure())
+        }
+        
+        var body: some View {
+            Text(translationText)
+                .onReceive(OwnID.CoreSDK.shared.translationsModule.translationsChangePublisher) {
+                    translationText = localizationChangedClosure()
+                }
                 .padding(.init(top: 10, leading: 16, bottom: 10, trailing: 16))
                 .background(
                     RoundedRectangle(cornerRadius: radius)
