@@ -85,7 +85,8 @@ extension OwnID.UISDK {
                     layoutCalculation = NativeLTRLayoutCalculation()
                 }
             } else {
-                layoutCalculation = ReactNativeUnifiedLayoutCalculation(isRTL: isRTL)
+                let isBottomPosition = tooltipVisualLookConfig.tooltipPosition == .bottom
+                layoutCalculation = ReactNativeUnifiedLayoutCalculation(isRTL: isRTL, isBottomPosition: isBottomPosition)
             }
             return layoutCalculation.calculateXAxisOffset(viewBounds: viewBounds)
         }
