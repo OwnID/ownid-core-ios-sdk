@@ -6,14 +6,9 @@ extension OwnID.UISDK {
         func calculateXAxisOffset(viewBounds: CGRect, screenBounds: CGRect) -> CGFloat {
             var XOffset = 0.0
             if viewBounds.minX <= screenBounds.minX {
-                let XOffsetBounds = screenBounds.minX - viewBounds.minX
-                let combinedOffset = XOffsetBounds + defaultXAxisOffset
-                XOffset = combinedOffset
+                XOffset = screenBounds.minX - viewBounds.minX
             }
-            var computedOffset = viewBounds.origin.x + XOffset
-            if XOffset == 0.0 { // means view is in center of screen, visible, so we adjust it to have good position
-                computedOffset -= defaultXAxisOffset
-            }
+            let computedOffset = viewBounds.origin.x - XOffset - defaultXAxisOffset
             return computedOffset
         }
     }
