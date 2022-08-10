@@ -78,15 +78,15 @@ extension OwnID.UISDK {
         private func calculateTextXPosition(viewBounds: CGRect) -> CGFloat {
             let layoutCalculation: XAxisOffsetCalculating
             let isRTL = Locale.current.isRTL
-            if tooltipVisualLookConfig.isNativePlatform {
-                if isRTL {
-                    layoutCalculation = NativeRTLLayoutCalculation()
-                } else {
-                    layoutCalculation = NativeLTRLayoutCalculation()
-                }
+            if isRTL {
+                layoutCalculation = RTLLayoutCalculation(shouldIncludeDefaultOffset: tooltipVisualLookConfig.isNativePlatform)
             } else {
-                let isBottomPosition = tooltipVisualLookConfig.tooltipPosition == .bottom
-                layoutCalculation = ReactNativeUnifiedLayoutCalculation(isRTL: isRTL, isBottomPosition: isBottomPosition)
+                if tooltipVisualLookConfig.isNativePlatform {
+                    layoutCalculation = NativeLTRLayoutCalculation()
+                } else {
+                    let isBottomPosition = tooltipVisualLookConfig.tooltipPosition == .bottom
+                    layoutCalculation = ReactNativeLTRLayoutCalculation(isBottomPosition: isBottomPosition)
+                }
             }
             return layoutCalculation.calculateXAxisOffset(viewBounds: viewBounds)
         }

@@ -2,8 +2,7 @@ import SwiftUI
 import OwnIDCoreSDK
 
 extension OwnID.UISDK {
-    struct ReactNativeUnifiedLayoutCalculation: XAxisOffsetCalculating {
-        let isRTL: Bool
+    struct ReactNativeLTRLayoutCalculation: XAxisOffsetCalculating {
         let isBottomPosition: Bool
         
         func calculateXAxisOffset(viewBounds: CGRect, screenBounds: CGRect) -> CGFloat {
@@ -20,20 +19,13 @@ extension OwnID.UISDK {
                 (x: viewBounds.maxX, operation: viewBounds.maxX),
                 (x: viewBounds.maxX * 1.5, operation: viewBounds.maxX / 1.5)
             ]
-            if isRTL {
-                xAndOffetValues = xAndOffetValues.reversed()
-            }
             for xAndOffetValue in xAndOffetValues {
                 if !screenBounds.contains(.init(x: xAndOffetValue.x, y: viewBounds.maxY)) {
                     let XOffsetBounds = -xAndOffetValue.operation
                     var combinedOffset: CGFloat
-                    if isRTL {
-                        combinedOffset = -(screenBounds.maxX - XOffsetBounds)
-                    } else {
-                        combinedOffset = screenBounds.origin.x + XOffsetBounds
-                        if isBottomPosition {
-                            combinedOffset += defaultXAxisOffset
-                        }
+                    combinedOffset = screenBounds.origin.x + XOffsetBounds
+                    if isBottomPosition {
+                        combinedOffset += defaultXAxisOffset
                     }
                     return combinedOffset
                 }
