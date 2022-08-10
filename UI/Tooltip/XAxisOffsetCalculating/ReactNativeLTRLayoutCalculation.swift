@@ -6,7 +6,7 @@ extension OwnID.UISDK {
         let isBottomPosition: Bool
         
         func calculateXAxisOffset(viewBounds: CGRect, screenBounds: CGRect) -> CGFloat {
-            var xAndOffetValues = [
+            let xAndOffetValues = [
                 (x: viewBounds.midX / 1.03, operation: viewBounds.midX * 1.03),
                 (x: viewBounds.midX / 1.06, operation: viewBounds.midX * 1.06),
                 (x: viewBounds.midX / 1.12, operation: viewBounds.midX * 1.12),
