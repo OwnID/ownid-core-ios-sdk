@@ -15,6 +15,8 @@ public extension OwnID.UISDK {
         
         private let tooltipVisualLookConfig: TooltipVisualLookConfig
         
+        @State private var isTooltipPresented = true
+        
         public var eventPublisher: OwnID.UISDK.EventPubliser {
             imageButtonView.eventPublisher
                 .eraseToAnyPublisher()
@@ -31,21 +33,34 @@ public extension OwnID.UISDK {
                 if isOrViewEnabled {
                     OwnID.UISDK.OrView()
                 }
-                TooltipContainerLayout(tooltipPosition: tooltipVisualLookConfig.tooltipPosition) {
-                    TooltipTextAndArrowLayout(tooltipVisualLookConfig: tooltipVisualLookConfig) {
-                        RectangleWithTextView()
-                            .popupTextContainerType(.text)
-                        BeakView()
-                            .rotationEffect(.degrees(tooltipVisualLookConfig.tooltipPosition.beakViewRotationAngle))
-                            .popupTextContainerType(.beak)
+                if isTooltipPresented {
+                    TooltipContainerLayout(tooltipPosition: tooltipVisualLookConfig.tooltipPosition) {
+                        TooltipTextAndArrowLayout(tooltipVisualLookConfig: tooltipVisualLookConfig) {
+                            RectangleWithTextView()
+                                .popupTextContainerType(.text)
+                            BeakView()
+                                .rotationEffect(.degrees(tooltipVisualLookConfig.tooltipPosition.beakViewRotationAngle))
+                                .popupTextContainerType(.beak)
+                        }
+                        .compositingGroup()
+                        .shadow(color: .black.opacity(0.05), radius: 5, y: 4)
+                        .popupContainerType(.textAndArrowContainer)
+                        imageButtonView
+                            .layoutPriority(1)
+                            .popupContainerType(.button)
                     }
-                    .compositingGroup()
-                    .shadow(color: .black.opacity(0.05), radius: 5, y: 4)
-                    .popupContainerType(.textAndArrowContainer)
+                } else {
                     imageButtonView
                         .layoutPriority(1)
-                        .popupContainerType(.button)
                 }
+            }
+            .fullScreenCover(isPresented: $isTooltipPresented) {
+                Button(action: { isTooltipPresented = false }) {
+                    Text("")
+                        .foregroundColor(.clear)
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                }
+                .clearPresentedModalBackground()
             }
         }
     }
