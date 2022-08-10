@@ -5,7 +5,7 @@ protocol XAxisOffsetCalculating {
 }
 
 extension XAxisOffsetCalculating {
-    var defaultXAxisOffset: CGFloat { 10 }
+    var defaultXAxisOffset: CGFloat { 14 }
     func calculateXAxisOffset(viewBounds: CGRect, screenBounds: CGRect = UIScreen.main.bounds) -> CGFloat {
         return calculateXAxisOffset(viewBounds: viewBounds, screenBounds: screenBounds)
     }

@@ -60,7 +60,7 @@ extension OwnID.UISDK {
                 
             case .bottom:
                 let x = bounds.minX - (beakSize.width / 2) // puts beak top pin directly in the center of the start point
-                let y = bounds.minY - beakSize.height + (BeakView.bottomlineWidth / 2)
+                let y = bounds.minY - beakSize.height + BeakView.bottomlineWidth
                 beakSubview.place(at: .init(x: x, y: y), proposal: .unspecified)
                 
             case .left:
