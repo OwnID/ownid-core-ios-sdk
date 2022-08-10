@@ -35,7 +35,7 @@ extension OwnID.UISDK {
                 textAndArrowContainerSubview.place(at: .init(x: x, y: y), proposal: .unspecified)
                 
             case .right:
-                let x = bounds.origin.x + buttonSize.width + xSpaceFromButton
+                let x = bounds.origin.x + buttonSize.width + ySpaceFromButton + xSpaceFromButton
                 let y = bounds.origin.y
                 textAndArrowContainerSubview.place(at: .init(x: x, y: y), proposal: .unspecified)
                 
