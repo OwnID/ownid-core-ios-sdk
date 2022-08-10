@@ -24,29 +24,29 @@ extension OwnID.UISDK {
             guard let textAndArrowContainerSubview = subviews.first(where: { $0[TooltipContainerViewTypeKey.self] == .textAndArrowContainer }) else { return }
             let buttonSize = subviews.first(where: { $0[TooltipContainerViewTypeKey.self] == .button })?.sizeThatFits(.unspecified) ?? .zero
             
-            let ySpaceFromButton = 10.0
-            let xSpaceFromButton = 5.0
+            let increasedSpaceFromButton = 10.0
+            let normalSpaceFromButton = 5.0
             let halfOfButtonWidth = (buttonSize.width / 2)
             
             switch tooltipPosition {
             case .left:
-                let x = bounds.origin.x - halfOfButtonWidth - xSpaceFromButton
+                let x = bounds.origin.x - halfOfButtonWidth - normalSpaceFromButton
                 let y = bounds.origin.y
                 textAndArrowContainerSubview.place(at: .init(x: x, y: y), proposal: .unspecified)
                 
             case .right:
-                let x = bounds.origin.x + buttonSize.width + ySpaceFromButton + xSpaceFromButton
+                let x = bounds.origin.x + buttonSize.width + increasedSpaceFromButton + normalSpaceFromButton
                 let y = bounds.origin.y
                 textAndArrowContainerSubview.place(at: .init(x: x, y: y), proposal: .unspecified)
                 
             case .top:
                 let x = bounds.origin.x + halfOfButtonWidth //ensures that container start positioned in center of the button
-                let y = bounds.origin.y - buttonSize.height - ySpaceFromButton
+                let y = bounds.origin.y - buttonSize.height - increasedSpaceFromButton
                 textAndArrowContainerSubview.place(at: .init(x: x, y: y), proposal: .unspecified)
                 
             case .bottom:
                 let x = bounds.origin.x + halfOfButtonWidth //ensures that container start positioned in center of the button
-                let y = bounds.origin.y + buttonSize.height + ySpaceFromButton
+                let y = bounds.origin.y + buttonSize.height + increasedSpaceFromButton
                 textAndArrowContainerSubview.place(at: .init(x: x, y: y), proposal: .unspecified)
             }
         }
