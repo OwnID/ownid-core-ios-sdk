@@ -30,7 +30,7 @@ extension OwnID.UISDK {
             
             switch tooltipPosition {
             case .left:
-                let x = bounds.origin.x - halfOfButtonWidth - normalSpaceFromButton
+                let x = bounds.origin.x - halfOfButtonWidth
                 let y = bounds.origin.y
                 textAndArrowContainerSubview.place(at: .init(x: x, y: y), proposal: .unspecified)
                 
