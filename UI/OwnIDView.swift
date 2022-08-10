@@ -14,8 +14,9 @@ public extension OwnID.UISDK {
         private let coordinateSpaceName = String(describing: OwnID.UISDK.ImageButton.self)
         
         private let tooltipVisualLookConfig: TooltipVisualLookConfig
+        @State private var isTooltipPresented: Bool
         
-        @State private var isTooltipPresented = true
+        @Environment(\.colorScheme) var colorScheme
         
         public var eventPublisher: OwnID.UISDK.EventPubliser {
             imageButtonView.eventPublisher
@@ -23,6 +24,7 @@ public extension OwnID.UISDK {
         }
         
         public init(viewState: Binding<ButtonState>, visualConfig: VisualLookConfig) {
+            _isTooltipPresented = State(initialValue: viewState.wrappedValue.isTooltipShown)
             self.imageButtonView = ImageButton(viewState: viewState, visualConfig: visualConfig)
             self.isOrViewEnabled = visualConfig.isOrViewEnabled
             self.tooltipVisualLookConfig = visualConfig.tooltipVisualLookConfig
@@ -43,7 +45,9 @@ public extension OwnID.UISDK {
                                 .popupTextContainerType(.beak)
                         }
                         .compositingGroup()
-                        .shadow(color: .black.opacity(0.05), radius: 5, y: 4)
+                        .if(colorScheme != .dark) { view in
+                            view.shadow(color: .black.opacity(0.05), radius: 5, y: 4)
+                        }
                         .popupContainerType(.textAndArrowContainer)
                         imageButtonView
                             .layoutPriority(1)

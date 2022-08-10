@@ -10,3 +10,18 @@ public extension OwnID.UISDK {
     
     typealias EventPubliser = AnyPublisher<Void, Never>
 }
+
+extension OwnID.UISDK.ButtonState {
+    var isTooltipShown: Bool {
+        switch self {
+        case .disabled:
+            return false
+            
+        case .enabled:
+            return true
+            
+        case .activated:
+            return false
+        }
+    }
+}
