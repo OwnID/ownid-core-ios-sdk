@@ -12,7 +12,10 @@ extension OwnID.UISDK {
         private let localizationChangedClosure: (() -> String)
         @State private var translationText: String
         
-        init() {
+        private let tooltipVisualLookConfig: TooltipVisualLookConfig
+        
+        init(tooltipVisualLookConfig: TooltipVisualLookConfig) {
+            self.tooltipVisualLookConfig = tooltipVisualLookConfig
             let localizationChangedClosure = { "tooltip-ios".ownIDLocalized() }
             self.localizationChangedClosure = localizationChangedClosure
             _translationText = State(initialValue: localizationChangedClosure())
@@ -20,17 +23,18 @@ extension OwnID.UISDK {
         
         var body: some View {
             Text(translationText)
+                .foregroundColor(tooltipVisualLookConfig.textColor)
                 .onReceive(OwnID.CoreSDK.shared.translationsModule.translationsChangePublisher) {
                     translationText = localizationChangedClosure()
                 }
                 .padding(.init(top: 10, leading: 16, bottom: 10, trailing: 16))
                 .background(
                     RoundedRectangle(cornerRadius: radius)
-                        .fill(OwnID.Colors.biometricsButtonBackground)
+                        .fill(tooltipVisualLookConfig.backgroundColor)
                 )
                 .overlay(
                     RoundedRectangle(cornerRadius: radius)
-                        .stroke(OwnID.Colors.biometricsButtonBorder, lineWidth: 1)
+                        .stroke(tooltipVisualLookConfig.borderColor, lineWidth: 1)
                 )
         }
     }

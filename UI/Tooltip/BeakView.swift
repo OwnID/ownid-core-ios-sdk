@@ -3,6 +3,7 @@ import OwnIDCoreSDK
 
 public extension OwnID.UISDK {
     struct BeakView: View {
+        
         static func == (lhs: OwnID.UISDK.BeakView, rhs: OwnID.UISDK.BeakView) -> Bool {
             lhs.id == rhs.id
         }
@@ -10,15 +11,20 @@ public extension OwnID.UISDK {
         
         static let bottomlineWidth = 1.3
         
-        public init() { }
+        private let tooltipVisualLookConfig: TooltipVisualLookConfig
+        
+        public init(tooltipVisualLookConfig: OwnID.UISDK.TooltipVisualLookConfig) {
+            self.tooltipVisualLookConfig = tooltipVisualLookConfig
+        }
+        
         public var body: some View {
             ZStack {
                 Triangle()
-                    .fill(OwnID.Colors.biometricsButtonBackground)
+                    .fill(tooltipVisualLookConfig.backgroundColor)
                 Triangle()
-                    .stroke(OwnID.Colors.biometricsButtonBorder, style: StrokeStyle(lineWidth: 1, lineCap: .round, lineJoin: .round))
+                    .stroke(tooltipVisualLookConfig.borderColor, style: StrokeStyle(lineWidth: 1, lineCap: .round, lineJoin: .round))
                 TriangleSide()
-                    .stroke(OwnID.Colors.biometricsButtonBackground, style: StrokeStyle(lineWidth: Self.bottomlineWidth, lineCap: .round, lineJoin: .round))
+                    .stroke(tooltipVisualLookConfig.backgroundColor, style: StrokeStyle(lineWidth: Self.bottomlineWidth, lineCap: .round, lineJoin: .round))
             }
             .frame(width: 14, height: 8)
             .compositingGroup()
