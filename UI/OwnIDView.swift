@@ -23,8 +23,9 @@ public extension OwnID.UISDK {
                 .eraseToAnyPublisher()
         }
         
-        public init(viewState: Binding<ButtonState>, visualConfig: VisualLookConfig) {
-            _isTooltipPresented = State(initialValue: viewState.wrappedValue.isTooltipShown)
+        public init(viewState: Binding<ButtonState>, visualConfig: VisualLookConfig, shouldImmidiatelyShowTooltip: Bool = true) {
+            let shouldPresentTooltip = viewState.wrappedValue.isTooltipShown && shouldImmidiatelyShowTooltip
+            _isTooltipPresented = State(initialValue: shouldPresentTooltip)
             self.imageButtonView = ImageButton(viewState: viewState, visualConfig: visualConfig)
             self.isOrViewEnabled = visualConfig.isOrViewEnabled
             self.tooltipVisualLookConfig = visualConfig.tooltipVisualLookConfig
