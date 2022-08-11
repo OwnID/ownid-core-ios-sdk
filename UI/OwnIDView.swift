@@ -14,7 +14,7 @@ public extension OwnID.UISDK {
         private let coordinateSpaceName = String(describing: OwnID.UISDK.ImageButton.self)
         
         private let tooltipVisualLookConfig: TooltipVisualLookConfig
-        @State private var isTooltipPresented: Bool
+        @Binding private var isTooltipPresented: Bool
         
         @Environment(\.colorScheme) var colorScheme
         
@@ -23,9 +23,10 @@ public extension OwnID.UISDK {
                 .eraseToAnyPublisher()
         }
         
-        public init(viewState: Binding<ButtonState>, visualConfig: VisualLookConfig, shouldImmidiatelyShowTooltip: Bool = true) {
-            let shouldPresentTooltip = viewState.wrappedValue.isTooltipShown && shouldImmidiatelyShowTooltip
-            _isTooltipPresented = State(initialValue: shouldPresentTooltip)
+        public init(viewState: Binding<ButtonState>,
+                    visualConfig: VisualLookConfig,
+                    shouldImmidiatelyShowTooltip: Binding<Bool> = Binding(get: { true }, set: { _ in })) {
+            _isTooltipPresented = shouldImmidiatelyShowTooltip
             imageButtonView = ImageButton(viewState: viewState, visualConfig: visualConfig)
             isOrViewEnabled = visualConfig.isOrViewEnabled
             tooltipVisualLookConfig = visualConfig.tooltipVisualLookConfig

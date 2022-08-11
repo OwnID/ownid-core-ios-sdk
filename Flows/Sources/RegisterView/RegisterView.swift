@@ -12,12 +12,12 @@ public extension OwnID.FlowsSDK {
         public var visualConfig: OwnID.UISDK.VisualLookConfig
         @ObservedObject public var viewModel: ViewModel
         
-        private let shouldImmidiatelyShowTooltip: Bool
+        private let shouldImmidiatelyShowTooltip: Binding<Bool>
         
         public init(viewModel: ViewModel,
                     usersEmail: Binding<String>,
                     visualConfig: OwnID.UISDK.VisualLookConfig,
-                    shouldImmidiatelyShowTooltip: Bool = false) {
+                    shouldImmidiatelyShowTooltip: Binding<Bool>) {
             self.shouldImmidiatelyShowTooltip = shouldImmidiatelyShowTooltip
             self.viewModel = viewModel
             self._usersEmail = usersEmail
