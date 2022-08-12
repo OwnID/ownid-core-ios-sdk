@@ -24,8 +24,8 @@ public extension OwnID.UISDK {
     struct TooltipVisualLookConfig {
         public init(backgroundColor: Color = OwnID.Colors.biometricsButtonBackground,
                     borderColor: Color = OwnID.Colors.biometricsButtonBorder,
-                    textColor: Color = .black,
-                    shadowColor: Color = .black,
+                    textColor: Color = OwnID.Colors.defaultBlackColor,
+                    shadowColor: Color = OwnID.Colors.defaultBlackColor,
                     isNativePlatform: Bool = true,
                     tooltipPosition: OwnID.UISDK.TooltipPositionType = .top,
                     shouldShowTooltip: Bool = true) {
