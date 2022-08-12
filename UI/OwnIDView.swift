@@ -67,6 +67,8 @@ public extension OwnID.UISDK {
                         .frame(maxWidth: .infinity, maxHeight: .infinity)
                 }
                 .clearPresentedModalBackground()
+            }.transaction { transaction in
+                transaction.disablesAnimations = true
             }
         }
     }
