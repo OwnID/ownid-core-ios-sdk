@@ -12,12 +12,13 @@ public extension OwnID.FlowsSDK {
         public var visualConfig: OwnID.UISDK.VisualLookConfig
         @ObservedObject public var viewModel: ViewModel
         
-        /// In oerder to make our overlay dismiss properly, we need to somewhere store the value of the binding.
+        /// In order to make overlay dismiss properly, we need to somewhere store the value of the binding.
         /// if we simply use `Binding(get: { true }, set: { _ in })` as default value, it is not possible to
-        /// write values there. It is a problem here, as we need to dismiss `fullScreenCover`,
+        /// write values there. It is a problem here, as we need to dismiss cover,
         /// we need to write to binding some `false` value. If we have empty set binding closure,
-        /// value is not persisted in UI build system. For this to work, we use simple `@State`
-        /// as default value, where property can be written to and `fullScreenCover` dissmissed.
+        /// value is not persisted in UI build system. For this to work, we use simple `@SceneStorage`
+        /// as default value, where property can be written to and cover dismissed without
+        /// appearing every time view is redrawn.
         @State var defaultShouldImmidiatelyShowTooltip = true
         private let shouldImmidiatelyShowTooltip: Binding<Bool>?
         
