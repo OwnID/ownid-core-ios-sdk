@@ -53,9 +53,7 @@ public extension OwnID.UISDK {
                                 .popupTextContainerType(.beak)
                         }
                         .compositingGroup()
-                        .if(colorScheme != .dark) { view in
-                            view.shadow(color: tooltipVisualLookConfig.shadowColor.opacity(0.05), radius: 5, y: 4)
-                        }
+                        .shadow(color: colorScheme == .dark ? .clear : tooltipVisualLookConfig.shadowColor.opacity(0.05), radius: 5, y: 4)
                         .popupContainerType(.textAndArrowContainer)
                         imageButtonView
                             .layoutPriority(1)
