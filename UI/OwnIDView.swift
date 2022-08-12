@@ -39,6 +39,12 @@ public extension OwnID.UISDK {
                 }
                 if isTooltipPresented {
                     TooltipContainerLayout(tooltipPosition: tooltipVisualLookConfig.tooltipPosition) {
+                        Button(action: { isTooltipPresented = false }) {
+                            Text("")
+                                .foregroundColor(.clear)
+                                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                        }
+                        .popupContainerType(.dismissButton)
                         TooltipTextAndArrowLayout(tooltipVisualLookConfig: tooltipVisualLookConfig) {
                             RectangleWithTextView(tooltipVisualLookConfig: tooltipVisualLookConfig)
                                 .popupTextContainerType(.text)
@@ -53,22 +59,12 @@ public extension OwnID.UISDK {
                         .popupContainerType(.textAndArrowContainer)
                         imageButtonView
                             .layoutPriority(1)
-                            .popupContainerType(.button)
+                            .popupContainerType(.ownIdButton)
                     }
                 } else {
                     imageButtonView
                         .layoutPriority(1)
                 }
-            }
-            .fullScreenCover(isPresented: $isTooltipPresented) {
-                Button(action: { isTooltipPresented = false }) {
-                    Text("")
-                        .foregroundColor(.clear)
-                        .frame(maxWidth: .infinity, maxHeight: .infinity)
-                }
-                .clearPresentedModalBackground()
-            }.transaction { transaction in
-                transaction.disablesAnimations = true
             }
         }
     }

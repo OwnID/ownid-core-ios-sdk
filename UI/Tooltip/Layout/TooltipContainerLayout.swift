@@ -11,7 +11,7 @@ extension OwnID.UISDK {
             cache: inout Void
         ) -> CGSize {
             guard !subviews.isEmpty else { return .zero }
-            let buttonSize = subviews.first(where: { $0[TooltipContainerViewTypeKey.self] == .button })?.sizeThatFits(.unspecified) ?? .zero
+            let buttonSize = subviews.first(where: { $0[TooltipContainerViewTypeKey.self] == .ownIdButton })?.sizeThatFits(.unspecified) ?? .zero
             return buttonSize
         }
         
@@ -21,8 +21,12 @@ extension OwnID.UISDK {
             subviews: Subviews,
             cache: inout Void
         ) {
+            if let dismissButton = subviews.first(where: { $0[TooltipContainerViewTypeKey.self] == .dismissButton }) {
+                placeDismissButton(bounds, dismissButton)
+            }
+            
             guard let textAndArrowContainerSubview = subviews.first(where: { $0[TooltipContainerViewTypeKey.self] == .textAndArrowContainer }) else { return }
-            let buttonSize = subviews.first(where: { $0[TooltipContainerViewTypeKey.self] == .button })?.sizeThatFits(.unspecified) ?? .zero
+            let buttonSize = subviews.first(where: { $0[TooltipContainerViewTypeKey.self] == .ownIdButton })?.sizeThatFits(.unspecified) ?? .zero
             
             let increasedSpaceFromButton = 12.5
             let normalSpaceFromButton = 4.0
@@ -49,6 +53,14 @@ extension OwnID.UISDK {
                 let y = bounds.origin.y + buttonSize.height + increasedSpaceFromButton
                 textAndArrowContainerSubview.place(at: .init(x: x, y: y), proposal: .unspecified)
             }
+        }
+        
+        private func placeDismissButton(_ bounds: CGRect, _ dismissButton: LayoutSubviews.Element) {
+            let screenBounds = UIScreen.main.bounds
+            let x = max(bounds.origin.x * 5, screenBounds.width)
+            let y = max(bounds.origin.y * 5, screenBounds.height)
+            let size = CGSize(width: x * 2, height: y * 2)
+            dismissButton.place(at: .init(x: -x, y: -y), proposal: .init(size))
         }
     }
 }

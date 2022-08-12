@@ -4,7 +4,7 @@ import OwnIDCoreSDK
 
 extension OwnID.UISDK {
     enum TooltipContainerViewType {
-        case button, textAndArrowContainer
+        case ownIdButton, textAndArrowContainer, dismissButton
     }
     
     enum TooltiptextAndArrowContainerViewType {
@@ -12,7 +12,7 @@ extension OwnID.UISDK {
     }
     
     struct TooltipContainerViewTypeKey: LayoutValueKey {
-        static let defaultValue: TooltipContainerViewType = .button
+        static let defaultValue: TooltipContainerViewType = .ownIdButton
     }
     
     struct TooltiptextAndArrowContainerViewTypeKey: LayoutValueKey {
