@@ -20,7 +20,7 @@ public extension OwnID.FlowsSDK {
         /// we need to write to binding some `false` value. If we have empty set binding closure,
         /// value is not persisted in UI build system. For this to work, we use simple `@State`
         /// as default value, where property can be written to and `fullScreenCover` dissmissed.
-        @State var defaultShouldImmidiatelyShowTooltip = true
+        @SceneStorage("defaultShouldImmidiatelyShowTooltip") var defaultShouldImmidiatelyShowTooltip = true
         private let shouldImmidiatelyShowTooltip: Binding<Bool>?
         
         public init(viewModel: ViewModel,
