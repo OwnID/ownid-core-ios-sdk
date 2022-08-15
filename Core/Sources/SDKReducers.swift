@@ -110,9 +110,9 @@ extension OwnID.CoreSDK {
                 .eraseToAnyPublisher()
                 .decode(type: ServerLogLevel.self, decoder: JSONDecoder())
                 .eraseToAnyPublisher()
-                .replaceError(with: ServerLogLevel(logLevel: 2))
+                .replaceError(with: ServerLogLevel(logLevel: 4))
                 .flatMap { serverLogLevel -> Empty<SDKAction, Never> in
-                    Logger.shared.logLevel = LogLevel(rawValue: serverLogLevel.logLevel) ?? .information
+                    Logger.shared.logLevel = LogLevel(rawValue: serverLogLevel.logLevel) ?? .error
                     return Empty(completeImmediately: true)
                 }
                 .eraseToAnyPublisher()

@@ -6,15 +6,19 @@ public extension OwnID.FlowsSDK {
         public static func == (lhs: OwnID.FlowsSDK.RegisterView, rhs: OwnID.FlowsSDK.RegisterView) -> Bool {
             lhs.id == rhs.id
         }
-        
         private let id = UUID()
+        
         @Binding private var usersEmail: String
         public var visualConfig: OwnID.UISDK.VisualLookConfig
         @ObservedObject public var viewModel: ViewModel
         
+        private let shouldImmidiatelyShowTooltip: Binding<Bool>
+        
         public init(viewModel: ViewModel,
                     usersEmail: Binding<String>,
-                    visualConfig: OwnID.UISDK.VisualLookConfig) {
+                    visualConfig: OwnID.UISDK.VisualLookConfig,
+                    shouldImmidiatelyShowTooltip: Binding<Bool>) {
+            self.shouldImmidiatelyShowTooltip = shouldImmidiatelyShowTooltip
             self.viewModel = viewModel
             self._usersEmail = usersEmail
             self.visualConfig = visualConfig
@@ -41,7 +45,9 @@ private extension OwnID.FlowsSDK.RegisterView {
     }
     
     func skipPasswordView(state: OwnID.UISDK.ButtonState) -> some View {
-        let view = OwnID.UISDK.OwnIDView(viewState: .constant(state), visualConfig: visualConfig)
+        let view = OwnID.UISDK.OwnIDView(viewState: .constant(state),
+                                         visualConfig: visualConfig,
+                                         shouldImmidiatelyShowTooltip: shouldImmidiatelyShowTooltip)
         viewModel.subscribe(to: view.eventPublisher)
         return view.eraseToAnyView()
     }

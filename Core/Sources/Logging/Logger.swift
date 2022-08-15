@@ -45,7 +45,9 @@ extension OwnID.CoreSDK {
         }
         
         func log(_ entry: StandardMetricLogEntry) {
-            guard entry.level.rawValue >= logLevel.rawValue else { return }
+            if let level = entry.level, level.rawValue < logLevel.rawValue {
+                return
+            }
             entry.metadata[LoggerValues.correlationIDKey] = LoggerValues.instanceID.uuidString
             entry.metadata["sessionRequestSequenceNumber"] = String(sessionRequestSequenceNumber)
             entry.version = UserAgentManager.shared.userFacingSDKVersion

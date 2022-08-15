@@ -20,11 +20,11 @@ extension OwnID.FlowsSDK {
 }
 
 public extension OwnID.FlowsSDK.FlowLogEntry {
-    static func entry<T>(function: String = #function, file: String = #file, context: String = "empty", message: String = "", _ : T.Type = T.self) -> OwnID.FlowsSDK.FlowLogEntry {
+    static func entry<T>(function: String = #function, file: String = #file, context: String = "no_context", message: String = "", _ : T.Type = T.self) -> OwnID.FlowsSDK.FlowLogEntry {
         OwnID.FlowsSDK.FlowLogEntry(context: context, message: "\(message) \(function) \(file)", codeInitiator: String(describing: T.self))
     }
     
-    static func errorEntry<T>(function: String = #function, file: String = #file, context: String = "empty", message: String = "", _ : T.Type = T.self) -> OwnID.FlowsSDK.FlowLogEntry {
+    static func errorEntry<T>(function: String = #function, file: String = #file, context: String = "no_context", message: String = "", _ : T.Type = T.self) -> OwnID.FlowsSDK.FlowLogEntry {
         OwnID.FlowsSDK.FlowLogEntry(context: context, logLevel: .error, message: "\(message) \(function) \(file)", codeInitiator: String(describing: T.self))
     }
 }

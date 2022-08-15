@@ -18,7 +18,6 @@ public extension OwnID.CoreSDK.Init {
         public let url: String
         public let context: String?
         public let nonce: String?
-        public let expiration: Int?
     }
 }
 
@@ -77,7 +76,7 @@ extension OwnID.CoreSDK.Init {
                 .eraseToAnyPublisher()
                 .decode(type: Response.self, decoder: JSONDecoder())
                 .map { decoded in
-                    OwnID.CoreSDK.logger.logCore(.entry(context: decoded.context ?? "empty", message: "Finished request", Self.self))
+                    OwnID.CoreSDK.logger.logCore(.entry(context: decoded.context ?? "no_context", message: "Finished request", Self.self))
                     return decoded
                 }
                 .mapError { initError in

@@ -11,15 +11,25 @@ public extension OwnID.UISDK {
         private let isOrViewEnabled: Bool
         
         private let imageButtonView: ImageButton
+        private let coordinateSpaceName = String(describing: OwnID.UISDK.ImageButton.self)
+        
+        private let tooltipVisualLookConfig: TooltipVisualLookConfig
+        @Binding private var isTooltipPresented: Bool
+        
+        @Environment(\.colorScheme) var colorScheme
         
         public var eventPublisher: OwnID.UISDK.EventPubliser {
             imageButtonView.eventPublisher
                 .eraseToAnyPublisher()
         }
         
-        public init(viewState: Binding<ButtonState>, visualConfig: VisualLookConfig) {
-            self.imageButtonView = ImageButton(viewState: viewState, visualConfig: visualConfig)
-            self.isOrViewEnabled = visualConfig.isOrViewEnabled
+        public init(viewState: Binding<ButtonState>,
+                    visualConfig: VisualLookConfig,
+                    shouldImmidiatelyShowTooltip: Binding<Bool>) {
+            _isTooltipPresented = shouldImmidiatelyShowTooltip
+            imageButtonView = ImageButton(viewState: viewState, visualConfig: visualConfig)
+            isOrViewEnabled = visualConfig.isOrViewEnabled
+            tooltipVisualLookConfig = visualConfig.tooltipVisualLookConfig
         }
         
         public var body: some View {
@@ -27,8 +37,32 @@ public extension OwnID.UISDK {
                 if isOrViewEnabled {
                     OwnID.UISDK.OrView()
                 }
-                imageButtonView
-                    .layoutPriority(1)
+                if isTooltipPresented {
+                    TooltipContainerLayout(tooltipPosition: tooltipVisualLookConfig.tooltipPosition) {
+                        Button(action: { isTooltipPresented = false }) {
+                            Text("")
+                                .foregroundColor(.clear)
+                                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                        }
+                        .popupContainerType(.dismissButton)
+                        TooltipTextAndArrowLayout(tooltipVisualLookConfig: tooltipVisualLookConfig) {
+                            RectangleWithTextView(tooltipVisualLookConfig: tooltipVisualLookConfig)
+                                .popupTextContainerType(.text)
+                            BeakView(tooltipVisualLookConfig: tooltipVisualLookConfig)
+                                .rotationEffect(.degrees(tooltipVisualLookConfig.tooltipPosition.beakViewRotationAngle))
+                                .popupTextContainerType(.beak)
+                        }
+                        .compositingGroup()
+                        .shadow(color: colorScheme == .dark ? .clear : tooltipVisualLookConfig.shadowColor.opacity(0.05), radius: 5, y: 4)
+                        .popupContainerType(.textAndArrowContainer)
+                        imageButtonView
+                            .layoutPriority(1)
+                            .popupContainerType(.ownIdButton)
+                    }
+                } else {
+                    imageButtonView
+                        .layoutPriority(1)
+                }
             }
         }
     }

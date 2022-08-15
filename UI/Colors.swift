@@ -31,5 +31,9 @@ public extension OwnID {
         public static var biometricsButtonImageColor: Color {
             Color("biometricsButtonImageColor", bundle: .module)
         }
+        
+        public static var defaultBlackColor: Color {
+            Color("defaultBlack", bundle: .module)
+        }
     }
 }

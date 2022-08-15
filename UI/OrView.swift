@@ -8,13 +8,13 @@ extension OwnID.UISDK {
         }
         private let id = UUID()
 
-        private let localizationClosure: (() -> String)
+        private let localizationChangedClosure: (() -> String)
         @State private var translationText: String
         
         init() {
-            let localizationClosure = { "or".ownIDLocalized() }
-            self.localizationClosure = localizationClosure
-            _translationText = State(initialValue: localizationClosure())
+            let localizationChangedClosure = { "or".ownIDLocalized() }
+            self.localizationChangedClosure = localizationChangedClosure
+            _translationText = State(initialValue: localizationChangedClosure())
         }
         
         var body: some View {
@@ -24,7 +24,7 @@ extension OwnID.UISDK {
                 .multilineTextAlignment(.leading)
                 .fixedSize(horizontal: false, vertical: true)
                 .onReceive(OwnID.CoreSDK.shared.translationsModule.translationsChangePublisher) {
-                    translationText = localizationClosure()
+                    translationText = localizationChangedClosure()
                 }
         }
     }
