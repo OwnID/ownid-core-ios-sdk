@@ -39,12 +39,6 @@ public extension OwnID.UISDK {
                 }
                 if isTooltipPresented {
                     TooltipContainerLayout(tooltipPosition: tooltipVisualLookConfig.tooltipPosition) {
-                        Button(action: { isTooltipPresented = false }) {
-                            Text("")
-                                .foregroundColor(.clear)
-                                .frame(maxWidth: .infinity, maxHeight: .infinity)
-                        }
-                        .popupContainerType(.dismissButton)
                         TooltipTextAndArrowLayout(tooltipVisualLookConfig: tooltipVisualLookConfig) {
                             RectangleWithTextView(tooltipVisualLookConfig: tooltipVisualLookConfig)
                                 .popupTextContainerType(.text)
@@ -58,6 +52,12 @@ public extension OwnID.UISDK {
                         imageButtonView
                             .layoutPriority(1)
                             .popupContainerType(.ownIdButton)
+                        Button(action: { isTooltipPresented = false }) {
+                            Text("")
+                                .foregroundColor(.clear)
+                                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                        }
+                        .popupContainerType(.dismissButton)
                     }
                 } else {
                     imageButtonView
