@@ -25,6 +25,8 @@ public extension OwnID.UISDK {
         public init(backgroundColor: Color = OwnID.Colors.biometricsButtonBackground,
                     borderColor: Color = OwnID.Colors.biometricsButtonBorder,
                     textColor: Color = OwnID.Colors.defaultBlackColor,
+                    textSize: CGFloat = 16,
+                    lineHeight: CGFloat = 23,
                     shadowColor: Color = OwnID.Colors.defaultBlackColor,
                     isNativePlatform: Bool = true,
                     tooltipPosition: OwnID.UISDK.TooltipPositionType = .top,
@@ -32,6 +34,8 @@ public extension OwnID.UISDK {
             self.backgroundColor = backgroundColor
             self.borderColor = borderColor
             self.textColor = textColor
+            self.textSize = textSize
+            self.lineHeight = lineHeight
             self.shadowColor = shadowColor
             self.isNativePlatform = isNativePlatform
             self.tooltipPosition = tooltipPosition
@@ -41,6 +45,8 @@ public extension OwnID.UISDK {
         public var backgroundColor: Color
         public var borderColor: Color
         public var textColor: Color
+        public var textSize: CGFloat
+        public var lineHeight: CGFloat
         public var shadowColor: Color
         public var isNativePlatform: Bool = true
         public var tooltipPosition: TooltipPositionType = .top

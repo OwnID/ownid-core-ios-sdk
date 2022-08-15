@@ -8,12 +8,10 @@ public extension OwnID.UISDK {
             lhs.id == rhs.id
         }
         private let id = UUID()
-        private let isOrViewEnabled: Bool
+        private let visualConfig: VisualLookConfig
         
         private let imageButtonView: ImageButton
         private let coordinateSpaceName = String(describing: OwnID.UISDK.ImageButton.self)
-        
-        private let tooltipVisualLookConfig: TooltipVisualLookConfig
         @Binding private var isTooltipPresented: Bool
         
         @Environment(\.colorScheme) var colorScheme
@@ -28,26 +26,27 @@ public extension OwnID.UISDK {
                     shouldImmidiatelyShowTooltip: Binding<Bool>) {
             _isTooltipPresented = shouldImmidiatelyShowTooltip
             imageButtonView = ImageButton(viewState: viewState, visualConfig: visualConfig)
-            isOrViewEnabled = visualConfig.isOrViewEnabled
-            tooltipVisualLookConfig = visualConfig.tooltipVisualLookConfig
+            self.visualConfig = visualConfig
         }
         
         public var body: some View {
             HStack(spacing: 8) {
-                if isOrViewEnabled {
-                    OwnID.UISDK.OrView()
+                if visualConfig.isOrViewEnabled {
+                    OwnID.UISDK.OrView(textSize: visualConfig.orTextSize,
+                                       lineHeight: visualConfig.orLineHeight,
+                                       textColor: visualConfig.orTextColor)
                 }
                 if isTooltipPresented {
-                    TooltipContainerLayout(tooltipPosition: tooltipVisualLookConfig.tooltipPosition) {
-                        TooltipTextAndArrowLayout(tooltipVisualLookConfig: tooltipVisualLookConfig) {
-                            RectangleWithTextView(tooltipVisualLookConfig: tooltipVisualLookConfig)
+                    TooltipContainerLayout(tooltipPosition: visualConfig.tooltipVisualLookConfig.tooltipPosition) {
+                        TooltipTextAndArrowLayout(tooltipVisualLookConfig: visualConfig.tooltipVisualLookConfig) {
+                            RectangleWithTextView(tooltipVisualLookConfig: visualConfig.tooltipVisualLookConfig)
                                 .popupTextContainerType(.text)
-                            BeakView(tooltipVisualLookConfig: tooltipVisualLookConfig)
-                                .rotationEffect(.degrees(tooltipVisualLookConfig.tooltipPosition.beakViewRotationAngle))
+                            BeakView(tooltipVisualLookConfig: visualConfig.tooltipVisualLookConfig)
+                                .rotationEffect(.degrees(visualConfig.tooltipVisualLookConfig.tooltipPosition.beakViewRotationAngle))
                                 .popupTextContainerType(.beak)
                         }
                         .compositingGroup()
-                        .shadow(color: colorScheme == .dark ? .clear : tooltipVisualLookConfig.shadowColor.opacity(0.05), radius: 5, y: 4)
+                        .shadow(color: colorScheme == .dark ? .clear : visualConfig.tooltipVisualLookConfig.shadowColor.opacity(0.05), radius: 5, y: 4)
                         .popupContainerType(.textAndArrowContainer)
                         imageButtonView
                             .layoutPriority(1)
