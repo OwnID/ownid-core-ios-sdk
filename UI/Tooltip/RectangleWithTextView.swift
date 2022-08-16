@@ -24,6 +24,7 @@ extension OwnID.UISDK {
         var body: some View {
             Text(translationText)
                 .foregroundColor(tooltipVisualLookConfig.textColor)
+                .fontWithLineHeight(font: .systemFont(ofSize: tooltipVisualLookConfig.textSize), lineHeight: tooltipVisualLookConfig.lineHeight)
                 .onReceive(OwnID.CoreSDK.shared.translationsModule.translationsChangePublisher) {
                     translationText = localizationChangedClosure()
                 }
