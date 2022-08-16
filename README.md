@@ -27,16 +27,6 @@ The OwnID SDK collects data and information about events inside the SDK using Lo
 
 Log Data is sent to the OwnID server using an encrypted process so it can be used to collect OwnID service statistics and improve service quality. OwnID does not share Log Data with any third party services.
 
-## Managing OwnID Accounts
-If you need to see if you already have an OwnID account, head to https://app.ownid.com to see a list of your accounts.
-
-To remove all accounts, go to Settings -> Safari -> Advanced -> Website Data, search for "own", and then swipe to delete cells with "ownid.com".
-
-## In Case Of Invalid Redirection
-The registration and login flows require the user to use a browser to complete the flow. If the flow ends with a browser error stating that the address is invalid, check your redirection URL to make sure it is correct.
-
-<img src="./drawings/link_issue.png" alt="IMG_2880" width="150" />
-
 ## Feedback
 We'd love to hear from you! If you have any questions or suggestions, feel free to reach out by creating a GitHub issue.
 
