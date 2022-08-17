@@ -67,7 +67,9 @@ extension OwnID.UISDK {
                     let highlightedContainerSpacing = EdgeInsets(top: 1, leading: 1, bottom: 1, trailing: 1)
                     let container = HStack { styled }
                         .padding(shouldDisplayHighlighted ? highlightedContainerSpacing : .init(.zero))
-                    let embededView = HStack { container }.eraseToAnyView()
+                    let embededView = HStack { container }
+                        .scaleEffect(0.95)
+                        .eraseToAnyView()
                     return embededView
                 }))
                 .accessibilityLabel(Text(translationText))
