@@ -29,8 +29,7 @@ public extension OwnID.UISDK {
                     lineHeight: CGFloat = 23,
                     shadowColor: Color = OwnID.Colors.defaultBlackColor,
                     isNativePlatform: Bool = true,
-                    tooltipPosition: OwnID.UISDK.TooltipPositionType = .top,
-                    shouldShowTooltip: Binding<Bool>? = .none) {
+                    tooltipPosition: OwnID.UISDK.TooltipPositionType = .top) {
             self.backgroundColor = backgroundColor
             self.borderColor = borderColor
             self.textColor = textColor
@@ -39,7 +38,6 @@ public extension OwnID.UISDK {
             self.shadowColor = shadowColor
             self.isNativePlatform = isNativePlatform
             self.tooltipPosition = tooltipPosition
-            self.shouldShowTooltip = shouldShowTooltip
         }
         
         public var backgroundColor: Color
@@ -50,7 +48,6 @@ public extension OwnID.UISDK {
         public var shadowColor: Color
         public var isNativePlatform: Bool = true
         public var tooltipPosition: TooltipPositionType = .top
-        public var shouldShowTooltip: Binding<Bool>?
     }
 }
 

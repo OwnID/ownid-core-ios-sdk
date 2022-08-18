@@ -41,13 +41,9 @@ private extension OwnID.FlowsSDK.RegisterView {
     }
     
     func skipPasswordView(state: OwnID.UISDK.ButtonState) -> some View {
-        var tooltipBinding = $viewModel.defaultShouldImmidiatelyShowTooltip
-        if let shouldImmidiatelyShowTooltipProp = visualConfig.tooltipVisualLookConfig.shouldShowTooltip {
-            tooltipBinding = shouldImmidiatelyShowTooltipProp
-        }
         let view = OwnID.UISDK.OwnIDView(viewState: .constant(state),
                                          visualConfig: visualConfig,
-                                         shouldImmidiatelyShowTooltip: tooltipBinding)
+                                         shouldShowTooltip: $viewModel.shouldShowTooltip)
         viewModel.subscribe(to: view.eventPublisher)
         return view.eraseToAnyView()
     }

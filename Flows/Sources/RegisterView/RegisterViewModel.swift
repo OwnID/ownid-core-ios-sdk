@@ -24,7 +24,7 @@ extension OwnID.FlowsSDK.RegisterView.ViewModel {
 public extension OwnID.FlowsSDK.RegisterView {
     final class ViewModel: ObservableObject {
         @Published private(set) var state = State.initial
-        @Published var defaultShouldImmidiatelyShowTooltip = true
+        @Published public var shouldShowTooltip = false
         
         private var bag = Set<AnyCancellable>()
         private var coreViewModelBag = Set<AnyCancellable>()
