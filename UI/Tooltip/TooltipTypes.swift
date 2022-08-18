@@ -30,7 +30,7 @@ public extension OwnID.UISDK {
                     shadowColor: Color = OwnID.Colors.defaultBlackColor,
                     isNativePlatform: Bool = true,
                     tooltipPosition: OwnID.UISDK.TooltipPositionType = .top,
-                    shouldShowTooltip: Bool = true) {
+                    shouldShowTooltip: Binding<Bool>? = .none) {
             self.backgroundColor = backgroundColor
             self.borderColor = borderColor
             self.textColor = textColor
@@ -50,7 +50,7 @@ public extension OwnID.UISDK {
         public var shadowColor: Color
         public var isNativePlatform: Bool = true
         public var tooltipPosition: TooltipPositionType = .top
-        public var shouldShowTooltip: Bool = true
+        public var shouldShowTooltip: Binding<Bool>?
     }
 }
 

@@ -24,6 +24,8 @@ extension OwnID.FlowsSDK.RegisterView.ViewModel {
 public extension OwnID.FlowsSDK.RegisterView {
     final class ViewModel: ObservableObject {
         @Published private(set) var state = State.initial
+        @Published var defaultShouldImmidiatelyShowTooltip = true
+        
         private var bag = Set<AnyCancellable>()
         private var coreViewModelBag = Set<AnyCancellable>()
         private let resultPublisher = PassthroughSubject<Result<OwnID.FlowsSDK.RegistrationEvent, OwnID.CoreSDK.Error>, Never>()

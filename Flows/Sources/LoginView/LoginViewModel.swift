@@ -14,6 +14,8 @@ extension OwnID.FlowsSDK.LoginView.ViewModel {
 public extension OwnID.FlowsSDK.LoginView {
     final class ViewModel: ObservableObject {
         @Published private(set) var state = State.initial
+        @Published var defaultShouldImmidiatelyShowTooltip = true
+        
         private var bag = Set<AnyCancellable>()
         private var coreViewModelBag = Set<AnyCancellable>()
         private let resultPublisher = PassthroughSubject<Result<OwnID.FlowsSDK.LoginEvent, OwnID.CoreSDK.Error>, Never>()

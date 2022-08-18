@@ -14,16 +14,12 @@ public extension OwnID.FlowsSDK {
         
         @ObservedObject public var viewModel: ViewModel
         
-        private let shouldImmidiatelyShowTooltip: Binding<Bool>
-        
         public init(viewModel: ViewModel,
                     usersEmail: Binding<String>,
-                    visualConfig: OwnID.UISDK.VisualLookConfig,
-                    shouldImmidiatelyShowTooltip: Binding<Bool>) {
+                    visualConfig: OwnID.UISDK.VisualLookConfig) {
             self.viewModel = viewModel
             self._usersEmail = usersEmail
             self.visualConfig = visualConfig
-            self.shouldImmidiatelyShowTooltip = shouldImmidiatelyShowTooltip
             self.viewModel.getEmail = { usersEmail.wrappedValue }
         }
         
@@ -47,9 +43,13 @@ private extension OwnID.FlowsSDK.LoginView {
     }
     
     func skipPasswordView(state: OwnID.UISDK.ButtonState) -> some View {
+        var tooltipBinding = $viewModel.defaultShouldImmidiatelyShowTooltip
+        if let shouldImmidiatelyShowTooltipProp = visualConfig.tooltipVisualLookConfig.shouldShowTooltip {
+            tooltipBinding = shouldImmidiatelyShowTooltipProp
+        }
         let view = OwnID.UISDK.OwnIDView(viewState: .constant(state),
                                          visualConfig: visualConfig,
-                                         shouldImmidiatelyShowTooltip: shouldImmidiatelyShowTooltip)
+                                         shouldImmidiatelyShowTooltip: tooltipBinding)
         viewModel.subscribe(to: view.eventPublisher)
         return view.eraseToAnyView()
     }
