@@ -26,6 +26,13 @@ public extension OwnID.FlowsSDK.RegisterView {
         @Published private(set) var state = State.initial
         @Published public var shouldShowTooltip = false
         
+        /// Checks email if it is valid for tooltip display
+        public var shouldShowTooltipEmailProcessingClosure: ((String?) -> Bool) = { emailString in
+            guard let emailString = emailString else { return false }
+            let emailObject = OwnID.CoreSDK.Email(rawValue: emailString)
+            return emailObject.isValid
+        }
+        
         private var bag = Set<AnyCancellable>()
         private var coreViewModelBag = Set<AnyCancellable>()
         private let resultPublisher = PassthroughSubject<Result<OwnID.FlowsSDK.RegistrationEvent, OwnID.CoreSDK.Error>, Never>()
