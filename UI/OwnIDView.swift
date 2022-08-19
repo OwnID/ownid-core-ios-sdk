@@ -23,8 +23,8 @@ public extension OwnID.UISDK {
         
         public init(viewState: Binding<ButtonState>,
                     visualConfig: VisualLookConfig,
-                    shouldImmidiatelyShowTooltip: Binding<Bool>) {
-            _isTooltipPresented = shouldImmidiatelyShowTooltip
+                    shouldShowTooltip: Binding<Bool>) {
+            _isTooltipPresented = shouldShowTooltip
             imageButtonView = ImageButton(viewState: viewState, visualConfig: visualConfig)
             self.visualConfig = visualConfig
         }

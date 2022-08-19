@@ -1,21 +1,16 @@
-![OwnIDSDK](./drawings/logo.svg)
-## OwnID iOS SDK
+![OwnIDSDK](./logo.svg)
+## OwnID Core iOS SDK
 The [OwnID](https://ownid.com/) iOS SDK is a client library written in Swift that provides a passwordless login alternative for your iOS application by using cryptographic keys to replace the traditional password. Integrating the SDK with your app adds a Skip Password option to its registration and login screens.
 
 The OwnID iOS SDK consists of a **Core** module along with modules that are specific to an identity platform like Firebase. The Core module provides core functionality like setting up an OwnID configuration, performing network calls to the OwnID server, interacting with a browser, handling a redirect URI, and checking and returning results to the iOS application. The following modules extend the Core module for a specific identify management system:
-- **[OwnID Firebase-iOS SDK](docs/sdk-firebase-doc.md)** - Extends **Core** functionality by providing integration with Email/Password-based [Firebase Authentication](https://firebase.google.com/docs/auth).
+- **[OwnID Firebase-iOS SDK](https://github.com/OwnID/ownid-firebase-ios-sdk)** - Extends **Core** functionality by providing integration with Email/Password-based [Firebase Authentication](https://firebase.google.com/docs/auth).
 
-- **[OwnID Gigya-iOS SDK](docs/sdk-gigya-doc.md)** - Extends **Core** functionality by providing integration with Email/Password-based [Gigya Authentication](https://github.com/SAP/gigya-ios-sdk). In addition, the OwnID Gigya-iOS SDK has a **[Gigya-Screen-Sets](docs/sdk-gigya-screens-doc.md)** integration.
+- **[OwnID Gigya-iOS SDK](https://github.com/OwnID/ownid-gigya-ios-sdk)** - Extends **Core** functionality by providing integration with Email/Password-based [Gigya Authentication](https://github.com/SAP/gigya-ios-sdk). In addition, the OwnID Gigya-iOS SDK has a **[Gigya-Screen-Sets](https://github.com/OwnID/ownid-demo-ios-sdk/tree/master/ScreensetsDemo)** integration.
 
-The OwnID iOS SDK supports Swift 5, and works with iOS 15 and above.
+The OwnID iOS SDK supports Swift >= 5.7, and works with iOS 16 and above.
 
 ## Demo applications
-This repository contains OwnID Demo application sources for different types of integrations:
- - Firebase integration (`Demo/FirebaseDemo`) . It can be tested with our demo website https://demo.ownid.com
- - Gigya integration (`Demo/GigyaDemo`)
- - Gigya screen sets integration (`Demo/ScreensetsDemo`)
-
-Want to see a demo of the OwnID registration and login flows without opening the source code? Ensure TestFlight is installed on your iOS device, then access the [OwnID SDK Firebase Demo beta](https://testflight.apple.com/join/QvMiUpjq).
+This repository contains only core. Please refer to [demos](https://github.com/OwnID/ownid-demo-ios-sdk).
 
  ## Registration and Login Flows
  Use the following diagrams to better understand the registration and login flows provided by the OwnID iOS SDK. The LinkAndLogin flow occurs when an existing user who has traditional account credentials uses the login screen to tap Skip Password for the first time.
@@ -31,16 +26,6 @@ The OwnID SDK does not store any data on the user's iOS device.
 The OwnID SDK collects data and information about events inside the SDK using Log Data. This Log Data does not include any personal data that can be used to identify the user such as username, email, and password. It does include general information like the device Internet Protocol (“IP”) address, device model, operating system version, time and date of events, and other statistics.
 
 Log Data is sent to the OwnID server using an encrypted process so it can be used to collect OwnID service statistics and improve service quality. OwnID does not share Log Data with any third party services.
-
-## Managing OwnID Accounts
-If you need to see if you already have an OwnID account, head to https://app.ownid.com to see a list of your accounts.
-
-To remove all accounts, go to Settings -> Safari -> Advanced -> Website Data, search for "own", and then swipe to delete cells with "ownid.com".
-
-## In Case Of Invalid Redirection
-The registration and login flows require the user to use a browser to complete the flow. If the flow ends with a browser error stating that the address is invalid, check your redirection URL to make sure it is correct.
-
-<img src="./drawings/link_issue.png" alt="IMG_2880" width="150" />
 
 ## Feedback
 We'd love to hear from you! If you have any questions or suggestions, feel free to reach out by creating a GitHub issue.
