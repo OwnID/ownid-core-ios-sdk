@@ -145,7 +145,7 @@ final class FlowIntegrationTests: XCTestCase {
     func testLoginSuccess() {
         //Arrange (given)
         let email = "yjehj@nkk.lkjje"
-        coreVM = OwnID.CoreSDK.CoreViewModel(type: .logIn,
+        coreVM = OwnID.CoreSDK.CoreViewModel(type: .login,
                                              email: OwnID.CoreSDK.Email(rawValue: email),
                                              token: .none,
                                              session: APISessionStub(isInitSuccess: true, isStatusSuccess: true),
