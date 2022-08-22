@@ -30,17 +30,20 @@ extension OwnID.CoreSDK.Status {
         let nonce: OwnID.CoreSDK.Nonce
         let provider: APIProvider
         let sessionVerifier: OwnID.CoreSDK.SessionVerifier
+        let type: OwnID.CoreSDK.RequestType
         
         internal init(url: OwnID.CoreSDK.ServerURL,
                       context: OwnID.CoreSDK.Context,
                       nonce: OwnID.CoreSDK.Nonce,
                       sessionVerifier: OwnID.CoreSDK.SessionVerifier,
+                      type: OwnID.CoreSDK.RequestType,
                       provider: APIProvider = URLSession.shared) {
             self.context = context
             self.nonce = nonce
             self.url = url
             self.sessionVerifier = sessionVerifier
             self.provider = provider
+            self.type = type
         }
         
         func perform() -> AnyPublisher<OwnID.CoreSDK.Payload, OwnID.CoreSDK.Error> {
@@ -72,6 +75,10 @@ extension OwnID.CoreSDK.Status {
                 }
                 .eraseToAnyPublisher()
                 .tryMap { [self] response -> OwnID.CoreSDK.Payload in
+                    guard let flowInfo = response["flowInfo"] as? [String: String],
+                          let event = flowInfo["event"],
+                          event == type.rawValue else { throw OwnID.CoreSDK.Error.statusRequestResponseTypeMismatch }
+                    
                     guard let responseContext = response["context"] as? String else { throw OwnID.CoreSDK.Error.statusRequestResponseIsEmpty }
                     guard context == responseContext else { throw OwnID.CoreSDK.Error.statusRequestResponseContextMismatch }
                     guard let responsePayload = response["payload"] as? [String: Any] else { throw OwnID.CoreSDK.Error.statusRequestResponseIsEmpty }

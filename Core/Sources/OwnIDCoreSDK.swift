@@ -102,7 +102,7 @@ public extension OwnID {
                                                 sdkConfigurationName: String,
                                                 webLanguages: OwnID.CoreSDK.Languages) -> CoreViewModel {
             let session = apiSession(configurationName: sdkConfigurationName, webLanguages: webLanguages)
-            let viewModel = CoreViewModel(type: .logIn,
+            let viewModel = CoreViewModel(type: .login,
                                           email: email,
                                           token: .none,
                                           session: session,

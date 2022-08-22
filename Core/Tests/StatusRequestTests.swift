@@ -16,6 +16,9 @@ final class StatusRequestTests: XCTestCase {
     let string =
         """
         {
+          "flowInfo": {
+            "event": "login"
+          },
           "metadata": "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYmYiOjE2NDc5NjczOTMsImV4cCI6MTY0Nzk3NDU5MywiaWF0IjoxNjQ3OTY3MzkzLCJkYXRhIjp7ImFjdGlvbiI6IkxvZ2luIiwiYXV0aFR5cGUiOiJGSURPMiJ9fQ.E0ckfaVnsBxGvj2ARfJKDfTsbJe6tjfIDY-5LZPRxfJiUEaoFW7TwySdzKYFtTuxaH668tJT5nV_CmUlb3UGBAa-Uk5Kcd3uNwqG1P3TtlpH0SHROykqjHobNxzodgpzpvzW4RCWGP627SKLvyESC3lhbozrj4qGdjp-D5LjKyQkgNCw6nRLOOInOo06LAFiN71nsf4eEb60wKGof06haZYu-XODBs6p4X7-q7IPkt7vyYJNRGqDrBHWkcayv55MA3s15omyd6iMIKQ1270BcjgSTCwDjYY-VmGacwQKgWRQCkLpy_jQwhJgE3SW2CXKN_xnZP81cK6xdKKNwHv8gl_pZZRsyJi8YYLxkYhGiJ3WiP2SO0oPIBoJN3ScwV9D9hs4tL7Q268qulx7EuS7LNOh4OpmzPJHnFMgY22Pllo5dzkLD3Rh4koT9v2-bveyjlERJMKBjuaJO6bv0Y0g3fvBfRJ1o7IqBR6lRj2XSANJKvlL8Lqaf1Vg1hAWyysZymv7TY_bP2Zzv6jDT4RGGf7SCnm1kG_BphQOqJ30jV5kGG2R2kHvMC5VMmrPIX40VKSwBKZMmycSfryM-mOy4eq8qNAt7PG-kdWLsC8tWJNppBTSW_pgpDjxXXqtHx7nNzBxLecTU6wkgQqCRLYaxoPJHD-7xYyqCmmKtTVsFFs",
           "status": "finished",
           "context": "0u8ZCitQCUmkKKE6TK-w2A",
@@ -38,25 +41,59 @@ final class StatusRequestTests: XCTestCase {
         
         //Arrange (given)
         OwnID.CoreSDK.Status.Request(url: url,
-                             context: context,
-                             nonce: nonce,
-                             sessionVerifier: sessionVerifier,
-                             provider: MockAPI.correctBody(for: string))
-            //Act (when)
-            .perform()
-            .sink { completion in
-                if case .failure(let error) = completion {
-                    XCTFail("\(error)")
-                }
-            } receiveValue: { value in
-                response = value
-                expectation.fulfill()
+                                     context: context,
+                                     nonce: nonce,
+                                     sessionVerifier: sessionVerifier,
+                                     type: .login,
+                                     provider: MockAPI.correctBody(for: string))
+        //Act (when)
+        .perform()
+        .sink { completion in
+            if case .failure(let error) = completion {
+                XCTFail("\(error)")
             }
-            .store(in: &bag)
+        } receiveValue: { value in
+            response = value
+            expectation.fulfill()
+        }
+        .store(in: &bag)
         
         //Assert (then)
         waitForExpectations(timeout: 2)
         XCTAssertNotNil(response)
+    }
+    
+    func testStautusReqestErrorMismatchOnType() throws {
+        let expectation = self.expectation(description: #function)
+        var resultedError: OwnID.CoreSDK.Error!
+        
+        //Arrange (given)
+        OwnID.CoreSDK.Status.Request(url: url,
+                                     context: context,
+                                     nonce: nonce,
+                                     sessionVerifier: sessionVerifier,
+                                     type: .register,
+                                     provider: MockAPI.correctBody(for: string))
+        //Act (when)
+        .perform()
+        .sink { completion in
+            if case .failure(let error) = completion {
+                resultedError = error
+                expectation.fulfill()
+            }
+        } receiveValue: { value in
+            XCTFail("\(value)")
+        }
+        .store(in: &bag)
+        
+        //Assert (then)
+        waitForExpectations(timeout: 2)
+        switch resultedError {
+        case .statusRequestResponseTypeMismatch:
+            XCTAssertTrue(true)
+        default:
+            XCTFail()
+        }
     }
     
     func testStautusReqestError() throws {
@@ -65,21 +102,22 @@ final class StatusRequestTests: XCTestCase {
         
         //Arrange (given)
         OwnID.CoreSDK.Status.Request(url: url,
-                             context: context,
-                             nonce: nonce,
-                             sessionVerifier: sessionVerifier,
-                             provider: MockAPI.errorProvider)
-            //Act (when)
-            .perform()
-            .sink { completion in
-                if case .failure(let error) = completion {
-                    resultedError = error
-                    expectation.fulfill()
-                }
-            } receiveValue: { value in
-                XCTFail("\(value)")
+                                     context: context,
+                                     nonce: nonce,
+                                     sessionVerifier: sessionVerifier,
+                                     type: .login,
+                                     provider: MockAPI.errorProvider)
+        //Act (when)
+        .perform()
+        .sink { completion in
+            if case .failure(let error) = completion {
+                resultedError = error
+                expectation.fulfill()
             }
-            .store(in: &bag)
+        } receiveValue: { value in
+            XCTFail("\(value)")
+        }
+        .store(in: &bag)
         
         //Assert (then)
         waitForExpectations(timeout: 2)
@@ -92,21 +130,22 @@ final class StatusRequestTests: XCTestCase {
         
         //Arrange (given)
         OwnID.CoreSDK.Status.Request(url: url,
-                             context: context,
-                             nonce: nonce,
-                             sessionVerifier: sessionVerifier,
-                             provider: MockAPI.errorProvider)
-            //Act (when)
-            .perform()
-            .sink { completion in
-                if case .failure(let error) = completion {
-                    resultedError = error
-                    expectation.fulfill()
-                }
-            } receiveValue: { value in
-                XCTFail("\(value)")
+                                     context: context,
+                                     nonce: nonce,
+                                     sessionVerifier: sessionVerifier,
+                                     type: .login,
+                                     provider: MockAPI.errorProvider)
+        //Act (when)
+        .perform()
+        .sink { completion in
+            if case .failure(let error) = completion {
+                resultedError = error
+                expectation.fulfill()
             }
-            .store(in: &bag)
+        } receiveValue: { value in
+            XCTFail("\(value)")
+        }
+        .store(in: &bag)
         
         //Assert (then)
         waitForExpectations(timeout: 2)

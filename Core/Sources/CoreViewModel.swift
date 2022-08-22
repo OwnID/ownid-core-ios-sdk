@@ -73,9 +73,6 @@ extension OwnID.CoreSDK {
             if let email = state.email, !email.rawValue.isEmpty, !email.isValid {
                 return errorEffect(.emailIsInvalid)
             }
-            if state.type == .link, state.token == nil {
-                return errorEffect(.tokenDataIsMissing)
-            }
             return [sendInitialRequest(type: state.type, token: state.token, session: state.session)]
             
         case let .initialRequestLoaded(response):

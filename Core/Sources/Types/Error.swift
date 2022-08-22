@@ -23,6 +23,7 @@ public extension OwnID.CoreSDK {
         case statusRequestBodyEncodeFailed(underlying: Swift.Error)
         case statusRequestResponseDecodeFailed(underlying: Swift.Error)
         case statusRequestResponseIsEmpty
+        case statusRequestResponseTypeMismatch
         case statusRequestFail(underlying: Swift.Error)
         
         case statusRequestTypeIsMissing
@@ -50,6 +51,7 @@ extension OwnID.CoreSDK.Error: LocalizedError {
              .statusRequestBodyEncodeFailed,
              .statusRequestResponseDecodeFailed,
              .statusRequestResponseIsEmpty,
+             .statusRequestResponseTypeMismatch,
              .statusRequestFail,
              .statusRequestResponseContextMismatch,
              .tokenDataIsMissing,

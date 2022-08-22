@@ -14,6 +14,7 @@ public extension OwnID.CoreSDK {
         private let sessionChallenge: SessionChallenge
         private var nonce: Nonce!
         private var context: Context!
+        private var type: OwnID.CoreSDK.RequestType!
         private let serverURL: ServerURL
         private let statusURL: ServerURL
         private let webLanguages: OwnID.CoreSDK.Languages
@@ -44,6 +45,7 @@ extension OwnID.CoreSDK.APISession {
             .map { [unowned self] response in
                 nonce = response.nonce
                 context = response.context
+                self.type = type
                 OwnID.CoreSDK.logger.logCore(.entry(context: context, message: "\(OwnID.CoreSDK.Init.Request.self): Finished", Self.self))
                 return response
             }
@@ -54,7 +56,8 @@ extension OwnID.CoreSDK.APISession {
         OwnID.CoreSDK.Status.Request(url: statusURL,
                                      context: context,
                                      nonce: nonce,
-                                     sessionVerifier: sessionVerifier)
+                                     sessionVerifier: sessionVerifier,
+                                     type: type)
             .perform()
             .handleEvents(receiveOutput: { payload in
                 OwnID.CoreSDK.logger.logCore(.entry(context: payload.context, message: "\(OwnID.CoreSDK.Status.Request.self): Finished", Self.self))

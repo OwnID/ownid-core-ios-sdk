@@ -14,8 +14,7 @@ public extension OwnID.CoreSDK {
 public extension OwnID.CoreSDK {
     enum RequestType: String, Codable {
         case register
-        case logIn
-        case link
+        case login
     }
     
     enum StatusResponseType: String, CaseIterable {
