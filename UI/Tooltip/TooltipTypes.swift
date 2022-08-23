@@ -15,7 +15,7 @@ public extension OwnID.UISDK {
             X──────────────X──────────────X
                          bottom
      */
-    enum TooltipPositionType {
+    enum TooltipPositionType: String {
         case top, bottom, left, right
     }
 }
@@ -46,8 +46,8 @@ public extension OwnID.UISDK {
         public var textSize: CGFloat
         public var lineHeight: CGFloat
         public var shadowColor: Color
-        public var isNativePlatform: Bool = true
-        public var tooltipPosition: TooltipPositionType = .top
+        public var isNativePlatform: Bool
+        public var tooltipPosition: TooltipPositionType
     }
 }
 
