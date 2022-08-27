@@ -15,6 +15,7 @@ public extension OwnID.UISDK {
         @Binding private var isTooltipPresented: Bool
         
         @Environment(\.colorScheme) var colorScheme
+        @Environment(\.layoutDirection) var direction
         
         public var eventPublisher: OwnID.UISDK.EventPubliser {
             imageButtonView.eventPublisher
@@ -38,7 +39,7 @@ public extension OwnID.UISDK {
                 }
                 if isTooltipPresented {
                     TooltipContainerLayout(tooltipPosition: visualConfig.tooltipVisualLookConfig.tooltipPosition) {
-                        TooltipTextAndArrowLayout(tooltipVisualLookConfig: visualConfig.tooltipVisualLookConfig) {
+                        TooltipTextAndArrowLayout(tooltipVisualLookConfig: visualConfig.tooltipVisualLookConfig, isRTL: direction == .rightToLeft) {
                             RectangleWithTextView(tooltipVisualLookConfig: visualConfig.tooltipVisualLookConfig)
                                 .popupTextContainerType(.text)
                             BeakView(tooltipVisualLookConfig: visualConfig.tooltipVisualLookConfig)

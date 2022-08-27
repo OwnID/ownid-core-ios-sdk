@@ -4,6 +4,7 @@ import OwnIDCoreSDK
 extension OwnID.UISDK {
     struct TooltipTextAndArrowLayout: Layout {
         let tooltipVisualLookConfig: TooltipVisualLookConfig
+        let isRTL: Bool
         
         func sizeThatFits(
             proposal: ProposedViewSize,
@@ -77,7 +78,6 @@ extension OwnID.UISDK {
         
         private func calculateTextXPosition(viewBounds: CGRect) -> CGFloat {
             let layoutCalculation: XAxisOffsetCalculating
-            let isRTL = Locale.current.isRTL
             if isRTL {
                 layoutCalculation = RTLLayoutCalculation(shouldIncludeDefaultOffset: tooltipVisualLookConfig.isNativePlatform)
             } else {
