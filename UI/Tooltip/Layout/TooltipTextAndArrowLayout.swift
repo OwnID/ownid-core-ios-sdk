@@ -4,6 +4,7 @@ import OwnIDCoreSDK
 extension OwnID.UISDK {
     struct TooltipTextAndArrowLayout: Layout {
         let tooltipVisualLookConfig: TooltipVisualLookConfig
+        let isRTL: Bool
         
         func sizeThatFits(
             proposal: ProposedViewSize,
@@ -55,12 +56,12 @@ extension OwnID.UISDK {
             switch tooltipVisualLookConfig.tooltipPosition {
             case .top:
                 let x = bounds.minX - (beakSize.width / 2) // puts beak top pin directly in the center of the start point
-                let y = bounds.maxY - (BeakView.bottomlineWidth / 2)
+                let y = bounds.maxY - (BeakView.bottomlineWidth / 1.15)
                 beakSubview.place(at: .init(x: x, y: y), proposal: .unspecified)
                 
             case .bottom:
                 let x = bounds.minX - (beakSize.width / 2) // puts beak top pin directly in the center of the start point
-                let y = bounds.minY - beakSize.height + BeakView.bottomlineWidth
+                let y = bounds.minY - beakSize.height + (BeakView.bottomlineWidth / 1.15)
                 beakSubview.place(at: .init(x: x, y: y), proposal: .unspecified)
                 
             case .left:
@@ -77,7 +78,6 @@ extension OwnID.UISDK {
         
         private func calculateTextXPosition(viewBounds: CGRect) -> CGFloat {
             let layoutCalculation: XAxisOffsetCalculating
-            let isRTL = Locale.current.isRTL
             if isRTL {
                 layoutCalculation = RTLLayoutCalculation(shouldIncludeDefaultOffset: tooltipVisualLookConfig.isNativePlatform)
             } else {

@@ -2,6 +2,11 @@ import Foundation
 import SwiftUI
 import OwnIDCoreSDK
 
+
+/// Possible future improvements:
+/// - default margin around tooltip can be calculated as function of the text size to have small margins when text is small and bigger when text is bigger
+/// support font as setting instead/along line height and text size to support changes with system sizes (maybe use .preferredFont(forTextStyle: ) ?)
+
 public extension OwnID.UISDK {
     struct OwnIDView: View {
         static func == (lhs: OwnID.UISDK.OwnIDView, rhs: OwnID.UISDK.OwnIDView) -> Bool {
@@ -15,6 +20,7 @@ public extension OwnID.UISDK {
         @Binding private var isTooltipPresented: Bool
         
         @Environment(\.colorScheme) var colorScheme
+        @Environment(\.layoutDirection) var direction
         
         public var eventPublisher: OwnID.UISDK.EventPubliser {
             imageButtonView.eventPublisher
@@ -38,7 +44,7 @@ public extension OwnID.UISDK {
                 }
                 if isTooltipPresented {
                     TooltipContainerLayout(tooltipPosition: visualConfig.tooltipVisualLookConfig.tooltipPosition) {
-                        TooltipTextAndArrowLayout(tooltipVisualLookConfig: visualConfig.tooltipVisualLookConfig) {
+                        TooltipTextAndArrowLayout(tooltipVisualLookConfig: visualConfig.tooltipVisualLookConfig, isRTL: direction == .rightToLeft) {
                             RectangleWithTextView(tooltipVisualLookConfig: visualConfig.tooltipVisualLookConfig)
                                 .popupTextContainerType(.text)
                             BeakView(tooltipVisualLookConfig: visualConfig.tooltipVisualLookConfig)
