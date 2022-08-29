@@ -51,7 +51,7 @@ extension OwnID.CoreSDK {
             entry.metadata[LoggerValues.correlationIDKey] = LoggerValues.instanceID.uuidString
             entry.metadata["sessionRequestSequenceNumber"] = String(sessionRequestSequenceNumber)
             entry.version = UserAgentManager.shared.userFacingSDKVersion
-            entry.userAgent = UserAgentManager.shared.mainSDKUserAgent
+            entry.userAgent = UserAgentManager.shared.SDKUserAgent
             sessionRequestSequenceNumber += 1
             extendedLoggers.forEach { logger in
                 logger.log(entry)

@@ -2,7 +2,7 @@ import Foundation
 
 extension URLRequest {
     public mutating func addUserAgent() {
-        addValue(OwnID.CoreSDK.UserAgentManager.shared.mainSDKUserAgent, forHTTPHeaderField: "User-Agent")
+        addValue(OwnID.CoreSDK.UserAgentManager.shared.SDKUserAgent, forHTTPHeaderField: "User-Agent")
     }
     
     public mutating func addAPIVersion() {
