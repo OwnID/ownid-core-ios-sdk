@@ -34,7 +34,12 @@ public extension OwnID.CoreSDK {
         
         private func underlyingSDKNames(underlyingSDKs: [SDKInformation]) -> String {
             underlyingSDKs.reduce("") { partialResult, sdkInfo in
-                partialResult + sdkAgentName(sdkName: sdkInfo.name, version: sdkInfo.verison)
+                let newUnderlying = sdkAgentName(sdkName: sdkInfo.name, version: sdkInfo.verison)
+                if partialResult == "" {
+                    return newUnderlying
+                } else {
+                    return partialResult +  " " + newUnderlying
+                }
             }
         }
     }
