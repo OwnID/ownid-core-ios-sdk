@@ -11,14 +11,16 @@ public extension OwnID.CoreSDK {
         private let modelName = UIDevice.modelName
         
         func registerUserFacingSDKName(_ userFacingSDK: SDKInformation, underlyingSDKs: [SDKInformation]) {
-            mainSDKUserAgent = userAgent(for: userFacingSDK, underlyingSDKs: underlyingSDKs)
+            var allUnderlyingSDKs: [SDKInformation] = [(OwnID.CoreSDK.sdkName, OwnID.CoreSDK.version)]
+            allUnderlyingSDKs.append(contentsOf: underlyingSDKs)
+            SDKUserAgent = userAgent(for: userFacingSDK, underlyingSDKs: allUnderlyingSDKs)
         }
         
         var userFacingSDKVersion: String {
             version
         }
         
-        public lazy var mainSDKUserAgent = userAgent(for: (OwnID.CoreSDK.sdkName, OwnID.CoreSDK.version), underlyingSDKs: [])
+        public lazy var SDKUserAgent = userAgent(for: (OwnID.CoreSDK.sdkName, OwnID.CoreSDK.version), underlyingSDKs: [])
         
         private func userAgent(for userFacingSDK: SDKInformation, underlyingSDKs: [SDKInformation]) -> String {
             let underlyingSDKsNames = underlyingSDKNames(underlyingSDKs: underlyingSDKs)
