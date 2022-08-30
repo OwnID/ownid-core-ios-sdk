@@ -10,6 +10,8 @@ public extension OwnID.UISDK {
         private let id = UUID()
         
         static let bottomlineWidth = 1.3
+        static let width = 14.0
+        static let height = 8.0
         
         private let tooltipVisualLookConfig: TooltipVisualLookConfig
         
@@ -26,7 +28,7 @@ public extension OwnID.UISDK {
                 TriangleSide()
                     .stroke(tooltipVisualLookConfig.backgroundColor, style: StrokeStyle(lineWidth: Self.bottomlineWidth, lineCap: .round, lineJoin: .round))
             }
-            .frame(width: 14, height: 8)
+            .frame(width: Self.width, height: Self.height)
             .compositingGroup()
         }
     }
