@@ -31,11 +31,16 @@ extension OwnID.UISDK {
             let increasedSpaceFromButton = 12.5
             let normalSpaceFromButton = 4.0
             let halfOfButtonWidth = buttonSize.width / 2
+            let textContainerHeight = textAndArrowContainerSubview.sizeThatFits(.unspecified).height
             
             switch tooltipPosition {
             case .left:
+                let buttonCenter = buttonSize.height / 2
+                let YButtonCenter = bounds.origin.y + buttonCenter
+                let textConteinerCenter = textContainerHeight / 2
+
                 let x = bounds.origin.x - increasedSpaceFromButton
-                let y = bounds.origin.y
+                let y = YButtonCenter - textConteinerCenter
                 textAndArrowContainerSubview.place(at: .init(x: x, y: y), proposal: .unspecified)
                 
             case .right:
@@ -44,7 +49,6 @@ extension OwnID.UISDK {
                 textAndArrowContainerSubview.place(at: .init(x: x, y: y), proposal: .unspecified)
                 
             case .top:
-                let textContainerHeight = textAndArrowContainerSubview.sizeThatFits(.unspecified).height
                 let partOfButtonHeight = buttonSize.height / 4
                 let x = bounds.origin.x + halfOfButtonWidth //ensures that container start positioned in center of the button
                 let y = bounds.origin.y - partOfButtonHeight - textContainerHeight
