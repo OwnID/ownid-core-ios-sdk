@@ -28,7 +28,6 @@ extension OwnID.UISDK {
             guard let textAndArrowContainerSubview = subviews.first(where: { $0[TooltipContainerViewTypeKey.self] == .textAndArrowContainer }) else { return }
             let buttonSize = subviews.first(where: { $0[TooltipContainerViewTypeKey.self] == .ownIdButton })?.sizeThatFits(.unspecified) ?? .zero
             
-            let increasedSpaceFromButton = 12.5
             let halfOfButtonWidth = buttonSize.width / 2
             let textContainerHeight = textAndArrowContainerSubview.sizeThatFits(.unspecified).height
             
@@ -54,7 +53,7 @@ extension OwnID.UISDK {
                 
             case .bottom:
                 let x = bounds.origin.x + halfOfButtonWidth //ensures that container start positioned in center of the button
-                let y = bounds.origin.y + buttonSize.height + increasedSpaceFromButton
+                let y = bounds.origin.y + buttonSize.height + BeakView.width
                 textAndArrowContainerSubview.place(at: .init(x: x, y: y), proposal: .unspecified)
             }
         }
