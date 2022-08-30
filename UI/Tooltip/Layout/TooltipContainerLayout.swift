@@ -62,8 +62,8 @@ extension OwnID.UISDK {
         
         private func placeDismissButton(_ bounds: CGRect, _ dismissButton: LayoutSubviews.Element) {
             let screenBounds = UIScreen.main.bounds
-            let x = max(bounds.origin.x * 5, screenBounds.width)
-            let y = max(bounds.origin.y * 5, screenBounds.height)
+            let x = max(bounds.origin.x * 2, screenBounds.width)
+            let y = max(bounds.origin.y * 2, screenBounds.height)
             let size = CGSize(width: x * 2, height: y * 2)
             dismissButton.place(at: .init(x: -x, y: -y), proposal: .init(size))
         }
