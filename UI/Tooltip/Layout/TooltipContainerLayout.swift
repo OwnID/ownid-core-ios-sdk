@@ -36,13 +36,16 @@ extension OwnID.UISDK {
             let textConteinerCenter = textContainerHeight / 2
             let leftRightYPosition = YButtonCenter - textConteinerCenter
             
+            let paddingFromButton = 4.0
+            let spaceFromButton = BeakView.height + paddingFromButton
+            
             switch tooltipPosition {
             case .left:
-                let x = bounds.origin.x - BeakView.width
+                let x = bounds.origin.x - spaceFromButton
                 textAndArrowContainerSubview.place(at: .init(x: x, y: leftRightYPosition), proposal: .unspecified)
                 
             case .right:
-                let x = bounds.origin.x + buttonSize.width + BeakView.width
+                let x = bounds.origin.x + buttonSize.width + spaceFromButton
                 textAndArrowContainerSubview.place(at: .init(x: x, y: leftRightYPosition), proposal: .unspecified)
                 
             case .top:
@@ -53,7 +56,7 @@ extension OwnID.UISDK {
                 
             case .bottom:
                 let x = bounds.origin.x + halfOfButtonWidth //ensures that container start positioned in center of the button
-                let y = bounds.origin.y + buttonSize.height + BeakView.width
+                let y = bounds.origin.y + buttonSize.height + spaceFromButton
                 textAndArrowContainerSubview.place(at: .init(x: x, y: y), proposal: .unspecified)
             }
         }
