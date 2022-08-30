@@ -49,9 +49,8 @@ extension OwnID.UISDK {
                 textAndArrowContainerSubview.place(at: .init(x: x, y: leftRightYPosition), proposal: .unspecified)
                 
             case .top:
-                let partOfButtonHeight = buttonSize.height / 4
                 let x = bounds.origin.x + halfOfButtonWidth //ensures that container start positioned in center of the button
-                let y = bounds.origin.y - partOfButtonHeight - textContainerHeight
+                let y = bounds.origin.y - textContainerHeight - spaceFromButton
                 textAndArrowContainerSubview.place(at: .init(x: x, y: y), proposal: .unspecified)
                 
             case .bottom:
