@@ -39,7 +39,7 @@ extension OwnID.UISDK {
             
             switch tooltipPosition {
             case .left:
-                let x = bounds.origin.x - increasedSpaceFromButton
+                let x = bounds.origin.x - BeakView.width
                 textAndArrowContainerSubview.place(at: .init(x: x, y: leftRightYPosition), proposal: .unspecified)
                 
             case .right:
