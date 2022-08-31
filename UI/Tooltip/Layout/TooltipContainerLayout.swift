@@ -28,39 +28,42 @@ extension OwnID.UISDK {
             guard let textAndArrowContainerSubview = subviews.first(where: { $0[TooltipContainerViewTypeKey.self] == .textAndArrowContainer }) else { return }
             let buttonSize = subviews.first(where: { $0[TooltipContainerViewTypeKey.self] == .ownIdButton })?.sizeThatFits(.unspecified) ?? .zero
             
-            let increasedSpaceFromButton = 12.5
-            let normalSpaceFromButton = 4.0
             let halfOfButtonWidth = buttonSize.width / 2
+            let textContainerHeight = textAndArrowContainerSubview.sizeThatFits(.unspecified).height
+            
+            let buttonCenter = buttonSize.height / 2
+            let YButtonCenter = bounds.origin.y + buttonCenter
+            let textConteinerCenter = textContainerHeight / 2
+            let leftRightYPosition = YButtonCenter - textConteinerCenter
+            
+            let paddingFromButton = 4.0
+            let spaceFromButton = BeakView.height + paddingFromButton
             
             switch tooltipPosition {
             case .left:
-                let x = bounds.origin.x - increasedSpaceFromButton
-                let y = bounds.origin.y
-                textAndArrowContainerSubview.place(at: .init(x: x, y: y), proposal: .unspecified)
+                let x = bounds.origin.x - spaceFromButton
+                textAndArrowContainerSubview.place(at: .init(x: x, y: leftRightYPosition), proposal: .unspecified)
                 
             case .right:
-                let x = bounds.origin.x + buttonSize.width + increasedSpaceFromButton + normalSpaceFromButton
-                let y = bounds.origin.y
-                textAndArrowContainerSubview.place(at: .init(x: x, y: y), proposal: .unspecified)
+                let x = bounds.origin.x + buttonSize.width + spaceFromButton
+                textAndArrowContainerSubview.place(at: .init(x: x, y: leftRightYPosition), proposal: .unspecified)
                 
             case .top:
-                let textContainerHeight = textAndArrowContainerSubview.sizeThatFits(.unspecified).height
-                let partOfButtonHeight = buttonSize.height / 4
                 let x = bounds.origin.x + halfOfButtonWidth //ensures that container start positioned in center of the button
-                let y = bounds.origin.y - partOfButtonHeight - textContainerHeight
+                let y = bounds.origin.y - textContainerHeight - spaceFromButton
                 textAndArrowContainerSubview.place(at: .init(x: x, y: y), proposal: .unspecified)
                 
             case .bottom:
                 let x = bounds.origin.x + halfOfButtonWidth //ensures that container start positioned in center of the button
-                let y = bounds.origin.y + buttonSize.height + increasedSpaceFromButton
+                let y = bounds.origin.y + buttonSize.height + spaceFromButton
                 textAndArrowContainerSubview.place(at: .init(x: x, y: y), proposal: .unspecified)
             }
         }
         
         private func placeDismissButton(_ bounds: CGRect, _ dismissButton: LayoutSubviews.Element) {
             let screenBounds = UIScreen.main.bounds
-            let x = max(bounds.origin.x * 5, screenBounds.width)
-            let y = max(bounds.origin.y * 5, screenBounds.height)
+            let x = max(bounds.origin.x * 2, screenBounds.width)
+            let y = max(bounds.origin.y * 2, screenBounds.height)
             let size = CGSize(width: x * 2, height: y * 2)
             dismissButton.place(at: .init(x: -x, y: -y), proposal: .init(size))
         }
