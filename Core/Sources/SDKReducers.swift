@@ -102,6 +102,7 @@ extension OwnID.CoreSDK {
         }
     }
     
+    #warning("remove")
     private static func fetchLogLevel(serverURL: URL, numberOfConfigurations: Int) -> Effect<SDKAction> {
         guard numberOfConfigurations == 1 else { return .fireAndForget { } }
         let url = serverURL.appendingPathComponent("client-config")
