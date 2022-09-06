@@ -22,7 +22,9 @@ extension OwnID.CoreSDK {
             state.configurations[userFacingSDK.name] = configuration
             let numberOfConfigurations = state.configurations.count
             return [
-                fetchLogLevel(serverURL: configuration.ownIDServerURL, numberOfConfigurations: numberOfConfigurations),
+                fetchLogLevel(serverURL: configuration.ownIDServerURL,
+                              statusURL: configuration.statusURL,
+                              numberOfConfigurations: numberOfConfigurations),
                 startLoggerIfNeeded(numberOfConfigurations: numberOfConfigurations,
                                     userFacingSDK: userFacingSDK,
                                     underlyingSDKs: underlyingSDKs,
@@ -103,26 +105,28 @@ extension OwnID.CoreSDK {
     }
     
     #warning("remove")
-    private static func fetchLogLevel(serverURL: URL, numberOfConfigurations: Int) -> Effect<SDKAction> {
+    private static func fetchLogLevel(serverURL: URL, statusURL: URL, numberOfConfigurations: Int) -> Effect<SDKAction> {
         guard numberOfConfigurations == 1 else { return .fireAndForget { } }
+        
+        
+        
+        let apiSession = APISession(serverURL: serverURL, statusURL: statusURL, webLanguages: .init(rawValue: []))
+        
         let url = serverURL.appendingPathComponent("client-config")
         let effect = Deferred { URLSession.shared.dataTaskPublisher(for: url)
                 .map { data, _ in  return data }
                 .eraseToAnyPublisher()
-                .decode(type: ServerLogLevel.self, decoder: JSONDecoder())
+                .decode(type: ClientConfiguration.self, decoder: JSONDecoder())
                 .eraseToAnyPublisher()
-                .replaceError(with: ServerLogLevel(logLevel: 4))
-                .flatMap { serverLogLevel -> Empty<SDKAction, Never> in
+                .replaceError(with: ClientConfiguration(logLevel: 4, passkeys: false, rpId: .none, passkeysAutofill: false))
+                .zip(apiSession.performInitRequest(type: .login, token: .none).replaceError(with: .init(url: "", context: .none, nonce: .none)).eraseToAnyPublisher())
+                .flatMap { serverLogLevel, initResponse -> Empty<SDKAction, Never> in
                     Logger.shared.logLevel = LogLevel(rawValue: serverLogLevel.logLevel) ?? .error
                     return Empty(completeImmediately: true)
                 }
                 .eraseToAnyPublisher()
         }
-        return  effect.eraseToEffect()
-    }
-                          
-    struct ServerLogLevel: Decodable {
-        let logLevel: Int
+        return effect.eraseToEffect()
     }
     
     private static func startTranslationsDownloader() -> Effect<SDKAction> {
