@@ -10,6 +10,8 @@ public extension OwnID.CoreSDK.Init {
         let sessionChallenge: OwnID.CoreSDK.SessionChallenge
         let type: OwnID.CoreSDK.RequestType
         let data: String?
+        #warning("do not hardcode")
+        let originUrl = "https://demo.dev.ownid.com"
     }
 }
 
