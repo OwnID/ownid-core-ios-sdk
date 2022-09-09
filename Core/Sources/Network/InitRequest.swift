@@ -10,7 +10,7 @@ public extension OwnID.CoreSDK.Init {
         let sessionChallenge: OwnID.CoreSDK.SessionChallenge
         let type: OwnID.CoreSDK.RequestType
         let data: String?
-        #warning("do not hardcode")
+        #warning("do not hardcode but use settings for mobile")
         let originUrl = "https://demo.dev.ownid.com"
     }
 }

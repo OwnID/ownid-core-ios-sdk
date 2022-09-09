@@ -1,4 +1,3 @@
-
 import Foundation
 import Combine
 
@@ -22,9 +21,7 @@ extension OwnID.CoreSDK {
             state.configurations[userFacingSDK.name] = configuration
             let numberOfConfigurations = state.configurations.count
             return [
-                fetchLogLevel(serverURL: configuration.ownIDServerURL,
-                              statusURL: configuration.statusURL,
-                              numberOfConfigurations: numberOfConfigurations),
+                fetchLogLevel(serverURL: configuration.ownIDServerURL, numberOfConfigurations: numberOfConfigurations),
                 startLoggerIfNeeded(numberOfConfigurations: numberOfConfigurations,
                                     userFacingSDK: userFacingSDK,
                                     underlyingSDKs: underlyingSDKs,
@@ -104,31 +101,26 @@ extension OwnID.CoreSDK {
         }
     }
     
-    #warning("remove")
-    private static func fetchLogLevel(serverURL: URL, statusURL: URL, numberOfConfigurations: Int) -> Effect<SDKAction> {
+    private static func fetchLogLevel(serverURL: URL, numberOfConfigurations: Int) -> Effect<SDKAction> {
         guard numberOfConfigurations == 1 else { return .fireAndForget { } }
-        OwnID.CoreSDK.shared.apiSession = APISession(serverURL: serverURL, statusURL: statusURL, webLanguages: .init(rawValue: []))
         let url = serverURL.appendingPathComponent("client-config")
         let effect = Deferred { URLSession.shared.dataTaskPublisher(for: url)
                 .map { data, _ in  return data }
                 .eraseToAnyPublisher()
-                .decode(type: ClientConfiguration.self, decoder: JSONDecoder())
+                .decode(type: ServerLogLevel.self, decoder: JSONDecoder())
                 .eraseToAnyPublisher()
-                .replaceError(with: ClientConfiguration(logLevel: 4, passkeys: false, rpId: .none, passkeysAutofill: false))
-                .zip(OwnID.CoreSDK.shared.apiSession.performInitRequest(type: .login, token: .none).replaceError(with: .init(url: "", context: .none, nonce: .none)).eraseToAnyPublisher())
-                .flatMap { serverLogLevel, initResponse -> Empty<SDKAction, Never> in
+                .replaceError(with: ServerLogLevel(logLevel: 4))
+                .flatMap { serverLogLevel -> Empty<SDKAction, Never> in
                     Logger.shared.logLevel = LogLevel(rawValue: serverLogLevel.logLevel) ?? .error
-                    OwnID.CoreSDK.shared.passkeysManager.domain = serverLogLevel.rpId ?? "ownid.com"
-                    OwnID.CoreSDK.shared.passkeysManager.challenge = (initResponse.context ?? "").data(using: .utf8)!
-                    
-                    print("performing query for context: \(initResponse.context)")
-                    OwnID.CoreSDK.shared.passkeysManager.serverURL = serverURL
-                    OwnID.CoreSDK.shared.passkeysManager.start()
                     return Empty(completeImmediately: true)
                 }
                 .eraseToAnyPublisher()
         }
-        return effect.eraseToEffect()
+        return  effect.eraseToEffect()
+    }
+                          
+    struct ServerLogLevel: Decodable {
+        let logLevel: Int
     }
     
     private static func startTranslationsDownloader() -> Effect<SDKAction> {

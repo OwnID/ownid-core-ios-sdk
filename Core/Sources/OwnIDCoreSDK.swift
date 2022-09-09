@@ -22,9 +22,7 @@ public extension OwnID {
         #warning("move logger here???")
         public static let shared = CoreSDK()
         public let translationsModule = TranslationsSDK.Manager()
-        public let passkeysManager = PasskeysAccountManager()
         
-        var apiSession: APISession!
         @ObservedObject var store: Store<SDKState, SDKAction>
         
         private let urlPublisher = PassthroughSubject<Void, Error>()

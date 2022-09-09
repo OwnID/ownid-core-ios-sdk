@@ -10,14 +10,13 @@ public protocol APISessionProtocol {
 
 public extension OwnID.CoreSDK {
     final class APISession: APISessionProtocol {
-         let sessionVerifier: SessionVerifier
-         let sessionChallenge: SessionChallenge
-         var nonce: Nonce!
-        #warning("make private")
-         var context: Context!
-         var type: OwnID.CoreSDK.RequestType!
-         let serverURL: ServerURL
-         let statusURL: ServerURL
+        private let sessionVerifier: SessionVerifier
+        private let sessionChallenge: SessionChallenge
+        private var nonce: Nonce!
+        private var context: Context!
+        private var type: OwnID.CoreSDK.RequestType!
+        private let serverURL: ServerURL
+        private let statusURL: ServerURL
         private let webLanguages: OwnID.CoreSDK.Languages
         
         public init(serverURL: ServerURL,
