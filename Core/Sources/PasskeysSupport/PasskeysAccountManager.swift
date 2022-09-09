@@ -2,7 +2,7 @@ import AuthenticationServices
 import Foundation
 import Combine
 
-public extension OwnID.CoreSDK {
+private extension OwnID.CoreSDK {
     final class PasskeysAccountManager: NSObject, ASAuthorizationControllerPresentationContextProviding, ASAuthorizationControllerDelegate {
         public let eventPublisher = PassthroughSubject<Void, Never>()
         
@@ -106,9 +106,9 @@ public extension OwnID.CoreSDK {
             ]
             
             let jsonFields: [String : Any] = [
-                "context": OwnID.CoreSDK.shared.apiSession.context!,
-                "nonce": OwnID.CoreSDK.shared.apiSession.nonce!,
-                "sessionVerifier": OwnID.CoreSDK.shared.apiSession.sessionVerifier,
+                "context": "OwnID.CoreSDK.shared.apiSession.context!",
+                "nonce": "OwnID.CoreSDK.shared.apiSession.nonce!",
+                "sessionVerifier": "OwnID.CoreSDK.shared.apiSession.sessionVerifier",
                 "fido2Payload": resultDictionary
             ]
             let jsonData = try! JSONSerialization.data(withJSONObject: jsonFields, options: .prettyPrinted)
