@@ -1,16 +1,18 @@
 import AuthenticationServices
 import Foundation
-import os
 import Combine
 
 public extension OwnID.CoreSDK {
     final class PasskeysAccountManager: NSObject, ASAuthorizationControllerPresentationContextProviding, ASAuthorizationControllerDelegate {
-        var domain = "passwordless.staging.ownid.com"
-        #warning("generate challenge each time new")
-        var challenge = Data()
         public let eventPublisher = PassthroughSubject<Void, Never>()
+        
+        /// Needs to be brought from BE
+        private var domain = "passwordless.staging.ownid.com"
+        
+        /// Needs to be generated new for every operation. In our case `challenge` = `context` . `context` can be fetched in init request with others settings.
+        private var challenge = Data()
+        private var serverURL: ServerURL!
         private var bag = Set<AnyCancellable>()
-        var serverURL: ServerURL!
         
         var authenticationAnchor: ASPresentationAnchor {
             for scene in UIApplication.shared.connectedScenes {
@@ -21,16 +23,18 @@ public extension OwnID.CoreSDK {
             fatalError()
         }
         
-        func start() {
+        func challengeDomainFetchedFromServer(domain: String, challenge: Data, serverURL: ServerURL) {
+            self.domain = domain
+            self.challenge = challenge
+            self.serverURL = serverURL
             
             DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
                 self.signInWith()
-//                self.signUpWith()
+                self.signUpWith(userName: "insert user name from registration here")
             }
         }
         
-        func signUpWith(userName: String = "yuroomdk@kndke.fmnek") {
-            print(#function)
+        func signUpWith(userName: String) {
             let publicKeyCredentialProvider = ASAuthorizationPlatformPublicKeyCredentialProvider(relyingPartyIdentifier: domain)
             
             // Fetch the challenge from the server. The challenge needs to be unique for each request.
@@ -57,7 +61,7 @@ public extension OwnID.CoreSDK {
             
             let assertionRequest = publicKeyCredentialProvider.createCredentialAssertionRequest(challenge: challenge)
             
-#warning("check password")
+            // Do we need to allow user use their passwords? `ASAuthorizationPasswordProvider`
             // Also allow the user to use a saved password, if they have one.
             let passwordCredentialProvider = ASAuthorizationPasswordProvider()
             let passwordRequest = passwordCredentialProvider.createRequest()
@@ -67,7 +71,6 @@ public extension OwnID.CoreSDK {
             authController.delegate = self
             authController.presentationContextProvider = self
             
-#warning("check turned on and off")
             if preferImmediatelyAvailableCredentials {
                 // If credentials are available, presents a modal sign-in sheet.
                 // If there are no locally saved credentials, no UI appears and
@@ -83,19 +86,55 @@ public extension OwnID.CoreSDK {
         }
         
         public func beginAutoFillAssistedPasskeySignIn() {
+            let publicKeyCredentialProvider = ASAuthorizationPlatformPublicKeyCredentialProvider(relyingPartyIdentifier: domain)
             
-//                if challenge.isEmpty {
-//                    return
-//                }
-//            let publicKeyCredentialProvider = ASAuthorizationPlatformPublicKeyCredentialProvider(relyingPartyIdentifier: domain)
-//            
-//            let assertionRequest = publicKeyCredentialProvider.createCredentialAssertionRequest(challenge: challenge)
-//            
-//            // AutoFill-assisted requests only support ASAuthorizationPlatformPublicKeyCredentialAssertionRequest.
-//            let authController = ASAuthorizationController(authorizationRequests: [ assertionRequest ] )
-//            authController.delegate = self
-//            authController.presentationContextProvider = self
-//            authController.performAutoFillAssistedRequests()
+            let assertionRequest = publicKeyCredentialProvider.createCredentialAssertionRequest(challenge: challenge)
+            
+            // AutoFill-assisted requests only support ASAuthorizationPlatformPublicKeyCredentialAssertionRequest.
+            let authController = ASAuthorizationController(authorizationRequests: [ assertionRequest ] )
+            authController.delegate = self
+            authController.presentationContextProvider = self
+            authController.performAutoFillAssistedRequests()
+        }
+        
+        private func validateOnServer(_ userID: Data?, _ clientDataJSON: Data, _ rawData: Data?, _ signature: Data?) {
+            let resultDictionary = [
+                "credentialId": userID!.base64EncodedString(),
+                "clientDataJSON": clientDataJSON.base64EncodedString(),
+                "authenticatorData": rawData!.base64EncodedString(),
+                "signature": String(data: signature!.base64EncodedData(), encoding: .utf8)!
+            ]
+            
+            let jsonFields: [String : Any] = [
+                "context": OwnID.CoreSDK.shared.apiSession.context!,
+                "nonce": OwnID.CoreSDK.shared.apiSession.nonce!,
+                "sessionVerifier": OwnID.CoreSDK.shared.apiSession.sessionVerifier,
+                "fido2Payload": resultDictionary
+            ]
+            let jsonData = try! JSONSerialization.data(withJSONObject: jsonFields, options: .prettyPrinted)
+            
+            
+            let urlll = serverURL.appending(path: "passkeys/fido2/auth")
+            
+            var request = URLRequest(url: urlll)
+            
+            request.httpMethod = "POST"
+            request.httpBody = jsonData
+            request.setValue("https://demo.dev.ownid.com", forHTTPHeaderField: "Origin")
+            URLSession.shared.dataTaskPublisher(for: request)
+                .map { data, _ in
+                    return data
+                }
+                .eraseToAnyPublisher()
+                .decode(type: ClientConfiguration.self, decoder: JSONDecoder()) // Process ready to use session here
+                .eraseToAnyPublisher()
+                .replaceError(with: ClientConfiguration(logLevel: 4, passkeys: false, rpId: .none, passkeysAutofill: false))
+                .sink(receiveValue: { response in
+                    // Validate session and let user in
+                    // After the server verifies the assertion, sign in the user.
+                    self.didFinishSignIn()
+                })
+                .store(in: &bag)
         }
         
         public func authorizationController(controller: ASAuthorizationController,
@@ -109,54 +148,15 @@ public extension OwnID.CoreSDK {
                 let rawData = credentialAssertion.rawAuthenticatorData
                 let clientDataJSON = credentialAssertion.rawClientDataJSON
                 let userID = credentialAssertion.userID
-                print("clientDataJSON: \(String(data: clientDataJSON, encoding: .utf8))")
-                print("userID: \(String(data: userID!, encoding: .utf8))")
-                print("signature base64: \(String(data: signature!.base64EncodedData(), encoding: .utf8))")
-                print("rawData base64: \(String(data: rawData!.base64EncodedData(), encoding: .utf8))")
+                print("clientDataJSON: \(String(describing: String(data: clientDataJSON, encoding: .utf8)))")
+                print("userID: \(String(describing: String(data: userID!.base64EncodedData(), encoding: .utf8)))")
+                print("signature base64: \(String(describing: String(data: signature!.base64EncodedData(), encoding: .utf8)))")
+                print("rawData base64: \(String(describing: String(data: rawData!.base64EncodedData(), encoding: .utf8)))")
                 
-                let resultDictionary = ["credentialId": userID!.base64EncodedString(), "clientDataJSON": clientDataJSON.base64EncodedString(), "authenticatorData": rawData!.base64EncodedString(), "signature": String(data: signature!.base64EncodedData(), encoding: .utf8)!]
-                let jsonFields: [String : Any] = ["context": OwnID.CoreSDK.shared.apiSession.context, "nonce": OwnID.CoreSDK.shared.apiSession.nonce, "sessionVerifier": OwnID.CoreSDK.shared.apiSession.sessionVerifier, "fido2Payload": resultDictionary]
-                let jsonData = try! JSONSerialization.data(withJSONObject: jsonFields, options: .prettyPrinted)
+                validateOnServer(userID, clientDataJSON, rawData, signature)
                 
-                
-                let urlll = serverURL.appending(path: "passkeys/fido2/auth")
-                
-                var request = URLRequest(url: urlll)
-
-                request.httpMethod = "POST"
-                request.httpBody = jsonData
-                request.setValue("https://demo.dev.ownid.com", forHTTPHeaderField: "Origin")
-                print("performing query for context: \(String(data: challenge, encoding: .utf8))")
-                URLSession.shared.dataTaskPublisher(for: request)
-                        .map { data, obj in
-                            
-                            #warning("what is here, should be session to log in")
-                            print(obj.expectedContentLength)
-                            print(String(data: data, encoding: .utf8))
-                            return data
-                        }
-                        .eraseToAnyPublisher()
-                        .decode(type: ClientConfiguration.self, decoder: JSONDecoder())
-                        .eraseToAnyPublisher()
-                        .replaceError(with: ClientConfiguration(logLevel: 4, passkeys: false, rpId: .none, passkeysAutofill: false))
-                        .sink(receiveValue: { response in
-                            #warning("validate session and let user in")
-                            
-                            // After the server verifies the assertion, sign in the user.
-                            self.didFinishSignIn()
-                        })
-                        .store(in: &bag)
-                
-                
-                
-                
-                
-                
-                
-                
-                
-#warning("what to do with this stuff")
             case let passwordCredential as ASPasswordCredential:
+                // What to do with this ASPasswordCredential?
                 print("A password was provided: \(passwordCredential)")
                 // Verify the userName and password with your service.
                 let userName = passwordCredential.user
@@ -168,13 +168,12 @@ public extension OwnID.CoreSDK {
                 didFinishSignIn()
                 
             default:
-#warning("we can somehow here check for login with apple")
+                // Ignore login with apple and other possible types?
                 print("Received unknown authorization type.")
             }
         }
         
-        func authorizationController(controller: ASAuthorizationController, didCompleteWithError error: Error) {
-            print(#function)
+        public func authorizationController(controller: ASAuthorizationController, didCompleteWithError error: Swift.Error) {
             guard let authorizationError = error as? ASAuthorizationError else {
                 print("Unexpected authorization error: \(error.localizedDescription)")
                 return
