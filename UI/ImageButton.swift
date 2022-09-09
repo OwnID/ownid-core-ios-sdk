@@ -34,7 +34,7 @@ extension OwnID.UISDK {
         
         var eventPublisher: OwnID.UISDK.EventPubliser {
             resultPublisher
-                .delay(for: 1, scheduler: RunLoop.main)
+                .debounce(for: .milliseconds(500), scheduler: DispatchQueue.main)
                 .eraseToAnyPublisher()
         }
         

@@ -19,8 +19,10 @@ public extension OwnID {
             getConfiguration(for: configurationName).ownIDServerURL
         }
         
+        #warning("move logger here???")
         public static let shared = CoreSDK()
         public let translationsModule = TranslationsSDK.Manager()
+        
         @ObservedObject var store: Store<SDKState, SDKAction>
         
         private let urlPublisher = PassthroughSubject<Void, Error>()

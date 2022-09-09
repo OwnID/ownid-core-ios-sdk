@@ -50,6 +50,7 @@ extension OwnID.CoreSDK {
     }
     
     struct ViewModelState: LoggingEnabled {
+        #warning("duplication from the sdk state, must be in single place")
         var isLoggingEnabled = false
         
         let sdkConfigurationName: String
