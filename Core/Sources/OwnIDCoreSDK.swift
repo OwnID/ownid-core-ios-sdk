@@ -19,7 +19,6 @@ public extension OwnID {
             getConfiguration(for: configurationName).ownIDServerURL
         }
         
-        #warning("move logger here???")
         public static let shared = CoreSDK()
         public let translationsModule = TranslationsSDK.Manager()
         
@@ -42,6 +41,7 @@ public extension OwnID {
             store.value.configurationName
         }
         
+#warning("Move logger here? Make it as part of SDK instance instead of it own instance and have everything in single place?")
         public static var logger: LoggerProtocol {
             Logger.shared
         }

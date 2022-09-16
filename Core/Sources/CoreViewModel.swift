@@ -50,8 +50,8 @@ extension OwnID.CoreSDK {
     }
     
     struct ViewModelState: LoggingEnabled {
-        #warning("duplication from the sdk state, must be in single place")
-        var isLoggingEnabled = false
+#warning("Make this property controlled from the SDK reducers or remove it")
+        let isLoggingEnabled = false
         
         let sdkConfigurationName: String
         let session: APISessionProtocol

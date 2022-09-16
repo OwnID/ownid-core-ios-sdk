@@ -42,7 +42,7 @@ public extension OwnID.FlowsSDK.RegisterView {
         
         let sdkConfigurationName: String
         let webLanguages: OwnID.CoreSDK.Languages
-        var getEmail: (() -> String)!
+        public var getEmail: (() -> String)!
         
         public var eventPublisher: OwnID.FlowsSDK.RegistrationPublisher {
             resultPublisher.eraseToAnyPublisher()
@@ -143,7 +143,7 @@ public extension OwnID.FlowsSDK.RegisterView {
                 .store(in: &bag)
         }
         
-        func subscribe(to passwordEventsPublisher: OwnID.UISDK.EventPubliser) {
+        public func subscribe(to passwordEventsPublisher: OwnID.UISDK.EventPubliser) {
             passwordEventsPublisher
                 .sink { _ in
                 } receiveValue: { [unowned self] _ in
