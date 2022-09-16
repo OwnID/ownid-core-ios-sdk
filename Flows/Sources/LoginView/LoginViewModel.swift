@@ -25,7 +25,7 @@ public extension OwnID.FlowsSDK.LoginView {
         
         let sdkConfigurationName: String
         let webLanguages: OwnID.CoreSDK.Languages
-        var getEmail: (() -> String)!
+        public var getEmail: (() -> String)!
         
         public var eventPublisher: OwnID.FlowsSDK.LoginPublisher {
             resultPublisher.eraseToAnyPublisher()
@@ -85,7 +85,7 @@ public extension OwnID.FlowsSDK.LoginView {
                 .store(in: &coreViewModelBag)
         }
         
-        func subscribe(to passwordEventsPublisher: OwnID.UISDK.EventPubliser) {
+        public func subscribe(to passwordEventsPublisher: OwnID.UISDK.EventPubliser) {
             passwordEventsPublisher
                 .sink { _ in
                 } receiveValue: { [unowned self] event in
