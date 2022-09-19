@@ -54,13 +54,14 @@ extension OwnID.UISDK {
             })
                 .buttonStyle(StateableButton(styleChanged: { isPressedStyle -> AnyView in
                     let shouldDisplayHighlighted = shouldDisplayHighlighted(isHighlighted: isPressedStyle)
-                    let biometricsImage = Image("biometricsImage", bundle: .module)
+                    let imageName = visualConfig.variant.rawValue
+                    let image = Image(imageName, bundle: .module)
                         .renderingMode(.template)
-                        .foregroundColor(visualConfig.biometryIconColor)
+                        .foregroundColor(visualConfig.iconColor)
                         .padding(shouldDisplayHighlighted ? highlightedImageSpace : defaultImageSpace)
                     
                     let imagesContainer = ZStack(alignment: .topTrailing) {
-                        biometricsImage
+                        image
                         checkmarkView
                     }
                     let styled = style(view: imagesContainer.eraseToAnyView(), shouldDisplayHighlighted: shouldDisplayHighlighted)
