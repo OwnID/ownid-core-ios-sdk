@@ -40,20 +40,21 @@ public extension OwnID.FlowsSDK.LoginView {
             self.webLanguages = webLanguages
         }
         
+        /// Reset visual state and any possible data from web flow
         public func resetDataAndState() {
             payload = .none
-            coreViewModel = .none
-            state = .initial
+            resetState()
         }
         
+        /// Reset visual state
         public func resetState() {
+            coreViewModelBag.removeAll()
             coreViewModel = .none
             state = .initial
         }
         
         func skipPasswordTapped(usersEmail: String) {
             DispatchQueue.main.async { [self] in
-                coreViewModelBag.removeAll()
                 let email = OwnID.CoreSDK.Email(rawValue: usersEmail)
                 coreViewModel = OwnID.CoreSDK.shared.createCoreViewModelForLogIn(email: email,
                                                                                  sdkConfigurationName: sdkConfigurationName,

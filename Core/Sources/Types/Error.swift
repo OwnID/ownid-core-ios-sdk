@@ -1,5 +1,6 @@
 import Foundation
 
+/// Designed to be used in plugin SDKs and emit all errors in single format.
 public protocol PluginError: Swift.Error { }
 
 public extension OwnID.CoreSDK {
