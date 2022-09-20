@@ -2,9 +2,15 @@ import SwiftUI
 import OwnIDCoreSDK
 
 public extension OwnID.UISDK {
+    
+    enum ButtonVariant: String {
+        case fingerprint = "touchidImage"
+        case faceId = "faceidImage"
+    }
+    
     struct VisualLookConfig {
         
-        public init(biometryIconColor: Color = OwnID.Colors.biometricsButtonImageColor,
+        public init(iconColor: Color = OwnID.Colors.biometricsButtonImageColor,
                     backgroundColor: Color = OwnID.Colors.biometricsButtonBackground,
                     borderColor: Color = OwnID.Colors.biometricsButtonBorder,
                     shadowColor: Color = OwnID.Colors.biometricsButtonBorder.opacity(0.7),
@@ -12,8 +18,9 @@ public extension OwnID.UISDK {
                     orTextSize: CGFloat = 16.0,
                     orLineHeight: CGFloat = 24.0,
                     orTextColor: Color = OwnID.Colors.textGrey,
-                    tooltipVisualLookConfig: TooltipVisualLookConfig = TooltipVisualLookConfig()) {
-            self.biometryIconColor = biometryIconColor
+                    tooltipVisualLookConfig: TooltipVisualLookConfig = TooltipVisualLookConfig(),
+                    variant: ButtonVariant = .fingerprint) {
+            self.iconColor = iconColor
             self.backgroundColor = backgroundColor
             self.borderColor = borderColor
             self.shadowColor = shadowColor
@@ -22,9 +29,10 @@ public extension OwnID.UISDK {
             self.orLineHeight = orLineHeight
             self.orTextColor = orTextColor
             self.tooltipVisualLookConfig = tooltipVisualLookConfig
+            self.variant = variant
         }
         
-        public var biometryIconColor: Color
+        public var iconColor: Color
         public var backgroundColor: Color
         public var borderColor: Color
         public var shadowColor: Color
@@ -33,5 +41,6 @@ public extension OwnID.UISDK {
         public var orTextSize: CGFloat
         public var orLineHeight: CGFloat
         public var orTextColor: Color
+        public var variant: ButtonVariant
     }
 }

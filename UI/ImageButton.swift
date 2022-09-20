@@ -52,30 +52,11 @@ extension OwnID.UISDK {
             }, label: {
                 EmptyView()
             })
-                .buttonStyle(StateableButton(styleChanged: { isPressedStyle -> AnyView in
-                    let shouldDisplayHighlighted = shouldDisplayHighlighted(isHighlighted: isPressedStyle)
-                    let biometricsImage = Image("biometricsImage", bundle: .module)
-                        .renderingMode(.template)
-                        .foregroundColor(visualConfig.biometryIconColor)
-                        .padding(shouldDisplayHighlighted ? highlightedImageSpace : defaultImageSpace)
-                    
-                    let imagesContainer = ZStack(alignment: .topTrailing) {
-                        biometricsImage
-                        checkmarkView
-                    }
-                    let styled = style(view: imagesContainer.eraseToAnyView(), shouldDisplayHighlighted: shouldDisplayHighlighted)
-                    let highlightedContainerSpacing = EdgeInsets(top: 1, leading: 1, bottom: 1, trailing: 1)
-                    let container = HStack { styled }
-                        .padding(shouldDisplayHighlighted ? highlightedContainerSpacing : .init(.zero))
-                    let embededView = HStack { container }
-                        .scaleEffect(0.95)
-                        .eraseToAnyView()
-                    return embededView
-                }))
-                .accessibilityLabel(Text(translationText))
-                .onReceive(OwnID.CoreSDK.shared.translationsModule.translationsChangePublisher) {
-                    translationText = localizationClosure()
-                }
+            .buttonStyle(buttonStyle())
+            .accessibilityLabel(Text(translationText))
+            .onReceive(OwnID.CoreSDK.shared.translationsModule.translationsChangePublisher) {
+                translationText = localizationClosure()
+            }
         }
         
         private func style(view: AnyView, shouldDisplayHighlighted: Bool) -> some View {
@@ -106,6 +87,32 @@ extension OwnID.UISDK {
 }
 
 private extension OwnID.UISDK.ImageButton {
+    
+    func buttonStyle() -> StateableButton<AnyView> {
+        return StateableButton(styleChanged: { isPressedStyle -> AnyView in
+            let shouldDisplayHighlighted = shouldDisplayHighlighted(isHighlighted: isPressedStyle)
+            let imageName = visualConfig.variant.rawValue
+            print(imageName)
+            let image = Image(imageName, bundle: .module)
+                .renderingMode(.template)
+                .foregroundColor(visualConfig.iconColor)
+                .padding(shouldDisplayHighlighted ? highlightedImageSpace : defaultImageSpace)
+            
+            let imagesContainer = ZStack(alignment: .topTrailing) {
+                image
+                checkmarkView
+            }
+            let styled = style(view: imagesContainer.eraseToAnyView(), shouldDisplayHighlighted: shouldDisplayHighlighted)
+            let highlightedContainerSpacing = EdgeInsets(top: 1, leading: 1, bottom: 1, trailing: 1)
+            let container = HStack { styled }
+                .padding(shouldDisplayHighlighted ? highlightedContainerSpacing : .init(.zero))
+            let embededView = HStack { container }
+                .scaleEffect(0.95)
+                .eraseToAnyView()
+            return embededView
+        })
+    }
+    
     func shouldDisplayHighlighted(isHighlighted: Bool) -> Bool {
         isHighlighted && viewState == .enabled
     }
@@ -132,10 +139,10 @@ private extension View {
     func shadow(shadowColor: Color, backgroundColor: Color) -> some View {
         self
             .background(backgroundRectangle(color: backgroundColor)
-                            .shadow(color: shadowColor,
-                                    radius: cornerRadiusValue,
-                                    x: 0,
-                                    y: cornerRadiusValue / 2)
+                .shadow(color: shadowColor,
+                        radius: cornerRadiusValue,
+                        x: 0,
+                        y: cornerRadiusValue / 2)
             )
     }
 }

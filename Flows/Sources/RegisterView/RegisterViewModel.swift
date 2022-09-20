@@ -89,12 +89,16 @@ public extension OwnID.FlowsSDK.RegisterView {
                 .store(in: &bag)
         }
         
+        /// Reset visual state and any possible data from web flow
         public func resetDataAndState() {
             registrationData = RegistrationData()
-            state = .initial
+            resetState()
         }
         
+        /// Reset visual state
         public func resetState() {
+            coreViewModelBag.removeAll()
+            coreViewModel = .none
             state = .initial
         }
         
@@ -110,7 +114,6 @@ public extension OwnID.FlowsSDK.RegisterView {
                 resultPublisher.send(.success(.readyToRegister(usersEmailFromWebApp: usersEmail)))
                 return
             }
-            coreViewModelBag.removeAll()
             let email = OwnID.CoreSDK.Email(rawValue: usersEmail)
             coreViewModel = OwnID.CoreSDK.shared.createCoreViewModelForRegister(email: email,
                                                                                 sdkConfigurationName: sdkConfigurationName,
