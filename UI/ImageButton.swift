@@ -92,7 +92,6 @@ private extension OwnID.UISDK.ImageButton {
         return StateableButton(styleChanged: { isPressedStyle -> AnyView in
             let shouldDisplayHighlighted = shouldDisplayHighlighted(isHighlighted: isPressedStyle)
             let imageName = visualConfig.variant.rawValue
-            print(imageName)
             let image = Image(imageName, bundle: .module)
                 .renderingMode(.template)
                 .foregroundColor(visualConfig.iconColor)
