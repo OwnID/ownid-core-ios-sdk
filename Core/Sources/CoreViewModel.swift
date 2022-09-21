@@ -126,7 +126,7 @@ extension OwnID.CoreSDK {
             let redirect = redirectionEncoded! + "?context=" + context
             let redirectParameter = "&redirectURI=" + redirect
             var urlString = browserURL
-            if let email = email {
+            if let email {
                 var emailSet = CharacterSet.urlHostAllowed
                 emailSet.remove("+")
                 if let encoded = email.rawValue.addingPercentEncoding(withAllowedCharacters: emailSet) {
