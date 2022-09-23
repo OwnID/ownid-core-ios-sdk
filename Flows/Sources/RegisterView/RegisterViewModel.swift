@@ -133,8 +133,16 @@ public extension OwnID.FlowsSDK.RegisterView {
                 } receiveValue: { [unowned self] event in
                     switch event {
                     case .success(let payload):
-                        self.registrationData.payload = payload
-                        sendSuccess()
+                        OwnID.CoreSDK.logger.logFlow(.entry(Self.self))
+                        switch payload.responseType {
+                        case .registrationInfo:
+                            self.registrationData.payload = payload
+                            state = .ownidCreated
+                            resultPublisher.send(.success(.readyToRegister(usersEmailFromWebApp: registrationData.payload?.loginId)))
+                            
+                        case .session:
+                            resultPublisher.send(.success(.userRegisteredAndLoggedIn(registrationResult: VoidOperationResult())))
+                        }
                         
                     case .cancelled:
                         handle(.flowCancelled)
@@ -159,11 +167,6 @@ public extension OwnID.FlowsSDK.RegisterView {
 }
 
 private extension OwnID.FlowsSDK.RegisterView.ViewModel {
-    func sendSuccess() {
-        OwnID.CoreSDK.logger.logFlow(.entry(Self.self))
-        state = .ownidCreated
-        resultPublisher.send(.success(.readyToRegister(usersEmailFromWebApp: registrationData.payload?.loginId)))
-    }
     
     func handle(_ error: OwnID.CoreSDK.Error) {
         OwnID.CoreSDK.logger.logFlow(.errorEntry(message: "\(error.localizedDescription)", Self.self))
