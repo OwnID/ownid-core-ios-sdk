@@ -75,10 +75,6 @@ extension OwnID.CoreSDK.Status {
                 }
                 .eraseToAnyPublisher()
                 .tryMap { [self] response -> OwnID.CoreSDK.Payload in
-                    guard let flowInfo = response["flowInfo"] as? [String: String],
-                          let event = flowInfo["event"],
-                          event == type.rawValue else { throw OwnID.CoreSDK.Error.statusRequestResponseTypeMismatch }
-                    
                     guard let responseContext = response["context"] as? String else { throw OwnID.CoreSDK.Error.statusRequestResponseIsEmpty }
                     guard context == responseContext else { throw OwnID.CoreSDK.Error.statusRequestResponseContextMismatch }
                     guard let responsePayload = response["payload"] as? [String: Any] else { throw OwnID.CoreSDK.Error.statusRequestResponseIsEmpty }

@@ -38,6 +38,7 @@ public extension OwnID.FlowsSDK.RegisterView {
         private let resultPublisher = PassthroughSubject<Result<OwnID.FlowsSDK.RegistrationEvent, OwnID.CoreSDK.Error>, Never>()
         private let registrationPerformer: RegistrationPerformer
         private var registrationData = RegistrationData()
+        private let loginPerformer: LoginPerformer
         var coreViewModel: OwnID.CoreSDK.CoreViewModel!
         
         let sdkConfigurationName: String
@@ -49,11 +50,13 @@ public extension OwnID.FlowsSDK.RegisterView {
         }
         
         public init(registrationPerformer: RegistrationPerformer,
+                    loginPerformer: LoginPerformer,
                     sdkConfigurationName: String,
                     webLanguages: OwnID.CoreSDK.Languages) {
             OwnID.CoreSDK.logger.logAnalytic(.registerTrackMetric(action: "OwnID Widget is Loaded", context: registrationData.payload?.context))
             self.sdkConfigurationName = sdkConfigurationName
             self.registrationPerformer = registrationPerformer
+            self.loginPerformer = loginPerformer
             self.webLanguages = webLanguages
         }
         
@@ -133,8 +136,16 @@ public extension OwnID.FlowsSDK.RegisterView {
                 } receiveValue: { [unowned self] event in
                     switch event {
                     case .success(let payload):
-                        self.registrationData.payload = payload
-                        sendSuccess()
+                        OwnID.CoreSDK.logger.logFlow(.entry(Self.self))
+                        switch payload.responseType {
+                        case .registrationInfo:
+                            self.registrationData.payload = payload
+                            state = .ownidCreated
+                            resultPublisher.send(.success(.readyToRegister(usersEmailFromWebApp: registrationData.payload?.loginId)))
+                            
+                        case .session:
+                            processLogin(payload: payload)
+                        }
                         
                     case .cancelled:
                         handle(.flowCancelled)
@@ -159,10 +170,20 @@ public extension OwnID.FlowsSDK.RegisterView {
 }
 
 private extension OwnID.FlowsSDK.RegisterView.ViewModel {
-    func sendSuccess() {
-        OwnID.CoreSDK.logger.logFlow(.entry(Self.self))
-        state = .ownidCreated
-        resultPublisher.send(.success(.readyToRegister(usersEmailFromWebApp: registrationData.payload?.loginId)))
+    func processLogin(payload: OwnID.CoreSDK.Payload) {
+        let loginPerformerPublisher = loginPerformer.login(payload: payload, email: getEmail())
+        loginPerformerPublisher
+            .sink { [unowned self] completion in
+                if case .failure(let error) = completion {
+                    handle(error)
+                }
+            } receiveValue: { [unowned self] loginResult in
+                OwnID.CoreSDK.logger.logAnalytic(.loginTrackMetric(action: "User is Logged in", context: payload.context))
+                state = .ownidCreated
+                resultPublisher.send(.success(.userRegisteredAndLoggedIn(registrationResult: loginResult)))
+                resetDataAndState()
+            }
+            .store(in: &bag)
     }
     
     func handle(_ error: OwnID.CoreSDK.Error) {
