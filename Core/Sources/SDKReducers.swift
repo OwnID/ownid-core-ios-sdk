@@ -107,9 +107,9 @@ extension OwnID.CoreSDK {
         let effect = Deferred { URLSession.shared.dataTaskPublisher(for: url)
                 .map { data, _ in  return data }
                 .eraseToAnyPublisher()
-                .decode(type: ServerLogLevel.self, decoder: JSONDecoder())
+                .decode(type: ClientConfiguration.self, decoder: JSONDecoder())
                 .eraseToAnyPublisher()
-                .replaceError(with: ServerLogLevel(logLevel: 4))
+                .replaceError(with: ClientConfiguration(logLevel: 4, passkeys: false, rpId: .none, passkeysAutofill: false))
                 .flatMap { serverLogLevel -> Empty<SDKAction, Never> in
                     Logger.shared.logLevel = LogLevel(rawValue: serverLogLevel.logLevel) ?? .error
                     return Empty(completeImmediately: true)
@@ -117,10 +117,6 @@ extension OwnID.CoreSDK {
                 .eraseToAnyPublisher()
         }
         return  effect.eraseToEffect()
-    }
-                          
-    struct ServerLogLevel: Decodable {
-        let logLevel: Int
     }
     
     private static func startTranslationsDownloader() -> Effect<SDKAction> {
