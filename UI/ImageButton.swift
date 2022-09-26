@@ -2,11 +2,17 @@ import SwiftUI
 import Combine
 import OwnIDCoreSDK
 
-fileprivate struct StateableButton<Content>: ButtonStyle where Content: View {
-    var styleChanged: (Bool) -> Content
-    
-    func makeBody(configuration: Configuration) -> some View {
-        return styleChanged(configuration.isPressed)
+public extension OwnID.UISDK {
+    struct StateableButton<Content>: ButtonStyle where Content: View {
+        public init(styleChanged: @escaping (Bool) -> Content) {
+            self.styleChanged = styleChanged
+        }
+        
+        public var styleChanged: (Bool) -> Content
+        
+        public func makeBody(configuration: Configuration) -> some View {
+            return styleChanged(configuration.isPressed)
+        }
     }
 }
 
@@ -88,8 +94,8 @@ extension OwnID.UISDK {
 
 private extension OwnID.UISDK.ImageButton {
     
-    func buttonStyle() -> StateableButton<AnyView> {
-        return StateableButton(styleChanged: { isPressedStyle -> AnyView in
+    func buttonStyle() -> OwnID.UISDK.StateableButton<AnyView> {
+        return OwnID.UISDK.StateableButton(styleChanged: { isPressedStyle -> AnyView in
             let shouldDisplayHighlighted = shouldDisplayHighlighted(isHighlighted: isPressedStyle)
             let imageName = visualConfig.variant.rawValue
             let image = Image(imageName, bundle: .module)
