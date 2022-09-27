@@ -6,6 +6,7 @@ private extension OwnID.CoreSDK {
     final class PasskeysAccountManager: NSObject, ASAuthorizationControllerPresentationContextProviding, ASAuthorizationControllerDelegate {
         public let eventPublisher = PassthroughSubject<Void, Never>()
         
+        #warning("get from BE")
         /// Needs to be brought from BE
         private var domain = "passwordless.staging.ownid.com"
         
@@ -29,8 +30,9 @@ private extension OwnID.CoreSDK {
             self.serverURL = serverURL
             
             DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
+                #warning("only register")
                 self.signInWith()
-                self.signUpWith(userName: "insert user name from registration here")
+//                self.signUpWith(userName: "insert user name from registration here")
             }
         }
         
@@ -121,10 +123,9 @@ private extension OwnID.CoreSDK {
             request.httpMethod = "POST"
             request.httpBody = jsonData
             request.setValue("https://demo.dev.ownid.com", forHTTPHeaderField: "Origin")
+#warning("per integration response to log user in??")
             URLSession.shared.dataTaskPublisher(for: request)
-                .map { data, _ in
-                    return data
-                }
+                .map { data, _ in return data }
                 .eraseToAnyPublisher()
                 .decode(type: ClientConfiguration.self, decoder: JSONDecoder()) // Process ready to use session here
                 .eraseToAnyPublisher()
@@ -132,6 +133,7 @@ private extension OwnID.CoreSDK {
                 .sink(receiveValue: { response in
                     // Validate session and let user in
                     // After the server verifies the assertion, sign in the user.
+                    fatalError()
                     self.didFinishSignIn()
                 })
                 .store(in: &bag)
