@@ -21,7 +21,7 @@ extension OwnID.CoreSDK {
             state.configurations[userFacingSDK.name] = configuration
             let numberOfConfigurations = state.configurations.count
             return [
-                fetchLogLevel(serverURL: configuration.ownIDServerURL, numberOfConfigurations: numberOfConfigurations),
+                fetchClientConfig(serverURL: configuration.ownIDServerURL, numberOfConfigurations: numberOfConfigurations),
                 startLoggerIfNeeded(numberOfConfigurations: numberOfConfigurations,
                                     userFacingSDK: userFacingSDK,
                                     underlyingSDKs: underlyingSDKs,
@@ -49,7 +49,10 @@ extension OwnID.CoreSDK {
         }
     }
     
-    private static func getDataFrom(plistUrl: URL, userFacingSDK: SDKInformation, underlyingSDKs: [SDKInformation], isTestingEnvironment: Bool) -> Effect<SDKAction> {
+    private static func getDataFrom(plistUrl: URL,
+                                    userFacingSDK: SDKInformation,
+                                    underlyingSDKs: [SDKInformation],
+                                    isTestingEnvironment: Bool) -> Effect<SDKAction> {
         let data = try! Data(contentsOf: plistUrl)
         let decoder = PropertyListDecoder()
         let config = try! decoder.decode(OwnID.CoreSDK.Configuration.self, from: data)
@@ -101,7 +104,7 @@ extension OwnID.CoreSDK {
         }
     }
     
-    private static func fetchLogLevel(serverURL: URL, numberOfConfigurations: Int) -> Effect<SDKAction> {
+    private static func fetchClientConfig(serverURL: URL, numberOfConfigurations: Int) -> Effect<SDKAction> {
         guard numberOfConfigurations == 1 else { return .fireAndForget { } }
         let url = serverURL.appendingPathComponent("client-config")
         let effect = Deferred { URLSession.shared.dataTaskPublisher(for: url)
@@ -116,7 +119,7 @@ extension OwnID.CoreSDK {
                 }
                 .eraseToAnyPublisher()
         }
-        return  effect.eraseToEffect()
+        return effect.eraseToEffect()
     }
     
     private static func startTranslationsDownloader() -> Effect<SDKAction> {

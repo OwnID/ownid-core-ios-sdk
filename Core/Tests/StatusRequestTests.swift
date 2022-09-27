@@ -63,39 +63,6 @@ final class StatusRequestTests: XCTestCase {
         XCTAssertNotNil(response)
     }
     
-    func testStautusReqestErrorMismatchOnType() throws {
-        let expectation = self.expectation(description: #function)
-        var resultedError: OwnID.CoreSDK.Error!
-        
-        //Arrange (given)
-        OwnID.CoreSDK.Status.Request(url: url,
-                                     context: context,
-                                     nonce: nonce,
-                                     sessionVerifier: sessionVerifier,
-                                     type: .register,
-                                     provider: MockAPI.correctBody(for: string))
-        //Act (when)
-        .perform()
-        .sink { completion in
-            if case .failure(let error) = completion {
-                resultedError = error
-                expectation.fulfill()
-            }
-        } receiveValue: { value in
-            XCTFail("\(value)")
-        }
-        .store(in: &bag)
-        
-        //Assert (then)
-        waitForExpectations(timeout: 2)
-        switch resultedError {
-        case .statusRequestResponseTypeMismatch:
-            XCTAssertTrue(true)
-        default:
-            XCTFail()
-        }
-    }
-    
     func testStautusReqestError() throws {
         let expectation = self.expectation(description: #function)
         var resultedError: OwnID.CoreSDK.Error?
