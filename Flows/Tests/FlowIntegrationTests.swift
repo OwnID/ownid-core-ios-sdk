@@ -36,7 +36,9 @@ final class FlowIntegrationTests: XCTestCase {
                                                    sdkConfigurationName: OwnID.CoreSDK.sdkName)
         
         let viewModel = OwnID.FlowsSDK.RegisterView.ViewModel(registrationPerformer: RegistrationPerformerMock(success: false),
-                                                              sdkConfigurationName: OwnID.CoreSDK.sdkName, webLanguages: languages)
+                                                              loginPerformer: LoginPerformerPerformerMock(success: true),
+                                                              sdkConfigurationName: OwnID.CoreSDK.sdkName,
+                                                              webLanguages: languages)
         viewModel.subscribe(to: coreVM.eventPublisher, persistingEmail: OwnID.CoreSDK.Email(rawValue: emailTest))
         
         let expectation = self.expectation(description: #function)
@@ -71,8 +73,10 @@ final class FlowIntegrationTests: XCTestCase {
                                                    sdkConfigurationName: OwnID.CoreSDK.sdkName)
 
         viewModel = OwnID.FlowsSDK.RegisterView.ViewModel(registrationPerformer: RegistrationPerformerMock(success: true),
+                                                          loginPerformer: LoginPerformerPerformerMock(success: true),
                                                           sdkConfigurationName: OwnID.CoreSDK.sdkName,
                                                           webLanguages: languages)
+        viewModel.getEmail = { emailTest }
         viewModel.subscribe(to: coreVM.eventPublisher, persistingEmail: OwnID.CoreSDK.Email(rawValue: emailTest))
 
         let expectation = self.expectation(description: #function)

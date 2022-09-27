@@ -69,7 +69,7 @@ public extension OwnID.FlowsSDK.RegisterView {
             guard let payload = registrationData.payload else { handle(.payloadMissing(underlying: .none)); return }
             let persisted = registrationData.persistedEmail
             if !persisted.rawValue.isEmpty,
-               email.lowercased() != persisted.rawValue {
+               email.lowercased() != persisted.rawValue.lowercased() {
                 handle(.plugin(error: OwnID.FlowsSDK.RegisterError.enteredEmailMismatch))
                 return
             }

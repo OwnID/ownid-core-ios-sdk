@@ -27,6 +27,29 @@ final class RegistrationPerformerMock: RegistrationPerformer {
     }
 }
 
+final class LoginPerformerMock: LoginPerformer {
+    func login(payload: OwnIDCoreSDK.OwnID.CoreSDK.Payload, email: String) -> AnyPublisher<OwnIDFlowsSDK.OperationResult, OwnIDCoreSDK.OwnID.CoreSDK.Error> {
+        if success {
+            return Result.success(VoidOperationResult())
+                .publisher
+                .delay(for: 1, scheduler: RunLoop.main)
+                .eraseToAnyPublisher()
+        } else {
+            return Result.failure(OwnID.CoreSDK.Error.initRequestNetworkFailed(underlying: URLError(.badServerResponse)))
+                .publisher
+                .delay(for: 1, scheduler: RunLoop.main)
+                .eraseToAnyPublisher()
+        }
+    }
+    
+    
+    private let success: Bool
+    
+    init(success: Bool = true) {
+        self.success = success
+    }
+}
+
 /// Tests show that for fixed input there is fixed output
 final class RegisterViewViewModelTests: XCTestCase {
     //for each test case we have running new instance of XCTestCase, so we do not need to reset bag
@@ -39,7 +62,10 @@ final class RegisterViewViewModelTests: XCTestCase {
     }
     
     func testSetUp() {
-        viewModel = OwnID.FlowsSDK.RegisterView.ViewModel(registrationPerformer: RegistrationPerformerMock(success: true), sdkConfigurationName: OwnID.CoreSDK.sdkName, webLanguages: languages)
+        viewModel = OwnID.FlowsSDK.RegisterView.ViewModel(registrationPerformer: RegistrationPerformerMock(success: true),
+                                                          loginPerformer: LoginPerformerPerformerMock(success: true),
+                                                          sdkConfigurationName: OwnID.CoreSDK.sdkName,
+                                                          webLanguages: languages)
         let expectation = self.expectation(description: #function)
         
         //Arrange (given)
@@ -59,7 +85,10 @@ final class RegisterViewViewModelTests: XCTestCase {
     }
     
     func testBaseSdkReturnErrorVMEmitsError() {
-        viewModel = OwnID.FlowsSDK.RegisterView.ViewModel(registrationPerformer: RegistrationPerformerMock(success: false), sdkConfigurationName: OwnID.CoreSDK.sdkName, webLanguages: languages)
+        viewModel = OwnID.FlowsSDK.RegisterView.ViewModel(registrationPerformer: RegistrationPerformerMock(success: false),
+                                                          loginPerformer: LoginPerformerPerformerMock(success: true),
+                                                          sdkConfigurationName: OwnID.CoreSDK.sdkName,
+                                                          webLanguages: languages)
         let expectation = self.expectation(description: #function)
         
         //Arrange (given)
@@ -85,7 +114,12 @@ final class RegisterViewViewModelTests: XCTestCase {
     }
     
     func testRegistrationReturnErrorVMEmitsError() {
-        viewModel = OwnID.FlowsSDK.RegisterView.ViewModel(registrationPerformer: RegistrationPerformerMock(success: false), sdkConfigurationName: OwnID.CoreSDK.sdkName, webLanguages: languages)
+        viewModel = OwnID.FlowsSDK.RegisterView.ViewModel(registrationPerformer: RegistrationPerformerMock(success: false),
+                                                          loginPerformer: LoginPerformerPerformerMock(success: true),
+                                                          sdkConfigurationName: OwnID.CoreSDK.sdkName,
+                                                          webLanguages: languages)
+        let email = "kejej@Jjrk.kjeje"
+        viewModel.getEmail = { email }
         let expectation = self.expectation(description: #function)
         
         //Arrange (given)
@@ -105,14 +139,15 @@ final class RegisterViewViewModelTests: XCTestCase {
         
         //Act (when)
         viewModel.subscribe(to: Result.success(.success(emptyPayload)).publisher.eraseToAnyPublisher(),
-                            persistingEmail: OwnID.CoreSDK.Email(rawValue: "kejej@Jjrk.kjeje"))
-        viewModel.register(with: "kejej@Jjrk.kjeje")
+                            persistingEmail: OwnID.CoreSDK.Email(rawValue: email))
+        viewModel.register(with: email)
         
         waitForExpectations(timeout: 1)
     }
     
     func testVMEmitsSuccess() {
         viewModel = OwnID.FlowsSDK.RegisterView.ViewModel(registrationPerformer: RegistrationPerformerMock(success: true),
+                                                          loginPerformer: LoginPerformerPerformerMock(success: true),
                                                           sdkConfigurationName: OwnID.CoreSDK.sdkName,
                                                           webLanguages: languages)
         let expectation = self.expectation(description: #function)
@@ -144,7 +179,11 @@ final class RegisterViewViewModelTests: XCTestCase {
     }
     
     func testVMEmitsErrorDifferentEmails() {
-        viewModel = OwnID.FlowsSDK.RegisterView.ViewModel(registrationPerformer: RegistrationPerformerMock(success: true), sdkConfigurationName: OwnID.CoreSDK.sdkName, webLanguages: languages)
+        viewModel = OwnID.FlowsSDK.RegisterView.ViewModel(registrationPerformer: RegistrationPerformerMock(success: true),
+                                                          loginPerformer: LoginPerformerPerformerMock(success: true),
+                                                          sdkConfigurationName: OwnID.CoreSDK.sdkName,
+                                                          webLanguages: languages)
+        viewModel.getEmail = { "" }
         let expectation = self.expectation(description: #function)
         
         //Arrange (given)
@@ -152,7 +191,7 @@ final class RegisterViewViewModelTests: XCTestCase {
             .sink { event in
                 switch event {
                 case .success:
-                    break
+                    print("wdkwmdw")
                     
                 case .failure(let event):
                     if case .plugin(let plugin) = event {
@@ -177,6 +216,6 @@ final class RegisterViewViewModelTests: XCTestCase {
 
 private extension RegisterViewViewModelTests {
     var emptyPayload: OwnID.CoreSDK.Payload {
-        OwnID.CoreSDK.Payload(dataContainer: [String : Any](), metadata: .none, context: "", nonce: "", loginId: .none, responseType: .session)
+        OwnID.CoreSDK.Payload(dataContainer: [String : Any](), metadata: .none, context: "", nonce: "", loginId: .none, responseType: .registrationInfo)
     }
 }
