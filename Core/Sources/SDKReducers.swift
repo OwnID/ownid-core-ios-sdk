@@ -119,7 +119,7 @@ extension OwnID.CoreSDK {
                 }
                 .eraseToAnyPublisher()
         }
-        return  effect.eraseToEffect()
+        return effect.eraseToEffect()
     }
     
     private static func startTranslationsDownloader() -> Effect<SDKAction> {
