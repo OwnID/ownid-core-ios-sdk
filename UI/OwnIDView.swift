@@ -54,16 +54,15 @@ public extension OwnID.UISDK {
                         .compositingGroup()
                         .shadow(color: colorScheme == .dark ? .clear : visualConfig.tooltipVisualLookConfig.shadowColor.opacity(0.05), radius: 5, y: 4)
                         .popupContainerType(.textAndArrowContainer)
-                        imageButtonView
-                            .layoutPriority(1)
-                            .zIndex(1)
-                            .popupContainerType(.ownIdButton)
                         Button(action: { isTooltipPresented = false }) {
                             Text("")
                                 .foregroundColor(.clear)
                                 .frame(maxWidth: .infinity, maxHeight: .infinity)
                         }
                         .popupContainerType(.dismissButton)
+                        imageButtonView
+                            .layoutPriority(1)
+                            .popupContainerType(.ownIdButton)
                     }
                 } else {
                     imageButtonView
