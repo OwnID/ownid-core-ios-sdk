@@ -56,6 +56,7 @@ public extension OwnID.UISDK {
                         .popupContainerType(.textAndArrowContainer)
                         imageButtonView
                             .layoutPriority(1)
+                            .zIndex(1)
                             .popupContainerType(.ownIdButton)
                         Button(action: { isTooltipPresented = false }) {
                             Text("")
