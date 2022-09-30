@@ -65,17 +65,15 @@ extension OwnID.UISDK {
             }
         }
         
+        @ViewBuilder
         private func style(view: AnyView, shouldDisplayHighlighted: Bool) -> some View {
-            let visualBackgroundColor = visualConfig.backgroundColor
-            var viewWithBorder: AnyView = view
-                .background(backgroundRectangle(color: visualBackgroundColor))
+            view
+                .background(backgroundRectangle(color: visualConfig.backgroundColor))
                 .border(color: visualConfig.borderColor)
-                .eraseToAnyView()
-            if shouldDisplayHighlighted {
-                viewWithBorder = viewWithBorder.shadow(shadowColor: visualConfig.shadowColor,
-                                                       backgroundColor: visualBackgroundColor).eraseToAnyView()
-            }
-            return viewWithBorder
+                .shadow(color: shouldDisplayHighlighted ? visualConfig.shadowColor : .clear,
+                        radius: cornerRadiusValue,
+                        x: 0,
+                        y: cornerRadiusValue / 2)
         }
         
         @ViewBuilder
@@ -124,9 +122,7 @@ private extension OwnID.UISDK.ImageButton {
 }
 
 private extension View {
-    var cornerRadiusValue: CGFloat {
-        6.0
-    }
+    var cornerRadiusValue: CGFloat { 6.0 }
     
     func border(color: Color) -> some View {
         self
@@ -139,15 +135,5 @@ private extension View {
     func backgroundRectangle(color: Color) -> some View {
         RoundedRectangle(cornerRadius: cornerRadiusValue)
             .fill(color)
-    }
-    
-    func shadow(shadowColor: Color, backgroundColor: Color) -> some View {
-        self
-            .background(backgroundRectangle(color: backgroundColor)
-                .shadow(color: shadowColor,
-                        radius: cornerRadiusValue,
-                        x: 0,
-                        y: cornerRadiusValue / 2)
-            )
     }
 }
