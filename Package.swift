@@ -1,12 +1,12 @@
-// swift-tools-version:5.7
+// swift-tools-version:5.1.1
 
 import PackageDescription
 
 let package = Package(
     name: "OwnIDCoreSDK",
-    defaultLocalization: "en",
+//    defaultLocalization: "en",
     platforms: [
-        .iOS(.v16)
+        .iOS(.v13)
     ],
     products: [
         .library(

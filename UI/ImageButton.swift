@@ -49,7 +49,7 @@ extension OwnID.UISDK {
             self._viewState = viewState
             self.visualConfig = visualConfig
             self.localizationClosure = localizationClosure
-            self.translationText = localizationClosure()
+//            self.translationText = localizationClosure()
         }
         
         var body: some View {
@@ -59,7 +59,6 @@ extension OwnID.UISDK {
                 EmptyView()
             })
             .buttonStyle(buttonStyle())
-            .accessibilityLabel(Text(translationText))
             .onReceive(OwnID.CoreSDK.shared.translationsModule.translationsChangePublisher) {
                 translationText = localizationClosure()
             }
@@ -82,7 +81,7 @@ extension OwnID.UISDK {
             case .disabled, .enabled:
                 EmptyView()
             case .activated:
-                Image("fingerprintEnabled", bundle: .module)
+                Image("fingerprintEnabled")
                     .padding(.trailing, 4)
                     .padding(.top, 4)
             }
@@ -96,7 +95,7 @@ private extension OwnID.UISDK.ImageButton {
         return OwnID.UISDK.StateableButton(styleChanged: { isPressedStyle -> AnyView in
             let shouldDisplayHighlighted = shouldDisplayHighlighted(isHighlighted: isPressedStyle)
             let imageName = visualConfig.variant.rawValue
-            let image = Image(imageName, bundle: .module)
+            let image = Image(imageName)
                 .renderingMode(.template)
                 .foregroundColor(visualConfig.iconColor)
                 .padding(shouldDisplayHighlighted ? highlightedImageSpace : defaultImageSpace)
@@ -108,7 +107,7 @@ private extension OwnID.UISDK.ImageButton {
             let styled = style(view: imagesContainer.eraseToAnyView(), shouldDisplayHighlighted: shouldDisplayHighlighted)
             let highlightedContainerSpacing = EdgeInsets(top: 1, leading: 1, bottom: 1, trailing: 1)
             let container = HStack { styled }
-                .padding(shouldDisplayHighlighted ? highlightedContainerSpacing : .init(.zero))
+                .padding(shouldDisplayHighlighted ? highlightedContainerSpacing : EdgeInsets())
             let embededView = HStack { container }
                 .scaleEffect(0.95)
                 .eraseToAnyView()

@@ -1,6 +1,4 @@
 import SwiftUI
-import OwnIDCoreSDK
-import OwnIDUISDK
 
 public extension OwnID.FlowsSDK {
     struct LoginView: View, Equatable {
