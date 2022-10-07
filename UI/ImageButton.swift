@@ -60,9 +60,9 @@ extension OwnID.UISDK {
             })
             .buttonStyle(buttonStyle())
 //            .accessibilityLabel(Text(translationText))
-            .onReceive(OwnID.CoreSDK.shared.translationsModule.translationsChangePublisher) {
-                translationText = localizationClosure()
-            }
+//            .onReceive(OwnID.CoreSDK.shared.translationsModule.translationsChangePublisher) {
+//                translationText = localizationClosure()
+//            }
         }
         
         @ViewBuilder
