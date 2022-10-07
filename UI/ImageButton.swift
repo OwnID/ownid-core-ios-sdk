@@ -26,9 +26,9 @@ extension OwnID.UISDK {
         private let id = UUID()
         
         var visualConfig: VisualLookConfig
-        
-        private let localizationClosure: (() -> String)
-        @State private var translationText = ""
+        #warning("disabled translations")
+//        private let localizationClosure: (() -> String)
+//        @State private var translationText = ""
         
         private let highlightedImageSpace = EdgeInsets(top: 6, leading: 7, bottom: 6, trailing: 7)
         private let defaultImageSpace = EdgeInsets(top: 7, leading: 8, bottom: 7, trailing: 8)
@@ -45,10 +45,10 @@ extension OwnID.UISDK {
         }
         
         init(viewState: Binding<ButtonState>, visualConfig: VisualLookConfig) {
-            let localizationClosure = { "skipPassword".ownIDLocalized() }
+//            let localizationClosure = { "skipPassword".ownIDLocalized() }
             self._viewState = viewState
             self.visualConfig = visualConfig
-            self.localizationClosure = localizationClosure
+//            self.localizationClosure = localizationClosure
 //            self.translationText = localizationClosure()
         }
         
@@ -59,6 +59,7 @@ extension OwnID.UISDK {
                 EmptyView()
             })
             .buttonStyle(buttonStyle())
+//            .accessibilityLabel(Text(translationText))
             .onReceive(OwnID.CoreSDK.shared.translationsModule.translationsChangePublisher) {
                 translationText = localizationClosure()
             }
@@ -81,7 +82,7 @@ extension OwnID.UISDK {
             case .disabled, .enabled:
                 EmptyView()
             case .activated:
-                Image("fingerprintEnabled")
+                Image("fingerprintEnabled", bundle: .resourceBundle)
                     .padding(.trailing, 4)
                     .padding(.top, 4)
             }
@@ -95,7 +96,7 @@ private extension OwnID.UISDK.ImageButton {
         return OwnID.UISDK.StateableButton(styleChanged: { isPressedStyle -> AnyView in
             let shouldDisplayHighlighted = shouldDisplayHighlighted(isHighlighted: isPressedStyle)
             let imageName = visualConfig.variant.rawValue
-            let image = Image(imageName)
+            let image = Image(imageName, bundle: .resourceBundle)
                 .renderingMode(.template)
                 .foregroundColor(visualConfig.iconColor)
                 .padding(shouldDisplayHighlighted ? highlightedImageSpace : defaultImageSpace)

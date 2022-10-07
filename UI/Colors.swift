@@ -5,35 +5,35 @@ import SwiftUI
 public extension OwnID {
     enum Colors {
         public static var blue: Color {
-            Color("blue")
+            Color("blue", bundle: .resourceBundle)
         }
         
         public static var darkBlue: Color {
-            Color("darkBlue")
+            Color("darkBlue", bundle: .resourceBundle)
         }
         
         public static var linkDarkBlue: Color {
-            Color("linkDarkBlue")
+            Color("linkDarkBlue", bundle: .resourceBundle)
         }
         
         public static var textGrey: Color {
-            Color("textGrey")
+            Color("textGrey", bundle: .resourceBundle)
         }
         
         public static var biometricsButtonBorder: Color {
-            Color("biometricsButtonBorder")
+            Color("biometricsButtonBorder", bundle: .resourceBundle)
         }
         
         public static var biometricsButtonBackground: Color {
-            Color("biometricsButtonBackground")
+            Color("biometricsButtonBackground", bundle: .resourceBundle)
         }
         
         public static var biometricsButtonImageColor: Color {
-            Color("biometricsButtonImageColor")
+            Color("biometricsButtonImageColor", bundle: .resourceBundle)
         }
         
         public static var defaultBlackColor: Color {
-            Color("defaultBlack")
+            Color("defaultBlack", bundle: .resourceBundle)
         }
     }
 }
