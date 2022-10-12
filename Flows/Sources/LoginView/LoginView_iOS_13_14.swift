@@ -17,11 +17,12 @@ public extension OwnID.FlowsSDK {
             super.init(frame: .zero)
             self.viewModel.getEmail = { usersEmail }
             redBackgroundButton.setTitle("OwnID", for: .normal)
-            redBackgroundButton.setTitle("OwnID Pressed", for: .selected)
+            redBackgroundButton.setTitle("OwnID Pressed", for: .highlighted)
             redBackgroundButton.addTarget(self, action: #selector(pressedAction), for: .touchUpInside)
             redBackgroundButton.backgroundColor = .red
-            addSubview(redBackgroundButton)
             
+            addSubview(redBackgroundButton)
+            translatesAutoresizingMaskIntoConstraints = false
             
             redBackgroundButton.translatesAutoresizingMaskIntoConstraints = false
             redBackgroundButton.centerXAnchor.constraint(equalTo: centerXAnchor).isActive = true
