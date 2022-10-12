@@ -2,7 +2,7 @@ import Foundation
 import Combine
 import OwnIDCoreSDK
 
-extension OwnID.FlowsSDK.LoginView.ViewModel {
+extension OwnID.FlowsSDK.FlowsLoginViewModel {
     enum State {
         case initial
         case coreVM
@@ -10,8 +10,8 @@ extension OwnID.FlowsSDK.LoginView.ViewModel {
     }
 }
 
-public extension OwnID.FlowsSDK.LoginView {
-    final class ViewModel: ObservableObject {
+public extension OwnID.FlowsSDK {
+    final class FlowsLoginViewModel: ObservableObject {
         @Published private(set) var state = State.initial
         @Published public var shouldShowTooltip = true
         
@@ -97,7 +97,7 @@ public extension OwnID.FlowsSDK.LoginView {
     }
 }
 
-private extension OwnID.FlowsSDK.LoginView.ViewModel {
+private extension OwnID.FlowsSDK.FlowsLoginViewModel {
     func process(payload: OwnID.CoreSDK.Payload) {
         self.payload = payload
         let loginPerformerPublisher = loginPerformer.login(payload: payload, email: getEmail())
