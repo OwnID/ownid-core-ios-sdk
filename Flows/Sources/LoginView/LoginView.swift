@@ -1,6 +1,6 @@
 import SwiftUI
 
-@available(iOS 15, *)
+//@available(iOS 15, *)
 public extension OwnID.FlowsSDK {
     struct LoginView: View, Equatable {
         public static func == (lhs: OwnID.FlowsSDK.LoginView, rhs: OwnID.FlowsSDK.LoginView) -> Bool {
@@ -28,7 +28,7 @@ public extension OwnID.FlowsSDK {
     }
 }
 
-@available(iOS 15, *)
+//@available(iOS 15, *)
 private extension OwnID.FlowsSDK.LoginView {
     
     @ViewBuilder
