@@ -118,12 +118,18 @@ public extension OwnID.FlowsSDK.RegisterView {
                 return
             }
             let email = OwnID.CoreSDK.Email(rawValue: usersEmail)
-            coreViewModel = OwnID.CoreSDK.shared.createCoreViewModelForRegister(email: email,
+            let coreViewModel = OwnID.CoreSDK.shared.createCoreViewModelForRegister(email: email,
                                                                                 sdkConfigurationName: sdkConfigurationName,
                                                                                 webLanguages: webLanguages)
+            self.coreViewModel = coreViewModel
             subscribe(to: coreViewModel.eventPublisher, persistingEmail: email)
             state = .coreVM
-            coreViewModel.start()
+            
+            /// On iOS 13, this `asyncAfter` is required to make sure that subscription created by the time events start to
+            /// be passed to publiser.
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                coreViewModel.start()
+            }
         }
         
         func subscribe(to eventsPublisher: OwnID.CoreSDK.EventPublisher, persistingEmail: OwnID.CoreSDK.Email) {
