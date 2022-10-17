@@ -55,12 +55,18 @@ public extension OwnID.FlowsSDK {
         func skipPasswordTapped(usersEmail: String) {
             DispatchQueue.main.async { [self] in
                 let email = OwnID.CoreSDK.Email(rawValue: usersEmail)
-                coreViewModel = OwnID.CoreSDK.shared.createCoreViewModelForLogIn(email: email,
+                let coreViewModel = OwnID.CoreSDK.shared.createCoreViewModelForLogIn(email: email,
                                                                                  sdkConfigurationName: sdkConfigurationName,
                                                                                  webLanguages: webLanguages)
+                self.coreViewModel = coreViewModel
                 subscribe(to: coreViewModel.eventPublisher)
                 state = .coreVM
-                coreViewModel.start()
+                
+                /// On iOS 13, this `asyncAfter` is required to make sure that subscription created by the time events start to
+                /// be passed to publiser.
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                    coreViewModel.start()
+                }
             }
         }
         
