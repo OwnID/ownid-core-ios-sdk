@@ -10,9 +10,9 @@ public extension OwnID.FlowsSDK {
         @Binding private var usersEmail: String
         public var visualConfig: OwnID.UISDK.VisualLookConfig
         
-        @ObservedObject public var viewModel: FlowsLoginViewModel
+        @ObservedObject public var viewModel: ViewModel
         
-        public init(viewModel: FlowsLoginViewModel,
+        public init(viewModel: ViewModel,
                     usersEmail: Binding<String>,
                     visualConfig: OwnID.UISDK.VisualLookConfig) {
             self.viewModel = viewModel
