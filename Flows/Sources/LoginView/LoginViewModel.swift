@@ -25,6 +25,7 @@ public extension OwnID.FlowsSDK.LoginView {
         let sdkConfigurationName: String
         let webLanguages: OwnID.CoreSDK.Languages
         public var getEmail: (() -> String)!
+         public var actionButtonTapClosure: (() -> Void)?
         
         public var eventPublisher: OwnID.FlowsSDK.LoginPublisher {
             resultPublisher.eraseToAnyPublisher()
@@ -96,7 +97,15 @@ public extension OwnID.FlowsSDK.LoginView {
                 .sink { _ in
                 } receiveValue: { [unowned self] event in
                     OwnID.CoreSDK.logger.logAnalytic(.loginClickMetric(action: "Clicked Skip Password", context: payload?.context))
-                    skipPasswordTapped(usersEmail: getEmail())
+                    
+                    /// When running react native, we create delay so there is a time
+                    /// for native to send event to react. In react we will set
+                    /// email back to native. Hopefully, by the time we will access
+                    /// email, we will get it back from react.
+                    actionButtonTapClosure?()
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                        self.skipPasswordTapped(usersEmail: self.getEmail())
+                    }
                 }
                 .store(in: &bag)
         }
