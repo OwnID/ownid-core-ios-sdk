@@ -91,9 +91,12 @@ public extension OwnID.FlowsSDK.LoginView {
                 }
                 .store(in: &coreViewModelBag)
         }
-        
-        public func subscribe(to passwordEventsPublisher: OwnID.UISDK.EventPubliser) {
-            passwordEventsPublisher
+         
+         /// Used for custom button setup. Custom button sends events through this publisher
+         /// and by doing that invokes flow.
+         /// - Parameter buttonEventPublisher: publisher to subscribe to
+        public func subscribe(to buttonEventPublisher: OwnID.UISDK.EventPubliser) {
+            buttonEventPublisher
                 .sink { _ in
                 } receiveValue: { [unowned self] event in
                     OwnID.CoreSDK.logger.logAnalytic(.loginClickMetric(action: "Clicked Skip Password", context: payload?.context))

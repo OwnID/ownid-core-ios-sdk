@@ -44,6 +44,7 @@ public extension OwnID.FlowsSDK.RegisterView {
         let sdkConfigurationName: String
         let webLanguages: OwnID.CoreSDK.Languages
         public var getEmail: (() -> String)!
+        public var actionButtonTapClosure: (() -> Void)?
         
         public var eventPublisher: OwnID.FlowsSDK.RegistrationPublisher {
             resultPublisher.eraseToAnyPublisher()
@@ -163,12 +164,23 @@ public extension OwnID.FlowsSDK.RegisterView {
                 .store(in: &bag)
         }
         
-        public func subscribe(to passwordEventsPublisher: OwnID.UISDK.EventPubliser) {
-            passwordEventsPublisher
+        /// Used for custom button setup. Custom button sends events through this publisher
+        /// and by doing that invokes flow.
+        /// - Parameter buttonEventPublisher: publisher to subscribe to
+        public func subscribe(to buttonEventPublisher: OwnID.UISDK.EventPubliser) {
+            buttonEventPublisher
                 .sink { _ in
                 } receiveValue: { [unowned self] _ in
                     OwnID.CoreSDK.logger.logAnalytic(.registerClickMetric(action: "Clicked Skip Password", context: registrationData.payload?.context))
-                    skipPasswordTapped(usersEmail: getEmail())
+                    
+                    /// When running react native, we create delay so there is a time
+                    /// for native to send event to react. In react we will set
+                    /// email back to native. Hopefully, by the time we will access
+                    /// email, we will get it back from react.
+                    actionButtonTapClosure?()
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                        self.skipPasswordTapped(usersEmail: self.getEmail())
+                    }
                 }
                 .store(in: &bag)
         }
