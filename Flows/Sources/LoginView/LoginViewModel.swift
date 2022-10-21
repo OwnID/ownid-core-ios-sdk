@@ -11,7 +11,7 @@ extension OwnID.FlowsSDK.LoginView.ViewModel {
 }
 
 public extension OwnID.FlowsSDK.LoginView {
-    final class ViewModel: ObservableObject {
+     final class ViewModel: ObservableObject {
         @Published private(set) var state = State.initial
         @Published public var shouldShowTooltip = true
         
@@ -55,12 +55,18 @@ public extension OwnID.FlowsSDK.LoginView {
         func skipPasswordTapped(usersEmail: String) {
             DispatchQueue.main.async { [self] in
                 let email = OwnID.CoreSDK.Email(rawValue: usersEmail)
-                coreViewModel = OwnID.CoreSDK.shared.createCoreViewModelForLogIn(email: email,
+                let coreViewModel = OwnID.CoreSDK.shared.createCoreViewModelForLogIn(email: email,
                                                                                  sdkConfigurationName: sdkConfigurationName,
                                                                                  webLanguages: webLanguages)
+                self.coreViewModel = coreViewModel
                 subscribe(to: coreViewModel.eventPublisher)
                 state = .coreVM
-                coreViewModel.start()
+                
+                /// On iOS 13, this `asyncAfter` is required to make sure that subscription created by the time events start to
+                /// be passed to publiser.
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                    coreViewModel.start()
+                }
             }
         }
         
@@ -84,13 +90,16 @@ public extension OwnID.FlowsSDK.LoginView {
                 }
                 .store(in: &coreViewModelBag)
         }
-        
-        public func subscribe(to passwordEventsPublisher: OwnID.UISDK.EventPubliser) {
-            passwordEventsPublisher
+         
+         /// Used for custom button setup. Custom button sends events through this publisher
+         /// and by doing that invokes flow.
+         /// - Parameter buttonEventPublisher: publisher to subscribe to
+        public func subscribe(to buttonEventPublisher: OwnID.UISDK.EventPubliser) {
+            buttonEventPublisher
                 .sink { _ in
                 } receiveValue: { [unowned self] event in
                     OwnID.CoreSDK.logger.logAnalytic(.loginClickMetric(action: "Clicked Skip Password", context: payload?.context))
-                    skipPasswordTapped(usersEmail: getEmail())
+                        skipPasswordTapped(usersEmail: getEmail())
                 }
                 .store(in: &bag)
         }

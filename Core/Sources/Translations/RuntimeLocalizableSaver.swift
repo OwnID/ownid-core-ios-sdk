@@ -62,9 +62,9 @@ private extension OwnID.CoreSDK.TranslationsSDK.RuntimeLocalizableSaver {
     
     func copyEnglishModuleTranslationsToDocuments() {
         let lprojFilePath = moduleEnglishBundlePath + "/en.lproj"
-        guard let moduleTranslations = Bundle.module.path(forResource: "Localizable", ofType: "strings") else { return }
+        guard let moduleTranslations = Bundle.resourceBundle.path(forResource: "Localizable", ofType: "strings") else { return }
         createLprojDirectoryIfNeeded(lprojFilePath)
-        
+
         copyTranslatedFilesIfNeeded(lprojFilePath, moduleTranslations)
     }
     
