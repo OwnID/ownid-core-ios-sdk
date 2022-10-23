@@ -11,7 +11,6 @@ Pod::Spec.new do |s|
   s.license          = 'Apache 2.0'
   s.authors          = 'OwnID, Inc'
 
-  #, :tag => s.version.to_s
   s.source           = { :git => 'https://github.com/OwnID/ownid-core-ios-sdk.git' }
   s.module_name   = 'OwnIDCoreSDK'
   s.ios.deployment_target = '13.0'
