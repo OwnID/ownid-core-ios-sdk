@@ -9,7 +9,7 @@ Pod::Spec.new do |s|
 
   s.homepage         = 'https://ownid.com'
   s.license          = 'Apache 2.0'
-  s.author           = { 'Yurii Boiko' => 'counter-sawdust0z@icloud.com' }
+  s.authors          = 'OwnID, Inc'
 
   #, :tag => s.version.to_s
   s.source           = { :git => 'https://github.com/OwnID/ownid-core-ios-sdk.git' }
