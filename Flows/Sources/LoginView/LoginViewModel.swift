@@ -1,6 +1,5 @@
 import Foundation
 import Combine
-import OwnIDCoreSDK
 
 extension OwnID.FlowsSDK.LoginView.ViewModel {
     enum State {

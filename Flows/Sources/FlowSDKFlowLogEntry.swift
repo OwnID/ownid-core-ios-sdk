@@ -1,5 +1,4 @@
 import Foundation
-import OwnIDCoreSDK
 
 extension OwnID.FlowsSDK {
     public class FlowLogEntry: OwnID.CoreSDK.StandardMetricLogEntry {

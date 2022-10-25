@@ -1,5 +1,4 @@
 import SwiftUI
-import OwnIDCoreSDK
 
 public extension OwnID.FlowsSDK {
     struct RegisterView: View, Equatable {

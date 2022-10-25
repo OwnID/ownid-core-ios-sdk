@@ -1,6 +1,5 @@
 import SwiftUI
 import Combine
-import OwnIDCoreSDK
 
 public extension OwnID.UISDK {
     struct StateableButton<Content>: ButtonStyle where Content: View {

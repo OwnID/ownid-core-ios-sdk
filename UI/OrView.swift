@@ -1,5 +1,4 @@
 import SwiftUI
-import OwnIDCoreSDK
 
 extension OwnID.UISDK {
     struct OrView: View {

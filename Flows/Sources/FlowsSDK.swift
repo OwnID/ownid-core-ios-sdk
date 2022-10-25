@@ -1,6 +1,4 @@
-
 import Foundation
-import OwnIDCoreSDK
 
 public extension OwnID {
     enum FlowsSDK { }

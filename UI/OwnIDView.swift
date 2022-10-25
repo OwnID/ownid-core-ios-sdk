@@ -1,6 +1,5 @@
 import Foundation
 import SwiftUI
-import OwnIDCoreSDK
 
 
 /// Possible future improvements:
