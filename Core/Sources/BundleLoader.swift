@@ -1,10 +1,3 @@
-//
-//  BundleLoader.swift
-//  ownid-core-ios-sdk
-//
-//  Created by W on 10/7/22.
-//
-
 import Foundation
 
 class OwnIDCoreSDK { }
