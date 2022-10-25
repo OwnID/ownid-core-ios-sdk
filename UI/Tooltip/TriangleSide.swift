@@ -1,5 +1,4 @@
 import SwiftUI
-import OwnIDCoreSDK
 
 public extension OwnID.UISDK {
     struct TriangleSide: Shape {

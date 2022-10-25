@@ -1,4 +1,3 @@
-import OwnIDCoreSDK
 import Combine
 import Foundation
 

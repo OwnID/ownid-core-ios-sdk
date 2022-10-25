@@ -1,6 +1,5 @@
 import Foundation
 import Combine
-import OwnIDCoreSDK
 
 extension OwnID.FlowsSDK.RegisterView.ViewModel {
     enum State {
@@ -147,6 +146,9 @@ public extension OwnID.FlowsSDK.RegisterView {
                         case .registrationInfo:
                             self.registrationData.payload = payload
                             state = .ownidCreated
+                            if let loginId = registrationData.payload?.loginId {
+                                registrationData.persistedEmail = OwnID.CoreSDK.Email(rawValue: loginId)
+                            }
                             resultPublisher.send(.success(.readyToRegister(usersEmailFromWebApp: registrationData.payload?.loginId)))
                             
                         case .session:

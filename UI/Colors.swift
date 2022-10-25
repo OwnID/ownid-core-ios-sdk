@@ -1,5 +1,4 @@
 import Foundation
-import OwnIDCoreSDK
 import SwiftUI
 
 public extension OwnID {

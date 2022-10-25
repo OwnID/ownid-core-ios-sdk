@@ -1,4 +1,3 @@
-import OwnIDCoreSDK
 import Combine
 
 public extension OwnID {

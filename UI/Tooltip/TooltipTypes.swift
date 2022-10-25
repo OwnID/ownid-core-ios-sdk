@@ -1,5 +1,4 @@
 import SwiftUI
-import OwnIDCoreSDK
 
 public extension OwnID.UISDK {
     /// The side of the button that tooltip should be placed on.
