@@ -1,11 +1,6 @@
 import Foundation
 import SwiftUI
 
-
-/// Possible future improvements:
-/// - default margin around tooltip can be calculated as function of the text size to have small margins when text is small and bigger when text is bigger
-/// support font as setting instead/along line height and text size to support changes with system sizes (maybe use .preferredFont(forTextStyle: ) ?)
-
 public extension OwnID.UISDK {
     struct OwnIDView: View {
         static func == (lhs: OwnID.UISDK.OwnIDView, rhs: OwnID.UISDK.OwnIDView) -> Bool {
@@ -41,8 +36,32 @@ public extension OwnID.UISDK {
                                        lineHeight: visualConfig.orLineHeight,
                                        textColor: visualConfig.orTextColor)
                 }
-                imageButtonView
-                    .layoutPriority(1)
+                if isTooltipPresented, #available(iOS 16.0, *) {
+                    TooltipContainerLayout(tooltipPosition: visualConfig.tooltipVisualLookConfig.tooltipPosition) {
+                        TooltipTextAndArrowLayout(tooltipVisualLookConfig: visualConfig.tooltipVisualLookConfig, isRTL: direction == .rightToLeft) {
+                            RectangleWithTextView(tooltipVisualLookConfig: visualConfig.tooltipVisualLookConfig)
+                                .popupTextContainerType(.text)
+                            BeakView(tooltipVisualLookConfig: visualConfig.tooltipVisualLookConfig)
+                                .rotationEffect(.degrees(visualConfig.tooltipVisualLookConfig.tooltipPosition.beakViewRotationAngle))
+                                .popupTextContainerType(.beak)
+                        }
+                        .compositingGroup()
+                        .shadow(color: colorScheme == .dark ? .clear : visualConfig.tooltipVisualLookConfig.shadowColor.opacity(0.05), radius: 5, y: 4)
+                        .popupContainerType(.textAndArrowContainer)
+                        Button(action: { isTooltipPresented = false }) {
+                            Text("")
+                                .foregroundColor(.clear)
+                                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                        }
+                        .popupContainerType(.dismissButton)
+                        imageButtonView
+                            .layoutPriority(1)
+                            .popupContainerType(.ownIdButton)
+                    }
+                } else {
+                    imageButtonView
+                        .layoutPriority(1)
+                }
             }
         }
     }

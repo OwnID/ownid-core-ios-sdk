@@ -66,16 +66,6 @@ public extension OwnID.FlowsSDK.RegisterView {
                 return
             }
             guard let payload = registrationData.payload else { handle(.payloadMissing(underlying: .none)); return }
-            let persisted = registrationData.persistedEmail
-            if !persisted.rawValue.isEmpty,
-               email.lowercased() != persisted.rawValue.lowercased() {
-                handle(.plugin(error: OwnID.FlowsSDK.RegisterError.enteredEmailMismatch))
-                return
-            }
-            if let webAppEmail = registrationData.payload?.loginId, !webAppEmail.isEmpty, email.lowercased() != webAppEmail {
-                handle(.plugin(error: OwnID.FlowsSDK.RegisterError.enteredEmailMismatch))
-                return
-            }
             let config = OwnID.FlowsSDK.RegistrationConfiguration(payload: payload,
                                                                   email: OwnID.CoreSDK.Email(rawValue: email))
             registrationPerformer.register(configuration: config, parameters: registerParameters)

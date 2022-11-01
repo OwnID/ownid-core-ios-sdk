@@ -4,8 +4,6 @@ import Foundation
 extension OwnID.FlowsSDK.RegisterError: LocalizedError {
     public var errorDescription: String? {
         switch self {
-        case .enteredEmailMismatch:
-            return "Email does not match to email that is used for OwnID linking"
             
         case .emailIsMissing:
             return "No email provided"
@@ -20,7 +18,6 @@ public extension OwnID {
 public extension OwnID.FlowsSDK {
     
     enum RegisterError: PluginError {
-        case enteredEmailMismatch
         case emailIsMissing
     }
     
