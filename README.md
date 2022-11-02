@@ -7,10 +7,10 @@ The OwnID iOS SDK consists of a **Core** module along with modules that are spec
 
 - **[OwnID Gigya-iOS SDK](https://github.com/OwnID/ownid-gigya-ios-sdk)** - Extends **Core** functionality by providing integration with Email/Password-based [Gigya Authentication](https://github.com/SAP/gigya-ios-sdk). In addition, the OwnID Gigya-iOS SDK has a **[Gigya-Screen-Sets](https://github.com/OwnID/ownid-demo-ios-sdk/tree/master/ScreensetsDemo)** integration.
 
-The OwnID iOS SDK supports Swift >= 5.7, and works with iOS 16 and above.
+The OwnID iOS SDK supports Swift >= 5.1, and works with iOS 13 and above.
 
 ## Demo applications
-This repository contains only core. Please refer to [demos](https://github.com/OwnID/ownid-demo-ios-sdk).
+This repository contains only core. Please refer to [demos](https://github.com/OwnID/ownid-ios-sdk-demo).
 
  ## Registration and Login Flows
  Use the following diagrams to better understand the registration and login flows provided by the OwnID iOS SDK. The LinkAndLogin flow occurs when an existing user who has traditional account credentials uses the login screen to tap Skip Password for the first time.
