@@ -37,6 +37,10 @@ public extension OwnID {
             self.store = store
         }
         
+        public var isSDKConfigured: Bool {
+            !store.value.configurations.isEmpty
+        }
+        
         var configurationName: String {
             store.value.configurationName
         }
