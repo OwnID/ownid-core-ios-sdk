@@ -6,6 +6,7 @@ extension OwnID.UISDK {
         let tooltipVisualLookConfig: TooltipVisualLookConfig
         let isRTL: Bool
         
+        @available(iOS 16.0, *)
         func sizeThatFits(
             proposal: ProposedViewSize,
             subviews: Subviews,
@@ -16,6 +17,7 @@ extension OwnID.UISDK {
             return textViewSize
         }
         
+        @available(iOS 16.0, *)
         func placeSubviews(
             in bounds: CGRect,
             proposal: ProposedViewSize,
@@ -31,6 +33,7 @@ extension OwnID.UISDK {
             placeBeak(beakSubview, beakSize, bounds)
         }
         
+        @available(iOS 16.0, *)
         private func placeText(_ textSubview: LayoutSubviews.Element, _ beakSize: CGSize, _ bounds: CGRect) {
             let textSize = textSubview.sizeThatFits(.unspecified)
             switch tooltipVisualLookConfig.tooltipPosition {
@@ -52,6 +55,7 @@ extension OwnID.UISDK {
             }
         }
         
+        @available(iOS 16.0, *)
         private func placeBeak(_ beakSubview: LayoutSubviews.Element, _ beakSize: CGSize, _ bounds: CGRect) {
             switch tooltipVisualLookConfig.tooltipPosition {
             case .top:
@@ -76,6 +80,7 @@ extension OwnID.UISDK {
             }
         }
         
+        @available(iOS 16.0, *)
         private func calculateTextXPosition(viewBounds: CGRect) -> CGFloat {
             let layoutCalculation: XAxisOffsetCalculating
             if isRTL {

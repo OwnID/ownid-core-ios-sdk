@@ -5,6 +5,7 @@ extension OwnID.UISDK {
     struct TooltipContainerLayout: Layout {
         let tooltipPosition: TooltipPositionType
         
+        @available(iOS 16.0, *)
         func sizeThatFits(
             proposal: ProposedViewSize,
             subviews: Subviews,
@@ -15,6 +16,7 @@ extension OwnID.UISDK {
             return buttonSize
         }
         
+        @available(iOS 16.0, *)
         func placeSubviews(
             in bounds: CGRect,
             proposal: ProposedViewSize,
@@ -60,6 +62,7 @@ extension OwnID.UISDK {
             }
         }
         
+        @available(iOS 16.0, *)
         private func placeDismissButton(_ bounds: CGRect, _ dismissButton: LayoutSubviews.Element) {
             let screenBounds = UIScreen.main.bounds
             let x = max(bounds.origin.x * 2, screenBounds.width)
