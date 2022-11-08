@@ -13,6 +13,15 @@ extension OwnID.FlowsSDK.RegisterError: LocalizedError {
 
 public extension OwnID {
     typealias RegistrationPublisher = OwnID.FlowsSDK.RegistrationPublisher
+    struct RegisterResult {
+        public init(operationResult: OperationResult, authType: OwnID.CoreSDK.AuthType?) {
+            self.operationResult = operationResult
+            self.authType = authType
+        }
+        
+        let operationResult: OperationResult
+        let authType: OwnID.CoreSDK.AuthType?
+    }
 }
 
 public extension OwnID.FlowsSDK {
@@ -24,8 +33,8 @@ public extension OwnID.FlowsSDK {
     enum RegistrationEvent {
         case loading
         case resetTapped
-        case readyToRegister(usersEmailFromWebApp: String?)
-        case userRegisteredAndLoggedIn(registrationResult: OperationResult)
+        case readyToRegister(usersEmailFromWebApp: String?, authType: OwnID.CoreSDK.AuthType?)
+        case userRegisteredAndLoggedIn(registrationResult: OperationResult, authType: OwnID.CoreSDK.AuthType?)
     }
     
     typealias RegistrationPublisher = AnyPublisher<Result<RegistrationEvent, OwnID.CoreSDK.Error>, Never>
@@ -49,5 +58,5 @@ public struct VoidOperationResult: OperationResult {
 }
 
 public protocol RegistrationPerformer {
-    func register(configuration: OwnID.FlowsSDK.RegistrationConfiguration, parameters: RegisterParameters) -> AnyPublisher<OperationResult, OwnID.CoreSDK.Error>
+    func register(configuration: OwnID.FlowsSDK.RegistrationConfiguration, parameters: RegisterParameters) -> AnyPublisher<OwnID.RegisterResult, OwnID.CoreSDK.Error>
 }

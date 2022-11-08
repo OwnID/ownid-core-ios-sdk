@@ -91,13 +91,17 @@ extension OwnID.CoreSDK.Status {
                     
                     guard let stringType = responsePayload["type"] as? OwnID.CoreSDK.LoginID,
                           let requestResponseType = OwnID.CoreSDK.StatusResponseType(rawValue: stringType) else { throw OwnID.CoreSDK.Error.statusRequestTypeIsMissing }
-                    
+                    var authTypeValue: String?
+                    if let flowInfo = response["flowInfo"] as? [String: Any], let authType = flowInfo["authType"] as? String {
+                        authTypeValue = authType
+                    }
                     let payload = OwnID.CoreSDK.Payload(dataContainer: responseData,
                                                         metadata: metadataDict,
                                                         context: context,
                                                         nonce: nonce,
                                                         loginId: loginId,
-                                                        responseType: requestResponseType)
+                                                        responseType: requestResponseType,
+                                                        authType: authTypeValue)
                     
                     OwnID.CoreSDK.logger.logCore(.entry(context: context, message: "Finished request", Self.self))
                     return payload

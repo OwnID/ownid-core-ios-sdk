@@ -75,7 +75,7 @@ public extension OwnID.FlowsSDK.RegisterView {
                     }
                 } receiveValue: { [unowned self] registrationResult in
                     OwnID.CoreSDK.logger.logAnalytic(.registerTrackMetric(action: "User is Registered", context: payload.context))
-                    resultPublisher.send(.success(.userRegisteredAndLoggedIn(registrationResult: registrationResult)))
+                    resultPublisher.send(.success(.userRegisteredAndLoggedIn(registrationResult: registrationResult.operationResult, authType: registrationResult.authType)))
                     resetDataAndState()
                 }
                 .store(in: &bag)
@@ -103,7 +103,7 @@ public extension OwnID.FlowsSDK.RegisterView {
             }
             if registrationData.payload != nil {
                 state = .ownidCreated
-                resultPublisher.send(.success(.readyToRegister(usersEmailFromWebApp: usersEmail)))
+                resultPublisher.send(.success(.readyToRegister(usersEmailFromWebApp: usersEmail, authType: registrationData.payload?.authType)))
                 return
             }
             let email = OwnID.CoreSDK.Email(rawValue: usersEmail)
@@ -139,7 +139,7 @@ public extension OwnID.FlowsSDK.RegisterView {
                             if let loginId = registrationData.payload?.loginId {
                                 registrationData.persistedEmail = OwnID.CoreSDK.Email(rawValue: loginId)
                             }
-                            resultPublisher.send(.success(.readyToRegister(usersEmailFromWebApp: registrationData.payload?.loginId)))
+                            resultPublisher.send(.success(.readyToRegister(usersEmailFromWebApp: registrationData.payload?.loginId, authType: registrationData.payload?.authType)))
                             
                         case .session:
                             processLogin(payload: payload)
@@ -178,10 +178,10 @@ private extension OwnID.FlowsSDK.RegisterView.ViewModel {
                 if case .failure(let error) = completion {
                     handle(error)
                 }
-            } receiveValue: { [unowned self] loginResult in
+            } receiveValue: { [unowned self] registerResult in
                 OwnID.CoreSDK.logger.logAnalytic(.loginTrackMetric(action: "User is Logged in", context: payload.context))
                 state = .ownidCreated
-                resultPublisher.send(.success(.userRegisteredAndLoggedIn(registrationResult: loginResult)))
+                resultPublisher.send(.success(.userRegisteredAndLoggedIn(registrationResult: registerResult.operationResult, authType: registerResult.authType)))
                 resetDataAndState()
             }
             .store(in: &bag)

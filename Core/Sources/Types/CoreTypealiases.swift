@@ -10,6 +10,7 @@ public extension OwnID.CoreSDK {
     typealias EventPublisher = AnyPublisher<Event, Error>
     typealias ServerURL = URL
     typealias RedirectionURLString = String
+    typealias AuthType = String
 }
 
 extension OwnID.CoreSDK {
