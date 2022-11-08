@@ -52,7 +52,7 @@ extension OwnID.CoreSDK {
 private extension OwnID.CoreSDK.Configuration {
     static func buildServerURL(for appID: String, env: String?) -> URL {
         var serverURLString = "https://\(appID).server.ownid.com"
-        if let env {
+        if let env = env {
             serverURLString = "https://\(appID).server.\(env).ownid.com"
         }
         let serverURL = URL(string: serverURLString)!
