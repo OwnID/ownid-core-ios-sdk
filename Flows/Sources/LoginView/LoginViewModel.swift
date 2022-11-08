@@ -117,7 +117,7 @@ private extension OwnID.FlowsSDK.LoginView.ViewModel {
             } receiveValue: { [unowned self] loginResult in
                 OwnID.CoreSDK.logger.logAnalytic(.loginTrackMetric(action: "User is Logged in", context: payload.context))
                 state = .loggedIn
-                resultPublisher.send(.success(.loggedIn(loginResult: loginResult)))
+                resultPublisher.send(.success(.loggedIn(loginResult: loginResult.operationResult, authType: loginResult.authType)))
                 resetDataAndState()
             }
             .store(in: &bag)

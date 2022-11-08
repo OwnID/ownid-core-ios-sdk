@@ -67,6 +67,7 @@ public extension OwnID.CoreSDK {
         public let nonce: OwnID.CoreSDK.Nonce
         public let loginId: LoginID?
         public let responseType: StatusResponseType
+        public let authType: AuthType?
     }
     
     enum Event {
