@@ -179,7 +179,7 @@ private extension OwnID.FlowsSDK.RegisterView.ViewModel {
                     handle(error)
                 }
             } receiveValue: { [unowned self] registerResult in
-                OwnID.CoreSDK.logger.logAnalytic(.loginTrackMetric(action: "User is Logged in", context: payload.context))
+                OwnID.CoreSDK.logger.logAnalytic(.loginTrackMetric(action: "User is Logged in", context: payload.context, authType: payload.authType))
                 state = .ownidCreated
                 resultPublisher.send(.success(.userRegisteredAndLoggedIn(registrationResult: registerResult.operationResult, authType: registerResult.authType)))
                 resetDataAndState()

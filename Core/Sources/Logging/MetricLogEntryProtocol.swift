@@ -19,7 +19,7 @@ public protocol MetricLogEntryProtocol: Encodable {
     
     var sourceTimestamp: String { get set }
     
-    var metadata: [String: String] { get set }
+    var metadata: [String: String?] { get set }
 }
 
 extension OwnID.CoreSDK {
@@ -30,12 +30,14 @@ extension OwnID.CoreSDK {
                     message: String,
                     codeInitiator: String,
                     sdkName: String,
-                    version: String) {
+                    version: String,
+                    metadata: [String : String?] = [String : String]()) {
             self.context = context
             self.requestPath = requestPath
             self.level = level
             self.message = message
             self.codeInitiator = codeInitiator + "\n" + sdkName + " " + version
+            self.metadata = metadata
         }
         
         public var appURL: String? = OwnID.CoreSDK.shared.serverURL(for: OwnID.CoreSDK.shared.configurationName).deletingLastPathComponent().host
@@ -58,7 +60,7 @@ extension OwnID.CoreSDK {
         
         public var sourceTimestamp = String(Int((Date().timeIntervalSince1970 * 1000.0).rounded()))
         
-        public var metadata = [String : String]()
+        public var metadata = [String : String?]()
         
         public var type: EventType?
         
