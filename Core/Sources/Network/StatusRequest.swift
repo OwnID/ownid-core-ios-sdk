@@ -31,12 +31,14 @@ extension OwnID.CoreSDK.Status {
         let provider: APIProvider
         let sessionVerifier: OwnID.CoreSDK.SessionVerifier
         let type: OwnID.CoreSDK.RequestType
+        let webLanguages: OwnID.CoreSDK.Languages
         
         internal init(url: OwnID.CoreSDK.ServerURL,
                       context: OwnID.CoreSDK.Context,
                       nonce: OwnID.CoreSDK.Nonce,
                       sessionVerifier: OwnID.CoreSDK.SessionVerifier,
                       type: OwnID.CoreSDK.RequestType,
+                      webLanguages: OwnID.CoreSDK.Languages,
                       provider: APIProvider = URLSession.shared) {
             self.context = context
             self.nonce = nonce
@@ -44,6 +46,7 @@ extension OwnID.CoreSDK.Status {
             self.sessionVerifier = sessionVerifier
             self.provider = provider
             self.type = type
+            self.webLanguages = webLanguages
         }
         
         func perform() -> AnyPublisher<OwnID.CoreSDK.Payload, OwnID.CoreSDK.Error> {
@@ -101,7 +104,8 @@ extension OwnID.CoreSDK.Status {
                                                         nonce: nonce,
                                                         loginId: loginId,
                                                         responseType: requestResponseType,
-                                                        authType: authTypeValue)
+                                                        authType: authTypeValue,
+                                                        requestLanguage: webLanguages.rawValue.first)
                     
                     OwnID.CoreSDK.logger.logCore(.entry(context: context, message: "Finished request", Self.self))
                     return payload
