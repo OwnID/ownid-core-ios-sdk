@@ -68,6 +68,7 @@ public extension OwnID.CoreSDK {
         public let loginId: LoginID?
         public let responseType: StatusResponseType
         public let authType: AuthType?
+        public let requestLanguage: String?
     }
     
     enum Event {

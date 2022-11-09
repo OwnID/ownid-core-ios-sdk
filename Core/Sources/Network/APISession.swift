@@ -57,7 +57,8 @@ extension OwnID.CoreSDK.APISession {
                                      context: context,
                                      nonce: nonce,
                                      sessionVerifier: sessionVerifier,
-                                     type: type)
+                                     type: type,
+                                     webLanguages: webLanguages)
             .perform()
             .handleEvents(receiveOutput: { payload in
                 OwnID.CoreSDK.logger.logCore(.entry(context: payload.context, message: "\(OwnID.CoreSDK.Status.Request.self): Finished", Self.self))
