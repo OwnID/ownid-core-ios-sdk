@@ -45,7 +45,7 @@ extension OwnID.CoreSDK {
         }
         
         func log(_ entry: StandardMetricLogEntry) {
-            if let level = entry.level, level.rawValue > logLevel.rawValue {
+            if let level = entry.level, logLevel.rawValue > level.rawValue {
                 return
             }
             entry.metadata[LoggerValues.correlationIDKey] = LoggerValues.instanceID.uuidString
