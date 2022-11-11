@@ -29,39 +29,51 @@ public extension OwnID.UISDK {
             self.visualConfig = visualConfig
         }
         
+        @ViewBuilder
+        func orView() -> some View {
+            if visualConfig.isOrViewEnabled {
+                OwnID.UISDK.OrView(textSize: visualConfig.orTextSize,
+                                   lineHeight: visualConfig.orLineHeight,
+                                   textColor: visualConfig.orTextColor)
+            }
+        }
+        
         public var body: some View {
             HStack(spacing: 8) {
-                if visualConfig.isOrViewEnabled {
-                    OwnID.UISDK.OrView(textSize: visualConfig.orTextSize,
-                                       lineHeight: visualConfig.orLineHeight,
-                                       textColor: visualConfig.orTextColor)
+                if visualConfig.widgetPosition == .end {
+                    orView()
                 }
-//                if isTooltipPresented, #available(iOS 16.0, *) {
-//                    TooltipContainerLayout(tooltipPosition: visualConfig.tooltipVisualLookConfig.tooltipPosition) {
-//                        TooltipTextAndArrowLayout(tooltipVisualLookConfig: visualConfig.tooltipVisualLookConfig, isRTL: direction == .rightToLeft) {
-//                            RectangleWithTextView(tooltipVisualLookConfig: visualConfig.tooltipVisualLookConfig)
-//                                .popupTextContainerType(.text)
-//                            BeakView(tooltipVisualLookConfig: visualConfig.tooltipVisualLookConfig)
-//                                .rotationEffect(.degrees(visualConfig.tooltipVisualLookConfig.tooltipPosition.beakViewRotationAngle))
-//                                .popupTextContainerType(.beak)
-//                        }
-//                        .compositingGroup()
-//                        .shadow(color: colorScheme == .dark ? .clear : visualConfig.tooltipVisualLookConfig.shadowColor.opacity(0.05), radius: 5, y: 4)
-//                        .popupContainerType(.textAndArrowContainer)
-//                        Button(action: { isTooltipPresented = false }) {
-//                            Text("")
-//                                .foregroundColor(.clear)
-//                                .frame(maxWidth: .infinity, maxHeight: .infinity)
-//                        }
-//                        .popupContainerType(.dismissButton)
-//                        imageButtonView
-//                            .layoutPriority(1)
-//                            .popupContainerType(.ownIdButton)
-//                    }
-//                } else {
+                Group {
+                    //                if isTooltipPresented, #available(iOS 16.0, *) {
+                    //                    TooltipContainerLayout(tooltipPosition: visualConfig.tooltipVisualLookConfig.tooltipPosition) {
+                    //                        TooltipTextAndArrowLayout(tooltipVisualLookConfig: visualConfig.tooltipVisualLookConfig, isRTL: direction == .rightToLeft) {
+                    //                            RectangleWithTextView(tooltipVisualLookConfig: visualConfig.tooltipVisualLookConfig)
+                    //                                .popupTextContainerType(.text)
+                    //                            BeakView(tooltipVisualLookConfig: visualConfig.tooltipVisualLookConfig)
+                    //                                .rotationEffect(.degrees(visualConfig.tooltipVisualLookConfig.tooltipPosition.beakViewRotationAngle))
+                    //                                .popupTextContainerType(.beak)
+                    //                        }
+                    //                        .compositingGroup()
+                    //                        .shadow(color: colorScheme == .dark ? .clear : visualConfig.tooltipVisualLookConfig.shadowColor.opacity(0.05), radius: 5, y: 4)
+                    //                        .popupContainerType(.textAndArrowContainer)
+                    //                        Button(action: { isTooltipPresented = false }) {
+                    //                            Text("")
+                    //                                .foregroundColor(.clear)
+                    //                                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    //                        }
+                    //                        .popupContainerType(.dismissButton)
+                    //                        imageButtonView
+                    //                            .layoutPriority(1)
+                    //                            .popupContainerType(.ownIdButton)
+                    //                    }
+                    //                } else {
                     imageButtonView
                         .layoutPriority(1)
-//                }
+                    //                }
+                }
+                if visualConfig.widgetPosition == .start {
+                    orView()
+                }
             }
         }
     }

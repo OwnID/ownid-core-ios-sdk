@@ -7,6 +7,11 @@ public extension OwnID.UISDK {
         case faceId = "faceidImage"
     }
     
+    enum WidgetPosition {
+        case start
+        case end
+    }
+    
     struct VisualLookConfig {
         
         public init(iconColor: Color = OwnID.Colors.biometricsButtonImageColor,
@@ -18,7 +23,8 @@ public extension OwnID.UISDK {
                     orLineHeight: CGFloat = 24.0,
                     orTextColor: Color = OwnID.Colors.textGrey,
                     tooltipVisualLookConfig: TooltipVisualLookConfig = TooltipVisualLookConfig(),
-                    variant: ButtonVariant = .fingerprint) {
+                    variant: ButtonVariant = .fingerprint,
+                    widgetPosition: WidgetPosition = .start) {
             self.iconColor = iconColor
             self.backgroundColor = backgroundColor
             self.borderColor = borderColor
@@ -29,6 +35,7 @@ public extension OwnID.UISDK {
             self.orTextColor = orTextColor
             self.tooltipVisualLookConfig = tooltipVisualLookConfig
             self.variant = variant
+            self.widgetPosition = widgetPosition
         }
         
         public var iconColor: Color
@@ -41,5 +48,6 @@ public extension OwnID.UISDK {
         public var orLineHeight: CGFloat
         public var orTextColor: Color
         public var variant: ButtonVariant
+        public var widgetPosition: WidgetPosition
     }
 }
