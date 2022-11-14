@@ -7,7 +7,7 @@ public extension OwnID.UISDK {
         case faceId = "faceidImage"
     }
     
-    enum WidgetPosition {
+    enum WidgetPosition: String {
         case start
         case end
     }
