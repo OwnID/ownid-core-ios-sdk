@@ -6,6 +6,7 @@ public protocol APISessionProtocol {
     func performInitRequest(type: OwnID.CoreSDK.RequestType,
                             token: OwnID.CoreSDK.JWTToken?) -> AnyPublisher<OwnID.CoreSDK.Init.Response, OwnID.CoreSDK.Error>
     func performStatusRequest() -> AnyPublisher<OwnID.CoreSDK.Payload, OwnID.CoreSDK.Error>
+    func performSettingsRequest() -> AnyPublisher<OwnID.CoreSDK.Setting.Response, OwnID.CoreSDK.Error>
 }
 
 public extension OwnID.CoreSDK {
@@ -17,13 +18,16 @@ public extension OwnID.CoreSDK {
         private var type: OwnID.CoreSDK.RequestType!
         private let serverURL: ServerURL
         private let statusURL: ServerURL
+        private let settingsURL: ServerURL
         private let webLanguages: OwnID.CoreSDK.Languages
         
         public init(serverURL: ServerURL,
                     statusURL: ServerURL,
+                    settingsURL: ServerURL,
                     webLanguages: OwnID.CoreSDK.Languages) {
             self.serverURL = serverURL
             self.statusURL = statusURL
+            self.settingsURL = settingsURL
             self.webLanguages = webLanguages
             let sessionVerifierData = Self.random()
             sessionVerifier = sessionVerifierData.toBase64URL()
@@ -45,11 +49,19 @@ extension OwnID.CoreSDK.APISession {
             .map { [unowned self] response in
                 nonce = response.nonce
                 context = response.context
+//                print("context: \(context!)")
+//                print("nonce: \(nonce!)")
+//                print("sessionVerifier: \(sessionVerifier)")
+                
                 self.type = type
                 OwnID.CoreSDK.logger.logCore(.entry(context: context, message: "\(OwnID.CoreSDK.Init.Request.self): Finished", Self.self))
                 return response
             }
             .eraseToAnyPublisher()
+    }
+    
+    public func performSettingsRequest() -> AnyPublisher<OwnID.CoreSDK.Setting.Response, OwnID.CoreSDK.Error> {
+        OwnID.CoreSDK.Setting.Request(url: settingsURL, loginID: "yurii+v12@ownid.com", context: context, nonce: nonce, webLanguages: webLanguages).perform().eraseToAnyPublisher()
     }
     
     public func performStatusRequest() -> AnyPublisher<OwnID.CoreSDK.Payload, OwnID.CoreSDK.Error> {

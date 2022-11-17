@@ -118,7 +118,7 @@ public extension OwnID {
         }
         
         func apiSession(configurationName: String, webLanguages: OwnID.CoreSDK.Languages) -> APISessionProtocol {
-            return APISession(serverURL: serverURL(for: configurationName), statusURL: statusURL(for: configurationName), webLanguages: webLanguages)
+            return APISession(serverURL: serverURL(for: configurationName), statusURL: statusURL(for: configurationName), settingsURL: settingURL(for: configurationName), webLanguages: webLanguages)
         }
         
         /// Used to handle the redirects from browser after webapp is finished
@@ -152,6 +152,10 @@ public extension OwnID {
 public extension OwnID.CoreSDK {
     func statusURL(for sdkConfigurationName: String) -> ServerURL {
         getConfiguration(for: sdkConfigurationName).statusURL
+    }
+    
+    func settingURL(for sdkConfigurationName: String) -> ServerURL {
+        getConfiguration(for: sdkConfigurationName).settingURL
     }
 }
 

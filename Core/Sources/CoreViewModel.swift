@@ -22,6 +22,8 @@ extension OwnID.CoreSDK.ViewModelAction: CustomDebugStringConvertible {
             return "statusRequestLoaded"
         case .browserVM:
             return "browserVM"
+        case .settingsRequestLoaded:
+            return "settingsRequestLoaded"
         }
     }
 }
@@ -30,6 +32,7 @@ extension OwnID.CoreSDK {
         case addToState(browserViewModelStore: Store<BrowserOpenerViewModel.State, BrowserOpenerViewModel.Action>)
         case sendInitialRequest
         case initialRequestLoaded(response: OwnID.CoreSDK.Init.Response)
+        case settingsRequestLoaded(response: OwnID.CoreSDK.Setting.Response)
         case browserURLCreated(URL)
         case error(OwnID.CoreSDK.Error)
         case sendStatusRequest
@@ -78,11 +81,17 @@ extension OwnID.CoreSDK {
             
         case let .initialRequestLoaded(response):
             guard let context = response.context else { return errorEffect(.contextIsMissing) }
-            let browserAffect = browserURLEffect(for: context,
-                                                 browserURL: response.url,
-                                                 email: state.email,
-                                                 sdkConfigurationName: state.sdkConfigurationName)
-            return [browserAffect]
+//            let browserAffect = browserURLEffect(for: context,
+//                                                 browserURL: response.url,
+//                                                 email: state.email,
+//                                                 sdkConfigurationName: state.sdkConfigurationName)
+//            return [browserAffect]
+            
+            return [sendSettingsRequest(session: state.session)]
+            
+        case let .settingsRequestLoaded(response):
+            fatalError("call register credential request")
+            return []
             
         case .error:
             return []
@@ -149,6 +158,14 @@ extension OwnID.CoreSDK {
         session.performInitRequest(type: type, token: token)
             .receive(on: DispatchQueue.main)
             .map { ViewModelAction.initialRequestLoaded(response: $0) }
+            .catch { Just(ViewModelAction.error($0)) }
+            .eraseToEffect()
+    }
+    
+    static func sendSettingsRequest(session: APISessionProtocol) -> Effect<ViewModelAction> {
+        session.performSettingsRequest()
+            .receive(on: DispatchQueue.main)
+            .map { ViewModelAction.settingsRequestLoaded(response: $0) }
             .catch { Just(ViewModelAction.error($0)) }
             .eraseToEffect()
     }
@@ -230,6 +247,7 @@ extension OwnID.CoreSDK {
                             .browserURLCreated,
                             .sendStatusRequest,
                             .addToState,
+                            .settingsRequestLoaded,
                             .browserVM:
                         internalStatesChange.append(String(describing: action))
                         

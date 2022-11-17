@@ -46,6 +46,14 @@ extension OwnID.CoreSDK {
             url.appendPathComponent("final")
             return url
         }
+        
+        var settingURL: ServerURL {
+            var url = ownIDServerURL
+            url.appendPathComponent("passkeys")
+            url.appendPathComponent("fido2")
+            url.appendPathComponent("settings")
+            return url
+        }
     }
 }
 
