@@ -24,6 +24,8 @@ extension OwnID.CoreSDK.ViewModelAction: CustomDebugStringConvertible {
             return "browserVM"
         case .settingsRequestLoaded:
             return "settingsRequestLoaded"
+        case .authRequestLoaded:
+            return "authRequestLoaded"
         }
     }
 }
@@ -33,6 +35,7 @@ extension OwnID.CoreSDK {
         case sendInitialRequest
         case initialRequestLoaded(response: OwnID.CoreSDK.Init.Response)
         case settingsRequestLoaded(response: OwnID.CoreSDK.Setting.Response)
+        case authRequestLoaded(response: OwnID.CoreSDK.Auth.Response)
         case browserURLCreated(URL)
         case error(OwnID.CoreSDK.Error)
         case sendStatusRequest
@@ -87,7 +90,12 @@ extension OwnID.CoreSDK {
 //                                                 sdkConfigurationName: state.sdkConfigurationName)
 //            return [browserAffect]
             
-            return [sendSettingsRequest(session: state.session)]
+            return [sendAuthRequest(session: state.session)]
+            
+        case let .authRequestLoaded(response):
+            
+            return [sendStatusRequest(session: state.session)]
+//            return [sendSettingsRequest(session: state.session)]
             
         case let .settingsRequestLoaded(response):
             fatalError("call register credential request")
@@ -170,6 +178,14 @@ extension OwnID.CoreSDK {
             .eraseToEffect()
     }
     
+    static func sendAuthRequest(session: APISessionProtocol) -> Effect<ViewModelAction> {
+        session.performAuthRequest()
+            .receive(on: DispatchQueue.main)
+            .map { ViewModelAction.authRequestLoaded(response: $0) }
+            .catch { Just(ViewModelAction.error($0)) }
+            .eraseToEffect()
+    }
+    
     static func sendStatusRequest(session: APISessionProtocol) -> Effect<ViewModelAction> {
         session.performStatusRequest()
             .map { ViewModelAction.statusRequestLoaded(response: $0) }
@@ -248,6 +264,7 @@ extension OwnID.CoreSDK {
                             .sendStatusRequest,
                             .addToState,
                             .settingsRequestLoaded,
+                            .authRequestLoaded,
                             .browserVM:
                         internalStatesChange.append(String(describing: action))
                         
