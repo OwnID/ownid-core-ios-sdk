@@ -90,16 +90,14 @@ extension OwnID.CoreSDK {
 //                                                 sdkConfigurationName: state.sdkConfigurationName)
 //            return [browserAffect]
             
-            return [sendAuthRequest(session: state.session)]
+            return [sendSettingsRequest(session: state.session)]
             
-        case let .authRequestLoaded(response):
+        case .authRequestLoaded:
             
             return [sendStatusRequest(session: state.session)]
-//            return [sendSettingsRequest(session: state.session)]
             
-        case let .settingsRequestLoaded(response):
-            fatalError("call register credential request")
-            return []
+        case .settingsRequestLoaded:
+            return [sendAuthRequest(session: state.session)]
             
         case .error:
             return []
