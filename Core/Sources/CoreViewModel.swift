@@ -1,5 +1,6 @@
 import Foundation
 import Combine
+import LocalAuthentication
 
 extension OwnID.CoreSDK.ViewModelAction: CustomDebugStringConvertible {
     var debugDescription: String {
@@ -84,13 +85,24 @@ extension OwnID.CoreSDK {
             
         case let .initialRequestLoaded(response):
             guard let context = response.context else { return errorEffect(.contextIsMissing) }
-//            let browserAffect = browserURLEffect(for: context,
-//                                                 browserURL: response.url,
-//                                                 email: state.email,
-//                                                 sdkConfigurationName: state.sdkConfigurationName)
-//            return [browserAffect]
+            var passkeysPossibilityAvailable = false
             
-            return [sendSettingsRequest(session: state.session)]
+            /// Passkeys available only for > iOS 16
+            if #available(iOS 16, *) {
+                let authContext = LAContext()
+                authContext.canEvaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, error: nil)
+                passkeysPossibilityAvailable = authContext.biometryType != .none
+            }
+            if passkeysPossibilityAvailable, #available(iOS 16, *) {
+                return [sendSettingsRequest(session: state.session)]
+            } else {
+                let browserAffect = browserURLEffect(for: context,
+                                                     browserURL: response.url,
+                                                     email: state.email,
+                                                     sdkConfigurationName: state.sdkConfigurationName)
+                return [browserAffect]
+            }
+            
             
         case .authRequestLoaded:
             
