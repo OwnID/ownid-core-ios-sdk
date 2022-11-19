@@ -1,16 +1,15 @@
 import AuthenticationServices
 import os
 
-class AccountManager: NSObject, ASAuthorizationControllerPresentationContextProviding, ASAuthorizationControllerDelegate {
+class AccountManager: NSObject, ASAuthorizationControllerDelegate {
+    
     let domain = "ownid.com"//"passwordless.staging.ownid.com"
-    var authenticationAnchor: ASPresentationAnchor?
+    let authenticationAnchor = ASPresentationAnchor()
     var currentAuthController: ASAuthorizationController?
     var isPerformingModalReqest = false
-//    var delegateController: SignInViewController?
     
-    func signInWith(anchor: ASPresentationAnchor, preferImmediatelyAvailableCredentials: Bool) {
+    func signInWith(preferImmediatelyAvailableCredentials: Bool) {
         currentAuthController?.cancel()
-        self.authenticationAnchor = anchor
         let publicKeyCredentialProvider = ASAuthorizationPlatformPublicKeyCredentialProvider(relyingPartyIdentifier: domain)
         
         let challenge = "CGLwDDkJMkqpyt9HcELWbg"//UUID().uuidString
@@ -48,31 +47,29 @@ class AccountManager: NSObject, ASAuthorizationControllerPresentationContextProv
         isPerformingModalReqest = true
     }
     
-    func beginAutoFillAssistedPasskeySignIn(anchor: ASPresentationAnchor) {
-        //        currentAuthController?.cancel()
-        //        self.authenticationAnchor = anchor
-        //
-        //        let publicKeyCredentialProvider = ASAuthorizationPlatformPublicKeyCredentialProvider(relyingPartyIdentifier: domain)
-        //
-        //        let challenge = UUID().uuidString
-        //        print("\(#function) 1️⃣ challenge:\(challenge)")
-        //        let assertionRequest = publicKeyCredentialProvider.createCredentialAssertionRequest(challenge: challenge.data(using: .utf8)!)
-        //
-        //        let authController = ASAuthorizationController(authorizationRequests: [ assertionRequest ] )
-        //        authController.delegate = self
-        //        authController.presentationContextProvider = self
-        //        authController.performAutoFillAssistedRequests()
-        //        currentAuthController = authController
+    func beginAutoFillAssistedPasskeySignIn() {
+        currentAuthController?.cancel()
+        
+        let publicKeyCredentialProvider = ASAuthorizationPlatformPublicKeyCredentialProvider(relyingPartyIdentifier: domain)
+        
+        let challenge = UUID().uuidString
+        print("\(#function) 1️⃣ challenge:\(challenge)")
+        let assertionRequest = publicKeyCredentialProvider.createCredentialAssertionRequest(challenge: challenge.data(using: .utf8)!)
+        
+        let authController = ASAuthorizationController(authorizationRequests: [ assertionRequest ] )
+        authController.delegate = self
+        authController.presentationContextProvider = self
+        authController.performAutoFillAssistedRequests()
+        currentAuthController = authController
     }
     
-    func signUpWith(userName: String, anchor: ASPresentationAnchor) {
+    func signUpWith(userName: String) {
         currentAuthController?.cancel()
-        self.authenticationAnchor = anchor
         let publicKeyCredentialProvider = ASAuthorizationPlatformPublicKeyCredentialProvider(relyingPartyIdentifier: domain)
         
         let challenge = "luf836ZkvE6YVetg4prNsQ"//UUID().uuidString
         print("\(#function) 1️⃣ challenge:\(challenge)")
-        let userID = "yurii+v12@ownid.com"
+        let userID = userName //"yurii+v12@ownid.com"
         
         /// `createCredentialRegistrationRequest` also creates new credential if provided the same
         /// Registering a passkey with the same user ID as an existing one overwrites the existing passkey on the user’s devices.
@@ -102,14 +99,14 @@ class AccountManager: NSObject, ASAuthorizationControllerPresentationContextProv
             print("attestationObject: \(attestationObject!)")
             
             print("clientDataJSON Base64: \(clientDataJSON.base64urlEncodedString())")
-//            print("clientDataJSON: \(String(data: clientDataJSON, encoding: .utf8)!)")
-//            let json = try! JSONSerialization.jsonObject(with: clientDataJSON, options: []) as! [String: String]
-//            print("clientDataJSON challenge: \(json["challenge"]!.urlSafeBase64Decoded()!)")
+            //            print("clientDataJSON: \(String(data: clientDataJSON, encoding: .utf8)!)")
+            //            let json = try! JSONSerialization.jsonObject(with: clientDataJSON, options: []) as! [String: String]
+            //            print("clientDataJSON challenge: \(json["challenge"]!.urlSafeBase64Decoded()!)")
             
             print("credentialID: \(credentialID)")
             
             // After the server verifies the registration and creates the user account, sign in the user with the new account.
-//            delegateController?.didFinishSignIn()
+            //            delegateController?.didFinishSignIn()
             
         case let credentialAssertion as ASAuthorizationPlatformPublicKeyCredentialAssertion:
             logger.log("A passkey was used to sign in")
@@ -123,12 +120,12 @@ class AccountManager: NSObject, ASAuthorizationControllerPresentationContextProv
             print("signature: \(signature)")
             print("rawAuthenticatorData: \(rawAuthenticatorData)")
             print("clientDataJSON Base64: \(clientDataJSON.base64urlEncodedString())")
-//            print("clientDataJSON: \(String(data: clientDataJSON, encoding: .utf8)!)")
+            //            print("clientDataJSON: \(String(data: clientDataJSON, encoding: .utf8)!)")
             print("userID: \(userID)")
             print("credentialID: \(credentialID)")
             
             // After the server verifies the assertion, sign in the user.
-//            delegateController?.didFinishSignIn()
+            //            delegateController?.didFinishSignIn()
             
         case let passwordCredential as ASPasswordCredential:
             logger.log("A password was provided")
@@ -139,7 +136,7 @@ class AccountManager: NSObject, ASAuthorizationControllerPresentationContextProv
             print("password: \(password)")
             
             // After the server verifies the userName and password, sign in the user.
-//            delegateController?.didFinishSignIn()
+            //            delegateController?.didFinishSignIn()
             
         case let appleIDCredential as ASAuthorizationAppleIDCredential:
             logger.log("A ASAuthorizationAppleIDCredential was provided")
@@ -172,7 +169,7 @@ class AccountManager: NSObject, ASAuthorizationControllerPresentationContextProv
             logger.log("Request canceled.")
             
             if isPerformingModalReqest {
-//                delegateController?.beginSignInAutofillSuggest()
+                //                delegateController?.beginSignInAutofillSuggest()
             }
         } else {
             // Another ASAuthorization error.
@@ -181,47 +178,5 @@ class AccountManager: NSObject, ASAuthorizationControllerPresentationContextProv
         }
         
         isPerformingModalReqest = false
-    }
-    
-    func presentationAnchor(for controller: ASAuthorizationController) -> ASPresentationAnchor {
-        return authenticationAnchor!
-    }
-}
-
-extension String {
-    func urlSafeBase64Decoded() -> String? {
-        var st = self
-            .replacingOccurrences(of: "_", with: "/")
-            .replacingOccurrences(of: "-", with: "+")
-        let remainder = self.count % 4
-        if remainder > 0 {
-            st = self.padding(toLength: self.count + 4 - remainder,
-                              withPad: "=",
-                              startingAt: 0)
-        }
-        guard let d = Data(base64Encoded: st, options: .ignoreUnknownCharacters) else{
-            return nil
-        }
-        return String(data: d, encoding: .utf8)
-    }
-}
-
-extension Data {
-    init?(base64urlEncoded input: String) {
-        var base64 = input
-        base64 = base64.replacingOccurrences(of: "-", with: "+")
-        base64 = base64.replacingOccurrences(of: "_", with: "/")
-        while base64.count % 4 != 0 {
-            base64 = base64.appending("=")
-        }
-        self.init(base64Encoded: base64)
-    }
-    
-    func base64urlEncodedString() -> String {
-        var result = self.base64EncodedString()
-        result = result.replacingOccurrences(of: "+", with: "-")
-        result = result.replacingOccurrences(of: "/", with: "_")
-        result = result.replacingOccurrences(of: "=", with: "")
-        return result
     }
 }
