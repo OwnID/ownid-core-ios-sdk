@@ -202,60 +202,26 @@ extension OwnID.CoreSDK {
     }
 }
 
-//                               extension OwnID.CoreSDK.AccountManager {
-//                        static func viewModelReducer(state: inout State, action: Action) -> [Effect<Action>] {
-//                            switch action {
-//        case .signInWith(preferImmediatelyAvailableCredentials: let preferImmediatelyAvailableCredentials):
-//            state.currentAuthController?.cancel()
-//            let publicKeyCredentialProvider = ASAuthorizationPlatformPublicKeyCredentialProvider(relyingPartyIdentifier: state.domain)
-//
-//            let assertionRequest = publicKeyCredentialProvider.createCredentialAssertionRequest(challenge: state.challengeData)
-//
-//            // Also allow the user to use a saved password, if they have one.
-//            let passwordCredentialProvider = ASAuthorizationPasswordProvider()
-//            let passwordRequest = passwordCredentialProvider.createRequest()
-//
-//            let appleIDProvider = ASAuthorizationAppleIDProvider()
-//            let appleIDRequest = appleIDProvider.createRequest()
-//            appleIDRequest.requestedScopes = [.fullName, .email]
-//
-//            let authController = ASAuthorizationController(authorizationRequests: [ assertionRequest, passwordRequest, appleIDRequest ] )
-//            authController.delegate = self
-//            authController.presentationContextProvider = self
-//
-//            state.currentAuthController = authController
-//
-//            if preferImmediatelyAvailableCredentials {
-//                // If credentials are available, presents a modal sign-in sheet.
-//                // If there are no locally saved credentials, no UI appears and
-//                // the system passes ASAuthorizationError.Code.canceled to call
-//                // `AccountManager.authorizationController(controller:didCompleteWithError:)`.
-//                authController.performRequests(options: .preferImmediatelyAvailableCredentials)
-//            } else {
-//                // If credentials are available, presents a modal sign-in sheet.
-//                // If there are no locally saved credentials, the system presents a QR code to allow signing in with a
-//                // passkey from a nearby device.
-//                authController.performRequests()
-//            }
-//
-//            state.isPerformingModalReqest = true
-
-//        case .signUpWith(userName: let userName):
-//            <#code#>
-//        case .beginAutoFillAssistedPasskeySignIn:
-//            <#code#>
-//                            case .didFinishRegistration:
-//                                <#code#>
-//                            case .didFinishLogin:
-//                                <#code#>
-//                            case .didFinishPasswordLogin:
-//                                <#code#>
-//                            case .didFinishAppleLogin:
-//                                <#code#>
-//                            case .credintialsNotFoundOrCanlelledByUser:
-//                                <#code#>
-//                            case .error(error: let error):
-//                                <#code#>
-//                            }
-//                        }
-//                    }
+extension OwnID.CoreSDK.AccountManager {
+    static func viewModelReducer(state: inout State, action: Action) -> [Effect<Action>] {
+        switch action {
+        case .didFinishRegistration:
+            return []
+            
+        case .didFinishLogin:
+            return []
+            
+        case .didFinishPasswordLogin:
+            return []
+            
+        case .didFinishAppleLogin:
+            return []
+            
+        case .credintialsNotFoundOrCanlelledByUser:
+            return []
+            
+        case .error(error: let error):
+            return []
+        }
+    }
+}
