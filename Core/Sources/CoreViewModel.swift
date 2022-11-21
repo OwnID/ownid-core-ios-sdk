@@ -43,17 +43,6 @@ extension OwnID.CoreSDK {
         case browserCancelled
         case statusRequestLoaded(response: OwnID.CoreSDK.Payload)
         case browserVM(BrowserOpenerViewModel.Action)
-        
-        var browserVM: BrowserOpenerViewModel.Action? {
-            get {
-                guard case let .browserVM(value) = self else { return nil }
-                return value
-            }
-            set {
-                guard case .browserVM = self, let newValue = newValue else { return }
-                self = .browserVM(newValue)
-            }
-        }
     }
     
     struct ViewModelState: LoggingEnabled {
