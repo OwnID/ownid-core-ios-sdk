@@ -12,10 +12,8 @@ extension OwnID.CoreSDK.AccountManager {
         let isLoggingEnabled: Bool
         let domain: String //"ownid.com"//"passwordless.staging.ownid.com"
         let challenge: String
-        fileprivate var isPerformingModalReqest = false
-        fileprivate var currentAuthController: ASAuthorizationController?
         
-        private var challengeData: Data {
+        fileprivate var challengeData: Data {
             challenge.data(using: .utf8)!
         }
     }
@@ -33,7 +31,10 @@ extension OwnID.CoreSDK.AccountManager {
 extension OwnID.CoreSDK {
     final class AccountManager: NSObject, ASAuthorizationControllerDelegate {
         private var store: Store<State, Action>
-        private let authenticationAnchor = ASPresentationAnchor()
+        let authenticationAnchor = ASPresentationAnchor()
+        
+        private var currentAuthController: ASAuthorizationController?
+        private var isPerformingModalReqest = false
         
         init(store: Store<State, Action>) {
             self.store = store
@@ -41,9 +42,9 @@ extension OwnID.CoreSDK {
         
         func signInWith(preferImmediatelyAvailableCredentials: Bool) {
             currentAuthController?.cancel()
-            let publicKeyCredentialProvider = ASAuthorizationPlatformPublicKeyCredentialProvider(relyingPartyIdentifier: domain)
+            let publicKeyCredentialProvider = ASAuthorizationPlatformPublicKeyCredentialProvider(relyingPartyIdentifier: store.value.domain)
             
-            let assertionRequest = publicKeyCredentialProvider.createCredentialAssertionRequest(challenge: challengeData)
+            let assertionRequest = publicKeyCredentialProvider.createCredentialAssertionRequest(challenge: store.value.challengeData)
             
             // Also allow the user to use a saved password, if they have one.
             let passwordCredentialProvider = ASAuthorizationPasswordProvider()
@@ -79,8 +80,8 @@ extension OwnID.CoreSDK {
             fatalError("For now autofill is not supported right here, we need some other way to enable this as we need new challenge for this")
             currentAuthController?.cancel()
             
-            let publicKeyCredentialProvider = ASAuthorizationPlatformPublicKeyCredentialProvider(relyingPartyIdentifier: domain)
-            let assertionRequest = publicKeyCredentialProvider.createCredentialAssertionRequest(challenge: challengeData)
+            let publicKeyCredentialProvider = ASAuthorizationPlatformPublicKeyCredentialProvider(relyingPartyIdentifier: store.value.domain)
+            let assertionRequest = publicKeyCredentialProvider.createCredentialAssertionRequest(challenge: store.value.challengeData)
             
             let authController = ASAuthorizationController(authorizationRequests: [ assertionRequest ] )
             authController.delegate = self
@@ -91,11 +92,11 @@ extension OwnID.CoreSDK {
         
         func signUpWith(userName: String) {
             currentAuthController?.cancel()
-            let publicKeyCredentialProvider = ASAuthorizationPlatformPublicKeyCredentialProvider(relyingPartyIdentifier: domain)
+            let publicKeyCredentialProvider = ASAuthorizationPlatformPublicKeyCredentialProvider(relyingPartyIdentifier: store.value.domain)
             
             /// `createCredentialRegistrationRequest` also creates new credential if provided the same
             /// Registering a passkey with the same user ID as an existing one overwrites the existing passkey on the user’s devices.
-            let registrationRequest = publicKeyCredentialProvider.createCredentialRegistrationRequest(challenge: challengeData,
+            let registrationRequest = publicKeyCredentialProvider.createCredentialRegistrationRequest(challenge: store.value.challengeData,
                                                                                                       name: userName,
                                                                                                       userID: userName.data(using: .utf8)!)
             
@@ -172,31 +173,89 @@ extension OwnID.CoreSDK {
                 fatalError("Received unknown authorization type.")
             }
             
-            isPerformingModalReqest = false
+            //            isPerformingModalReqest = false
         }
         
         func authorizationController(controller: ASAuthorizationController, didCompleteWithError error: Error) {
             guard let authorizationError = error as? ASAuthorizationError else {
                 isPerformingModalReqest = false
-                store.send(.error(error: error)
-                           return
-                           }
-                           
-                           if authorizationError.code == .canceled {
-                    // Either the system doesn't find any credentials and the request ends silently, or the user cancels the request.
-                    // This is a good time to show a traditional login form, or ask the user to create an account.
-                    
-                    if isPerformingModalReqest {
-                        store.send(.credintialsNotFoundOrCanlelledByUser)
-                    }
-                } else {
-                    // Another ASAuthorization error.
-                    // Note: The userInfo dictionary contains useful information.
-                    print("Error: \((error as NSError).userInfo)")
-                    store.send(.error(error: error)
-                               }
-                               
-                               isPerformingModalReqest = false
-                               }
-                               }
-                               }
+                store.send(.error(error: error))
+                return
+            }
+            
+            if authorizationError.code == .canceled {
+                // Either the system doesn't find any credentials and the request ends silently, or the user cancels the request.
+                // This is a good time to show a traditional login form, or ask the user to create an account.
+                
+                if isPerformingModalReqest {
+                    store.send(.credintialsNotFoundOrCanlelledByUser)
+                }
+            } else {
+                // Another ASAuthorization error.
+                // Note: The userInfo dictionary contains useful information.
+                print("Error: \((error as NSError).userInfo)")
+                store.send(.error(error: error))
+            }
+            
+            isPerformingModalReqest = false
+        }
+    }
+}
+
+//                               extension OwnID.CoreSDK.AccountManager {
+//                        static func viewModelReducer(state: inout State, action: Action) -> [Effect<Action>] {
+//                            switch action {
+//        case .signInWith(preferImmediatelyAvailableCredentials: let preferImmediatelyAvailableCredentials):
+//            state.currentAuthController?.cancel()
+//            let publicKeyCredentialProvider = ASAuthorizationPlatformPublicKeyCredentialProvider(relyingPartyIdentifier: state.domain)
+//
+//            let assertionRequest = publicKeyCredentialProvider.createCredentialAssertionRequest(challenge: state.challengeData)
+//
+//            // Also allow the user to use a saved password, if they have one.
+//            let passwordCredentialProvider = ASAuthorizationPasswordProvider()
+//            let passwordRequest = passwordCredentialProvider.createRequest()
+//
+//            let appleIDProvider = ASAuthorizationAppleIDProvider()
+//            let appleIDRequest = appleIDProvider.createRequest()
+//            appleIDRequest.requestedScopes = [.fullName, .email]
+//
+//            let authController = ASAuthorizationController(authorizationRequests: [ assertionRequest, passwordRequest, appleIDRequest ] )
+//            authController.delegate = self
+//            authController.presentationContextProvider = self
+//
+//            state.currentAuthController = authController
+//
+//            if preferImmediatelyAvailableCredentials {
+//                // If credentials are available, presents a modal sign-in sheet.
+//                // If there are no locally saved credentials, no UI appears and
+//                // the system passes ASAuthorizationError.Code.canceled to call
+//                // `AccountManager.authorizationController(controller:didCompleteWithError:)`.
+//                authController.performRequests(options: .preferImmediatelyAvailableCredentials)
+//            } else {
+//                // If credentials are available, presents a modal sign-in sheet.
+//                // If there are no locally saved credentials, the system presents a QR code to allow signing in with a
+//                // passkey from a nearby device.
+//                authController.performRequests()
+//            }
+//
+//            state.isPerformingModalReqest = true
+
+//        case .signUpWith(userName: let userName):
+//            <#code#>
+//        case .beginAutoFillAssistedPasskeySignIn:
+//            <#code#>
+//                            case .didFinishRegistration:
+//                                <#code#>
+//                            case .didFinishLogin:
+//                                <#code#>
+//                            case .didFinishPasswordLogin:
+//                                <#code#>
+//                            case .didFinishAppleLogin:
+//                                <#code#>
+//                            case .credintialsNotFoundOrCanlelledByUser:
+//                                <#code#>
+//                            case .error(error: let error):
+//                                <#code#>
+//                            }
+//                        }
+//                    }
