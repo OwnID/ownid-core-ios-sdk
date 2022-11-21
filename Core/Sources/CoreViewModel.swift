@@ -85,7 +85,17 @@ extension OwnID.CoreSDK {
                 passkeysPossibilityAvailable = authContext.biometryType != .none
             }
             if passkeysPossibilityAvailable, #available(iOS 16, *) {
-                return [sendSettingsRequest(session: state.session)]
+                fatalError("domain pass here")
+                let authManager = OwnID.CoreSDK.AccountManager(store: state.authManagerStore, domain: "", challenge: state.session.context)
+                switch state.type {
+                case .register:
+                    authManager.signUpWith(userName: state.email?.rawValue ?? "")
+                    
+                case .login:
+                    authManager.signInWith(preferImmediatelyAvailableCredentials: true)
+                }
+                state.authManager = authManager
+                return []
             } else {
                 let browserAffect = browserURLEffect(for: context,
                                                      browserURL: response.url,
@@ -95,7 +105,6 @@ extension OwnID.CoreSDK {
             }
             
         case .authRequestLoaded:
-            
             return [sendStatusRequest(session: state.session)]
             
         case .settingsRequestLoaded:
@@ -137,7 +146,7 @@ extension OwnID.CoreSDK {
                 break
                 
             case .didFinishLogin:
-                break
+                return [sendSettingsRequest(session: state.session)]
                 
             case .didFinishPasswordLogin:
                 break

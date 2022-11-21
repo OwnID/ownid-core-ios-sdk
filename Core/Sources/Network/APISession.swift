@@ -3,6 +3,8 @@ import CryptoKit
 import Combine
 
 public protocol APISessionProtocol {
+    var context: OwnID.CoreSDK.Context! { get }
+    
     func performInitRequest(type: OwnID.CoreSDK.RequestType,
                             token: OwnID.CoreSDK.JWTToken?) -> AnyPublisher<OwnID.CoreSDK.Init.Response, OwnID.CoreSDK.Error>
     func performStatusRequest() -> AnyPublisher<OwnID.CoreSDK.Payload, OwnID.CoreSDK.Error>
@@ -15,7 +17,7 @@ public extension OwnID.CoreSDK {
         private let sessionVerifier: SessionVerifier
         private let sessionChallenge: SessionChallenge
         private var nonce: Nonce!
-        private var context: Context!
+        public var context: Context!
         private var type: OwnID.CoreSDK.RequestType!
         private let serverURL: ServerURL
         private let statusURL: ServerURL

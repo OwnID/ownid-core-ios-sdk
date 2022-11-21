@@ -32,12 +32,6 @@ extension OwnID.CoreSDK.AccountManager {
         }
         
         let isLoggingEnabled: Bool
-        var domain = "" //"ownid.com"//"passwordless.staging.ownid.com"
-        var challenge = ""
-        
-        fileprivate var challengeData: Data {
-            challenge.data(using: .utf8)!
-        }
     }
     
     enum Action {
@@ -52,21 +46,30 @@ extension OwnID.CoreSDK.AccountManager {
 
 extension OwnID.CoreSDK {
     final class AccountManager: NSObject, ASAuthorizationControllerDelegate {
-        private var store: Store<State, Action>
         let authenticationAnchor = ASPresentationAnchor()
+        
+        private var store: Store<State, Action>
+        private var domain = "" //"ownid.com"//"passwordless.staging.ownid.com"
+        private var challenge = ""
+        
+        private var challengeData: Data {
+            challenge.data(using: .utf8)!
+        }
         
         private var currentAuthController: ASAuthorizationController?
         private var isPerformingModalReqest = false
         
-        init(store: Store<State, Action>) {
+        init(store: Store<State, Action>, domain: String, challenge: String) {
             self.store = store
+            self.domain = domain
+            self.challenge = challenge
         }
         
         func signInWith(preferImmediatelyAvailableCredentials: Bool) {
             currentAuthController?.cancel()
-            let publicKeyCredentialProvider = ASAuthorizationPlatformPublicKeyCredentialProvider(relyingPartyIdentifier: store.value.domain)
+            let publicKeyCredentialProvider = ASAuthorizationPlatformPublicKeyCredentialProvider(relyingPartyIdentifier: domain)
             
-            let assertionRequest = publicKeyCredentialProvider.createCredentialAssertionRequest(challenge: store.value.challengeData)
+            let assertionRequest = publicKeyCredentialProvider.createCredentialAssertionRequest(challenge: challengeData)
             
             // Also allow the user to use a saved password, if they have one.
             let passwordCredentialProvider = ASAuthorizationPasswordProvider()
@@ -102,8 +105,8 @@ extension OwnID.CoreSDK {
             fatalError("For now autofill is not supported right here, we need some other way to enable this as we need new challenge for this")
             currentAuthController?.cancel()
             
-            let publicKeyCredentialProvider = ASAuthorizationPlatformPublicKeyCredentialProvider(relyingPartyIdentifier: store.value.domain)
-            let assertionRequest = publicKeyCredentialProvider.createCredentialAssertionRequest(challenge: store.value.challengeData)
+            let publicKeyCredentialProvider = ASAuthorizationPlatformPublicKeyCredentialProvider(relyingPartyIdentifier: domain)
+            let assertionRequest = publicKeyCredentialProvider.createCredentialAssertionRequest(challenge: challengeData)
             
             let authController = ASAuthorizationController(authorizationRequests: [ assertionRequest ] )
             authController.delegate = self
@@ -114,11 +117,11 @@ extension OwnID.CoreSDK {
         
         func signUpWith(userName: String) {
             currentAuthController?.cancel()
-            let publicKeyCredentialProvider = ASAuthorizationPlatformPublicKeyCredentialProvider(relyingPartyIdentifier: store.value.domain)
+            let publicKeyCredentialProvider = ASAuthorizationPlatformPublicKeyCredentialProvider(relyingPartyIdentifier: domain)
             
             /// `createCredentialRegistrationRequest` also creates new credential if provided the same
             /// Registering a passkey with the same user ID as an existing one overwrites the existing passkey on the user’s devices.
-            let registrationRequest = publicKeyCredentialProvider.createCredentialRegistrationRequest(challenge: store.value.challengeData,
+            let registrationRequest = publicKeyCredentialProvider.createCredentialRegistrationRequest(challenge: challengeData,
                                                                                                       name: userName,
                                                                                                       userID: userName.data(using: .utf8)!)
             
@@ -195,7 +198,7 @@ extension OwnID.CoreSDK {
                 fatalError("Received unknown authorization type.")
             }
             
-            //            isPerformingModalReqest = false
+            isPerformingModalReqest = false
         }
         
         func authorizationController(controller: ASAuthorizationController, didCompleteWithError error: Swift.Error) {
