@@ -27,9 +27,12 @@ extension OwnID.CoreSDK.ViewModelAction: CustomDebugStringConvertible {
             return "settingsRequestLoaded"
         case .authRequestLoaded:
             return "authRequestLoaded"
+        case .authManager(let action):
+            return "authManagerAction \(action.debugDescription)"
         }
     }
 }
+
 extension OwnID.CoreSDK {
     enum ViewModelAction {
         case addToState(browserViewModelStore: Store<BrowserOpenerViewModel.State, BrowserOpenerViewModel.Action>)
@@ -43,6 +46,7 @@ extension OwnID.CoreSDK {
         case browserCancelled
         case statusRequestLoaded(response: OwnID.CoreSDK.Payload)
         case browserVM(BrowserOpenerViewModel.Action)
+        case authManager(AccountManager.Action)
     }
     
     struct ViewModelState: LoggingEnabled {
@@ -54,6 +58,7 @@ extension OwnID.CoreSDK {
         let email: OwnID.CoreSDK.Email?
         let token: OwnID.CoreSDK.JWTToken?
         let type: OwnID.CoreSDK.RequestType
+        
         var browserViewModelStore: Store<BrowserOpenerViewModel.State, BrowserOpenerViewModel.Action>!
         var browserViewModel: BrowserOpener?
         
@@ -124,6 +129,28 @@ extension OwnID.CoreSDK {
             case .viewCancelled:
                 return [Just(.browserCancelled).eraseToEffect()]
             }
+            
+        case let .authManager(authManagerAction):
+            switch authManagerAction {
+            case .didFinishRegistration:
+                break
+                
+            case .didFinishLogin:
+                break
+                
+            case .didFinishPasswordLogin:
+                break
+                
+            case .didFinishAppleLogin:
+                break
+                
+            case .credintialsNotFoundOrCanlelledByUser:
+                break
+                
+            case .error(error: let error):
+                break
+            }
+            return []
         }
     }
     
@@ -258,6 +285,7 @@ extension OwnID.CoreSDK {
                             .addToState,
                             .settingsRequestLoaded,
                             .authRequestLoaded,
+                            .authManager,
                             .browserVM:
                         internalStatesChange.append(String(describing: action))
                         

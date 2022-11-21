@@ -1,6 +1,30 @@
 import AuthenticationServices
 import os
 
+extension OwnID.CoreSDK.AccountManager.Action: CustomDebugStringConvertible {
+    var debugDescription: String {
+        switch self {
+        case .didFinishRegistration:
+            return "didFinishRegistration"
+            
+        case .didFinishLogin:
+            return "didFinishLogin"
+            
+        case .didFinishPasswordLogin:
+            return "didFinishPasswordLogin"
+            
+        case .didFinishAppleLogin:
+            return "didFinishAppleLogin"
+            
+        case .credintialsNotFoundOrCanlelledByUser:
+            return "credintialsNotFoundOrCanlelledByUser"
+            
+        case .error(let error):
+            return error.localizedDescription
+        }
+    }
+}
+
 extension OwnID.CoreSDK.AccountManager {
     struct State: LoggingEnabled {
         init(isLoggingEnabled: Bool, domain: String, challenge: String) {
