@@ -45,7 +45,6 @@ public extension OwnID {
             store.value.configurationName
         }
         
-#warning("Move logger here? Make it as part of SDK instance instead of it own instance and have everything in single place?")
         public static var logger: LoggerProtocol {
             Logger.shared
         }
@@ -94,7 +93,8 @@ public extension OwnID {
                                           token: .none,
                                           session: session,
                                           sdkConfigurationName: sdkConfigurationName,
-                                          isLoggingEnabled: store.value.isLoggingEnabled)
+                                          isLoggingEnabled: store.value.isLoggingEnabled,
+                                          clientConfiguration: store.value.clientConfiguration)
             viewModel.subscribeToURL(publisher: urlPublisher.eraseToAnyPublisher())
             return viewModel
         }
@@ -114,7 +114,8 @@ public extension OwnID {
                                           token: .none,
                                           session: session,
                                           sdkConfigurationName: sdkConfigurationName,
-                                          isLoggingEnabled: store.value.isLoggingEnabled)
+                                          isLoggingEnabled: store.value.isLoggingEnabled,
+                                          clientConfiguration: store.value.clientConfiguration)
             viewModel.subscribeToURL(publisher: urlPublisher.eraseToAnyPublisher())
             return viewModel
         }

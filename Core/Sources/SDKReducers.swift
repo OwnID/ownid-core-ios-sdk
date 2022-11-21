@@ -46,6 +46,10 @@ extension OwnID.CoreSDK {
                                 userFacingSDK: userFacingSDK,
                                 underlyingSDKs: underlyingSDKs,
                                 isTestingEnvironment: false)]
+            
+        case .save(clientCongfig: let clientCongfig):
+            state.clientConfiguration = clientCongfig
+            return []
         }
     }
     
@@ -104,18 +108,19 @@ extension OwnID.CoreSDK {
         }
     }
     
-    private static func fetchClientConfig(serverURL: URL, numberOfConfigurations: Int) -> Effect<SDKAction> {
+    #warning("what if number of configurations is greater than 1? 2 configs is possible")
+    private static func fetchClientConfig(serverURL: ServerURL, numberOfConfigurations: Int) -> Effect<SDKAction> {
         guard numberOfConfigurations == 1 else { return .fireAndForget { } }
         let url = serverURL.appendingPathComponent("client-config")
         let effect = Deferred { URLSession.shared.dataTaskPublisher(for: url)
-                .map { data, _ in  return data }
+                .map { data, _ in return data }
                 .eraseToAnyPublisher()
                 .decode(type: ClientConfiguration.self, decoder: JSONDecoder())
                 .eraseToAnyPublisher()
                 .replaceError(with: ClientConfiguration(logLevel: 4, passkeys: false, rpId: .none, passkeysAutofill: false))
-                .flatMap { serverLogLevel -> Empty<SDKAction, Never> in
-                    Logger.shared.logLevel = LogLevel(rawValue: serverLogLevel.logLevel) ?? .error
-                    return Empty(completeImmediately: true)
+                .flatMap { clientConfiguration -> AnyPublisher<SDKAction, Never> in
+                    Logger.shared.logLevel = LogLevel(rawValue: clientConfiguration.logLevel) ?? .error
+                    return Just(.save(clientCongfig: clientConfiguration)).eraseToAnyPublisher()
                 }
                 .eraseToAnyPublisher()
         }

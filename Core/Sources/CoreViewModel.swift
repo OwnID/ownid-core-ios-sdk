@@ -52,6 +52,7 @@ extension OwnID.CoreSDK {
     
     struct ViewModelState: LoggingEnabled {
         let isLoggingEnabled: Bool
+        let clientConfiguration: ClientConfiguration
         
         let sdkConfigurationName: String
         let session: APISessionProtocol
@@ -84,9 +85,13 @@ extension OwnID.CoreSDK {
                 authContext.canEvaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, error: nil)
                 passkeysPossibilityAvailable = authContext.biometryType != .none
             }
-            if passkeysPossibilityAvailable, #available(iOS 16, *) {
-                fatalError("domain pass here")
-                let authManager = OwnID.CoreSDK.AccountManager(store: state.authManagerStore, domain: "", challenge: state.session.context)
+            if passkeysPossibilityAvailable,
+               #available(iOS 16, *),
+               let domain = state.clientConfiguration.rpId,
+               state.clientConfiguration.passkeys {
+                let authManager = OwnID.CoreSDK.AccountManager(store: state.authManagerStore,
+                                                               domain: domain,
+                                                               challenge: state.session.context)
                 switch state.type {
                 case .register:
                     authManager.signUpWith(userName: state.email?.rawValue ?? "")
@@ -239,8 +244,10 @@ extension OwnID.CoreSDK {
              token: OwnID.CoreSDK.JWTToken?,
              session: APISessionProtocol,
              sdkConfigurationName: String,
-             isLoggingEnabled: Bool) {
+             isLoggingEnabled: Bool,
+             clientConfiguration: ClientConfiguration) {
             let initialState = OwnID.CoreSDK.ViewModelState(isLoggingEnabled: isLoggingEnabled,
+                                                            clientConfiguration: clientConfiguration,
                                                             sdkConfigurationName: sdkConfigurationName,
                                                             session: session,
                                                             email: email,

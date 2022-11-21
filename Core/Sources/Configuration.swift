@@ -36,7 +36,7 @@ extension OwnID.CoreSDK {
             try performPropertyChecks()
         }
         
-        let ownIDServerURL: URL
+        let ownIDServerURL: ServerURL
         let redirectionURL: RedirectionURLString
         let environment: String?
         

@@ -5,6 +5,7 @@ extension OwnID.CoreSDK {
 #warning("Make this property controlled from the SDK reducers or remove it")
         var isLoggingEnabled = false
         var configurations = [String: OwnID.CoreSDK.Configuration]()
+        var clientConfiguration: ClientConfiguration!
     }
 }
 

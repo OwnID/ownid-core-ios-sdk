@@ -55,10 +55,6 @@ extension OwnID.CoreSDK.APISession {
             .map { [unowned self] response in
                 nonce = response.nonce
                 context = response.context
-                print("context: \(context!)")
-                print("nonce: \(nonce!)")
-                print("sessionVerifier: \(sessionVerifier)")
-                
                 self.type = type
                 OwnID.CoreSDK.logger.logCore(.entry(context: context, message: "\(OwnID.CoreSDK.Init.Request.self): Finished", Self.self))
                 return response
