@@ -65,7 +65,6 @@ extension OwnID.CoreSDK {
         let email: OwnID.CoreSDK.Email?
         let token: OwnID.CoreSDK.JWTToken?
         let type: OwnID.CoreSDK.RequestType
-        let browserViewModelInitializer: ((Store<OwnID.CoreSDK.BrowserOpenerViewModel.State, OwnID.CoreSDK.BrowserOpenerViewModel.Action>, URL) -> BrowserOpener)
         var browserViewModelStore: Store<BrowserOpenerViewModel.State, BrowserOpenerViewModel.Action>!
         var browserViewModel: BrowserOpener?
         
@@ -112,7 +111,7 @@ extension OwnID.CoreSDK {
             return []
             
         case let .browserURLCreated(url):
-            let vm = state.browserViewModelInitializer(state.browserViewModelStore, url)
+            let vm = BrowserOpenerViewModel(store: state.browserViewModelStore, url: url)
             state.browserViewModel = vm
             return []
             
@@ -213,14 +212,12 @@ extension OwnID.CoreSDK {
              email: OwnID.CoreSDK.Email?,
              token: OwnID.CoreSDK.JWTToken?,
              session: APISessionProtocol,
-             sdkConfigurationName: String,
-             browserViewModelInitializer: @escaping ((Store<OwnID.CoreSDK.BrowserOpenerViewModel.State, OwnID.CoreSDK.BrowserOpenerViewModel.Action>, URL) -> BrowserOpener) = { (store, url) -> BrowserOpener in return BrowserOpenerViewModel(store: store, url: url) }) {
+             sdkConfigurationName: String) {
             let initialState = OwnID.CoreSDK.ViewModelState(sdkConfigurationName: sdkConfigurationName,
                                                             session: session,
                                                             email: email,
                                                             token: token,
-                                                            type: type,
-                                                            browserViewModelInitializer: browserViewModelInitializer)
+                                                            type: type)
             let store = Store(
                 initialValue: initialState,
                 reducer: with(
