@@ -176,7 +176,7 @@ extension OwnID.CoreSDK {
             //            isPerformingModalReqest = false
         }
         
-        func authorizationController(controller: ASAuthorizationController, didCompleteWithError error: Error) {
+        func authorizationController(controller: ASAuthorizationController, didCompleteWithError error: Swift.Error) {
             guard let authorizationError = error as? ASAuthorizationError else {
                 isPerformingModalReqest = false
                 store.send(.error(error: error))
