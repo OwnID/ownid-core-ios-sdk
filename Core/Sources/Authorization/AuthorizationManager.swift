@@ -27,15 +27,13 @@ extension OwnID.CoreSDK.AccountManager.Action: CustomDebugStringConvertible {
 
 extension OwnID.CoreSDK.AccountManager {
     struct State: LoggingEnabled {
-        init(isLoggingEnabled: Bool, domain: String, challenge: String) {
+        init(isLoggingEnabled: Bool) {
             self.isLoggingEnabled = isLoggingEnabled
-            self.domain = domain
-            self.challenge = challenge
         }
         
         let isLoggingEnabled: Bool
-        let domain: String //"ownid.com"//"passwordless.staging.ownid.com"
-        let challenge: String
+        var domain = "" //"ownid.com"//"passwordless.staging.ownid.com"
+        var challenge = ""
         
         fileprivate var challengeData: Data {
             challenge.data(using: .utf8)!

@@ -93,7 +93,8 @@ public extension OwnID {
                                           email: email,
                                           token: .none,
                                           session: session,
-                                          sdkConfigurationName: sdkConfigurationName)
+                                          sdkConfigurationName: sdkConfigurationName,
+                                          isLoggingEnabled: store.value.isLoggingEnabled)
             viewModel.subscribeToURL(publisher: urlPublisher.eraseToAnyPublisher())
             return viewModel
         }
@@ -112,7 +113,8 @@ public extension OwnID {
                                           email: email,
                                           token: .none,
                                           session: session,
-                                          sdkConfigurationName: sdkConfigurationName)
+                                          sdkConfigurationName: sdkConfigurationName,
+                                          isLoggingEnabled: store.value.isLoggingEnabled)
             viewModel.subscribeToURL(publisher: urlPublisher.eraseToAnyPublisher())
             return viewModel
         }

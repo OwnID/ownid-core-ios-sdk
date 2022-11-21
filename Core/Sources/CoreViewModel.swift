@@ -35,7 +35,8 @@ extension OwnID.CoreSDK.ViewModelAction: CustomDebugStringConvertible {
 
 extension OwnID.CoreSDK {
     enum ViewModelAction {
-        case addToState(browserViewModelStore: Store<BrowserOpenerViewModel.State, BrowserOpenerViewModel.Action>)
+        case addToState(browserViewModelStore: Store<BrowserOpenerViewModel.State, BrowserOpenerViewModel.Action>,
+                        authStore: Store<AccountManager.State, AccountManager.Action>)
         case sendInitialRequest
         case initialRequestLoaded(response: OwnID.CoreSDK.Init.Response)
         case settingsRequestLoaded(response: OwnID.CoreSDK.Setting.Response)
@@ -50,8 +51,7 @@ extension OwnID.CoreSDK {
     }
     
     struct ViewModelState: LoggingEnabled {
-#warning("Make this property controlled from the SDK reducers or remove it")
-        let isLoggingEnabled = false
+        let isLoggingEnabled: Bool
         
         let sdkConfigurationName: String
         let session: APISessionProtocol
@@ -62,7 +62,7 @@ extension OwnID.CoreSDK {
         var browserViewModelStore: Store<BrowserOpenerViewModel.State, BrowserOpenerViewModel.Action>!
         var browserViewModel: BrowserOpener?
         
-        var authManagerStore: Store<BrowserOpenerViewModel.State, BrowserOpenerViewModel.Action>!
+        var authManagerStore: Store<AccountManager.State, AccountManager.Action>!
         var authManager: AccountManager?
     }
     
@@ -120,8 +120,9 @@ extension OwnID.CoreSDK {
         case .statusRequestLoaded:
             return []
             
-        case let .addToState(browserViewModelStore):
+        case let .addToState(browserViewModelStore, authStore):
             state.browserViewModelStore = browserViewModelStore
+            state.authManagerStore = authStore
             return []
             
         case let .browserVM(browserVMAction):
@@ -228,8 +229,10 @@ extension OwnID.CoreSDK {
              email: OwnID.CoreSDK.Email?,
              token: OwnID.CoreSDK.JWTToken?,
              session: APISessionProtocol,
-             sdkConfigurationName: String) {
-            let initialState = OwnID.CoreSDK.ViewModelState(sdkConfigurationName: sdkConfigurationName,
+             sdkConfigurationName: String,
+             isLoggingEnabled: Bool) {
+            let initialState = OwnID.CoreSDK.ViewModelState(isLoggingEnabled: isLoggingEnabled,
+                                                            sdkConfigurationName: sdkConfigurationName,
                                                             session: session,
                                                             email: email,
                                                             token: token,
@@ -243,7 +246,9 @@ extension OwnID.CoreSDK {
             )
             self.store = store
             let browserStore = self.store.view(value: { $0.sdkConfigurationName } , action: { .browserVM($0) })
-            self.store.send(.addToState(browserViewModelStore: browserStore))
+            let authManagerStore = self.store.view(value: { AccountManager.State(isLoggingEnabled: $0.isLoggingEnabled) },
+                                                   action: { .authManager($0) })
+            self.store.send(.addToState(browserViewModelStore: browserStore, authStore: authManagerStore))
             setupEventPublisher()
         }
         
