@@ -1,6 +1,7 @@
 import Combine
 import SwiftUI
 
+#warning("clean up functions")
 public struct Effect<Output>: Publisher {
     public typealias Failure = Never
     

@@ -69,10 +69,8 @@ extension OwnID.CoreSDK {
         var browserViewModelStore: Store<BrowserOpenerViewModel.State, BrowserOpenerViewModel.Action>!
         var browserViewModel: BrowserOpener?
         
-        var browserViewModelState: BrowserOpenerViewModel.State {
-            get { sdkConfigurationName }
-            set { }
-        }
+        var authManagerStore: Store<BrowserOpenerViewModel.State, BrowserOpenerViewModel.Action>!
+        var authManager: AccountManager?
     }
     
     static func viewModelReducer(state: inout ViewModelState, action: ViewModelAction) -> [Effect<ViewModelAction>] {
@@ -102,7 +100,6 @@ extension OwnID.CoreSDK {
                                                      sdkConfigurationName: state.sdkConfigurationName)
                 return [browserAffect]
             }
-            
             
         case .authRequestLoaded:
             
@@ -232,7 +229,7 @@ extension OwnID.CoreSDK {
                 )
             )
             self.store = store
-            let browserStore = self.store.view(value: { $0.sdkConfigurationName} , action: { .browserVM($0) })
+            let browserStore = self.store.view(value: { $0.sdkConfigurationName } , action: { .browserVM($0) })
             self.store.send(.addToState(browserViewModelStore: browserStore))
             setupEventPublisher()
         }
