@@ -85,9 +85,11 @@ extension OwnID.CoreSDK {
                 authContext.canEvaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, error: nil)
                 passkeysPossibilityAvailable = authContext.biometryType != .none
             }
+            #warning("hardcoded values")
+            let config: ClientConfiguration? = .init(logLevel: 1, passkeys: true, rpId: "passwordless.staging.ownid.com", passkeysAutofill: false)
             if passkeysPossibilityAvailable,
                #available(iOS 16, *),
-               let config = state.clientConfiguration,
+               let config = config,//state.clientConfiguration,
                let domain = config.rpId,
                config.passkeys {
                 let authManager = OwnID.CoreSDK.AccountManager(store: state.authManagerStore,
@@ -113,7 +115,10 @@ extension OwnID.CoreSDK {
         case .authRequestLoaded:
             return [sendStatusRequest(session: state.session)]
             
-        case .settingsRequestLoaded:
+        case let .settingsRequestLoaded(response):
+            if let challengeType = response.challengeType, challengeType == .login, response.credId == .none {
+                fatalError("throw error here or do some other flow in this case, as for login passkeys we need cred id returned from BE and make sure that BE can do login")
+            }
             return [sendAuthRequest(session: state.session)]
             
         case .error:
@@ -151,8 +156,8 @@ extension OwnID.CoreSDK {
             case .didFinishRegistration:
                 break
                 
-            case .didFinishLogin:
-                return [sendSettingsRequest(session: state.session)]
+            case .didFinishLogin(let origin):
+                return [sendSettingsRequest(session: state.session, loginID: state.email?.rawValue ?? "", origin: origin)]
                 
             case .didFinishPasswordLogin:
                 break
@@ -208,8 +213,8 @@ extension OwnID.CoreSDK {
             .eraseToEffect()
     }
     
-    static func sendSettingsRequest(session: APISessionProtocol) -> Effect<ViewModelAction> {
-        session.performSettingsRequest()
+    static func sendSettingsRequest(session: APISessionProtocol, loginID: String, origin: String) -> Effect<ViewModelAction> {
+        session.performSettingsRequest(loginID: loginID, origin: origin)
             .receive(on: DispatchQueue.main)
             .map { ViewModelAction.settingsRequestLoaded(response: $0) }
             .catch { Just(ViewModelAction.error($0)) }

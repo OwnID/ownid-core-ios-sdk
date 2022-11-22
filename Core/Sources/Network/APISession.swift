@@ -8,7 +8,7 @@ public protocol APISessionProtocol {
     func performInitRequest(type: OwnID.CoreSDK.RequestType,
                             token: OwnID.CoreSDK.JWTToken?) -> AnyPublisher<OwnID.CoreSDK.Init.Response, OwnID.CoreSDK.Error>
     func performStatusRequest() -> AnyPublisher<OwnID.CoreSDK.Payload, OwnID.CoreSDK.Error>
-    func performSettingsRequest() -> AnyPublisher<OwnID.CoreSDK.Setting.Response, OwnID.CoreSDK.Error>
+    func performSettingsRequest(loginID: String, origin: String) -> AnyPublisher<OwnID.CoreSDK.Setting.Response, OwnID.CoreSDK.Error>
     func performAuthRequest() -> AnyPublisher<OwnID.CoreSDK.Auth.Response, OwnID.CoreSDK.Error>
 }
 
@@ -62,8 +62,15 @@ extension OwnID.CoreSDK.APISession {
             .eraseToAnyPublisher()
     }
     
-    public func performSettingsRequest() -> AnyPublisher<OwnID.CoreSDK.Setting.Response, OwnID.CoreSDK.Error> {
-        OwnID.CoreSDK.Setting.Request(url: settingsURL, loginID: "yurii+v12@ownid.com", context: context, nonce: nonce, webLanguages: webLanguages).perform().eraseToAnyPublisher()
+    public func performSettingsRequest(loginID: String, origin: String) -> AnyPublisher<OwnID.CoreSDK.Setting.Response, OwnID.CoreSDK.Error> {
+        OwnID.CoreSDK.Setting.Request(url: settingsURL,
+                                      loginID: loginID,
+                                      origin: origin,
+                                      context: context,
+                                      nonce: nonce,
+                                      webLanguages: webLanguages)
+        .perform()
+        .eraseToAnyPublisher()
     }
     
     public func performAuthRequest() -> AnyPublisher<OwnID.CoreSDK.Auth.Response, OwnID.CoreSDK.Error> {

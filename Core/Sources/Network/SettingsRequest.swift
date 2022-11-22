@@ -15,9 +15,12 @@ public extension OwnID.CoreSDK.Setting {
 
 public extension OwnID.CoreSDK.Setting {
     struct Response: Decodable {
-        public let url: String
-        public let context: String?
-        public let nonce: String?
+        public let credId: String?
+        public let relyingPartyId: String?
+        public let relyingPartyName: String?
+        public let userDisplayName: String?
+        public let userName: String?
+        public let challengeType: OwnID.CoreSDK.RequestType?
     }
 }
 
@@ -26,12 +29,14 @@ extension OwnID.CoreSDK.Setting {
         let url: OwnID.CoreSDK.ServerURL
         let provider: APIProvider
         let loginID: String
+        let origin: String
         let context: String
         let nonce: String
         let webLanguages: OwnID.CoreSDK.Languages
         
         internal init(url: OwnID.CoreSDK.ServerURL,
                       loginID: String,
+                      origin: String,
                       context: String,
                       nonce: String,
                       webLanguages: OwnID.CoreSDK.Languages,
@@ -42,6 +47,7 @@ extension OwnID.CoreSDK.Setting {
             self.loginID = loginID
             self.context = context
             self.nonce = nonce
+            self.origin = origin
         }
         
         func perform() -> AnyPublisher<Response, OwnID.CoreSDK.Error> {
@@ -56,6 +62,7 @@ extension OwnID.CoreSDK.Setting {
                     request.httpBody = body
                     request.addUserAgent()
                     request.addAPIVersion()
+                    request.add(origin: origin)
                     let languagesString = webLanguages.rawValue.joined(separator: ",")
                     let field = "Accept-Language"
                     request.addValue(languagesString, forHTTPHeaderField: field)
@@ -74,7 +81,7 @@ extension OwnID.CoreSDK.Setting {
                 .eraseToAnyPublisher()
                 .decode(type: Response.self, decoder: JSONDecoder())
                 .map { decoded in
-                    OwnID.CoreSDK.logger.logCore(.entry(context: decoded.context ?? "no_context", message: "Finished request", Self.self))
+                    OwnID.CoreSDK.logger.logCore(.entry(message: "Finished request, cred id: \(String(describing: decoded.credId?.logValue))", Self.self))
                     return decoded
                 }
                 .mapError { initError in

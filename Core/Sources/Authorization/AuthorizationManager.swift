@@ -36,7 +36,7 @@ extension OwnID.CoreSDK.AccountManager {
     
     enum Action {
         case didFinishRegistration
-        case didFinishLogin
+        case didFinishLogin(origin: String)
         case didFinishPasswordLogin
         case didFinishAppleLogin
         case credintialsNotFoundOrCanlelledByUser
@@ -160,17 +160,20 @@ extension OwnID.CoreSDK {
                 let signature = credentialAssertion.signature.base64urlEncodedString()
                 let rawAuthenticatorData = credentialAssertion.rawAuthenticatorData.base64urlEncodedString()
                 let clientDataJSON = credentialAssertion.rawClientDataJSON
-                let userID = credentialAssertion.userID.base64urlEncodedString()
+                let userID = credentialAssertion.userID
                 let credentialID = credentialAssertion.credentialID.base64urlEncodedString()
                 print("signature: \(signature)")
                 print("rawAuthenticatorData: \(rawAuthenticatorData)")
                 print("clientDataJSON Base64: \(clientDataJSON.base64urlEncodedString())")
-                //            print("clientDataJSON: \(String(data: clientDataJSON, encoding: .utf8)!)")
-                print("userID: \(userID)")
+                print("clientDataJSON: \(String(data: clientDataJSON, encoding: .utf8)!)")
+                print("userID base 64: \(userID!.base64urlEncodedString())")
+                we need to take user id from here and pass it to the core view model and to settings request
+                this should handle the case when user did not enter email and we still can continue our flow
+                print("userID: \(String(data: userID!, encoding: .utf8))")
                 print("credentialID: \(credentialID)")
                 
                 // After the server verifies the assertion, sign in the user.
-                store.send(.didFinishLogin)
+                store.send(.didFinishLogin(origin: domain))
                 
             case let passwordCredential as ASPasswordCredential:
                 print("A password was provided")
