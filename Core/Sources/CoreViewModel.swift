@@ -52,7 +52,7 @@ extension OwnID.CoreSDK {
     
     struct ViewModelState: LoggingEnabled {
         let isLoggingEnabled: Bool
-        let clientConfiguration: ClientConfiguration
+        let clientConfiguration: ClientConfiguration?
         
         let sdkConfigurationName: String
         let session: APISessionProtocol
@@ -87,8 +87,9 @@ extension OwnID.CoreSDK {
             }
             if passkeysPossibilityAvailable,
                #available(iOS 16, *),
-               let domain = state.clientConfiguration.rpId,
-               state.clientConfiguration.passkeys {
+               let config = state.clientConfiguration,
+               let domain = config.rpId,
+               config.passkeys {
                 let authManager = OwnID.CoreSDK.AccountManager(store: state.authManagerStore,
                                                                domain: domain,
                                                                challenge: state.session.context)
@@ -245,7 +246,7 @@ extension OwnID.CoreSDK {
              session: APISessionProtocol,
              sdkConfigurationName: String,
              isLoggingEnabled: Bool,
-             clientConfiguration: ClientConfiguration) {
+             clientConfiguration: ClientConfiguration?) {
             let initialState = OwnID.CoreSDK.ViewModelState(isLoggingEnabled: isLoggingEnabled,
                                                             clientConfiguration: clientConfiguration,
                                                             sdkConfigurationName: sdkConfigurationName,
