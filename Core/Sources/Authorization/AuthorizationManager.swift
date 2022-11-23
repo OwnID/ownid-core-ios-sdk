@@ -167,9 +167,7 @@ extension OwnID.CoreSDK {
                 print("clientDataJSON Base64: \(clientDataJSON.base64urlEncodedString())")
                 print("clientDataJSON: \(String(data: clientDataJSON, encoding: .utf8)!)")
                 print("userID base 64: \(userID!.base64urlEncodedString())")
-                we need to take user id from here and pass it to the core view model and to settings request
-                this should handle the case when user did not enter email and we still can continue our flow
-                print("userID: \(String(data: userID!, encoding: .utf8))")
+                print("userID: \(String(data: userID ?? Data(), encoding: .utf8))")
                 print("credentialID: \(credentialID)")
                 
                 // After the server verifies the assertion, sign in the user.
