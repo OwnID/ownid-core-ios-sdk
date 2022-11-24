@@ -10,6 +10,6 @@ extension URLRequest {
     }
     
     public mutating func add(origin: String) {
-        addValue(origin, forHTTPHeaderField: "Origin")
+        addValue(origin, forHTTPHeaderField: "OriginUrl")
     }
 }

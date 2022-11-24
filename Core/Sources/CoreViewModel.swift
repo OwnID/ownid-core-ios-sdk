@@ -23,8 +23,9 @@ extension OwnID.CoreSDK.ViewModelAction: CustomDebugStringConvertible {
             return "statusRequestLoaded"
         case .browserVM:
             return "browserVM"
-        case .settingsRequestLoaded:
-            return "settingsRequestLoaded"
+            #warning("remove comments")
+//        case .settingsRequestLoaded:
+//            return "settingsRequestLoaded"
         case .authRequestLoaded:
             return "authRequestLoaded"
         case .authManager(let action):
@@ -39,7 +40,7 @@ extension OwnID.CoreSDK {
                         authStore: Store<AccountManager.State, AccountManager.Action>)
         case sendInitialRequest
         case initialRequestLoaded(response: OwnID.CoreSDK.Init.Response)
-        case settingsRequestLoaded(response: OwnID.CoreSDK.Setting.Response)
+//        case settingsRequestLoaded(response: OwnID.CoreSDK.Setting.Response)
         case authRequestLoaded(response: OwnID.CoreSDK.Auth.Response)
         case browserURLCreated(URL)
         case error(OwnID.CoreSDK.Error)
@@ -115,11 +116,11 @@ extension OwnID.CoreSDK {
         case .authRequestLoaded:
             return [sendStatusRequest(session: state.session)]
             
-        case let .settingsRequestLoaded(response):
-            if let challengeType = response.challengeType, challengeType == .login, response.credId == .none {
-                fatalError("throw error here or do some other flow in this case, as for login passkeys we need cred id returned from BE and make sure that BE can do login")
-            }
-            return [sendAuthRequest(session: state.session)]
+//        case let .settingsRequestLoaded(response):
+//            if let challengeType = response.challengeType, challengeType == .login, response.credId == .none {
+//                fatalError("throw error here or do some other flow in this case, as for login passkeys we need cred id returned from BE and make sure that BE can do login")
+//            }
+//            return [sendAuthRequest(session: state.session)]
             
         case .error:
             return []
@@ -156,8 +157,8 @@ extension OwnID.CoreSDK {
             case .didFinishRegistration:
                 break
                 
-            case .didFinishLogin(let origin):
-                return [sendSettingsRequest(session: state.session, loginID: state.email?.rawValue ?? "", origin: origin)]
+            case .didFinishLogin(let origin, let fido2LoginPayload):
+                return [sendAuthRequest(session: state.session, origin: origin, fido2LoginPayload: fido2LoginPayload)]
                 
             case .didFinishPasswordLogin:
                 break
@@ -213,16 +214,16 @@ extension OwnID.CoreSDK {
             .eraseToEffect()
     }
     
-    static func sendSettingsRequest(session: APISessionProtocol, loginID: String, origin: String) -> Effect<ViewModelAction> {
-        session.performSettingsRequest(loginID: loginID, origin: origin)
-            .receive(on: DispatchQueue.main)
-            .map { ViewModelAction.settingsRequestLoaded(response: $0) }
-            .catch { Just(ViewModelAction.error($0)) }
-            .eraseToEffect()
-    }
+//    static func sendSettingsRequest(session: APISessionProtocol, loginID: String, origin: String) -> Effect<ViewModelAction> {
+//        session.performSettingsRequest(loginID: loginID, origin: origin)
+//            .receive(on: DispatchQueue.main)
+//            .map { ViewModelAction.settingsRequestLoaded(response: $0) }
+//            .catch { Just(ViewModelAction.error($0)) }
+//            .eraseToEffect()
+//    }
     
-    static func sendAuthRequest(session: APISessionProtocol) -> Effect<ViewModelAction> {
-        session.performAuthRequest()
+    static func sendAuthRequest(session: APISessionProtocol, origin: String, fido2LoginPayload: OwnID.CoreSDK.Fido2LoginPayload) -> Effect<ViewModelAction> {
+        session.performAuthRequest(origin: origin, fido2LoginPayload: fido2LoginPayload)
             .receive(on: DispatchQueue.main)
             .map { ViewModelAction.authRequestLoaded(response: $0) }
             .catch { Just(ViewModelAction.error($0)) }
@@ -310,7 +311,7 @@ extension OwnID.CoreSDK {
                             .browserURLCreated,
                             .sendStatusRequest,
                             .addToState,
-                            .settingsRequestLoaded,
+//                            .settingsRequestLoaded,
                             .authRequestLoaded,
                             .authManager,
                             .browserVM:

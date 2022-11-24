@@ -11,7 +11,7 @@ public extension OwnID.CoreSDK.Auth {
         let context: OwnID.CoreSDK.Context
         let nonce: OwnID.CoreSDK.Nonce
         let sessionVerifier: OwnID.CoreSDK.SessionVerifier
-        let fido2Payload: Fido2Payload
+        let fido2Payload: OwnID.CoreSDK.Fido2LoginPayload
     }
 //
 //    struct Fido2PayloadRegister: Encodable {
@@ -19,13 +19,6 @@ public extension OwnID.CoreSDK.Auth {
 //        var clientDataJSON: String
 //        var attestationObject: String
 //    }
-    
-    struct Fido2Payload: Encodable {
-        var credentialId: String
-        var clientDataJSON: String
-        var authenticatorData: String
-        var signature: String
-    }
 }
 
 public extension OwnID.CoreSDK.Auth {
@@ -44,15 +37,17 @@ extension OwnID.CoreSDK.Auth {
         let context: OwnID.CoreSDK.Context
         let nonce: OwnID.CoreSDK.Nonce
         let sessionVerifier: OwnID.CoreSDK.SessionVerifier
-        var fido2Payload: Fido2Payload
+        var fido2LoginPayload: OwnID.CoreSDK.Fido2LoginPayload
         let webLanguages: OwnID.CoreSDK.Languages
+        let origin: String
         
         internal init(type: OwnID.CoreSDK.RequestType,
                       url: OwnID.CoreSDK.ServerURL,
                       context: OwnID.CoreSDK.Context,
                       nonce: OwnID.CoreSDK.Nonce,
+                      origin: String,
                       sessionVerifier: OwnID.CoreSDK.SessionVerifier,
-                      fido2Payload: Fido2Payload = .init(credentialId: "", clientDataJSON: "", authenticatorData: "", signature: ""),
+                      fido2LoginPayload: OwnID.CoreSDK.Fido2LoginPayload,
                       webLanguages: OwnID.CoreSDK.Languages,
                       provider: APIProvider = URLSession.shared) {
             self.type = type
@@ -62,8 +57,8 @@ extension OwnID.CoreSDK.Auth {
             self.context = context
             self.nonce = nonce
             self.sessionVerifier = sessionVerifier
-            self.fido2Payload = fido2Payload
-            print("override variables here for ")
+            self.fido2LoginPayload = fido2LoginPayload
+            self.origin = origin
         }
         
         func perform() -> AnyPublisher<Response, OwnID.CoreSDK.Error> {
@@ -71,18 +66,18 @@ extension OwnID.CoreSDK.Auth {
                              context: context,
                              nonce: nonce,
                              sessionVerifier: sessionVerifier,
-                             fido2Payload: fido2Payload))
+                             fido2Payload: fido2LoginPayload))
                 .setFailureType(to: Error.self)
                 .eraseToAnyPublisher()
                 .encode(encoder: JSONEncoder())
                 .mapError { OwnID.CoreSDK.Error.initRequestBodyEncodeFailed(underlying: $0) }
                 .map { [self] body -> URLRequest in
                     var request = URLRequest(url: url)
-                    print("check here if we replaced values for fido2 payload")
                     request.httpMethod = "POST"
                     request.httpBody = body
                     request.addUserAgent()
                     request.addAPIVersion()
+                    request.add(origin: "https://passwordless.staging.ownid.com")
                     let languagesString = webLanguages.rawValue.joined(separator: ",")
                     let field = "Accept-Language"
                     request.addValue(languagesString, forHTTPHeaderField: field)

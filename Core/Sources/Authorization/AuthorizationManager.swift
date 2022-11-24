@@ -36,7 +36,7 @@ extension OwnID.CoreSDK.AccountManager {
     
     enum Action {
         case didFinishRegistration
-        case didFinishLogin(origin: String)
+        case didFinishLogin(origin: String, fido2LoginPayload: OwnID.CoreSDK.Fido2LoginPayload)
         case didFinishPasswordLogin
         case didFinishAppleLogin
         case credintialsNotFoundOrCanlelledByUser
@@ -170,8 +170,11 @@ extension OwnID.CoreSDK {
                 print("userID: \(String(data: userID ?? Data(), encoding: .utf8))")
                 print("credentialID: \(credentialID)")
                 
-                // After the server verifies the assertion, sign in the user.
-                store.send(.didFinishLogin(origin: domain))
+                let payload = OwnID.CoreSDK.Fido2LoginPayload(credentialId: credentialID,
+                                                              clientDataJSON: clientDataJSON.base64urlEncodedString(),
+                                                              authenticatorData: rawAuthenticatorData,
+                                                              signature: signature)
+                store.send(.didFinishLogin(origin: domain, fido2LoginPayload: payload))
                 
             case let passwordCredential as ASPasswordCredential:
                 print("A password was provided")
