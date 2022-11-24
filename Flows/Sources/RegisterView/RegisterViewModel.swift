@@ -44,7 +44,7 @@ public extension OwnID.FlowsSDK.RegisterView {
         let webLanguages: OwnID.CoreSDK.Languages
         public var getEmail: (() -> String)!
         
-        public var eventPublisher: OwnID.FlowsSDK.RegistrationPublisher {
+        public var eventPublisher: OwnID.RegistrationPublisher {
             resultPublisher.eraseToAnyPublisher()
         }
         

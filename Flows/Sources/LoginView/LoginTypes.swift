@@ -1,15 +1,17 @@
 import Combine
 
 public extension OwnID {
-    typealias LoginPublisher = OwnID.FlowsSDK.LoginPublisher
+    typealias LoginResultPublisher = AnyPublisher<OwnID.LoginResult, OwnID.CoreSDK.Error>
+    typealias LoginPublisher = AnyPublisher<Result<OwnID.FlowsSDK.LoginEvent, OwnID.CoreSDK.Error>, Never>
+    
     struct LoginResult {
-        public init(operationResult: OperationResult, authType: OwnID.CoreSDK.AuthType?) {
+        public init(operationResult: OperationResult, authType: OwnID.CoreSDK.AuthType? = .none) {
             self.operationResult = operationResult
             self.authType = authType
         }
         
-        let operationResult: OperationResult
-        let authType: OwnID.CoreSDK.AuthType?
+        public let operationResult: OperationResult
+        public let authType: OwnID.CoreSDK.AuthType?
     }
 }
 
@@ -18,8 +20,6 @@ public extension OwnID.FlowsSDK {
         case loading
         case loggedIn(loginResult: OperationResult, authType: OwnID.CoreSDK.AuthType?)
     }
-    
-    typealias LoginPublisher = AnyPublisher<Result<LoginEvent, OwnID.CoreSDK.Error>, Never>
     
     struct LinkOnLoginConfiguration {
         public init(email: OwnID.CoreSDK.Email,
@@ -37,6 +37,5 @@ public extension OwnID.FlowsSDK {
 }
 
 public protocol LoginPerformer {
-    func login(payload: OwnID.CoreSDK.Payload,
-               email: String) -> AnyPublisher<OwnID.LoginResult, OwnID.CoreSDK.Error>
+    func login(payload: OwnID.CoreSDK.Payload, email: String) -> OwnID.LoginResultPublisher
 }

@@ -25,7 +25,7 @@ public extension OwnID.FlowsSDK.LoginView {
         let webLanguages: OwnID.CoreSDK.Languages
         public var getEmail: (() -> String)!
         
-        public var eventPublisher: OwnID.FlowsSDK.LoginPublisher {
+        public var eventPublisher: OwnID.LoginPublisher {
             resultPublisher.eraseToAnyPublisher()
         }
         
