@@ -43,7 +43,7 @@ extension OwnID.CoreSDK {
                 return value
             }
             set {
-                guard case .browserVM = self, let newValue = newValue else { return }
+                guard case .browserVM = self, let newValue else { return }
                 self = .browserVM(newValue)
             }
         }
@@ -126,7 +126,7 @@ extension OwnID.CoreSDK {
             let redirect = redirectionEncoded! + "?context=" + context
             let redirectParameter = "&redirectURI=" + redirect
             var urlString = browserURL
-            if let email = email {
+            if let email {
                 var emailSet = CharacterSet.urlHostAllowed
                 emailSet.remove("+")
                 if let encoded = email.rawValue.addingPercentEncoding(withAllowedCharacters: emailSet) {

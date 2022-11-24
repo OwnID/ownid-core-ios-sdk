@@ -27,7 +27,7 @@ public extension OwnID.FlowsSDK.RegisterView {
         
         /// Checks email if it is valid for tooltip display
         public var shouldShowTooltipEmailProcessingClosure: ((String?) -> Bool) = { emailString in
-            guard let emailString = emailString else { return false }
+            guard let emailString else { return false }
             let emailObject = OwnID.CoreSDK.Email(rawValue: emailString)
             return emailObject.isValid
         }
@@ -74,7 +74,9 @@ public extension OwnID.FlowsSDK.RegisterView {
                         handle(error)
                     }
                 } receiveValue: { [unowned self] registrationResult in
-                    OwnID.CoreSDK.logger.logAnalytic(.registerTrackMetric(action: "User is Registered", context: payload.context))
+                    OwnID.CoreSDK.logger.logAnalytic(.registerTrackMetric(action: "User is Registered",
+                                                                          context: payload.context,
+                                                                          authType: registrationResult.authType))
                     resultPublisher.send(.success(.userRegisteredAndLoggedIn(registrationResult: registrationResult.operationResult, authType: registrationResult.authType)))
                     resetDataAndState()
                 }
@@ -131,7 +133,7 @@ public extension OwnID.FlowsSDK.RegisterView {
                 } receiveValue: { [unowned self] event in
                     switch event {
                     case .success(let payload):
-                        OwnID.CoreSDK.logger.logFlow(.entry(Self.self))
+                        OwnID.CoreSDK.logger.logFlow(.entry(context: payload.context, Self.self))
                         switch payload.responseType {
                         case .registrationInfo:
                             self.registrationData.payload = payload
@@ -188,7 +190,9 @@ private extension OwnID.FlowsSDK.RegisterView.ViewModel {
     }
     
     func handle(_ error: OwnID.CoreSDK.Error) {
-        OwnID.CoreSDK.logger.logFlow(.errorEntry(message: "\(error.localizedDescription)", Self.self))
+        OwnID.CoreSDK.logger.logFlow(.errorEntry(context: registrationData.payload?.context,
+                                                 message: "\(error.localizedDescription)",
+                                                 Self.self))
         resultPublisher.send(.failure(error))
     }
 }

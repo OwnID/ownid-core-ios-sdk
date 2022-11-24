@@ -115,7 +115,9 @@ private extension OwnID.FlowsSDK.LoginView.ViewModel {
                     handle(error)
                 }
             } receiveValue: { [unowned self] loginResult in
-                OwnID.CoreSDK.logger.logAnalytic(.loginTrackMetric(action: "User is Logged in", context: payload.context, authType: payload.authType))
+                OwnID.CoreSDK.logger.logAnalytic(.loginTrackMetric(action: "User is Logged in",
+                                                                   context: payload.context,
+                                                                   authType: payload.authType))
                 state = .loggedIn
                 resultPublisher.send(.success(.loggedIn(loginResult: loginResult.operationResult, authType: loginResult.authType)))
                 resetDataAndState()
@@ -124,7 +126,9 @@ private extension OwnID.FlowsSDK.LoginView.ViewModel {
     }
     
     func handle(_ error: OwnID.CoreSDK.Error) {
-        OwnID.CoreSDK.logger.logFlow(.errorEntry(message: "\(error.localizedDescription)", Self.self))
+        OwnID.CoreSDK.logger.logFlow(.errorEntry(context: payload?.context,
+                                                 message: "\(error.localizedDescription)",
+                                                 Self.self))
         resetDataAndState()
         resultPublisher.send(.failure(error))
     }
