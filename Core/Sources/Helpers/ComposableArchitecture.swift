@@ -42,12 +42,12 @@ public final class Store<Value, Action>: ObservableObject {
             effectCancellable = effect.sink(
                 receiveCompletion: { [weak self, weak effectCancellable] _ in
                     didComplete = true
-                    guard let effectCancellable = effectCancellable else { return }
+                    guard let effectCancellable else { return }
                     self?.effectCancellables.remove(effectCancellable)
                 },
                 receiveValue: { [weak self] in self?.send($0) }
             )
-            if !didComplete, let effectCancellable = effectCancellable {
+            if !didComplete, let effectCancellable {
                 self.effectCancellables.insert(effectCancellable)
             }
         }
