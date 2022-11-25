@@ -32,7 +32,7 @@ public extension OwnID.FlowsSDK.LoginView {
         public init(loginPerformer: LoginPerformer,
                     sdkConfigurationName: String,
                     webLanguages: OwnID.CoreSDK.Languages) {
-            OwnID.CoreSDK.logger.logAnalytic(.loginTrackMetric(action: "OwnID Widget is Loaded", context: payload?.context))
+            OwnID.CoreSDK.logger.logAnalytic(.loginTrackMetric(action: .loaded, context: payload?.context))
             self.sdkConfigurationName = sdkConfigurationName
             self.loginPerformer = loginPerformer
             self.webLanguages = webLanguages
@@ -97,7 +97,7 @@ public extension OwnID.FlowsSDK.LoginView {
             buttonEventPublisher
                 .sink { _ in
                 } receiveValue: { [unowned self] event in
-                    OwnID.CoreSDK.logger.logAnalytic(.loginClickMetric(action: "Clicked Skip Password", context: payload?.context))
+                    OwnID.CoreSDK.logger.logAnalytic(.loginClickMetric(action: .click, context: payload?.context))
                         skipPasswordTapped(usersEmail: getEmail())
                 }
                 .store(in: &bag)
@@ -115,7 +115,7 @@ private extension OwnID.FlowsSDK.LoginView.ViewModel {
                     handle(error)
                 }
             } receiveValue: { [unowned self] loginResult in
-                OwnID.CoreSDK.logger.logAnalytic(.loginTrackMetric(action: "User is Logged in",
+                OwnID.CoreSDK.logger.logAnalytic(.loginTrackMetric(action: .loggedIn,
                                                                    context: payload.context,
                                                                    authType: payload.authType))
                 state = .loggedIn
