@@ -52,7 +52,7 @@ public extension OwnID.FlowsSDK.RegisterView {
                     loginPerformer: LoginPerformer,
                     sdkConfigurationName: String,
                     webLanguages: OwnID.CoreSDK.Languages) {
-            OwnID.CoreSDK.logger.logAnalytic(.registerTrackMetric(action: "OwnID Widget is Loaded", context: registrationData.payload?.context))
+            OwnID.CoreSDK.logger.logAnalytic(.registerTrackMetric(action: .loaded, context: registrationData.payload?.context))
             self.sdkConfigurationName = sdkConfigurationName
             self.registrationPerformer = registrationPerformer
             self.loginPerformer = loginPerformer
@@ -74,7 +74,7 @@ public extension OwnID.FlowsSDK.RegisterView {
                         handle(error)
                     }
                 } receiveValue: { [unowned self] registrationResult in
-                    OwnID.CoreSDK.logger.logAnalytic(.registerTrackMetric(action: "User is Registered",
+                    OwnID.CoreSDK.logger.logAnalytic(.registerTrackMetric(action: .registered,
                                                                           context: payload.context,
                                                                           authType: registrationResult.authType))
                     resultPublisher.send(.success(.userRegisteredAndLoggedIn(registrationResult: registrationResult.operationResult, authType: registrationResult.authType)))
@@ -98,7 +98,7 @@ public extension OwnID.FlowsSDK.RegisterView {
         
         func skipPasswordTapped(usersEmail: String) {
             if case .ownidCreated = state {
-                OwnID.CoreSDK.logger.logAnalytic(.registerClickMetric(action: "Clicked Skip Password Undo", context: registrationData.payload?.context))
+                OwnID.CoreSDK.logger.logAnalytic(.registerClickMetric(action: .undo, context: registrationData.payload?.context))
                 resetState()
                 resultPublisher.send(.success(.resetTapped))
                 return
@@ -164,7 +164,7 @@ public extension OwnID.FlowsSDK.RegisterView {
             buttonEventPublisher
                 .sink { _ in
                 } receiveValue: { [unowned self] _ in
-                    OwnID.CoreSDK.logger.logAnalytic(.registerClickMetric(action: "Clicked Skip Password", context: registrationData.payload?.context))
+                    OwnID.CoreSDK.logger.logAnalytic(.registerClickMetric(action: .click, context: registrationData.payload?.context))
                         skipPasswordTapped(usersEmail: getEmail())
                 }
                 .store(in: &bag)
@@ -181,7 +181,7 @@ private extension OwnID.FlowsSDK.RegisterView.ViewModel {
                     handle(error)
                 }
             } receiveValue: { [unowned self] registerResult in
-                OwnID.CoreSDK.logger.logAnalytic(.loginTrackMetric(action: "User is Logged in", context: payload.context, authType: payload.authType))
+                OwnID.CoreSDK.logger.logAnalytic(.loginTrackMetric(action: .loggedIn, context: payload.context, authType: payload.authType))
                 state = .ownidCreated
                 resultPublisher.send(.success(.userRegisteredAndLoggedIn(registrationResult: registerResult.operationResult, authType: registerResult.authType)))
                 resetDataAndState()
