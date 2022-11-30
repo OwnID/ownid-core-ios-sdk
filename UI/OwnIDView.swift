@@ -32,10 +32,10 @@ public extension OwnID.UISDK {
         
         @ViewBuilder
         func orView() -> some View {
-            if visualConfig.isOrViewEnabled {
-                OwnID.UISDK.OrView(textSize: visualConfig.orTextSize,
-                                   lineHeight: visualConfig.orLineHeight,
-                                   textColor: visualConfig.orTextColor)
+            if visualConfig.orViewConfig.isOrViewEnabled {
+                OwnID.UISDK.OrView(textSize: visualConfig.orViewConfig.orTextSize,
+                                   lineHeight: visualConfig.orViewConfig.orLineHeight,
+                                   textColor: visualConfig.orViewConfig.orTextColor)
             }
         }
         

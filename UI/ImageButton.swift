@@ -67,9 +67,9 @@ extension OwnID.UISDK {
         @ViewBuilder
         private func style(view: AnyView, shouldDisplayHighlighted: Bool) -> some View {
             view
-                .background(backgroundRectangle(color: visualConfig.backgroundColor))
-                .border(color: visualConfig.borderColor)
-                .shadow(color: shouldDisplayHighlighted ? visualConfig.shadowColor : .clear,
+                .background(backgroundRectangle(color: visualConfig.buttonViewConfig.backgroundColor))
+                .border(color: visualConfig.buttonViewConfig.borderColor)
+                .shadow(color: shouldDisplayHighlighted ? visualConfig.buttonViewConfig.shadowColor : .clear,
                         radius: cornerRadiusValue,
                         x: 0,
                         y: cornerRadiusValue / 2)
@@ -94,10 +94,10 @@ private extension OwnID.UISDK.ImageButton {
     func buttonStyle() -> OwnID.UISDK.StateableButton<AnyView> {
         return OwnID.UISDK.StateableButton(styleChanged: { isPressedStyle -> AnyView in
             let shouldDisplayHighlighted = shouldDisplayHighlighted(isHighlighted: isPressedStyle)
-            let imageName = visualConfig.variant.rawValue
+            let imageName = visualConfig.buttonViewConfig.variant.rawValue
             let image = Image(imageName, bundle: .resourceBundle)
                 .renderingMode(.template)
-                .foregroundColor(visualConfig.iconColor)
+                .foregroundColor(visualConfig.buttonViewConfig.iconColor)
                 .padding(shouldDisplayHighlighted ? highlightedImageSpace : defaultImageSpace)
             
             let imagesContainer = ZStack(alignment: .topTrailing) {
