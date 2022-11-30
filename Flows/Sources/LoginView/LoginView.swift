@@ -19,6 +19,7 @@ public extension OwnID.FlowsSDK {
             self._usersEmail = usersEmail
             self.visualConfig = visualConfig
             self.viewModel.getEmail = { usersEmail.wrappedValue }
+            self.viewModel.currentMetadata = visualConfig.convertToCurrentMetric()
         }
         
         public var body: some View {

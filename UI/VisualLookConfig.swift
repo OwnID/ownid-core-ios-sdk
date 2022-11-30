@@ -51,3 +51,24 @@ public extension OwnID.UISDK {
         public var widgetPosition: WidgetPosition
     }
 }
+
+extension OwnID.UISDK.VisualLookConfig {
+    func convertToCurrentMetric() -> OwnID.CoreSDK.MetricLogEntry.CurrentMetricInformation {
+        var current = OwnID.CoreSDK.MetricLogEntry.CurrentMetricInformation()
+        switch self.widgetPosition {
+        case .start:
+            current.widgetPositionTypeMetric = .start
+            
+        case .end:
+            current.widgetPositionTypeMetric = .end
+        }
+        switch self.variant {
+        case .fingerprint:
+            current.widgetTypeMetric = .fingerprint
+            
+        case .faceId:
+            current.widgetTypeMetric = .faceid
+        }
+        return current
+    }
+}
