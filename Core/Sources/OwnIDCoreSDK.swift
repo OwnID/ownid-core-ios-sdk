@@ -22,6 +22,8 @@ public extension OwnID {
         public static let shared = CoreSDK()
         public let translationsModule = TranslationsSDK.Manager()
         
+        var currentMetricInformation = OwnID.CoreSDK.StandardMetricLogEntry.CurrentMetricInformation()
+        
         @ObservedObject var store: Store<SDKState, SDKAction>
         
         private let urlPublisher = PassthroughSubject<Void, Error>()

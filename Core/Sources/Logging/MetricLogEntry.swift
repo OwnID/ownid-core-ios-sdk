@@ -1,15 +1,9 @@
 import Foundation
 
 public extension OwnID.CoreSDK.StandardMetricLogEntry {
-    enum EventType: String, Encodable {
-        case click
-        case track
-        case error
-    }
-    
-    enum EventCategory: String, Encodable {
-        case registration
-        case login
+    struct CurrentMetricInformation {
+        var widgetTypeMetric = WidgetTypeMetric.client
+        var widgetPositionTypeMetric = WidgetPositionTypeMetric.start
     }
     
     enum WidgetTypeMetric: String {
@@ -21,6 +15,19 @@ public extension OwnID.CoreSDK.StandardMetricLogEntry {
     enum WidgetPositionTypeMetric: String {
         case start = "start"
         case end = "end"
+    }
+}
+
+public extension OwnID.CoreSDK.StandardMetricLogEntry {
+    enum EventType: String, Encodable {
+        case click
+        case track
+        case error
+    }
+    
+    enum EventCategory: String, Encodable {
+        case registration
+        case login
     }
     
     enum AnalyticActionType: String {
@@ -74,8 +81,9 @@ public extension OwnID.CoreSDK.MetricLogEntry {
             metadata["authType"] = authType
         }
         if actionType.isPositionAndTypeAdding {
-            metadata["widgetPosition"] = WidgetPositionTypeMetric.start.rawValue
-            metadata["widgetType"] = WidgetTypeMetric.client.rawValue
+            let current = OwnID.CoreSDK.shared.currentMetricInformation
+            metadata["widgetPosition"] = current.widgetPositionTypeMetric.rawValue
+            metadata["widgetType"] = current.widgetTypeMetric.rawValue
         }
         return metadata
     }

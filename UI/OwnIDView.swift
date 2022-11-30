@@ -27,6 +27,7 @@ public extension OwnID.UISDK {
             _isTooltipPresented = shouldShowTooltip
             imageButtonView = ImageButton(viewState: viewState, visualConfig: visualConfig)
             self.visualConfig = visualConfig
+            OwnID.CoreSDK.shared.currentMetricInformation = visualConfig.convertToCurrentMetric()
         }
         
         @ViewBuilder
