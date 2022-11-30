@@ -121,7 +121,11 @@ public extension OwnID.CoreSDK.MetricLogEntry {
     }
     
     static func loginClickMetric(action: AnalyticActionType, context: String? = "no_context") -> OwnID.CoreSDK.MetricLogEntry {
-        let metric = OwnID.CoreSDK.MetricLogEntry.init(action: action.rawValue, type: .click, category: .login, context: context ?? "no_context")
+        let metric = OwnID.CoreSDK.MetricLogEntry.init(action: action.rawValue,
+                                                       type: .click,
+                                                       category: .login,
+                                                       context: context ?? "no_context",
+                                                       metadata: metadata(actionType: action))
         return metric
     }
 }

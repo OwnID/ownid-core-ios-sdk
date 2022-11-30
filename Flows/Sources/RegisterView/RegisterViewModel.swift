@@ -39,6 +39,7 @@ public extension OwnID.FlowsSDK.RegisterView {
         private var registrationData = RegistrationData()
         private let loginPerformer: LoginPerformer
         var coreViewModel: OwnID.CoreSDK.CoreViewModel!
+        var currentMetadata: OwnID.CoreSDK.MetricLogEntry.CurrentMetricInformation?
         
         let sdkConfigurationName: String
         let webLanguages: OwnID.CoreSDK.Languages
@@ -57,6 +58,18 @@ public extension OwnID.FlowsSDK.RegisterView {
             self.registrationPerformer = registrationPerformer
             self.loginPerformer = loginPerformer
             self.webLanguages = webLanguages
+            Task {
+                // Delay the task by 1 second
+                try? await Task.sleep(nanoseconds: 1_000_000_000)
+                sendMetric()
+            }
+        }
+        
+        private func sendMetric() {
+            if let currentMetadata {
+                OwnID.CoreSDK.shared.currentMetricInformation = currentMetadata
+            }
+            OwnID.CoreSDK.logger.logAnalytic(.loginTrackMetric(action: .loaded, context: registrationData.payload?.context))
         }
         
         public func register(with email: String,
