@@ -53,7 +53,6 @@ public extension OwnID.FlowsSDK.RegisterView {
                     loginPerformer: LoginPerformer,
                     sdkConfigurationName: String,
                     webLanguages: OwnID.CoreSDK.Languages) {
-            OwnID.CoreSDK.logger.logAnalytic(.registerTrackMetric(action: .loaded, context: registrationData.payload?.context))
             self.sdkConfigurationName = sdkConfigurationName
             self.registrationPerformer = registrationPerformer
             self.loginPerformer = loginPerformer
@@ -69,7 +68,7 @@ public extension OwnID.FlowsSDK.RegisterView {
             if let currentMetadata {
                 OwnID.CoreSDK.shared.currentMetricInformation = currentMetadata
             }
-            OwnID.CoreSDK.logger.logAnalytic(.loginTrackMetric(action: .loaded, context: registrationData.payload?.context))
+            OwnID.CoreSDK.logger.logAnalytic(.registerTrackMetric(action: .loaded, context: registrationData.payload?.context))
         }
         
         public func register(with email: String,
