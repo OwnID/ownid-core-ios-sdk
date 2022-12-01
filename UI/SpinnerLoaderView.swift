@@ -9,7 +9,8 @@ extension OwnID.UISDK {
         private let id = UUID()
         
         var body: some View {
-            Text("c")
+            Circle()
+                            .fill(.red)
         }
     }
 }

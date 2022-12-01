@@ -71,6 +71,7 @@ private extension OwnID.UISDK.OwnIDView {
             imageButtonView
                 .layoutPriority(1)
             OwnID.UISDK.SpinnerLoaderView()
+                .padding(9)
         }
     }
     
