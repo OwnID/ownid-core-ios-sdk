@@ -1,6 +1,19 @@
 import SwiftUI
 
 public extension OwnID.UISDK {
+    struct LoaderViewConfig {
+        public init(spinnerColor: Color = OwnID.Colors.spinnerColor,
+                    spinnerBackgroundColor: Color = OwnID.Colors.spinnerBackgroundColor,
+                    isSpinnerEnabled: Bool = true) {
+            self.spinnerColor = spinnerColor
+            self.spinnerBackgroundColor = spinnerBackgroundColor
+            self.isSpinnerEnabled = isSpinnerEnabled
+        }
+        
+        public var spinnerColor: Color
+        public var spinnerBackgroundColor: Color
+        public var isSpinnerEnabled: Bool
+    }
     
     enum ButtonVariant: String {
         case fingerprint = "touchidImage"
@@ -53,17 +66,20 @@ public extension OwnID.UISDK {
         public init(buttonViewConfig: ButtonViewConfig = ButtonViewConfig(),
                     orViewConfig: OrViewConfig = OrViewConfig(),
                     tooltipVisualLookConfig: TooltipVisualLookConfig = TooltipVisualLookConfig(),
-                    widgetPosition: WidgetPosition = .start) {
+                    widgetPosition: WidgetPosition = .start,
+                    loaderViewConfig: LoaderViewConfig = LoaderViewConfig()) {
             self.buttonViewConfig = buttonViewConfig
             self.orViewConfig = orViewConfig
             self.tooltipVisualLookConfig = tooltipVisualLookConfig
             self.widgetPosition = widgetPosition
+            self.loaderViewConfig = loaderViewConfig
         }
         
         public var buttonViewConfig: ButtonViewConfig
         public var orViewConfig: OrViewConfig
         public var tooltipVisualLookConfig: TooltipVisualLookConfig
         public var widgetPosition: WidgetPosition
+        public var loaderViewConfig: LoaderViewConfig
     }
 }
 
