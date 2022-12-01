@@ -12,6 +12,8 @@ public extension OwnID.UISDK {
         private let imageButtonView: ImageButton
         private let coordinateSpaceName = String(describing: OwnID.UISDK.ImageButton.self)
         @Binding private var isTooltipPresented: Bool
+        @Binding private var isLoading: Bool
+        @Binding private var viewState: ButtonState
         
         @Environment(\.colorScheme) var colorScheme
         @Environment(\.layoutDirection) var direction
@@ -23,8 +25,11 @@ public extension OwnID.UISDK {
         
         public init(viewState: Binding<ButtonState>,
                     visualConfig: VisualLookConfig,
-                    shouldShowTooltip: Binding<Bool>) {
+                    shouldShowTooltip: Binding<Bool>,
+                    isLoading: Binding<Bool>) {
             _isTooltipPresented = shouldShowTooltip
+            _isLoading = isLoading
+            _viewState = viewState
             imageButtonView = ImageButton(viewState: viewState, visualConfig: visualConfig)
             self.visualConfig = visualConfig
             OwnID.CoreSDK.shared.currentMetricInformation = visualConfig.convertToCurrentMetric()
@@ -58,7 +63,7 @@ private extension OwnID.UISDK.OwnIDView {
     
     @ViewBuilder
     func buttonAndTooltipView() -> some View {
-        if isTooltipPresented, #available(iOS 16.0, *) {
+        if isTooltipPresented, viewState.isTooltipShown, #available(iOS 16.0, *) {
             tooltipOnTopOfButtonView()
         } else {
             imageView()
@@ -68,10 +73,13 @@ private extension OwnID.UISDK.OwnIDView {
     @ViewBuilder
     func imageView() -> some View {
         ZStack {
-            imageButtonView
-                .layoutPriority(1)
-            OwnID.UISDK.SpinnerLoaderView()
-                .padding(9)
+            if isLoading {
+                OwnID.UISDK.SpinnerLoaderView()
+                    .padding(9)
+            } else {
+                imageButtonView
+                    .layoutPriority(1)
+            }
         }
     }
     

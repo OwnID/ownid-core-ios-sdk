@@ -9,6 +9,28 @@ extension OwnID.FlowsSDK.RegisterView.ViewModel {
     }
 }
 
+extension OwnID.FlowsSDK.RegisterView.ViewModel.State {
+    var buttonState: OwnID.UISDK.ButtonState {
+        switch self {
+        case .initial, .coreVM:
+            return .enabled
+            
+        case .ownidCreated:
+            return .activated
+        }
+    }
+    
+    var isLoading: Bool {
+        switch self {
+        case .initial, .ownidCreated:
+            return false
+            
+        case .coreVM:
+            return true
+        }
+    }
+}
+
 extension OwnID.FlowsSDK.RegisterView.ViewModel {
     public struct EmptyRegisterParameters: RegisterParameters {
         public init () { }

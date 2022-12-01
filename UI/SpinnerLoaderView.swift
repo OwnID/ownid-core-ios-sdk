@@ -2,7 +2,7 @@ import SwiftUI
 
 extension OwnID.UISDK {
     struct SpinnerLoaderView: View {
-        #warning("do we need this ==")
+        #warning("do we need this == and if this gets us any good")
         static func == (lhs: OwnID.UISDK.SpinnerLoaderView, rhs: OwnID.UISDK.SpinnerLoaderView) -> Bool {
             lhs.id == rhs.id
         }
@@ -10,7 +10,7 @@ extension OwnID.UISDK {
         
         var body: some View {
             Circle()
-                            .fill(.red)
+                .strokeBorder(OwnID.Colors.spinnerBackgroundColor, lineWidth: 6)
         }
     }
 }
