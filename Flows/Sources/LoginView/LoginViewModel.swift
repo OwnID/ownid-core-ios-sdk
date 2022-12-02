@@ -82,6 +82,7 @@ public extension OwnID.FlowsSDK.LoginView {
         }
         
         func subscribe(to eventsPublisher: OwnID.CoreSDK.EventPublisher) {
+            coreViewModelBag.removeAll()
             eventsPublisher
                 .sink { [unowned self] completion in
                     if case .failure(let error) = completion {
