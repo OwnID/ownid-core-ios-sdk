@@ -8,21 +8,22 @@ extension OwnID.UISDK {
         }
         private let id = UUID()
         
-        private let timer = Timer.publish(every: 0.1, on: .main, in: .common).autoconnect()
+        private let timer = Timer.publish(every: 0.05, on: .main, in: .common).autoconnect()
         private let style = StrokeStyle(lineWidth: 6, lineCap: .round)
-        @State private var progress: CGFloat = 0.0 //why CGFloat anyway?
+        @State private var progress = 0.0
         
         var body: some View {
             ZStack {
                 Circle()
                     .stroke(AngularGradient(colors: [OwnID.Colors.spinnerBackgroundColor], center: .center), style: style)
                 Circle()
-                    .trim(from: 0, to: progress)
+                    .trim(from: 0, to: 0.011)
                     .stroke(AngularGradient(colors: [OwnID.Colors.spinnerColor], center: .center), style: style)
+                    .rotationEffect(Angle.degrees(360 * progress))
                     .animation(.default, value: progress)
                     .onReceive(timer) { _ in
                         progress += 0.01
-                        if self.progress >= 1 {
+                        if progress >= 1 {
                             progress = 0
                         }
                     }
