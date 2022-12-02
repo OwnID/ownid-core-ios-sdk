@@ -23,7 +23,7 @@ extension OwnID.UISDK {
                     .stroke(style: style)
                     .foregroundColor(OwnID.Colors.spinnerColor)
                     .rotationEffect(Angle(degrees: isLoading ? 360 : 0))
-                    .animation(Animation.linear(duration: 2).repeatForever(autoreverses: false))
+                    .animation(Animation.easeIn(duration: 2).repeatForever(autoreverses: false))
                     .onAppear { isLoading.toggle() }
                     .onReceive(timer) { _ in
                         progress += 0.01
