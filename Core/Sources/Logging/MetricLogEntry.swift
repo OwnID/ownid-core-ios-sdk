@@ -2,6 +2,12 @@ import Foundation
 
 public extension OwnID.CoreSDK.StandardMetricLogEntry {
     struct CurrentMetricInformation {
+        public init(widgetTypeMetric: OwnID.CoreSDK.StandardMetricLogEntry.WidgetTypeMetric = WidgetTypeMetric.client,
+                    widgetPositionTypeMetric: OwnID.CoreSDK.StandardMetricLogEntry.WidgetPositionTypeMetric = WidgetPositionTypeMetric.start) {
+            self.widgetTypeMetric = widgetTypeMetric
+            self.widgetPositionTypeMetric = widgetPositionTypeMetric
+        }
+        
         var widgetTypeMetric = WidgetTypeMetric.client
         var widgetPositionTypeMetric = WidgetPositionTypeMetric.start
     }
