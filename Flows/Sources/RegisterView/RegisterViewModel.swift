@@ -137,6 +137,7 @@ public extension OwnID.FlowsSDK.RegisterView {
         
         func subscribe(to eventsPublisher: OwnID.CoreSDK.EventPublisher, persistingEmail: OwnID.CoreSDK.Email) {
             registrationData.persistedEmail = persistingEmail
+            coreViewModelBag.removeAll()
             eventsPublisher
                 .sink { [unowned self] completion in
                     if case .failure(let error) = completion {
@@ -166,7 +167,7 @@ public extension OwnID.FlowsSDK.RegisterView {
                         resultPublisher.send(.success(.loading))
                     }
                 }
-                .store(in: &bag)
+                .store(in: &coreViewModelBag)
         }
         
         /// Used for custom button setup. Custom button sends events through this publisher

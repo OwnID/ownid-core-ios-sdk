@@ -213,7 +213,11 @@ extension OwnID.CoreSDK {
         private var internalStatesChange = [String]()
         
         private func logInternalStates() {
-            OwnID.CoreSDK.logger.logCore(.entry(message: "\(internalStatesChange)", Self.self))
+            let logMessage = "\(internalStatesChange)"
+            if store.value.isLoggingEnabled {
+                print("\(Self.self): \(#function) ➡️ \(logMessage)")
+            }
+            OwnID.CoreSDK.logger.logCore(.entry(message: logMessage, Self.self))
             internalStatesChange.removeAll()
         }
         
