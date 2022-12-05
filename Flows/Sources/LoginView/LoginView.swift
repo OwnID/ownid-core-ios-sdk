@@ -34,7 +34,7 @@ private extension OwnID.FlowsSDK.LoginView {
         let view = OwnID.UISDK.OwnIDView(viewState: .constant(viewModel.state.buttonState),
                                          visualConfig: visualConfig,
                                          shouldShowTooltip: $viewModel.shouldShowTooltip,
-                                         isLoading: .constant(viewModel.state.isLoading))
+                                         isLoading: .constant(true))
         viewModel.subscribe(to: view.eventPublisher)
         return view.eraseToAnyView()
     }
