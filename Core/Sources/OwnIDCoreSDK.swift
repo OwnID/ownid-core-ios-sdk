@@ -15,7 +15,7 @@ public extension OwnID {
     }
     
     final class CoreSDK {
-        fileprivate var serverURL: ServerURL {
+        public var serverURL: ServerURL {
             getConfiguration(for: configurationName).ownIDServerURL
         }
         
