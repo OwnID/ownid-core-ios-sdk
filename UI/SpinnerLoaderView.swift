@@ -11,12 +11,29 @@ extension OwnID.UISDK {
         private let lineStyle = StrokeStyle(lineWidth: 6, lineCap: .round, lineJoin: .round)
         private let spinnerColor = OwnID.Colors.spinnerColor
         private let startingTransformAngle = Angle(degrees: -90)
+        private let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
+        private let progressResetTimer = Timer.publish(every: 2, on: .main, in: .common).autoconnect()
         @State private var progress = 0.0
+        
+        private enum AnimationSteps {
+            case inflate //from circle to 1/3
+            case deflate //from 1/3 to circle
+            
+            var inverted: Self {
+                switch self {
+                case .inflate:
+                    return .deflate
+                case .deflate:
+                    return .inflate
+                }
+            }
+        }
+        
+        @State private var step = AnimationSteps.inflate
         
         private var repeatingAnimation: Animation {
             Animation
-                .linear(duration: 2)
-                .repeatForever(autoreverses: false)
+                .linear(duration: 1)
         }
         
         var body: some View {
@@ -26,12 +43,23 @@ extension OwnID.UISDK {
                     staticCircle()
                     growingPartCircleLine()
                 }
+                .frame(width: 200, height: 200)
                 Slider(value: $progress, in: 0...1)
                 Text("Percentage \(progress)")
+            }.onReceive(timer) { _ in
+                step = step.inverted
+                withAnimation(repeatingAnimation) {
+                    progress += 0.5
+//                    switch step {
+//                    case .inflate:
+//                        progress += 0.5
+//                    case .deflate:
+//                        <#code#>
+//                    }
+                }
             }
-            .onAppear {
-                withAnimation(repeatingAnimation) { progress = 1 }
-                withAnimation(repeatingAnimation) { progress = 0 }
+            .onReceive(progressResetTimer) { _ in
+                progress = 0
             }
         }
         
