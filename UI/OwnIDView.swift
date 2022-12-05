@@ -74,13 +74,6 @@ private extension OwnID.UISDK.OwnIDView {
     func imageView() -> some View {
         ZStack {
             if isLoading {
-#warning("remove debug, only displayed when tolltip overlaps")
-                VStack {
-                    Text("dmmdeeeeeeee").foregroundColor(.clear)
-                    Text("dmmdeee").foregroundColor(.clear)
-                    Text("dmmd").foregroundColor(.clear)
-                    Text("dmmdeeee").foregroundColor(.clear)
-                }
                 OwnID.UISDK.SpinnerLoaderView()
                     .padding(9)
             } else {
