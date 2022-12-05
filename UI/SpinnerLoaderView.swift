@@ -9,14 +9,9 @@ extension OwnID.UISDK {
         private let id = UUID()
         
         private let lineStyle = StrokeStyle(lineWidth: 6, lineCap: .round, lineJoin: .round)
+        private let spinnerColor = OwnID.Colors.spinnerColor
+        private let startingTransformAngle = Angle(degrees: -90)
         @State private var progress = 0.0
-        
-        private enum AnimationSteps: CaseIterable {
-            case inflate //from circle to 1/3
-            case deflate //from 1/3 to circle
-        }
-        
-        private let steps = [AnimationSteps.allCases]
         
         private var repeatingAnimation: Animation {
             Animation
@@ -25,32 +20,40 @@ extension OwnID.UISDK {
         }
         
         var body: some View {
-            ZStack {
-                backgroundCircle()
-                staticCircle()
-                growingPartCircleLine()
+            VStack {
+                ZStack {
+                    backgroundCircle()
+                    staticCircle()
+                    growingPartCircleLine()
+                }
+                .frame(width: 200, height: 200)
+                Slider(value: $progress, in: 0...1)
+                Text("Percentage \(progress)")
             }
-            .onAppear { withAnimation(repeatingAnimation) { progress = 1 } }
-        }
-        
-        @ViewBuilder
-        private func growingPartCircleLine() -> some View {
-            Circle()
-                .trim(from: 0, to: 0.0044)
-                .stroke(style: lineStyle)
-                .foregroundColor(OwnID.Colors.spinnerColor)
-                .rotationEffect(Angle(degrees: -90))
-                .rotationEffect(Angle(degrees: 360 * progress))
+            .onAppear {
+                withAnimation(repeatingAnimation) { progress = 1 }
+                withAnimation(repeatingAnimation) { progress = 0 }
+            }
         }
         
         @ViewBuilder
         private func staticCircle() -> some View {
             Circle()
+                .trim(from: 0, to: 0.0044)
+                .stroke(style: lineStyle)
+                .foregroundColor(spinnerColor)
+                .rotationEffect(startingTransformAngle)
+                .rotationEffect(rotationAngle())
+        }
+        
+        @ViewBuilder
+        private func growingPartCircleLine() -> some View {
+            Circle()
                 .trim(from: 0, to: progress)
                 .stroke(style: lineStyle)
-                .foregroundColor(OwnID.Colors.spinnerColor)
-                .rotationEffect(Angle(degrees: -90))
-                .rotationEffect(Angle(degrees: 360 * progress))
+                .foregroundColor(spinnerColor)
+                .rotationEffect(startingTransformAngle)
+                .rotationEffect(rotationAngle())
         }
         
         @ViewBuilder
@@ -59,5 +62,7 @@ extension OwnID.UISDK {
                 .stroke(style: lineStyle)
                 .foregroundColor(OwnID.Colors.spinnerBackgroundColor)
         }
+        
+        private func rotationAngle() -> Angle { Angle(degrees: 360 * progress * 2) }
     }
 }
