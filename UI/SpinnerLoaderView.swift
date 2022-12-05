@@ -13,18 +13,19 @@ extension OwnID.UISDK {
         private let startingTransformAngle = Angle(degrees: -90)
         @State private var increasingProgress = 0.0
         @State private var decreasingProgress = 1.0
+        private let animationDuration = 5.0
         
         private var increasingAnimation: Animation {
             Animation
-                .linear(duration: 10)
+                .linear(duration: animationDuration)
                 .repeatForever(autoreverses: false)
         }
         
         private var decreasingAnimation: Animation {
             Animation
-                .linear(duration: 10)
+                .linear(duration: animationDuration)
                 .repeatForever(autoreverses: false)
-                .delay(1)
+                .delay(animationDuration)
         }
         
         var body: some View {
@@ -32,13 +33,13 @@ extension OwnID.UISDK {
                 ZStack {
                     backgroundCircle()
                     decreasingCircle()
-//                    increasingCircle()
+                    increasingCircle()
                 }
                 .frame(width: 200, height: 200)
                 Slider(value: $increasingProgress, in: 0...1)
                 Text("Percentage \(increasingProgress)")
             }.onAppear {
-                withAnimation(increasingAnimation) { increasingProgress = 1 }
+                withAnimation(increasingAnimation) { increasingProgress = 1/3 }
                 withAnimation(decreasingAnimation) { decreasingProgress = 0 }
             }
         }
@@ -46,7 +47,7 @@ extension OwnID.UISDK {
         @ViewBuilder
         private func decreasingCircle() -> some View {
             Circle()
-                .trim(from: 0, to: decreasingProgress)
+                .trim(from: 1/3, to: decreasingProgress)
                 .stroke(style: lineStyle)
                 .foregroundColor(spinnerColor)
                 .rotationEffect(startingTransformAngle)
