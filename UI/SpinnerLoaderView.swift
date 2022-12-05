@@ -26,7 +26,6 @@ extension OwnID.UISDK {
                     staticCircle()
                     growingPartCircleLine()
                 }
-                .frame(width: 200, height: 200)
                 Slider(value: $progress, in: 0...1)
                 Text("Percentage \(progress)")
             }
