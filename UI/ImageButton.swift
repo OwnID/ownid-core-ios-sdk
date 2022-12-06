@@ -24,7 +24,7 @@ extension OwnID.UISDK {
         
         private let id = UUID()
         
-        var visualConfig: VisualLookConfig
+        var buttonViewConfig: ButtonViewConfig
         #warning("disabled translations")
 //        private let localizationClosure: (() -> String)
 //        @State private var translationText = ""
@@ -43,10 +43,10 @@ extension OwnID.UISDK {
                 .eraseToAnyPublisher()
         }
         
-        init(viewState: Binding<ButtonState>, visualConfig: VisualLookConfig) {
+        init(viewState: Binding<ButtonState>, buttonViewConfig: ButtonViewConfig) {
 //            let localizationClosure = { "skipPassword".ownIDLocalized() }
             self._viewState = viewState
-            self.visualConfig = visualConfig
+            self.buttonViewConfig = buttonViewConfig
 //            self.localizationClosure = localizationClosure
 //            self.translationText = localizationClosure()
         }
@@ -67,9 +67,9 @@ extension OwnID.UISDK {
         @ViewBuilder
         private func style(view: AnyView, shouldDisplayHighlighted: Bool) -> some View {
             view
-                .background(backgroundRectangle(color: visualConfig.buttonViewConfig.backgroundColor))
-                .border(color: visualConfig.buttonViewConfig.borderColor)
-                .shadow(color: shouldDisplayHighlighted ? visualConfig.buttonViewConfig.shadowColor : .clear,
+                .background(backgroundRectangle(color: buttonViewConfig.backgroundColor))
+                .border(color: buttonViewConfig.borderColor)
+                .shadow(color: shouldDisplayHighlighted ? buttonViewConfig.shadowColor : .clear,
                         radius: cornerRadiusValue,
                         x: 0,
                         y: cornerRadiusValue / 2)
@@ -94,10 +94,10 @@ private extension OwnID.UISDK.ImageButton {
     func buttonStyle() -> OwnID.UISDK.StateableButton<AnyView> {
         return OwnID.UISDK.StateableButton(styleChanged: { isPressedStyle -> AnyView in
             let shouldDisplayHighlighted = shouldDisplayHighlighted(isHighlighted: isPressedStyle)
-            let imageName = visualConfig.buttonViewConfig.variant.rawValue
+            let imageName = buttonViewConfig.variant.rawValue
             let image = Image(imageName, bundle: .resourceBundle)
                 .renderingMode(.template)
-                .foregroundColor(visualConfig.buttonViewConfig.iconColor)
+                .foregroundColor(buttonViewConfig.iconColor)
                 .padding(shouldDisplayHighlighted ? highlightedImageSpace : defaultImageSpace)
             
             let imagesContainer = ZStack(alignment: .topTrailing) {

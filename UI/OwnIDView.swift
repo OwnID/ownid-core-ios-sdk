@@ -30,7 +30,7 @@ public extension OwnID.UISDK {
             _isTooltipPresented = shouldShowTooltip
             _isLoading = isLoading
             _viewState = viewState
-            imageButtonView = ImageButton(viewState: viewState, visualConfig: visualConfig)
+            imageButtonView = ImageButton(viewState: viewState, buttonViewConfig: visualConfig.buttonViewConfig)
             self.visualConfig = visualConfig
             OwnID.CoreSDK.shared.currentMetricInformation = visualConfig.convertToCurrentMetric()
         }

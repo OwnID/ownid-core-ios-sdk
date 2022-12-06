@@ -1,5 +1,6 @@
 import SwiftUI
 
+#warning("make everyone here equtable")
 public extension OwnID.UISDK {
     struct LoaderViewConfig {
         public init(spinnerColor: Color = OwnID.Colors.spinnerColor,
