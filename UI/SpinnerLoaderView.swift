@@ -42,7 +42,7 @@ extension OwnID.UISDK {
                 Slider(value: $decreasingProgress, in: 0.0...1)
                 Text("Percentage \(decreasingProgress)")
             }.onAppear {
-                withAnimation(increasingAnimation) { increasingProgress = Self.maxGainPoint }
+                withAnimation(increasingAnimation) { increasingProgress = 1 }
                 withAnimation(decreasingAnimation) {
                     decreasingProgress = 0
                     decreasingRotation = 0
