@@ -10,13 +10,11 @@ extension OwnID.UISDK {
         
         private let lineStyle = StrokeStyle(lineWidth: 6, lineCap: .round, lineJoin: .round)
         private let spinnerColor = OwnID.Colors.spinnerColor
-        private let startingTransformAngle = Angle(degrees: -90)
-        @State private var increasingProgress = 0.0
-        @State private var decreasingProgress = Self.maxGainPoint
-        @State private var decreasingRotation = 1.0
-        private let animationDuration = 5.0
-        private static let maxGainPoint: CGFloat = 1/3
-        private let minimumWidthPoint = 0.022
+        @State private var circleLineLength = 0.0
+        @State private var circleRotation = 0.0
+        private let animationDuration = 2.0
+        private let maximumCircleLength: CGFloat = 1/3
+        private let minimumCircleLength = 0.022
         
         private var increasingAnimation: Animation {
             Animation
@@ -24,48 +22,37 @@ extension OwnID.UISDK {
                 .repeatForever(autoreverses: false)
         }
         
-        private var decreasingAnimation: Animation {
+        private var increasingAnimation1: Animation {
             Animation
                 .linear(duration: animationDuration)
-                .delay(animationDuration)
-                .repeatForever(autoreverses: false)
+                .repeatForever(autoreverses: true)
         }
         
         var body: some View {
             VStack {
                 ZStack {
                     backgroundCircle()
-                    decreasingCircle()
                     increasingCircle()
                 }
                 .frame(width: 200, height: 200)
             }.onAppear {
-                withAnimation(increasingAnimation) { increasingProgress = 1 }
-                withAnimation(decreasingAnimation) {
-                    decreasingProgress = 0
-                    decreasingRotation = 0
+                withAnimation(increasingAnimation) {
+                    circleRotation = 1
+                }
+                withAnimation(increasingAnimation1) {
+                    circleLineLength = 1
                 }
             }
         }
         
         @ViewBuilder
-        private func decreasingCircle() -> some View {
-            Circle()
-                .trim(from: -1, to: decreasingProgress + minimumWidthPoint)
-                .stroke(style: lineStyle)
-                .foregroundColor(spinnerColor)
-                .rotationEffect(.degrees(-(90.0 + ((Self.maxGainPoint * 2) * 100.0))))
-                .rotationEffect(.degrees(-(360.0 * decreasingRotation)))
-        }
-        
-        @ViewBuilder
         private func increasingCircle() -> some View {
             Circle()
-                .trim(from: 0, to: min((increasingProgress + minimumWidthPoint), Self.maxGainPoint))
+                .trim(from: 0, to: min((circleLineLength + minimumCircleLength), maximumCircleLength))
                 .stroke(style: lineStyle)
                 .foregroundColor(spinnerColor)
-                .rotationEffect(.degrees(-(90 + (minimumWidthPoint * 100))))
-                .rotationEffect(.degrees((360 - (360 / 6)) * increasingProgress))
+                .rotationEffect(.degrees(-(90 + (minimumCircleLength * 100))))
+                .rotationEffect(.degrees(360 * circleRotation))
         }
         
         @ViewBuilder
