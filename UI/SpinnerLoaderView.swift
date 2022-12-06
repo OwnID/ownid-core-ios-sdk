@@ -49,11 +49,11 @@ extension OwnID.UISDK {
         @ViewBuilder
         private func decreasingCircle() -> some View {
             Circle()
-                .trim(from: -1, to: maxGainPoint)
+                .trim(from: -1, to: min(maxGainPoint, decreasingProgress + minimumWidthPoint))
                 .stroke(style: lineStyle)
                 .foregroundColor(spinnerColor)
                 .rotationEffect(.degrees(-(90.0 + ((maxGainPoint * 2) * 100.0))))
-                .rotationEffect(.degrees(-(360.0 * decreasingProgress * 2.0)))
+                .rotationEffect(.degrees(-(360.0 * decreasingProgress)))
         }
         
         @ViewBuilder
