@@ -9,7 +9,8 @@ extension OwnID.UISDK {
         private let id = UUID()
         
         private let lineStyle = StrokeStyle(lineWidth: 6, lineCap: .round, lineJoin: .round)
-        private let spinnerColor = OwnID.Colors.spinnerColor
+        let spinnerColor: Color
+        let spinnerBackgroundColor: Color
         @State private var circleLineLength: Double = 0.011
         @State private var circleRotation = 0.0
         private let animationDuration = 2.0
@@ -57,7 +58,7 @@ extension OwnID.UISDK {
         private func backgroundCircle() -> some View {
             Circle()
                 .stroke(style: lineStyle)
-                .foregroundColor(OwnID.Colors.spinnerBackgroundColor)
+                .foregroundColor(spinnerBackgroundColor)
         }
     }
 }

@@ -74,8 +74,11 @@ private extension OwnID.UISDK.OwnIDView {
     func imageView() -> some View {
         ZStack {
             if isLoading {
-                OwnID.UISDK.SpinnerLoaderView()
+                OwnID.UISDK.SpinnerLoaderView(spinnerColor: visualConfig.loaderViewConfig.spinnerColor,
+                                              spinnerBackgroundColor: visualConfig.loaderViewConfig.spinnerBackgroundColor)
                     .padding(9)
+                    .background(backgroundRectangle(color: visualConfig.buttonViewConfig.backgroundColor))
+                    .border(color: visualConfig.buttonViewConfig.borderColor)
             } else {
                 imageButtonView
                     .layoutPriority(1)
