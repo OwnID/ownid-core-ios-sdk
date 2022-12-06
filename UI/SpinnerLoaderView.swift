@@ -39,8 +39,6 @@ extension OwnID.UISDK {
                     increasingCircle()
                 }
                 .frame(width: 200, height: 200)
-                Slider(value: $decreasingProgress, in: 0.0...1)
-                Text("Percentage \(decreasingProgress)")
             }.onAppear {
                 withAnimation(increasingAnimation) { increasingProgress = 1 }
                 withAnimation(decreasingAnimation) {
