@@ -29,7 +29,6 @@ public extension OwnID.FlowsSDK {
 }
 
 private extension OwnID.FlowsSDK.LoginView {
-    
     func skipPasswordView() -> some View {
         let view = OwnID.UISDK.OwnIDView(viewState: .constant(viewModel.state.buttonState),
                                          visualConfig: visualConfig,
