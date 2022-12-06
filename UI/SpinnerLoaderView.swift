@@ -15,6 +15,7 @@ extension OwnID.UISDK {
         @State private var decreasingProgress = Self.maxGainPoint
         private let animationDuration = 5.0
         private static let maxGainPoint: CGFloat = 1/3
+        private let minimumWidthPoint = 0.022
         
         private var increasingAnimation: Animation {
             Animation
@@ -33,15 +34,15 @@ extension OwnID.UISDK {
             VStack {
                 ZStack {
                     backgroundCircle()
-                    decreasingCircle()
+//                    decreasingCircle()
                     increasingCircle()
                 }
                 .frame(width: 200, height: 200)
-                Slider(value: $increasingProgress, in: 0.0...Self.maxGainPoint)
+                Slider(value: $increasingProgress, in: 0.0...1)
                 Text("Percentage \(increasingProgress)")
             }.onAppear {
-                withAnimation(increasingAnimation) { increasingProgress = Self.maxGainPoint }
-                withAnimation(decreasingAnimation) { decreasingProgress = 0 }
+//                withAnimation(increasingAnimation) { increasingProgress = Self.maxGainPoint }
+//                withAnimation(decreasingAnimation) { decreasingProgress = 0 }
             }
         }
         
@@ -58,11 +59,11 @@ extension OwnID.UISDK {
         @ViewBuilder
         private func increasingCircle() -> some View {
             Circle()
-                .trim(from: 0.11, to: increasingProgress)
+                .trim(from: 0, to: min((increasingProgress + minimumWidthPoint), Self.maxGainPoint))
                 .stroke(style: lineStyle)
                 .foregroundColor(spinnerColor)
-                .rotationEffect(startingTransformAngle)
-                .rotationEffect(.degrees(360 * increasingProgress))
+                .rotationEffect(.degrees(-(90 + (minimumWidthPoint * 100))))
+                .rotationEffect(.degrees((360 - (360 / 3)) * increasingProgress))
         }
         
         @ViewBuilder
