@@ -52,7 +52,7 @@ extension OwnID.UISDK {
                 .trim(from: -1, to: maxGainPoint)
                 .stroke(style: lineStyle)
                 .foregroundColor(spinnerColor)
-                .rotationEffect(startingTransformAngle)
+                .rotationEffect(.degrees(-(90.0 + ((maxGainPoint * 2) * 100.0))))
                 .rotationEffect(.degrees(-(360.0 * decreasingProgress * 2.0)))
         }
         
