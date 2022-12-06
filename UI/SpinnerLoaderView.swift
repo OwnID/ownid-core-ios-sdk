@@ -10,19 +10,18 @@ extension OwnID.UISDK {
         
         private let lineStyle = StrokeStyle(lineWidth: 6, lineCap: .round, lineJoin: .round)
         private let spinnerColor = OwnID.Colors.spinnerColor
-        @State private var circleLineLength = 0.0
+        @State private var circleLineLength: Double = 0.011
         @State private var circleRotation = 0.0
         private let animationDuration = 2.0
         private let maximumCircleLength: CGFloat = 1/3
-        private let minimumCircleLength = 0.022
         
-        private var increasingAnimation: Animation {
+        private var rotationAnimation: Animation {
             Animation
                 .linear(duration: animationDuration)
                 .repeatForever(autoreverses: false)
         }
         
-        private var increasingAnimation1: Animation {
+        private var lineLengthAnimation: Animation {
             Animation
                 .linear(duration: animationDuration)
                 .repeatForever(autoreverses: true)
@@ -34,12 +33,11 @@ extension OwnID.UISDK {
                     backgroundCircle()
                     increasingCircle()
                 }
-                .frame(width: 200, height: 200)
             }.onAppear {
-                withAnimation(increasingAnimation) {
+                withAnimation(rotationAnimation) {
                     circleRotation = 1
                 }
-                withAnimation(increasingAnimation1) {
+                withAnimation(lineLengthAnimation) {
                     circleLineLength = 1
                 }
             }
@@ -48,10 +46,10 @@ extension OwnID.UISDK {
         @ViewBuilder
         private func increasingCircle() -> some View {
             Circle()
-                .trim(from: 0, to: min((circleLineLength + minimumCircleLength), maximumCircleLength))
+                .trim(from: 0, to: min((circleLineLength), maximumCircleLength))
                 .stroke(style: lineStyle)
                 .foregroundColor(spinnerColor)
-                .rotationEffect(.degrees(-(90 + (minimumCircleLength * 100))))
+                .rotationEffect(.degrees(-(90)))
                 .rotationEffect(.degrees(360 * circleRotation))
         }
         
