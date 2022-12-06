@@ -57,7 +57,7 @@ extension OwnID.UISDK {
                 .stroke(style: lineStyle)
                 .foregroundColor(spinnerColor)
                 .rotationEffect(.degrees(-(90.0 + ((Self.maxGainPoint * 2) * 100.0))))
-                .rotationEffect(.degrees(-(360.0 * decreasingProgress)))
+                .rotationEffect(.degrees(-(360.0 * decreasingRotation)))
         }
         
         @ViewBuilder
