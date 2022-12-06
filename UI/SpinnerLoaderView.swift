@@ -12,8 +12,9 @@ extension OwnID.UISDK {
         private let spinnerColor = OwnID.Colors.spinnerColor
         private let startingTransformAngle = Angle(degrees: -90)
         @State private var increasingProgress = 0.0
-        @State private var decreasingProgress = 1.0
+        @State private var decreasingProgress = Self.maxGainPoint
         private let animationDuration = 5.0
+        private static let maxGainPoint: CGFloat = 1/3
         
         private var increasingAnimation: Animation {
             Animation
@@ -36,10 +37,10 @@ extension OwnID.UISDK {
                     increasingCircle()
                 }
                 .frame(width: 200, height: 200)
-                Slider(value: $increasingProgress, in: 0...1)
+                Slider(value: $increasingProgress, in: 0.0...Self.maxGainPoint)
                 Text("Percentage \(increasingProgress)")
             }.onAppear {
-                withAnimation(increasingAnimation) { increasingProgress = 1/3 }
+                withAnimation(increasingAnimation) { increasingProgress = Self.maxGainPoint }
                 withAnimation(decreasingAnimation) { decreasingProgress = 0 }
             }
         }
@@ -47,21 +48,21 @@ extension OwnID.UISDK {
         @ViewBuilder
         private func decreasingCircle() -> some View {
             Circle()
-                .trim(from: 1/3, to: decreasingProgress)
+                .trim(from: Self.maxGainPoint, to: decreasingProgress)
                 .stroke(style: lineStyle)
                 .foregroundColor(spinnerColor)
                 .rotationEffect(startingTransformAngle)
-                .rotationEffect(.degrees(-(360 * decreasingProgress * 2)))
+                .rotationEffect(.degrees(-(360.0 * decreasingProgress * 2.0)))
         }
         
         @ViewBuilder
         private func increasingCircle() -> some View {
             Circle()
-                .trim(from: 0, to: increasingProgress)
+                .trim(from: 0.11, to: increasingProgress)
                 .stroke(style: lineStyle)
                 .foregroundColor(spinnerColor)
                 .rotationEffect(startingTransformAngle)
-                .rotationEffect(.degrees(360 * increasingProgress * 2))
+                .rotationEffect(.degrees(360 * increasingProgress))
         }
         
         @ViewBuilder
