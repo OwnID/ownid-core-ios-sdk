@@ -12,9 +12,9 @@ extension OwnID.UISDK {
         private let spinnerColor = OwnID.Colors.spinnerColor
         private let startingTransformAngle = Angle(degrees: -90)
         @State private var increasingProgress = 0.0
-        @State private var decreasingProgress = Self.maxGainPoint
+        @State private var decreasingProgress = 1.0
         private let animationDuration = 5.0
-        private static let maxGainPoint: CGFloat = 1/3
+        private let maxGainPoint: CGFloat = 1/3
         private let minimumWidthPoint = 0.022
         
         private var increasingAnimation: Animation {
@@ -34,12 +34,12 @@ extension OwnID.UISDK {
             VStack {
                 ZStack {
                     backgroundCircle()
-//                    decreasingCircle()
-                    increasingCircle()
+                    decreasingCircle()
+//                    increasingCircle()
                 }
                 .frame(width: 200, height: 200)
-                Slider(value: $increasingProgress, in: 0.0...1)
-                Text("Percentage \(increasingProgress)")
+                Slider(value: $decreasingProgress, in: 0.0...1)
+                Text("Percentage \(decreasingProgress)")
             }.onAppear {
 //                withAnimation(increasingAnimation) { increasingProgress = Self.maxGainPoint }
 //                withAnimation(decreasingAnimation) { decreasingProgress = 0 }
@@ -49,7 +49,7 @@ extension OwnID.UISDK {
         @ViewBuilder
         private func decreasingCircle() -> some View {
             Circle()
-                .trim(from: Self.maxGainPoint, to: decreasingProgress)
+                .trim(from: -1, to: maxGainPoint)
                 .stroke(style: lineStyle)
                 .foregroundColor(spinnerColor)
                 .rotationEffect(startingTransformAngle)
@@ -59,7 +59,7 @@ extension OwnID.UISDK {
         @ViewBuilder
         private func increasingCircle() -> some View {
             Circle()
-                .trim(from: 0, to: min((increasingProgress + minimumWidthPoint), Self.maxGainPoint))
+                .trim(from: 0, to: min((increasingProgress + minimumWidthPoint), maxGainPoint))
                 .stroke(style: lineStyle)
                 .foregroundColor(spinnerColor)
                 .rotationEffect(.degrees(-(90 + (minimumWidthPoint * 100))))
