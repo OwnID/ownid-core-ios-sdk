@@ -1,5 +1,5 @@
-import Foundation
 import SwiftUI
+import Combine
 
 public extension OwnID.UISDK {
     struct OwnIDView: View {
@@ -9,17 +9,19 @@ public extension OwnID.UISDK {
         private let id = UUID()
         private let visualConfig: VisualLookConfig
         
-        private let imageButtonView: ImageButton
-        private let coordinateSpaceName = String(describing: OwnID.UISDK.ImageButton.self)
+        private let coordinateSpaceName = String(describing: OwnID.UISDK.BorderAndHighlightButton.self)
         @Binding private var isTooltipPresented: Bool
         @Binding private var isLoading: Bool
-        @Binding private var viewState: ButtonState
+        @Binding private var buttonState: ButtonState
         
         @Environment(\.colorScheme) var colorScheme
         @Environment(\.layoutDirection) var direction
         
+        private let resultPublisher = PassthroughSubject<Void, Never>()
+        
         public var eventPublisher: OwnID.UISDK.EventPubliser {
-            imageButtonView.eventPublisher
+            resultPublisher
+                .debounce(for: .milliseconds(500), scheduler: DispatchQueue.main)
                 .eraseToAnyPublisher()
         }
         
@@ -29,8 +31,7 @@ public extension OwnID.UISDK {
                     isLoading: Binding<Bool>) {
             _isTooltipPresented = shouldShowTooltip
             _isLoading = isLoading
-            _viewState = viewState
-            imageButtonView = ImageButton(viewState: viewState, buttonViewConfig: visualConfig.buttonViewConfig)
+            _buttonState = viewState
             self.visualConfig = visualConfig
             OwnID.CoreSDK.shared.currentMetricInformation = visualConfig.convertToCurrentMetric()
         }
@@ -63,26 +64,43 @@ private extension OwnID.UISDK.OwnIDView {
     
     @ViewBuilder
     func buttonAndTooltipView() -> some View {
-        if isTooltipPresented, viewState.isTooltipShown, #available(iOS 16.0, *) {
+        if isTooltipPresented, buttonState.isTooltipShown, #available(iOS 16.0, *) {
             tooltipOnTopOfButtonView()
         } else {
             imageView()
         }
     }
     
+    func variantImage() -> some View {
+        let imageName = visualConfig.buttonViewConfig.variant.rawValue
+        let image = Image(imageName, bundle: .resourceBundle)
+            .renderingMode(.template)
+            .foregroundColor(visualConfig.buttonViewConfig.iconColor)
+        return image
+    }
+    
+    @ViewBuilder
+    func buttonContents() -> some View {
+        if isLoading {
+            ZStack {
+                variantImage()
+                OwnID.UISDK.SpinnerLoaderView(spinnerColor: visualConfig.loaderViewConfig.spinnerColor,
+                                              spinnerBackgroundColor: visualConfig.loaderViewConfig.spinnerBackgroundColor,
+                                              viewBackgroundColor: visualConfig.buttonViewConfig.backgroundColor)
+            }
+        } else {
+            variantImage()
+        }
+    }
+    
     @ViewBuilder
     func imageView() -> some View {
         ZStack {
-            if isLoading {
-                OwnID.UISDK.SpinnerLoaderView(spinnerColor: visualConfig.loaderViewConfig.spinnerColor,
-                                              spinnerBackgroundColor: visualConfig.loaderViewConfig.spinnerBackgroundColor)
-                    .padding(9)
-                    .background(backgroundRectangle(color: visualConfig.buttonViewConfig.backgroundColor))
-                    .border(color: visualConfig.buttonViewConfig.borderColor)
-            } else {
-                imageButtonView
-                    .layoutPriority(1)
-            }
+            OwnID.UISDK.BorderAndHighlightButton(viewState: $buttonState,
+                                                 buttonViewConfig: visualConfig.buttonViewConfig,
+                                                 action: { if !isLoading { resultPublisher.send(()) }},
+                                                 content: { buttonContents() })
+            .layoutPriority(1)
         }
     }
     

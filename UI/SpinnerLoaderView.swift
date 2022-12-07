@@ -8,9 +8,11 @@ extension OwnID.UISDK {
         }
         private let id = UUID()
         
-        private let lineStyle = StrokeStyle(lineWidth: 6, lineCap: .round, lineJoin: .round)
         let spinnerColor: Color
         let spinnerBackgroundColor: Color
+        let viewBackgroundColor: Color
+        
+        private let lineStyle = StrokeStyle(lineWidth: 4, lineCap: .round, lineJoin: .round)
         @State private var circleLineLength: Double = 0.011
         @State private var circleRotation = 0.0
         private let animationDuration = 2.0
@@ -34,6 +36,7 @@ extension OwnID.UISDK {
                     backgroundCircle()
                     increasingCircle()
                 }
+                .background(viewBackgroundColor)
             }.onAppear {
                 withAnimation(rotationAnimation) {
                     circleRotation = 1
