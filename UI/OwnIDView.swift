@@ -81,27 +81,22 @@ private extension OwnID.UISDK.OwnIDView {
     
     @ViewBuilder
     func buttonContents() -> some View {
-        if isLoading {
-            ZStack {
-                variantImage()
-                OwnID.UISDK.SpinnerLoaderView(spinnerColor: visualConfig.loaderViewConfig.spinnerColor,
-                                              spinnerBackgroundColor: visualConfig.loaderViewConfig.spinnerBackgroundColor,
-                                              viewBackgroundColor: visualConfig.buttonViewConfig.backgroundColor)
-            }
-        } else {
+        ZStack {
             variantImage()
+            OwnID.UISDK.SpinnerLoaderView(spinnerColor: visualConfig.loaderViewConfig.spinnerColor,
+                                          spinnerBackgroundColor: visualConfig.loaderViewConfig.spinnerBackgroundColor,
+                                          viewBackgroundColor: visualConfig.buttonViewConfig.backgroundColor)
+            .opacity(isLoading ? 1 : 0)
         }
     }
     
     @ViewBuilder
     func imageView() -> some View {
-        ZStack {
-            OwnID.UISDK.BorderAndHighlightButton(viewState: $buttonState,
-                                                 buttonViewConfig: visualConfig.buttonViewConfig,
-                                                 action: { if !isLoading { resultPublisher.send(()) }},
-                                                 content: { buttonContents() })
-            .layoutPriority(1)
-        }
+        OwnID.UISDK.BorderAndHighlightButton(viewState: $buttonState,
+                                             buttonViewConfig: visualConfig.buttonViewConfig,
+                                             action: { if !isLoading { resultPublisher.send(()) }},
+                                             content: { buttonContents() })
+        .layoutPriority(1)
     }
     
     @ViewBuilder
