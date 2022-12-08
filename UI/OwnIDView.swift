@@ -83,6 +83,7 @@ private extension OwnID.UISDK.OwnIDView {
     func buttonContents() -> some View {
         ZStack {
             variantImage()
+                .layoutPriority(1)
                 .opacity(isLoading ? 0 : 1)
             OwnID.UISDK.SpinnerLoaderView(spinnerColor: visualConfig.loaderViewConfig.spinnerColor,
                                           spinnerBackgroundColor: visualConfig.loaderViewConfig.spinnerBackgroundColor,
