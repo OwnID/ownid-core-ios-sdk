@@ -9,6 +9,28 @@ extension OwnID.FlowsSDK.LoginView.ViewModel {
     }
 }
 
+extension OwnID.FlowsSDK.LoginView.ViewModel.State {
+    var buttonState: OwnID.UISDK.ButtonState {
+        switch self {
+        case .initial, .coreVM:
+            return .enabled
+            
+        case .loggedIn:
+            return .activated
+        }
+    }
+    
+    var isLoading: Bool {
+        switch self {
+        case .coreVM:
+            return true
+            
+        case .loggedIn, .initial:
+            return false
+        }
+    }
+}
+
 public extension OwnID.FlowsSDK.LoginView {
      final class ViewModel: ObservableObject {
         @Published private(set) var state = State.initial

@@ -17,43 +17,42 @@ public extension OwnID.UISDK {
 
 extension OwnID.UISDK {
     /// Represents the call to action button. It also displays the state when the OwnID is activated
-    struct ImageButton: View, Equatable {
-        static func == (lhs: OwnID.UISDK.ImageButton, rhs: OwnID.UISDK.ImageButton) -> Bool {
+    struct BorderAndHighlightButton: View, Equatable {
+        static func == (lhs: OwnID.UISDK.BorderAndHighlightButton, rhs: OwnID.UISDK.BorderAndHighlightButton) -> Bool {
             lhs.id == rhs.id
         }
         
         private let id = UUID()
         
-        var visualConfig: VisualLookConfig
+        var buttonViewConfig: ButtonViewConfig
         #warning("disabled translations")
 //        private let localizationClosure: (() -> String)
 //        @State private var translationText = ""
         
-        private let highlightedImageSpace = EdgeInsets(top: 6, leading: 7, bottom: 6, trailing: 7)
-        private let defaultImageSpace = EdgeInsets(top: 7, leading: 8, bottom: 7, trailing: 8)
+        private let highlightedSpace = EdgeInsets(top: 6, leading: 7, bottom: 6, trailing: 7)
+        private let defaultSpace = EdgeInsets(top: 7, leading: 8, bottom: 7, trailing: 8)
         
         /// State that needs to be updated as result to events in SDK
-        @Binding var viewState: ButtonState
+        @Binding private var viewState: ButtonState
+        private let content: () -> any View
+        private let action: () -> Void
         
-        private let resultPublisher = PassthroughSubject<Void, Never>()
-        
-        var eventPublisher: OwnID.UISDK.EventPubliser {
-            resultPublisher
-                .debounce(for: .milliseconds(500), scheduler: DispatchQueue.main)
-                .eraseToAnyPublisher()
-        }
-        
-        init(viewState: Binding<ButtonState>, visualConfig: VisualLookConfig) {
+        init(viewState: Binding<ButtonState>,
+             buttonViewConfig: ButtonViewConfig,
+             action: @escaping () -> Void,
+             content: @escaping () -> any View) {
 //            let localizationClosure = { "skipPassword".ownIDLocalized() }
             self._viewState = viewState
-            self.visualConfig = visualConfig
+            self.buttonViewConfig = buttonViewConfig
+            self.action = action
+            self.content = content
 //            self.localizationClosure = localizationClosure
 //            self.translationText = localizationClosure()
         }
         
         var body: some View {
             Button(action: {
-                resultPublisher.send(())
+                action()
             }, label: {
                 EmptyView()
             })
@@ -67,9 +66,9 @@ extension OwnID.UISDK {
         @ViewBuilder
         private func style(view: AnyView, shouldDisplayHighlighted: Bool) -> some View {
             view
-                .background(backgroundRectangle(color: visualConfig.backgroundColor))
-                .border(color: visualConfig.borderColor)
-                .shadow(color: shouldDisplayHighlighted ? visualConfig.shadowColor : .clear,
+                .background(backgroundRectangle(color: buttonViewConfig.backgroundColor))
+                .border(color: buttonViewConfig.borderColor)
+                .shadow(color: shouldDisplayHighlighted ? buttonViewConfig.shadowColor : .clear,
                         radius: cornerRadiusValue,
                         x: 0,
                         y: cornerRadiusValue / 2)
@@ -89,22 +88,18 @@ extension OwnID.UISDK {
     }
 }
 
-private extension OwnID.UISDK.ImageButton {
+private extension OwnID.UISDK.BorderAndHighlightButton {
     
     func buttonStyle() -> OwnID.UISDK.StateableButton<AnyView> {
         return OwnID.UISDK.StateableButton(styleChanged: { isPressedStyle -> AnyView in
             let shouldDisplayHighlighted = shouldDisplayHighlighted(isHighlighted: isPressedStyle)
-            let imageName = visualConfig.variant.rawValue
-            let image = Image(imageName, bundle: .resourceBundle)
-                .renderingMode(.template)
-                .foregroundColor(visualConfig.iconColor)
-                .padding(shouldDisplayHighlighted ? highlightedImageSpace : defaultImageSpace)
-            
-            let imagesContainer = ZStack(alignment: .topTrailing) {
-                image
+            let viewsContainer = ZStack(alignment: .topTrailing) {
+                content()
+                    .padding(shouldDisplayHighlighted ? highlightedSpace : defaultSpace)
+                    .eraseToAnyView()
                 checkmarkView
             }
-            let styled = style(view: imagesContainer.eraseToAnyView(), shouldDisplayHighlighted: shouldDisplayHighlighted)
+            let styled = style(view: viewsContainer.eraseToAnyView(), shouldDisplayHighlighted: shouldDisplayHighlighted)
             let highlightedContainerSpacing = EdgeInsets(top: 1, leading: 1, bottom: 1, trailing: 1)
             let container = HStack { styled }
                 .padding(shouldDisplayHighlighted ? highlightedContainerSpacing : EdgeInsets())
@@ -117,22 +112,5 @@ private extension OwnID.UISDK.ImageButton {
     
     func shouldDisplayHighlighted(isHighlighted: Bool) -> Bool {
         isHighlighted && viewState == .enabled
-    }
-}
-
-private extension View {
-    var cornerRadiusValue: CGFloat { 6.0 }
-    
-    func border(color: Color) -> some View {
-        self
-            .overlay(
-                RoundedRectangle(cornerRadius: cornerRadiusValue)
-                    .stroke(color, lineWidth: 0.75)
-            )
-    }
-    
-    func backgroundRectangle(color: Color) -> some View {
-        RoundedRectangle(cornerRadius: cornerRadiusValue)
-            .fill(color)
     }
 }

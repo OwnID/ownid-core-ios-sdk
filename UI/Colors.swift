@@ -34,5 +34,13 @@ public extension OwnID {
         public static var defaultBlackColor: Color {
             Color("defaultBlack", bundle: .resourceBundle)
         }
+        
+        public static var spinnerColor: Color {
+            Color("spinnerStrokeColor", bundle: .resourceBundle)
+        }
+        
+        public static var spinnerBackgroundColor: Color {
+            Color("spinnerBackgroundStrokeColor", bundle: .resourceBundle)
+        }
     }
 }
