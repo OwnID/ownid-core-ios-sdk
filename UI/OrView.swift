@@ -2,11 +2,6 @@ import SwiftUI
 
 extension OwnID.UISDK {
     struct OrView: View {
-        static func == (lhs: OwnID.UISDK.OrView, rhs: OwnID.UISDK.OrView) -> Bool {
-            lhs.id == rhs.id
-        }
-        private let id = UUID()
-
         private let localizationChangedClosure: (() -> String)
         @State private var translationText: String
         let textSize: CGFloat

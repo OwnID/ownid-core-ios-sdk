@@ -1,13 +1,7 @@
 import SwiftUI
 
 extension OwnID.UISDK {
-    struct SpinnerLoaderView: View, Equatable {
-        #warning("do we need this == and if this gets us any good")
-        static func == (lhs: OwnID.UISDK.SpinnerLoaderView, rhs: OwnID.UISDK.SpinnerLoaderView) -> Bool {
-            lhs.id == rhs.id
-        }
-        private let id = UUID()
-        
+    struct SpinnerLoaderView: View {
         let spinnerColor: Color
         let spinnerBackgroundColor: Color
         let viewBackgroundColor: Color
