@@ -225,6 +225,7 @@ private extension OwnID.FlowsSDK.RegisterView.ViewModel {
     }
     
     func handle(_ error: OwnID.CoreSDK.Error) {
+        state = .initial
         OwnID.CoreSDK.logger.logFlow(.errorEntry(context: registrationData.payload?.context,
                                                  message: "\(error.localizedDescription)",
                                                  Self.self))
