@@ -3,11 +3,6 @@ import SwiftUI
 extension OwnID.UISDK {
     struct RectangleWithTextView: View {
         private let radius: CGFloat = 6
-        static func == (lhs: OwnID.UISDK.RectangleWithTextView, rhs: OwnID.UISDK.RectangleWithTextView) -> Bool {
-            lhs.id == rhs.id
-        }
-        private let id = UUID()
-        
         private let localizationChangedClosure: (() -> String)
         @State private var translationText: String
         

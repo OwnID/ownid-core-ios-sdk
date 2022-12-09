@@ -17,12 +17,7 @@ public extension OwnID.UISDK {
 
 extension OwnID.UISDK {
     /// Represents the call to action button. It also displays the state when the OwnID is activated
-    struct BorderAndHighlightButton: View, Equatable {
-        static func == (lhs: OwnID.UISDK.BorderAndHighlightButton, rhs: OwnID.UISDK.BorderAndHighlightButton) -> Bool {
-            lhs.id == rhs.id
-        }
-        
-        private let id = UUID()
+    struct BorderAndHighlightButton: View {
         
         var buttonViewConfig: ButtonViewConfig
         private let localizationClosure: (() -> String)

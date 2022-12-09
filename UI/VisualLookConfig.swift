@@ -1,8 +1,7 @@
 import SwiftUI
 
-#warning("make everyone here equtable")
 public extension OwnID.UISDK {
-    struct LoaderViewConfig {
+    struct LoaderViewConfig: Equatable {
         public init(spinnerColor: Color = OwnID.Colors.spinnerColor,
                     spinnerBackgroundColor: Color = OwnID.Colors.spinnerBackgroundColor,
                     isSpinnerEnabled: Bool = true) {
@@ -26,7 +25,7 @@ public extension OwnID.UISDK {
         case end
     }
     
-    struct OrViewConfig {
+    struct OrViewConfig: Equatable {
         public init(isOrViewEnabled: Bool = true,
                     orTextSize: CGFloat = 16.0,
                     orLineHeight: CGFloat = 24.0,
@@ -43,7 +42,7 @@ public extension OwnID.UISDK {
         public var orTextColor: Color
     }
     
-    struct ButtonViewConfig {
+    struct ButtonViewConfig: Equatable {
         public init(iconColor: Color = OwnID.Colors.biometricsButtonImageColor,
                     backgroundColor: Color = OwnID.Colors.biometricsButtonBackground,
                     borderColor: Color = OwnID.Colors.biometricsButtonBorder,
@@ -63,7 +62,7 @@ public extension OwnID.UISDK {
         public var variant: ButtonVariant
     }
     
-    struct VisualLookConfig {
+    struct VisualLookConfig: Equatable {
         public init(buttonViewConfig: ButtonViewConfig = ButtonViewConfig(),
                     orViewConfig: OrViewConfig = OrViewConfig(),
                     tooltipVisualLookConfig: TooltipVisualLookConfig = TooltipVisualLookConfig(),

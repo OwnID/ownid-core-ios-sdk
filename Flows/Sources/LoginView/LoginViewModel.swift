@@ -161,6 +161,7 @@ private extension OwnID.FlowsSDK.LoginView.ViewModel {
     }
     
     func handle(_ error: OwnID.CoreSDK.Error) {
+        state = .initial
         OwnID.CoreSDK.logger.logFlow(.errorEntry(context: payload?.context,
                                                  message: "\(error.localizedDescription)",
                                                  Self.self))

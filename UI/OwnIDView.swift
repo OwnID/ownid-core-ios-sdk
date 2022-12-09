@@ -3,10 +3,6 @@ import Combine
 
 public extension OwnID.UISDK {
     struct OwnIDView: View {
-        static func == (lhs: OwnID.UISDK.OwnIDView, rhs: OwnID.UISDK.OwnIDView) -> Bool {
-            lhs.id == rhs.id
-        }
-        private let id = UUID()
         private let visualConfig: VisualLookConfig
         
         private let coordinateSpaceName = String(describing: OwnID.UISDK.BorderAndHighlightButton.self)

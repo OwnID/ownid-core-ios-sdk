@@ -2,11 +2,6 @@ import SwiftUI
 
 public extension OwnID.UISDK {
     struct TriangleSide: Shape {
-        static func == (lhs: OwnID.UISDK.TriangleSide, rhs: OwnID.UISDK.TriangleSide) -> Bool {
-            lhs.id == rhs.id
-        }
-        private let id = UUID()
-        
         public func path(in rect: CGRect) -> Path {
             var path = Path()
             
