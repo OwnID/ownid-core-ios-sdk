@@ -38,9 +38,11 @@ public extension OwnID.UISDK {
                 case .end:
                     orView()
                     buttonAndTooltipView()
+                        .zIndex(1)
                     
                 case .start:
                     buttonAndTooltipView()
+                        .zIndex(1)
                     orView()
                 }
             }

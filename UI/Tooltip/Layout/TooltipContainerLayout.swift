@@ -12,6 +12,8 @@ extension OwnID.UISDK {
             cache: inout Void
         ) -> CGSize {
             guard !subviews.isEmpty else { return .zero }
+            /// Here we only get button size as we do not want our button to take more space than necessary.
+            /// We want our button to have the same size and draw tooltip on top.
             let buttonSize = subviews.first(where: { $0[TooltipContainerViewTypeKey.self] == .ownIdButton })?.sizeThatFits(.unspecified) ?? .zero
             return buttonSize
         }
