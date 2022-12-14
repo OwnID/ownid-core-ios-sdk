@@ -14,7 +14,6 @@ public extension OwnID.UISDK {
         @Environment(\.layoutDirection) var direction
         
         private let resultPublisher = PassthroughSubject<Void, Never>()
-        private let coordinateSystem = "local_space"
         
         public var eventPublisher: OwnID.UISDK.EventPubliser {
             resultPublisher
@@ -63,22 +62,22 @@ private extension OwnID.UISDK.OwnIDView {
     
     @ViewBuilder
     func buttonAndTooltipView() -> some View {
-        if isTooltipPresented, buttonState.isTooltipShown, #available(iOS 15.0, *) {
-            imageView()
-                .overlay {
-                    GeometryReader { geometryProxy in
-                        Text("please login here")
-                            .background(Rectangle().fill(.green))
-                            .frame(width: geometryProxy.size.width * 4, height: geometryProxy.size.height * 2)
-                            .position(x: geometryProxy.frame(in: .global).origin.x, y: geometryProxy.frame(in: .named(coordinateSystem)).origin.y - (geometryProxy.size.height / 2) - 8)
-                    }
-                }.coordinateSpace(name: coordinateSystem)
-//            tooltipOnTopOfButtonView()
+        if isTooltipPresented,
+           buttonState.isTooltipShown,
+           #available(iOS 16.0, *) {
+            ZStack {
+                imageView()
+                GeometryReader { geometryProxy in
+                    tooltipOnTopOfButtonView(globalFrame: geometryProxy.frame(in: .global))
+                        .position(x: geometryProxy.frame(in: .local).origin.x,
+                                  y: geometryProxy.frame(in: .local).origin.y)
+                }
+            }
         } else {
             imageView()
         }
     }
-
+    
     func variantImage() -> some View {
         let imageName = visualConfig.buttonViewConfig.variant.rawValue
         let image = Image(imageName, bundle: .resourceBundle)
@@ -110,10 +109,13 @@ private extension OwnID.UISDK.OwnIDView {
     }
     
     @ViewBuilder
-    func tooltipOnTopOfButtonView() -> some View {
+    func tooltipOnTopOfButtonView(globalFrame: CGRect) -> some View {
         if #available(iOS 16.0, *) {
-            OwnID.UISDK.TooltipContainerLayout(tooltipPosition: visualConfig.tooltipVisualLookConfig.tooltipPosition) {
-                OwnID.UISDK.TooltipTextAndArrowLayout(tooltipVisualLookConfig: visualConfig.tooltipVisualLookConfig, isRTL: direction == .rightToLeft) {
+            OwnID.UISDK.TooltipContainerLayout(tooltipPosition: visualConfig.tooltipVisualLookConfig.tooltipPosition,
+                                               globalFrame: globalFrame) {
+                OwnID.UISDK.TooltipTextAndArrowLayout(tooltipVisualLookConfig: visualConfig.tooltipVisualLookConfig,
+                                                      isRTL: direction == .rightToLeft,
+                                                      globalFrame: globalFrame) {
                     OwnID.UISDK.RectangleWithTextView(tooltipVisualLookConfig: visualConfig.tooltipVisualLookConfig)
                         .popupTextContainerType(.text)
                     OwnID.UISDK.BeakView(tooltipVisualLookConfig: visualConfig.tooltipVisualLookConfig)
@@ -129,8 +131,6 @@ private extension OwnID.UISDK.OwnIDView {
                         .frame(maxWidth: .infinity, maxHeight: .infinity)
                 }
                 .popupContainerType(.dismissButton)
-                imageView()
-                    .popupContainerType(.ownIdButton)
             }
         }
     }

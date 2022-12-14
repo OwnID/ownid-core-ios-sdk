@@ -5,6 +5,7 @@ extension OwnID.UISDK {
     struct TooltipTextAndArrowLayout: Layout {
         let tooltipVisualLookConfig: TooltipVisualLookConfig
         let isRTL: Bool
+        let globalFrame: CGRect
         
         @available(iOS 16.0, *)
         func sizeThatFits(
@@ -39,7 +40,7 @@ extension OwnID.UISDK {
             switch tooltipVisualLookConfig.tooltipPosition {
             case .top,
                     .bottom:
-                let textX = calculateTextXPosition(viewBounds: bounds)
+                let textX = calculateTextXPosition(viewBounds: bounds, textViewWidth: textSize.width)
                 let textY = bounds.minY
                 textSubview.place(at: .init(x: textX, y: textY), proposal: .unspecified)
                 
@@ -81,7 +82,7 @@ extension OwnID.UISDK {
         }
         
         @available(iOS 16.0, *)
-        private func calculateTextXPosition(viewBounds: CGRect) -> CGFloat {
+        private func calculateTextXPosition(viewBounds: CGRect, textViewWidth: CGFloat) -> CGFloat {
             let layoutCalculation: XAxisOffsetCalculating
             if isRTL {
                 layoutCalculation = RTLLayoutCalculation(shouldIncludeDefaultOffset: tooltipVisualLookConfig.isNativePlatform)
@@ -90,10 +91,12 @@ extension OwnID.UISDK {
                     layoutCalculation = NativeLTRLayoutCalculation()
                 } else {
                     let isBottomPosition = tooltipVisualLookConfig.tooltipPosition == .bottom
-                    layoutCalculation = ReactNativeLTRLayoutCalculation(isBottomPosition: isBottomPosition)
+                    layoutCalculation = ReactNativeLTRLayoutCalculation(isBottomPosition: isBottomPosition,
+                                                                        viewOrigin: globalFrame.origin,
+                                                                        textViewWidth: textViewWidth)
                 }
             }
-            return layoutCalculation.calculateXAxisOffset(viewBounds: viewBounds)
+            return layoutCalculation.calculateXAxisOffset(viewBounds: globalFrame)
         }
     }
 }

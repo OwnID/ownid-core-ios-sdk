@@ -3,7 +3,7 @@ import SwiftUI
 
 extension OwnID.UISDK {
     enum TooltipContainerViewType {
-        case ownIdButton, textAndArrowContainer, dismissButton
+        case textAndArrowContainer, dismissButton
     }
 
     enum TooltiptextAndArrowContainerViewType {
@@ -12,7 +12,7 @@ extension OwnID.UISDK {
 
     @available(iOS 16, *)
     struct TooltipContainerViewTypeKey: LayoutValueKey {
-        static let defaultValue: TooltipContainerViewType = .ownIdButton
+        static let defaultValue: TooltipContainerViewType = .textAndArrowContainer
     }
 
     @available(iOS 16, *)

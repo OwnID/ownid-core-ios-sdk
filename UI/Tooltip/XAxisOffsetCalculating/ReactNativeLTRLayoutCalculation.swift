@@ -3,30 +3,16 @@ import SwiftUI
 extension OwnID.UISDK {
     struct ReactNativeLTRLayoutCalculation: XAxisOffsetCalculating {
         let isBottomPosition: Bool
+        let viewOrigin: CGPoint
+        let textViewWidth: CGFloat
         
         func calculateXAxisOffset(viewBounds: CGRect, screenBounds: CGRect) -> CGFloat {
-            let xAndOffetValues = [
-                (x: viewBounds.midX / 1.03, operation: viewBounds.midX * 1.03),
-                (x: viewBounds.midX / 1.06, operation: viewBounds.midX * 1.06),
-                (x: viewBounds.midX / 1.12, operation: viewBounds.midX * 1.12),
-                (x: viewBounds.midX / 1.25, operation: viewBounds.midX * 1.25),
-                (x: viewBounds.midX / 1.5, operation: viewBounds.midX * 1.5),
-                (x: viewBounds.midX / 2, operation: viewBounds.midX / 2),
-                (x: viewBounds.midX, operation: viewBounds.midX),
-                (x: viewBounds.maxX / 1.44, operation: viewBounds.maxX * 1.44),
-                (x: viewBounds.maxX / 1.88, operation: viewBounds.maxX * 1.88),
-                (x: viewBounds.maxX, operation: viewBounds.maxX),
-                (x: viewBounds.maxX * 1.5, operation: viewBounds.maxX / 1.5)
-            ]
-            for xAndOffetValue in xAndOffetValues {
-                if !screenBounds.contains(.init(x: xAndOffetValue.x, y: viewBounds.maxY)) {
-                    let XOffsetBounds = -xAndOffetValue.operation
-                    var combinedOffset: CGFloat
-                    combinedOffset = screenBounds.origin.x + XOffsetBounds
-                    if isBottomPosition {
-                        combinedOffset += defaultXAxisOffset
-                    }
-                    return combinedOffset
+            let startingPoint = Int(viewOrigin.x)
+            let widthAddedPoint = Int(viewOrigin.x + textViewWidth)
+            for currentX in startingPoint...widthAddedPoint {
+                if !screenBounds.contains(.init(x: CGFloat(currentX), y: viewBounds.maxY)) {
+                    let offset = currentX - widthAddedPoint
+                    return CGFloat(offset)
                 }
             }
             return 0

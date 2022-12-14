@@ -4,19 +4,14 @@ extension OwnID.UISDK {
     @available(iOS 16, *)
     struct TooltipContainerLayout: Layout {
         let tooltipPosition: TooltipPositionType
+        let globalFrame: CGRect
         
         @available(iOS 16.0, *)
         func sizeThatFits(
             proposal: ProposedViewSize,
             subviews: Subviews,
             cache: inout Void
-        ) -> CGSize {
-            guard !subviews.isEmpty else { return .zero }
-            /// Here we only get button size as we do not want our button to take more space than necessary.
-            /// We want our button to have the same size and draw tooltip on top.
-            let buttonSize = subviews.first(where: { $0[TooltipContainerViewTypeKey.self] == .ownIdButton })?.sizeThatFits(.unspecified) ?? .zero
-            return buttonSize
-        }
+        ) -> CGSize { .zero }
         
         @available(iOS 16.0, *)
         func placeSubviews(
@@ -30,7 +25,7 @@ extension OwnID.UISDK {
             }
             
             guard let textAndArrowContainerSubview = subviews.first(where: { $0[TooltipContainerViewTypeKey.self] == .textAndArrowContainer }) else { return }
-            let buttonSize = subviews.first(where: { $0[TooltipContainerViewTypeKey.self] == .ownIdButton })?.sizeThatFits(.unspecified) ?? .zero
+            let buttonSize = globalFrame.size
             
             let halfOfButtonWidth = buttonSize.width / 2
             let textContainerHeight = textAndArrowContainerSubview.sizeThatFits(.unspecified).height
