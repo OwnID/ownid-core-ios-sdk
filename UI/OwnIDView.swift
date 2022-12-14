@@ -14,6 +14,7 @@ public extension OwnID.UISDK {
         @Environment(\.layoutDirection) var direction
         
         private let resultPublisher = PassthroughSubject<Void, Never>()
+        private let coordinateSystem = "local_space"
         
         public var eventPublisher: OwnID.UISDK.EventPubliser {
             resultPublisher
@@ -62,13 +63,22 @@ private extension OwnID.UISDK.OwnIDView {
     
     @ViewBuilder
     func buttonAndTooltipView() -> some View {
-        if isTooltipPresented, buttonState.isTooltipShown, #available(iOS 16.0, *) {
-            tooltipOnTopOfButtonView()
+        if isTooltipPresented, buttonState.isTooltipShown, #available(iOS 15.0, *) {
+            imageView()
+                .overlay {
+                    GeometryReader { geometryProxy in
+                        Text("please login here")
+                            .background(Rectangle().fill(.green))
+                            .frame(width: geometryProxy.size.width * 4, height: geometryProxy.size.height * 2)
+                            .position(x: geometryProxy.frame(in: .global).origin.x, y: geometryProxy.frame(in: .named(coordinateSystem)).origin.y - (geometryProxy.size.height / 2) - 8)
+                    }
+                }.coordinateSpace(name: coordinateSystem)
+//            tooltipOnTopOfButtonView()
         } else {
             imageView()
         }
     }
-    
+
     func variantImage() -> some View {
         let imageName = visualConfig.buttonViewConfig.variant.rawValue
         let image = Image(imageName, bundle: .resourceBundle)
