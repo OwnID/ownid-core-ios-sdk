@@ -4,7 +4,7 @@ extension OwnID.CoreSDK {
     public final class CoreMetricLogEntry: StandardMetricLogEntry {
         internal init(context: String,
                       requestPath: String? = .none,
-                      logLevel: LogLevel = LogLevel.information,
+                      logLevel: LogLevel = LogLevel.debug,
                       message: String,
                       codeInitiator: String) {
             super.init(context: context,
