@@ -42,7 +42,7 @@ extension OwnID.UISDK {
                     .bottom:
                 let textX = calculateTextXPosition(viewBounds: bounds, textViewWidth: textSize.width)
                 let textY = bounds.minY
-                textSubview.place(at: .init(x: -bounds.maxX, y: textY), proposal: .unspecified)
+                textSubview.place(at: .init(x: textX, y: textY), proposal: .unspecified)
                 
             case .left:
                 let textX = bounds.minX - textSize.width
@@ -86,8 +86,7 @@ extension OwnID.UISDK {
             let layoutCalculation: XAxisOffsetCalculating
             if isRTL {
                 layoutCalculation = RTLLayoutCalculation(shouldIncludeDefaultOffset: tooltipVisualLookConfig.isNativePlatform,
-                                                         viewOrigin: globalFrame.origin,
-                                                         textViewWidth: textViewWidth)
+                                                         viewFrame: globalFrame)
             } else {
                 if tooltipVisualLookConfig.isNativePlatform {
                     layoutCalculation = NativeLTRLayoutCalculation()

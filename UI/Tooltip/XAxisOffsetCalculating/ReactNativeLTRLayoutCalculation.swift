@@ -4,6 +4,7 @@ extension OwnID.UISDK {
     struct ReactNativeLTRLayoutCalculation: XAxisOffsetCalculating {
         let isBottomPosition: Bool
         let viewFrame: CGRect
+        #warning("remove textViewWidth?")
         let textViewWidth: CGFloat
         
         func calculateXAxisOffset(viewBounds: CGRect, screenBounds: CGRect) -> CGFloat {
