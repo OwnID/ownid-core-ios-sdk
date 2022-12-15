@@ -15,7 +15,7 @@ extension OwnID.CoreSDK {
         
         /// Logs that highlight an abnormal or unexpected event in the application flow, but do not otherwise cause the
         /// application execution to stop.
-//        case warning = 3
+        case warning = 3
         
         /// Logs that highlight when the current flow of execution is stopped due to a failure. These should indicate a
         /// failure in the current activity, not an application-wide failure.
