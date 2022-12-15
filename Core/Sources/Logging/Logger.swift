@@ -30,6 +30,7 @@ extension OwnID.CoreSDK {
         static let shared = Logger()
         private init() {
 #if DEBUG
+            #warning("move this to demo apps not to spam console of clients")
             print("🪪🆔🪢 instanceID: \(LoggerValues.instanceID.uuidString)")
 #endif
         }

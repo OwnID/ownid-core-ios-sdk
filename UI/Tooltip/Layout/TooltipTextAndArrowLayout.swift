@@ -42,7 +42,7 @@ extension OwnID.UISDK {
                     .bottom:
                 let textX = calculateTextXPosition(viewBounds: bounds, textViewWidth: textSize.width)
                 let textY = bounds.minY
-                textSubview.place(at: .init(x: textX, y: textY), proposal: .unspecified)
+                textSubview.place(at: .init(x: -bounds.maxX, y: textY), proposal: .unspecified)
                 
             case .left:
                 let textX = bounds.minX - textSize.width
@@ -85,18 +85,20 @@ extension OwnID.UISDK {
         private func calculateTextXPosition(viewBounds: CGRect, textViewWidth: CGFloat) -> CGFloat {
             let layoutCalculation: XAxisOffsetCalculating
             if isRTL {
-                layoutCalculation = RTLLayoutCalculation(shouldIncludeDefaultOffset: tooltipVisualLookConfig.isNativePlatform)
+                layoutCalculation = RTLLayoutCalculation(shouldIncludeDefaultOffset: tooltipVisualLookConfig.isNativePlatform,
+                                                         viewOrigin: globalFrame.origin,
+                                                         textViewWidth: textViewWidth)
             } else {
                 if tooltipVisualLookConfig.isNativePlatform {
                     layoutCalculation = NativeLTRLayoutCalculation()
                 } else {
                     let isBottomPosition = tooltipVisualLookConfig.tooltipPosition == .bottom
                     layoutCalculation = ReactNativeLTRLayoutCalculation(isBottomPosition: isBottomPosition,
-                                                                        viewOrigin: globalFrame.origin,
+                                                                        viewFrame: globalFrame,
                                                                         textViewWidth: textViewWidth)
                 }
             }
-            return layoutCalculation.calculateXAxisOffset(viewBounds: globalFrame)
+            return layoutCalculation.calculateXAxisOffset(viewBounds: viewBounds)
         }
     }
 }
