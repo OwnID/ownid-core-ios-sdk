@@ -4,6 +4,7 @@ extension OwnID.UISDK {
     @available(iOS 16, *)
     struct TooltipTextAndArrowLayout: Layout {
         let tooltipVisualLookConfig: TooltipVisualLookConfig
+        let isStartPosition: Bool
         let isRTL: Bool
         let globalFrame: CGRect
         
@@ -40,7 +41,7 @@ extension OwnID.UISDK {
             switch tooltipVisualLookConfig.tooltipPosition {
             case .top,
                     .bottom:
-                let textX = calculateTextXPosition(viewBounds: bounds, textViewWidth: textSize.width)
+                let textX = calculateTextXPosition(viewBounds: bounds)
                 let textY = bounds.minY
                 textSubview.place(at: .init(x: textX, y: textY), proposal: .unspecified)
                 
@@ -82,19 +83,18 @@ extension OwnID.UISDK {
         }
         
         @available(iOS 16.0, *)
-        private func calculateTextXPosition(viewBounds: CGRect, textViewWidth: CGFloat) -> CGFloat {
+        private func calculateTextXPosition(viewBounds: CGRect) -> CGFloat {
             let layoutCalculation: XAxisOffsetCalculating
+            let isNative = tooltipVisualLookConfig.isNativePlatform
             if isRTL {
-                layoutCalculation = RTLLayoutCalculation(shouldIncludeDefaultOffset: tooltipVisualLookConfig.isNativePlatform,
-                                                         viewFrame: globalFrame)
+                layoutCalculation = RTLLayoutCalculation(viewFrame: globalFrame,
+                                                         isStartPosition: isStartPosition,
+                                                         isNative: isNative)
             } else {
-                if tooltipVisualLookConfig.isNativePlatform {
-                    layoutCalculation = NativeLTRLayoutCalculation()
+                if isNative {
+                    layoutCalculation = NativeLTRLayoutCalculation(viewFrame: globalFrame)
                 } else {
-                    let isBottomPosition = tooltipVisualLookConfig.tooltipPosition == .bottom
-                    layoutCalculation = ReactNativeLTRLayoutCalculation(isBottomPosition: isBottomPosition,
-                                                                        viewFrame: globalFrame,
-                                                                        textViewWidth: textViewWidth)
+                    layoutCalculation = ReactNativeLTRLayoutCalculation(viewFrame: globalFrame)
                 }
             }
             return layoutCalculation.calculateXAxisOffset(viewBounds: viewBounds)

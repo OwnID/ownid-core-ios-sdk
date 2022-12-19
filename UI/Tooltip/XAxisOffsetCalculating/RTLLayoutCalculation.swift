@@ -2,15 +2,21 @@ import SwiftUI
 
 extension OwnID.UISDK {
     struct RTLLayoutCalculation: XAxisOffsetCalculating {
-        let shouldIncludeDefaultOffset: Bool
         let viewFrame: CGRect
+        let isStartPosition: Bool
+        let isNative: Bool
         
         func calculateXAxisOffset(viewBounds: CGRect, screenBounds: CGRect) -> CGFloat {
-            var offset = viewBounds.origin.x + (viewFrame.width / 2) - viewBounds.width
-            if shouldIncludeDefaultOffset {
-                offset += defaultXAxisOffset
+            if isNative, isStartPosition {
+                let xOffset = viewFrame.width / 2
+                return xOffset
             }
-            return offset
+            if isStartPosition {
+                let xOffset = -(viewBounds.width - (viewFrame.width / 2))
+                return xOffset
+            }
+            let xOffset = viewBounds.origin.x + (viewFrame.width / 2) - viewBounds.width
+            return xOffset
             
         }
     }

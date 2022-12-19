@@ -114,6 +114,7 @@ private extension OwnID.UISDK.OwnIDView {
             OwnID.UISDK.TooltipContainerLayout(tooltipPosition: visualConfig.tooltipVisualLookConfig.tooltipPosition,
                                                globalFrame: globalFrame) {
                 OwnID.UISDK.TooltipTextAndArrowLayout(tooltipVisualLookConfig: visualConfig.tooltipVisualLookConfig,
+                                                      isStartPosition: visualConfig.widgetPosition == .start,
                                                       isRTL: direction == .rightToLeft,
                                                       globalFrame: globalFrame) {
                     OwnID.UISDK.RectangleWithTextView(tooltipVisualLookConfig: visualConfig.tooltipVisualLookConfig)
