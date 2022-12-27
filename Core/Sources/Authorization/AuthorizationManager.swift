@@ -44,8 +44,11 @@ extension OwnID.CoreSDK.AccountManager {
     }
 }
 
+@available(iOS 16.0, *)
+extension OwnID.CoreSDK.AccountManager: ASAuthorizationControllerDelegate { }
+    
 extension OwnID.CoreSDK {
-    final class AccountManager: NSObject, ASAuthorizationControllerDelegate {
+    final class AccountManager: NSObject {
         let authenticationAnchor = ASPresentationAnchor()
         
         private var store: Store<State, Action>
@@ -65,6 +68,7 @@ extension OwnID.CoreSDK {
             self.challenge = challenge
         }
         
+        @available(iOS 16.0, *)
         func signInWith(preferImmediatelyAvailableCredentials: Bool) {
             currentAuthController?.cancel()
             let publicKeyCredentialProvider = ASAuthorizationPlatformPublicKeyCredentialProvider(relyingPartyIdentifier: domain)
@@ -101,6 +105,7 @@ extension OwnID.CoreSDK {
             isPerformingModalReqest = true
         }
         
+        @available(iOS 16.0, *)
         func beginAutoFillAssistedPasskeySignIn() {
             fatalError("For now autofill is not supported right here, we need some other way to enable this as we need new challenge for this")
             currentAuthController?.cancel()
@@ -115,6 +120,7 @@ extension OwnID.CoreSDK {
             currentAuthController = authController
         }
         
+        @available(iOS 16.0, *)
         func signUpWith(userName: String) {
             currentAuthController?.cancel()
             let publicKeyCredentialProvider = ASAuthorizationPlatformPublicKeyCredentialProvider(relyingPartyIdentifier: domain)
@@ -133,6 +139,7 @@ extension OwnID.CoreSDK {
             isPerformingModalReqest = true
         }
         
+        @available(iOS 16.0, *)
         func authorizationController(controller: ASAuthorizationController, didCompleteWithAuthorization authorization: ASAuthorization) {
             switch authorization.credential {
             case let credentialRegistration as ASAuthorizationPlatformPublicKeyCredentialRegistration:
