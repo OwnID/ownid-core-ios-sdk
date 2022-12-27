@@ -3,7 +3,7 @@ import Combine
 
 public extension OwnID.CoreSDK {
     static let sdkName = String(describing: OwnID.CoreSDK.self)
-    static let version = "1.0.1"
+    static let version = "2.1.1"
     static let APIVersion = "1"
 }
 
@@ -15,12 +15,14 @@ public extension OwnID {
     }
     
     final class CoreSDK {
-        fileprivate var serverURL: ServerURL {
+        public var serverURL: ServerURL {
             getConfiguration(for: configurationName).ownIDServerURL
         }
         
         public static let shared = CoreSDK()
         public let translationsModule = TranslationsSDK.Manager()
+        
+        public var currentMetricInformation = OwnID.CoreSDK.StandardMetricLogEntry.CurrentMetricInformation()
         
         @ObservedObject var store: Store<SDKState, SDKAction>
         

@@ -20,7 +20,7 @@ public extension OwnID.UISDK {
 }
 
 public extension OwnID.UISDK {
-    struct TooltipVisualLookConfig {
+    struct TooltipVisualLookConfig: Equatable {
         public init(backgroundColor: Color = OwnID.Colors.biometricsButtonBackground,
                     borderColor: Color = OwnID.Colors.biometricsButtonBorder,
                     textColor: Color = OwnID.Colors.defaultBlackColor,

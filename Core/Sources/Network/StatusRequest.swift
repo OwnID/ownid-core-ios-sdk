@@ -111,8 +111,10 @@ extension OwnID.CoreSDK.Status {
                     return payload
                 }
                 .eraseToAnyPublisher()
-                .mapError { initError in
-                    OwnID.CoreSDK.logger.logCore(.errorEntry(message: "\(initError.localizedDescription)", Self.self))
+                .mapError { [weak self] initError in
+                    OwnID.CoreSDK.logger.logCore(.errorEntry(context: self?.context,
+                                                             message: "\(initError.localizedDescription)",
+                                                             Self.self))
                     guard let error = initError as? OwnID.CoreSDK.Error else { return OwnID.CoreSDK.Error.statusRequestFail(underlying: initError) }
                     return error
                 }

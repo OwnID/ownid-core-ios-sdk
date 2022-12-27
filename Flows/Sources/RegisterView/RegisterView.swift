@@ -18,31 +18,21 @@ public extension OwnID.FlowsSDK {
             self._usersEmail = usersEmail
             self.visualConfig = visualConfig
             self.viewModel.getEmail = { usersEmail.wrappedValue }
+            self.viewModel.currentMetadata = visualConfig.convertToCurrentMetric()
         }
         
         public var body: some View {
-            contents()
+            skipPasswordView()
         }
     }
 }
 
 private extension OwnID.FlowsSDK.RegisterView {
-    
-    @ViewBuilder
-    func contents() -> some View {
-        switch viewModel.state {
-        case .initial, .coreVM:
-            skipPasswordView(state: .enabled)
-            
-        case .ownidCreated:
-            skipPasswordView(state: .activated)
-        }
-    }
-    
-    func skipPasswordView(state: OwnID.UISDK.ButtonState) -> some View {
-        let view = OwnID.UISDK.OwnIDView(viewState: .constant(state),
+    func skipPasswordView() -> some View {
+        let view = OwnID.UISDK.OwnIDView(viewState: .constant(viewModel.state.buttonState),
                                          visualConfig: visualConfig,
-                                         shouldShowTooltip: $viewModel.shouldShowTooltip)
+                                         shouldShowTooltip: $viewModel.shouldShowTooltip,
+                                         isLoading: .constant(viewModel.state.isLoading))
         viewModel.subscribe(to: view.eventPublisher)
         return view.eraseToAnyView()
     }

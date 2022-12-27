@@ -4,7 +4,7 @@ extension OwnID.FlowsSDK {
     public class FlowLogEntry: OwnID.CoreSDK.StandardMetricLogEntry {
         internal init(context: String,
                       requestPath: String? = .none,
-                      logLevel: OwnID.CoreSDK.LogLevel = .information,
+                      logLevel: OwnID.CoreSDK.LogLevel = .debug,
                       message: String,
                       codeInitiator: String) {
             super.init(context: context,
@@ -23,8 +23,8 @@ public extension OwnID.FlowsSDK.FlowLogEntry {
         OwnID.FlowsSDK.FlowLogEntry(context: context, message: "\(message) \(function) \(file)", codeInitiator: String(describing: T.self))
     }
     
-    static func errorEntry<T>(function: String = #function, file: String = #file, context: String = "no_context", message: String = "", _ : T.Type = T.self) -> OwnID.FlowsSDK.FlowLogEntry {
-        OwnID.FlowsSDK.FlowLogEntry(context: context, logLevel: .error, message: "\(message) \(function) \(file)", codeInitiator: String(describing: T.self))
+    static func errorEntry<T>(function: String = #function, file: String = #file, context: String? = "no_context", message: String = "", _ : T.Type = T.self) -> OwnID.FlowsSDK.FlowLogEntry {
+        OwnID.FlowsSDK.FlowLogEntry(context: context ?? "no_context", logLevel: .error, message: "\(message) \(function) \(file)", codeInitiator: String(describing: T.self))
     }
 }
 

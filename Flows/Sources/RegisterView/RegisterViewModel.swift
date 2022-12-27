@@ -9,6 +9,28 @@ extension OwnID.FlowsSDK.RegisterView.ViewModel {
     }
 }
 
+extension OwnID.FlowsSDK.RegisterView.ViewModel.State {
+    var buttonState: OwnID.UISDK.ButtonState {
+        switch self {
+        case .initial, .coreVM:
+            return .enabled
+            
+        case .ownidCreated:
+            return .activated
+        }
+    }
+    
+    var isLoading: Bool {
+        switch self {
+        case .initial, .ownidCreated:
+            return false
+            
+        case .coreVM:
+            return true
+        }
+    }
+}
+
 extension OwnID.FlowsSDK.RegisterView.ViewModel {
     public struct EmptyRegisterParameters: RegisterParameters {
         public init () { }
@@ -27,7 +49,7 @@ public extension OwnID.FlowsSDK.RegisterView {
         
         /// Checks email if it is valid for tooltip display
         public var shouldShowTooltipEmailProcessingClosure: ((String?) -> Bool) = { emailString in
-            guard let emailString = emailString else { return false }
+            guard let emailString else { return false }
             let emailObject = OwnID.CoreSDK.Email(rawValue: emailString)
             return emailObject.isValid
         }
@@ -39,12 +61,13 @@ public extension OwnID.FlowsSDK.RegisterView {
         private var registrationData = RegistrationData()
         private let loginPerformer: LoginPerformer
         var coreViewModel: OwnID.CoreSDK.CoreViewModel!
+        var currentMetadata: OwnID.CoreSDK.MetricLogEntry.CurrentMetricInformation?
         
         let sdkConfigurationName: String
         let webLanguages: OwnID.CoreSDK.Languages
         public var getEmail: (() -> String)!
         
-        public var eventPublisher: OwnID.FlowsSDK.RegistrationPublisher {
+        public var eventPublisher: OwnID.RegistrationPublisher {
             resultPublisher.eraseToAnyPublisher()
         }
         
@@ -52,11 +75,22 @@ public extension OwnID.FlowsSDK.RegisterView {
                     loginPerformer: LoginPerformer,
                     sdkConfigurationName: String,
                     webLanguages: OwnID.CoreSDK.Languages) {
-            OwnID.CoreSDK.logger.logAnalytic(.registerTrackMetric(action: "OwnID Widget is Loaded", context: registrationData.payload?.context))
             self.sdkConfigurationName = sdkConfigurationName
             self.registrationPerformer = registrationPerformer
             self.loginPerformer = loginPerformer
             self.webLanguages = webLanguages
+            Task {
+                // Delay the task by 1 second
+                try? await Task.sleep(nanoseconds: 1_000_000_000)
+                sendMetric()
+            }
+        }
+        
+        private func sendMetric() {
+            if let currentMetadata {
+                OwnID.CoreSDK.shared.currentMetricInformation = currentMetadata
+            }
+            OwnID.CoreSDK.logger.logAnalytic(.registerTrackMetric(action: .loaded, context: registrationData.payload?.context))
         }
         
         public func register(with email: String,
@@ -74,7 +108,9 @@ public extension OwnID.FlowsSDK.RegisterView {
                         handle(error)
                     }
                 } receiveValue: { [unowned self] registrationResult in
-                    OwnID.CoreSDK.logger.logAnalytic(.registerTrackMetric(action: "User is Registered", context: payload.context))
+                    OwnID.CoreSDK.logger.logAnalytic(.registerTrackMetric(action: .registered,
+                                                                          context: payload.context,
+                                                                          authType: registrationResult.authType))
                     resultPublisher.send(.success(.userRegisteredAndLoggedIn(registrationResult: registrationResult.operationResult, authType: registrationResult.authType)))
                     resetDataAndState()
                 }
@@ -96,7 +132,7 @@ public extension OwnID.FlowsSDK.RegisterView {
         
         func skipPasswordTapped(usersEmail: String) {
             if case .ownidCreated = state {
-                OwnID.CoreSDK.logger.logAnalytic(.registerClickMetric(action: "Clicked Skip Password Undo", context: registrationData.payload?.context))
+                OwnID.CoreSDK.logger.logAnalytic(.registerClickMetric(action: .undo, context: registrationData.payload?.context))
                 resetState()
                 resultPublisher.send(.success(.resetTapped))
                 return
@@ -123,6 +159,7 @@ public extension OwnID.FlowsSDK.RegisterView {
         
         func subscribe(to eventsPublisher: OwnID.CoreSDK.EventPublisher, persistingEmail: OwnID.CoreSDK.Email) {
             registrationData.persistedEmail = persistingEmail
+            coreViewModelBag.removeAll()
             eventsPublisher
                 .sink { [unowned self] completion in
                     if case .failure(let error) = completion {
@@ -131,7 +168,7 @@ public extension OwnID.FlowsSDK.RegisterView {
                 } receiveValue: { [unowned self] event in
                     switch event {
                     case .success(let payload):
-                        OwnID.CoreSDK.logger.logFlow(.entry(Self.self))
+                        OwnID.CoreSDK.logger.logFlow(.entry(context: payload.context, Self.self))
                         switch payload.responseType {
                         case .registrationInfo:
                             self.registrationData.payload = payload
@@ -152,7 +189,7 @@ public extension OwnID.FlowsSDK.RegisterView {
                         resultPublisher.send(.success(.loading))
                     }
                 }
-                .store(in: &bag)
+                .store(in: &coreViewModelBag)
         }
         
         /// Used for custom button setup. Custom button sends events through this publisher
@@ -162,7 +199,7 @@ public extension OwnID.FlowsSDK.RegisterView {
             buttonEventPublisher
                 .sink { _ in
                 } receiveValue: { [unowned self] _ in
-                    OwnID.CoreSDK.logger.logAnalytic(.registerClickMetric(action: "Clicked Skip Password", context: registrationData.payload?.context))
+                    OwnID.CoreSDK.logger.logAnalytic(.registerClickMetric(action: .click, context: registrationData.payload?.context))
                         skipPasswordTapped(usersEmail: getEmail())
                 }
                 .store(in: &bag)
@@ -179,7 +216,7 @@ private extension OwnID.FlowsSDK.RegisterView.ViewModel {
                     handle(error)
                 }
             } receiveValue: { [unowned self] registerResult in
-                OwnID.CoreSDK.logger.logAnalytic(.loginTrackMetric(action: "User is Logged in", context: payload.context, authType: payload.authType))
+                OwnID.CoreSDK.logger.logAnalytic(.loginTrackMetric(action: .loggedIn, context: payload.context, authType: payload.authType))
                 state = .ownidCreated
                 resultPublisher.send(.success(.userRegisteredAndLoggedIn(registrationResult: registerResult.operationResult, authType: registerResult.authType)))
                 resetDataAndState()
@@ -188,7 +225,10 @@ private extension OwnID.FlowsSDK.RegisterView.ViewModel {
     }
     
     func handle(_ error: OwnID.CoreSDK.Error) {
-        OwnID.CoreSDK.logger.logFlow(.errorEntry(message: "\(error.localizedDescription)", Self.self))
+        state = .initial
+        OwnID.CoreSDK.logger.logFlow(.errorEntry(context: registrationData.payload?.context,
+                                                 message: "\(error.localizedDescription)",
+                                                 Self.self))
         resultPublisher.send(.failure(error))
     }
 }

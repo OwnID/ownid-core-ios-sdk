@@ -1,6 +1,30 @@
 import Foundation
 
 public extension OwnID.CoreSDK.StandardMetricLogEntry {
+    struct CurrentMetricInformation {
+        public init(widgetTypeMetric: OwnID.CoreSDK.StandardMetricLogEntry.WidgetTypeMetric = WidgetTypeMetric.client,
+                    widgetPositionTypeMetric: OwnID.CoreSDK.StandardMetricLogEntry.WidgetPositionTypeMetric = WidgetPositionTypeMetric.start) {
+            self.widgetTypeMetric = widgetTypeMetric
+            self.widgetPositionTypeMetric = widgetPositionTypeMetric
+        }
+        
+        var widgetTypeMetric = WidgetTypeMetric.client
+        var widgetPositionTypeMetric = WidgetPositionTypeMetric.start
+    }
+    
+    enum WidgetTypeMetric: String {
+        case fingerprint = "button-fingerprint"
+        case faceid = "button-faceid"
+        case client = "client-button"
+    }
+    
+    enum WidgetPositionTypeMetric: String {
+        case start = "start"
+        case end = "end"
+    }
+}
+
+public extension OwnID.CoreSDK.StandardMetricLogEntry {
     enum EventType: String, Encodable {
         case click
         case track
@@ -10,6 +34,33 @@ public extension OwnID.CoreSDK.StandardMetricLogEntry {
     enum EventCategory: String, Encodable {
         case registration
         case login
+    }
+    
+    enum AnalyticActionType: String {
+        case loggedIn = "User is Logged in"
+        case registered = "User is Registered"
+        case loaded = "OwnID Widget is Loaded"
+        case click = "Clicked Skip Password"
+        case undo = "Clicked Skip Password Undo"
+        
+        var isPositionAndTypeAdding: Bool {
+            switch self {
+            case .loggedIn:
+                return false
+                
+            case .registered:
+                return false
+                
+            case .loaded:
+                return true
+                
+            case .click:
+                return true
+                
+            case .undo:
+                return false
+            }
+        }
     }
 }
 
@@ -30,39 +81,57 @@ public extension OwnID.CoreSDK {
 }
 
 public extension OwnID.CoreSDK.MetricLogEntry {
-    private static func authTypeKey(authType: String?) -> [String: String?] {
-        ["authType": authType]
+    private static func metadata(authType: String? = .none, actionType: AnalyticActionType) -> [String: String] {
+        var metadata = [String: String]()
+        if let authType {
+            metadata["authType"] = authType
+        }
+        if actionType.isPositionAndTypeAdding {
+            let current = OwnID.CoreSDK.shared.currentMetricInformation
+            metadata["widgetPosition"] = current.widgetPositionTypeMetric.rawValue
+            metadata["widgetType"] = current.widgetTypeMetric.rawValue
+        }
+        return metadata
     }
     
-    static func registerTrackMetric(action: String,
+    static func registerTrackMetric(action: AnalyticActionType,
                                     context: String? = "no_context",
                                     authType: String? = .none) -> OwnID.CoreSDK.MetricLogEntry {
-        let metric = OwnID.CoreSDK.MetricLogEntry.init(action: action,
+        let metric = OwnID.CoreSDK.MetricLogEntry.init(action: action.rawValue,
                                                        type: .track,
                                                        category: .registration,
                                                        context: context ?? "no_context",
-                                                       metadata: authTypeKey(authType: authType))
+                                                       metadata: metadata(authType: authType, actionType: action))
         return metric
     }
     
-    static func registerClickMetric(action: String, context: String? = "no_context") -> OwnID.CoreSDK.MetricLogEntry {
-        let metric = OwnID.CoreSDK.MetricLogEntry.init(action: action, type: .click, category: .registration, context: context ?? "no_context")
+    static func registerClickMetric(action: AnalyticActionType,
+                                    context: String? = "no_context") -> OwnID.CoreSDK.MetricLogEntry {
+        let metric = OwnID.CoreSDK.MetricLogEntry.init(action: action.rawValue,
+                                                       type: .click,
+                                                       category: .registration,
+                                                       context: context ?? "no_context",
+                                                       metadata: metadata(actionType: action))
         return metric
     }
     
-    static func loginTrackMetric(action: String,
+    static func loginTrackMetric(action: AnalyticActionType,
                                  context: String? = "no_context",
                                  authType: String? = .none) -> OwnID.CoreSDK.MetricLogEntry {
-        let metric = OwnID.CoreSDK.MetricLogEntry.init(action: action,
+        let metric = OwnID.CoreSDK.MetricLogEntry.init(action: action.rawValue,
                                                        type: .track,
                                                        category: .login,
                                                        context: context ?? "no_context",
-                                                       metadata: authTypeKey(authType: authType))
+                                                       metadata: metadata(authType: authType, actionType: action))
         return metric
     }
     
-    static func loginClickMetric(action: String, context: String? = "no_context") -> OwnID.CoreSDK.MetricLogEntry {
-        let metric = OwnID.CoreSDK.MetricLogEntry.init(action: action, type: .click, category: .login, context: context ?? "no_context")
+    static func loginClickMetric(action: AnalyticActionType, context: String? = "no_context") -> OwnID.CoreSDK.MetricLogEntry {
+        let metric = OwnID.CoreSDK.MetricLogEntry.init(action: action.rawValue,
+                                                       type: .click,
+                                                       category: .login,
+                                                       context: context ?? "no_context",
+                                                       metadata: metadata(actionType: action))
         return metric
     }
 }

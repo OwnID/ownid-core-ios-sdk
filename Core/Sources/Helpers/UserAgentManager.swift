@@ -13,6 +13,7 @@ public extension OwnID.CoreSDK {
         func registerUserFacingSDKName(_ userFacingSDK: SDKInformation, underlyingSDKs: [SDKInformation]) {
             var allUnderlyingSDKs: [SDKInformation] = [(OwnID.CoreSDK.sdkName, OwnID.CoreSDK.version)]
             allUnderlyingSDKs.append(contentsOf: underlyingSDKs)
+            self.underlyingSDKs = allUnderlyingSDKs.map { $0.name }
             SDKUserAgent = userAgent(for: userFacingSDK, underlyingSDKs: allUnderlyingSDKs)
         }
         
@@ -20,6 +21,7 @@ public extension OwnID.CoreSDK {
             version
         }
         
+        public lazy var underlyingSDKs = [OwnID.CoreSDK.sdkName]
         public lazy var SDKUserAgent = userAgent(for: (OwnID.CoreSDK.sdkName, OwnID.CoreSDK.version), underlyingSDKs: [])
         
         private func userAgent(for userFacingSDK: SDKInformation, underlyingSDKs: [SDKInformation]) -> String {

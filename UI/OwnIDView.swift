@@ -1,81 +1,36 @@
-import Foundation
 import SwiftUI
+import Combine
 
 public extension OwnID.UISDK {
     struct OwnIDView: View {
-        static func == (lhs: OwnID.UISDK.OwnIDView, rhs: OwnID.UISDK.OwnIDView) -> Bool {
-            lhs.id == rhs.id
-        }
-        private let id = UUID()
         private let visualConfig: VisualLookConfig
         
-        private let imageButtonView: ImageButton
-        private let coordinateSpaceName = String(describing: OwnID.UISDK.ImageButton.self)
+        private let coordinateSpaceName = String(describing: OwnID.UISDK.BorderAndHighlightButton.self)
         @Binding private var isTooltipPresented: Bool
+        @Binding private var isLoading: Bool
+        @Binding private var buttonState: ButtonState
         
         @Environment(\.colorScheme) var colorScheme
         @Environment(\.layoutDirection) var direction
         
+        private let resultPublisher = PassthroughSubject<Void, Never>()
+        
         public var eventPublisher: OwnID.UISDK.EventPubliser {
-            imageButtonView.eventPublisher
+            resultPublisher
+                .debounce(for: .milliseconds(500), scheduler: DispatchQueue.main)
                 .eraseToAnyPublisher()
         }
         
         public init(viewState: Binding<ButtonState>,
                     visualConfig: VisualLookConfig,
-                    shouldShowTooltip: Binding<Bool>) {
+                    shouldShowTooltip: Binding<Bool>,
+                    isLoading: Binding<Bool>) {
             _isTooltipPresented = shouldShowTooltip
-            imageButtonView = ImageButton(viewState: viewState, visualConfig: visualConfig)
+            _isLoading = isLoading
+            _buttonState = viewState
             self.visualConfig = visualConfig
+            OwnID.CoreSDK.shared.currentMetricInformation = visualConfig.convertToCurrentMetric()
         }
-        
-        @ViewBuilder
-        func orView() -> some View {
-            if visualConfig.isOrViewEnabled {
-                OwnID.UISDK.OrView(textSize: visualConfig.orTextSize,
-                                   lineHeight: visualConfig.orLineHeight,
-                                   textColor: visualConfig.orTextColor)
-            }
-        }
-        
-        @ViewBuilder
-        func buttonAndTooltipView() -> some View {
-//            if isTooltipPresented, #available(iOS 16.0, *) {
-//                tooltipView()
-//            } else {
-                buttonView()
-//            }
-        }
-        
-        @ViewBuilder
-        func buttonView() -> some View {
-            imageButtonView
-                .layoutPriority(1)
-//                .popupContainerType(.ownIdButton)
-        }
-        
-//        @ViewBuilder
-//        func tooltipView() -> some View {
-//            TooltipContainerLayout(tooltipPosition: visualConfig.tooltipVisualLookConfig.tooltipPosition) {
-//                TooltipTextAndArrowLayout(tooltipVisualLookConfig: visualConfig.tooltipVisualLookConfig, isRTL: direction == .rightToLeft) {
-//                    RectangleWithTextView(tooltipVisualLookConfig: visualConfig.tooltipVisualLookConfig)
-//                        .popupTextContainerType(.text)
-//                    BeakView(tooltipVisualLookConfig: visualConfig.tooltipVisualLookConfig)
-//                        .rotationEffect(.degrees(visualConfig.tooltipVisualLookConfig.tooltipPosition.beakViewRotationAngle))
-//                        .popupTextContainerType(.beak)
-//                }
-//                .compositingGroup()
-//                .shadow(color: colorScheme == .dark ? .clear : visualConfig.tooltipVisualLookConfig.shadowColor.opacity(0.05), radius: 5, y: 4)
-//                .popupContainerType(.textAndArrowContainer)
-//                Button(action: { isTooltipPresented = false }) {
-//                    Text("")
-//                        .foregroundColor(.clear)
-//                        .frame(maxWidth: .infinity, maxHeight: .infinity)
-//                }
-//                .popupContainerType(.dismissButton)
-//                buttonView()
-//            }
-//        }
         
         public var body: some View {
             HStack(spacing: 8) {
@@ -88,6 +43,82 @@ public extension OwnID.UISDK {
                     buttonAndTooltipView()
                     orView()
                 }
+            }
+        }
+    }
+}
+
+private extension OwnID.UISDK.OwnIDView {
+    @ViewBuilder
+    func orView() -> some View {
+        if visualConfig.orViewConfig.isOrViewEnabled {
+            OwnID.UISDK.OrView(textSize: visualConfig.orViewConfig.orTextSize,
+                               lineHeight: visualConfig.orViewConfig.orLineHeight,
+                               textColor: visualConfig.orViewConfig.orTextColor)
+        }
+    }
+    
+    @ViewBuilder
+    func buttonAndTooltipView() -> some View {
+        if isTooltipPresented, buttonState.isTooltipShown, #available(iOS 16.0, *) {
+            tooltipOnTopOfButtonView()
+        } else {
+            imageView()
+        }
+    }
+    
+    func variantImage() -> some View {
+        let imageName = visualConfig.buttonViewConfig.variant.rawValue
+        let image = Image(imageName, bundle: .resourceBundle)
+            .renderingMode(.template)
+            .foregroundColor(visualConfig.buttonViewConfig.iconColor)
+        return image
+    }
+    
+    @ViewBuilder
+    func buttonContents() -> some View {
+        ZStack {
+            variantImage()
+                .layoutPriority(1)
+                .opacity(isLoading ? 0 : 1)
+            OwnID.UISDK.SpinnerLoaderView(spinnerColor: visualConfig.loaderViewConfig.spinnerColor,
+                                          spinnerBackgroundColor: visualConfig.loaderViewConfig.spinnerBackgroundColor,
+                                          viewBackgroundColor: visualConfig.buttonViewConfig.backgroundColor)
+            .opacity(isLoading ? 1 : 0)
+        }
+    }
+    
+    @ViewBuilder
+    func imageView() -> some View {
+        OwnID.UISDK.BorderAndHighlightButton(viewState: $buttonState,
+                                             buttonViewConfig: visualConfig.buttonViewConfig,
+                                             action: { if !isLoading { resultPublisher.send(()) }},
+                                             content: { buttonContents() })
+        .layoutPriority(1)
+    }
+    
+    @ViewBuilder
+    func tooltipOnTopOfButtonView() -> some View {
+        if #available(iOS 16.0, *) {
+            OwnID.UISDK.TooltipContainerLayout(tooltipPosition: visualConfig.tooltipVisualLookConfig.tooltipPosition) {
+                OwnID.UISDK.TooltipTextAndArrowLayout(tooltipVisualLookConfig: visualConfig.tooltipVisualLookConfig, isRTL: direction == .rightToLeft) {
+                    OwnID.UISDK.RectangleWithTextView(tooltipVisualLookConfig: visualConfig.tooltipVisualLookConfig)
+                        .popupTextContainerType(.text)
+                    OwnID.UISDK.BeakView(tooltipVisualLookConfig: visualConfig.tooltipVisualLookConfig)
+                        .rotationEffect(.degrees(visualConfig.tooltipVisualLookConfig.tooltipPosition.beakViewRotationAngle))
+                        .popupTextContainerType(.beak)
+                }
+                .compositingGroup()
+                .shadow(color: colorScheme == .dark ? .clear : visualConfig.tooltipVisualLookConfig.shadowColor.opacity(0.05), radius: 5, y: 4)
+                .popupContainerType(.textAndArrowContainer)
+                Button(action: { isTooltipPresented = false }) {
+                    Text("")
+                        .foregroundColor(.clear)
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                }
+                .popupContainerType(.dismissButton)
+                imageView()
+                    .popupContainerType(.ownIdButton)
             }
         }
     }

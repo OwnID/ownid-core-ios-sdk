@@ -28,13 +28,9 @@ public protocol ExtensionLoggerProtocol {
 extension OwnID.CoreSDK {
     final class Logger: LoggerProtocol {
         static let shared = Logger()
-        private init() {
-#if DEBUG
-            print("🪪🆔🪢 instanceID: \(LoggerValues.instanceID.uuidString)")
-#endif
-        }
+        private init() { }
         private var sessionRequestSequenceNumber = 0
-        var logLevel: LogLevel = .information
+        var logLevel: LogLevel = .error
         
         private var extendedLoggers = [ExtensionLoggerProtocol]()
         

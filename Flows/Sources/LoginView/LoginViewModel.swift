@@ -9,6 +9,28 @@ extension OwnID.FlowsSDK.LoginView.ViewModel {
     }
 }
 
+extension OwnID.FlowsSDK.LoginView.ViewModel.State {
+    var buttonState: OwnID.UISDK.ButtonState {
+        switch self {
+        case .initial, .coreVM:
+            return .enabled
+            
+        case .loggedIn:
+            return .activated
+        }
+    }
+    
+    var isLoading: Bool {
+        switch self {
+        case .coreVM:
+            return true
+            
+        case .loggedIn, .initial:
+            return false
+        }
+    }
+}
+
 public extension OwnID.FlowsSDK.LoginView {
      final class ViewModel: ObservableObject {
         @Published private(set) var state = State.initial
@@ -20,23 +42,35 @@ public extension OwnID.FlowsSDK.LoginView {
         private let loginPerformer: LoginPerformer
         private var payload: OwnID.CoreSDK.Payload?
         var coreViewModel: OwnID.CoreSDK.CoreViewModel!
+        var currentMetadata: OwnID.CoreSDK.MetricLogEntry.CurrentMetricInformation?
         
         let sdkConfigurationName: String
         let webLanguages: OwnID.CoreSDK.Languages
         public var getEmail: (() -> String)!
         
-        public var eventPublisher: OwnID.FlowsSDK.LoginPublisher {
+        public var eventPublisher: OwnID.LoginPublisher {
             resultPublisher.eraseToAnyPublisher()
         }
         
         public init(loginPerformer: LoginPerformer,
                     sdkConfigurationName: String,
                     webLanguages: OwnID.CoreSDK.Languages) {
-            OwnID.CoreSDK.logger.logAnalytic(.loginTrackMetric(action: "OwnID Widget is Loaded", context: payload?.context))
             self.sdkConfigurationName = sdkConfigurationName
             self.loginPerformer = loginPerformer
             self.webLanguages = webLanguages
+            Task {
+                // Delay the task by 1 second
+                try? await Task.sleep(nanoseconds: 1_000_000_000)
+                sendMetric()
+            }
         }
+         
+         private func sendMetric() {
+             if let currentMetadata {
+                 OwnID.CoreSDK.shared.currentMetricInformation = currentMetadata
+             }
+             OwnID.CoreSDK.logger.logAnalytic(.loginTrackMetric(action: .loaded, context: payload?.context))
+         }
         
         /// Reset visual state and any possible data from web flow
         public func resetDataAndState() {
@@ -70,6 +104,7 @@ public extension OwnID.FlowsSDK.LoginView {
         }
         
         func subscribe(to eventsPublisher: OwnID.CoreSDK.EventPublisher) {
+            coreViewModelBag.removeAll()
             eventsPublisher
                 .sink { [unowned self] completion in
                     if case .failure(let error) = completion {
@@ -97,7 +132,7 @@ public extension OwnID.FlowsSDK.LoginView {
             buttonEventPublisher
                 .sink { _ in
                 } receiveValue: { [unowned self] event in
-                    OwnID.CoreSDK.logger.logAnalytic(.loginClickMetric(action: "Clicked Skip Password", context: payload?.context))
+                    OwnID.CoreSDK.logger.logAnalytic(.loginClickMetric(action: .click, context: payload?.context))
                         skipPasswordTapped(usersEmail: getEmail())
                 }
                 .store(in: &bag)
@@ -115,7 +150,9 @@ private extension OwnID.FlowsSDK.LoginView.ViewModel {
                     handle(error)
                 }
             } receiveValue: { [unowned self] loginResult in
-                OwnID.CoreSDK.logger.logAnalytic(.loginTrackMetric(action: "User is Logged in", context: payload.context, authType: payload.authType))
+                OwnID.CoreSDK.logger.logAnalytic(.loginTrackMetric(action: .loggedIn,
+                                                                   context: payload.context,
+                                                                   authType: payload.authType))
                 state = .loggedIn
                 resultPublisher.send(.success(.loggedIn(loginResult: loginResult.operationResult, authType: loginResult.authType)))
                 resetDataAndState()
@@ -124,7 +161,10 @@ private extension OwnID.FlowsSDK.LoginView.ViewModel {
     }
     
     func handle(_ error: OwnID.CoreSDK.Error) {
-        OwnID.CoreSDK.logger.logFlow(.errorEntry(message: "\(error.localizedDescription)", Self.self))
+        state = .initial
+        OwnID.CoreSDK.logger.logFlow(.errorEntry(context: payload?.context,
+                                                 message: "\(error.localizedDescription)",
+                                                 Self.self))
         resetDataAndState()
         resultPublisher.send(.failure(error))
     }
