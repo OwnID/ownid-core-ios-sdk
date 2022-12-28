@@ -40,7 +40,7 @@ extension OwnID.CoreSDK.AccountManager {
         case didFinishPasswordLogin
         case didFinishAppleLogin
         case credintialsNotFoundOrCanlelledByUser
-        case error(error: Error)
+        case error(error: OwnID.CoreSDK.Error)
     }
 }
 
@@ -107,6 +107,7 @@ extension OwnID.CoreSDK {
         
         @available(iOS 16.0, *)
         func beginAutoFillAssistedPasskeySignIn() {
+            #warning("fatal error")
             fatalError("For now autofill is not supported right here, we need some other way to enable this as we need new challenge for this")
             currentAuthController?.cancel()
             
@@ -140,46 +141,35 @@ extension OwnID.CoreSDK {
         }
         
         @available(iOS 16.0, *)
-        func authorizationController(controller: ASAuthorizationController, didCompleteWithAuthorization authorization: ASAuthorization) {
+        func authorizationController(controller: ASAuthorizationController,
+                                     didCompleteWithAuthorization authorization: ASAuthorization) {
             switch authorization.credential {
             case let credentialRegistration as ASAuthorizationPlatformPublicKeyCredentialRegistration:
-                print("A new passkey was registered")
                 // Verify the attestationObject and clientDataJSON with your service.
                 // The attestationObject contains the user's new public key to store and use for subsequent sign-ins.
-                let attestationObject = credentialRegistration.rawAttestationObject?.base64urlEncodedString()
+                guard let attestationObject = credentialRegistration.rawAttestationObject?.base64urlEncodedString()
+                else {
+                    store.send(.error(error: .authorizationManagerDataMissing))
+                    return
+                }
+                
                 let clientDataJSON = credentialRegistration.rawClientDataJSON.base64urlEncodedString()
                 let credentialID = credentialRegistration.credentialID.base64urlEncodedString()
-                print("attestationObject: \(attestationObject!)")
-                
-                print("clientDataJSON Base64: \(clientDataJSON)")
-                //            print("clientDataJSON: \(String(data: clientDataJSON, encoding: .utf8)!)")
-                //            let json = try! JSONSerialization.jsonObject(with: clientDataJSON, options: []) as! [String: String]
-                //            print("clientDataJSON challenge: \(json["challenge"]!.urlSafeBase64Decoded()!)")
-                
-                print("credentialID: \(credentialID)")
                 
                 // After the server verifies the registration and creates the user account, sign in the user with the new account.
                 
                 let payload = OwnID.CoreSDK.Fido2RegisterPayload(credentialId: credentialID,
                                                                  clientDataJSON: clientDataJSON,
-                                                                 attestationObject: attestationObject ?? "")
+                                                                 attestationObject: attestationObject)
                 store.send(.didFinishRegistration(origin: domain, fido2RegisterPayload: payload))
                 
             case let credentialAssertion as ASAuthorizationPlatformPublicKeyCredentialAssertion:
-                print("A passkey was used to sign in")
                 // Verify the below signature and clientDataJSON with your service for the given userID.
                 let signature = credentialAssertion.signature.base64urlEncodedString()
                 let rawAuthenticatorData = credentialAssertion.rawAuthenticatorData.base64urlEncodedString()
                 let clientDataJSON = credentialAssertion.rawClientDataJSON
                 let userID = credentialAssertion.userID
                 let credentialID = credentialAssertion.credentialID.base64urlEncodedString()
-                print("signature: \(signature)")
-                print("rawAuthenticatorData: \(rawAuthenticatorData)")
-                print("clientDataJSON Base64: \(clientDataJSON.base64urlEncodedString())")
-                print("clientDataJSON: \(String(data: clientDataJSON, encoding: .utf8)!)")
-                print("userID base 64: \(userID!.base64urlEncodedString())")
-                print("userID: \(String(data: userID ?? Data(), encoding: .utf8))")
-                print("credentialID: \(credentialID)")
                 
                 let payload = OwnID.CoreSDK.Fido2LoginPayload(credentialId: credentialID,
                                                               clientDataJSON: clientDataJSON.base64urlEncodedString(),
@@ -188,29 +178,23 @@ extension OwnID.CoreSDK {
                 store.send(.didFinishLogin(origin: domain, fido2LoginPayload: payload))
                 
             case let passwordCredential as ASPasswordCredential:
-                print("A password was provided")
                 // Verify the userName and password with your service.
                 let userName = passwordCredential.user
                 let password = passwordCredential.password
-                print("userName: \(userName)")
-                print("password: \(password)")
                 
                 // After the server verifies the userName and password, sign in the user.
                 store.send(.didFinishPasswordLogin)
                 
             case let appleIDCredential as ASAuthorizationAppleIDCredential:
+                #warning("remove all prints")
                 print("A ASAuthorizationAppleIDCredential was provided")
                 let userIdentifier = appleIDCredential.user
                 let fullName = appleIDCredential.fullName
                 let email = appleIDCredential.email
-                
-                print("userIdentifier: \(userIdentifier)")
-                print("fullName: \(String(describing: fullName))")
-                print("email: \(email ?? "empty email")")
                 store.send(.didFinishAppleLogin)
                 
             default:
-                fatalError("Received unknown authorization type.")
+                store.send(.error(error: .authorizationManagerUnknownAuthType))
             }
             
             isPerformingModalReqest = false
@@ -219,7 +203,7 @@ extension OwnID.CoreSDK {
         func authorizationController(controller: ASAuthorizationController, didCompleteWithError error: Swift.Error) {
             guard let authorizationError = error as? ASAuthorizationError else {
                 isPerformingModalReqest = false
-                store.send(.error(error: error))
+                store.send(.error(error: .authorizationManagerGeneralError(error: error)))
                 return
             }
             
@@ -231,10 +215,8 @@ extension OwnID.CoreSDK {
                     store.send(.credintialsNotFoundOrCanlelledByUser)
                 }
             } else {
-                // Another ASAuthorization error.
-                // Note: The userInfo dictionary contains useful information.
-                print("Error: \((error as NSError).userInfo)")
-                store.send(.error(error: error))
+                #warning("add to each error loggin with context")
+                store.send(.error(error: .authorizationManagerAuthError(userInfo: (error as NSError).userInfo)))
             }
             
             isPerformingModalReqest = false
@@ -260,7 +242,7 @@ extension OwnID.CoreSDK.AccountManager {
         case .credintialsNotFoundOrCanlelledByUser:
             return []
             
-        case .error(error: let error):
+        case .error:
             return []
         }
     }
