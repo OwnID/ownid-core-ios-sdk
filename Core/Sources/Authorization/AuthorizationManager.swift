@@ -35,7 +35,7 @@ extension OwnID.CoreSDK.AccountManager {
     }
     
     enum Action {
-        case didFinishRegistration
+        case didFinishRegistration(origin: String, fido2LoginPayload: OwnID.CoreSDK.Fido2RegisterPayload)
         case didFinishLogin(origin: String, fido2LoginPayload: OwnID.CoreSDK.Fido2LoginPayload)
         case didFinishPasswordLogin
         case didFinishAppleLogin
@@ -159,7 +159,12 @@ extension OwnID.CoreSDK {
                 print("credentialID: \(credentialID)")
                 
                 // After the server verifies the registration and creates the user account, sign in the user with the new account.
-                store.send(.didFinishRegistration)
+                
+                let payload = OwnID.CoreSDK.Fido2RegisterPayload(credentialId: credentialID,
+                                                              clientDataJSON: clientDataJSON.base64urlEncodedString(),
+                                                              authenticatorData: rawAuthenticatorData,
+                                                              signature: signature)
+                store.send(.didFinishRegistration(origin: domain, fido2LoginPayload: payload))
                 
             case let credentialAssertion as ASAuthorizationPlatformPublicKeyCredentialAssertion:
                 print("A passkey was used to sign in")

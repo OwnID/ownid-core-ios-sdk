@@ -13,12 +13,6 @@ public extension OwnID.CoreSDK.Auth {
         let sessionVerifier: OwnID.CoreSDK.SessionVerifier
         let fido2Payload: OwnID.CoreSDK.Fido2LoginPayload
     }
-//
-//    struct Fido2PayloadRegister: Encodable {
-//        var credentialId: String
-//        var clientDataJSON: String
-//        var attestationObject: String
-//    }
 }
 
 public extension OwnID.CoreSDK.Auth {

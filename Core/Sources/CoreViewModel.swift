@@ -154,8 +154,8 @@ extension OwnID.CoreSDK {
             
         case let .authManager(authManagerAction):
             switch authManagerAction {
-            case .didFinishRegistration:
-                break
+            case .didFinishRegistration(let origin, let fido2LoginPayload):
+                return [sendAuthRequest(session: state.session, origin: origin, fido2LoginPayload: fido2LoginPayload)]
                 
             case .didFinishLogin(let origin, let fido2LoginPayload):
                 return [sendAuthRequest(session: state.session, origin: origin, fido2LoginPayload: fido2LoginPayload)]
