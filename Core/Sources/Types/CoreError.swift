@@ -1,4 +1,5 @@
 import Foundation
+import AuthenticationServices
 
 /// Designed to be used in plugin SDKs and emit all errors in single format.
 public protocol PluginError: Swift.Error { }
@@ -30,6 +31,11 @@ public extension OwnID.CoreSDK {
         case statusRequestResponseContextMismatch
         case serverError(serverError: ServerError)
         case plugin(error: PluginError)
+        
+        case authorizationManagerGeneralError(error: Swift.Error)
+        case authorizationManagerAuthError(userInfo: [String : Any])
+        case authorizationManagerDataMissing
+        case authorizationManagerUnknownAuthType
     }
 }
 
@@ -81,6 +87,12 @@ extension OwnID.CoreSDK.Error: LocalizedError {
             
         case .redirectParameterFromURLCancelledOpeningSDK:
             return "In redirection URL \"redirect=false\" has been found and opening of SDK cancelled. This is most likely due to app has been opened in screensets mode."
+            
+        case .authorizationManagerAuthError,
+                .authorizationManagerGeneralError,
+                .authorizationManagerDataMissing,
+                .authorizationManagerUnknownAuthType:
+            return "Error while performing action"
         }
     }
 }
