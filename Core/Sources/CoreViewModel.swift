@@ -154,11 +154,11 @@ extension OwnID.CoreSDK {
             
         case let .authManager(authManagerAction):
             switch authManagerAction {
-            case .didFinishRegistration(let origin, let fido2LoginPayload):
-                return [sendAuthRequest(session: state.session, origin: origin, fido2LoginPayload: fido2LoginPayload)]
+            case .didFinishRegistration(let origin, let fido2RegisterPayload):
+                return [sendAuthRequest(session: state.session, origin: origin, fido2Payload: fido2RegisterPayload)]
                 
             case .didFinishLogin(let origin, let fido2LoginPayload):
-                return [sendAuthRequest(session: state.session, origin: origin, fido2LoginPayload: fido2LoginPayload)]
+                return [sendAuthRequest(session: state.session, origin: origin, fido2Payload: fido2LoginPayload)]
                 
             case .didFinishPasswordLogin:
                 break
@@ -222,8 +222,8 @@ extension OwnID.CoreSDK {
 //            .eraseToEffect()
 //    }
     
-    static func sendAuthRequest(session: APISessionProtocol, origin: String, fido2LoginPayload: OwnID.CoreSDK.Fido2LoginPayload) -> Effect<ViewModelAction> {
-        session.performAuthRequest(origin: origin, fido2LoginPayload: fido2LoginPayload)
+    static func sendAuthRequest(session: APISessionProtocol, origin: String, fido2Payload: Encodable) -> Effect<ViewModelAction> {
+        session.performAuthRequest(origin: origin, fido2Payload: fido2Payload)
             .receive(on: DispatchQueue.main)
             .map { ViewModelAction.authRequestLoaded(response: $0) }
             .catch { Just(ViewModelAction.error($0)) }

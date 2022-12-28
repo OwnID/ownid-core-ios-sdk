@@ -7,11 +7,33 @@ public extension OwnID.CoreSDK {
 
 public extension OwnID.CoreSDK.Auth {
     struct RequestBody: Encodable {
+        public func encode(to encoder: Encoder) throws {
+            var container = encoder.container(keyedBy: CodingKeys.self)
+            try container.encode(type, forKey: .type)
+            try container.encode(context, forKey: .context)
+            try container.encode(nonce, forKey: .nonce)
+            try container.encode(sessionVerifier, forKey: .sessionVerifier)
+            if let fido2Payload = fido2Payload as? OwnID.CoreSDK.Fido2LoginPayload {
+                try container.encode(fido2Payload, forKey: .fido2Payload)
+            }
+            if let fido2Payload = fido2Payload as? OwnID.CoreSDK.Fido2RegisterPayload {
+                try container.encode(fido2Payload, forKey: .fido2Payload)
+            }
+        }
+        
         let type: OwnID.CoreSDK.RequestType
         let context: OwnID.CoreSDK.Context
         let nonce: OwnID.CoreSDK.Nonce
         let sessionVerifier: OwnID.CoreSDK.SessionVerifier
-        let fido2Payload: OwnID.CoreSDK.Fido2LoginPayload
+        let fido2Payload: Encodable
+        
+        enum CodingKeys: CodingKey {
+            case type
+            case context
+            case nonce
+            case sessionVerifier
+            case fido2Payload
+        }
     }
 }
 
@@ -31,7 +53,7 @@ extension OwnID.CoreSDK.Auth {
         let context: OwnID.CoreSDK.Context
         let nonce: OwnID.CoreSDK.Nonce
         let sessionVerifier: OwnID.CoreSDK.SessionVerifier
-        var fido2LoginPayload: OwnID.CoreSDK.Fido2LoginPayload
+        var fido2LoginPayload: Encodable
         let webLanguages: OwnID.CoreSDK.Languages
         let origin: String
         
@@ -41,7 +63,7 @@ extension OwnID.CoreSDK.Auth {
                       nonce: OwnID.CoreSDK.Nonce,
                       origin: String,
                       sessionVerifier: OwnID.CoreSDK.SessionVerifier,
-                      fido2LoginPayload: OwnID.CoreSDK.Fido2LoginPayload,
+                      fido2LoginPayload: Encodable,
                       webLanguages: OwnID.CoreSDK.Languages,
                       provider: APIProvider = URLSession.shared) {
             self.type = type
@@ -71,6 +93,7 @@ extension OwnID.CoreSDK.Auth {
                     request.httpBody = body
                     request.addUserAgent()
                     request.addAPIVersion()
+                    #warning("hardcoded origin")
                     request.add(origin: "https://passwordless.staging.ownid.com")
                     let languagesString = webLanguages.rawValue.joined(separator: ",")
                     let field = "Accept-Language"

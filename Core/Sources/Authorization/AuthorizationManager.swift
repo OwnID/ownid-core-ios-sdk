@@ -35,7 +35,7 @@ extension OwnID.CoreSDK.AccountManager {
     }
     
     enum Action {
-        case didFinishRegistration(origin: String, fido2LoginPayload: OwnID.CoreSDK.Fido2RegisterPayload)
+        case didFinishRegistration(origin: String, fido2RegisterPayload: OwnID.CoreSDK.Fido2RegisterPayload)
         case didFinishLogin(origin: String, fido2LoginPayload: OwnID.CoreSDK.Fido2LoginPayload)
         case didFinishPasswordLogin
         case didFinishAppleLogin
@@ -147,11 +147,11 @@ extension OwnID.CoreSDK {
                 // Verify the attestationObject and clientDataJSON with your service.
                 // The attestationObject contains the user's new public key to store and use for subsequent sign-ins.
                 let attestationObject = credentialRegistration.rawAttestationObject?.base64urlEncodedString()
-                let clientDataJSON = credentialRegistration.rawClientDataJSON
+                let clientDataJSON = credentialRegistration.rawClientDataJSON.base64urlEncodedString()
                 let credentialID = credentialRegistration.credentialID.base64urlEncodedString()
                 print("attestationObject: \(attestationObject!)")
                 
-                print("clientDataJSON Base64: \(clientDataJSON.base64urlEncodedString())")
+                print("clientDataJSON Base64: \(clientDataJSON)")
                 //            print("clientDataJSON: \(String(data: clientDataJSON, encoding: .utf8)!)")
                 //            let json = try! JSONSerialization.jsonObject(with: clientDataJSON, options: []) as! [String: String]
                 //            print("clientDataJSON challenge: \(json["challenge"]!.urlSafeBase64Decoded()!)")
@@ -161,10 +161,9 @@ extension OwnID.CoreSDK {
                 // After the server verifies the registration and creates the user account, sign in the user with the new account.
                 
                 let payload = OwnID.CoreSDK.Fido2RegisterPayload(credentialId: credentialID,
-                                                              clientDataJSON: clientDataJSON.base64urlEncodedString(),
-                                                              authenticatorData: rawAuthenticatorData,
-                                                              signature: signature)
-                store.send(.didFinishRegistration(origin: domain, fido2LoginPayload: payload))
+                                                                 clientDataJSON: clientDataJSON,
+                                                                 attestationObject: attestationObject ?? "")
+                store.send(.didFinishRegistration(origin: domain, fido2RegisterPayload: payload))
                 
             case let credentialAssertion as ASAuthorizationPlatformPublicKeyCredentialAssertion:
                 print("A passkey was used to sign in")

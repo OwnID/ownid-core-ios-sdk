@@ -9,7 +9,7 @@ public protocol APISessionProtocol {
                             token: OwnID.CoreSDK.JWTToken?) -> AnyPublisher<OwnID.CoreSDK.Init.Response, OwnID.CoreSDK.Error>
     func performStatusRequest() -> AnyPublisher<OwnID.CoreSDK.Payload, OwnID.CoreSDK.Error>
     func performSettingsRequest(loginID: String, origin: String) -> AnyPublisher<OwnID.CoreSDK.Setting.Response, OwnID.CoreSDK.Error>
-    func performAuthRequest(origin: String, fido2LoginPayload: OwnID.CoreSDK.Fido2LoginPayload) -> AnyPublisher<OwnID.CoreSDK.Auth.Response, OwnID.CoreSDK.Error>
+    func performAuthRequest(origin: String, fido2Payload: Encodable) -> AnyPublisher<OwnID.CoreSDK.Auth.Response, OwnID.CoreSDK.Error>
 }
 
 public extension OwnID.CoreSDK {
@@ -73,14 +73,14 @@ extension OwnID.CoreSDK.APISession {
         .eraseToAnyPublisher()
     }
     
-    public func performAuthRequest(origin: String, fido2LoginPayload: OwnID.CoreSDK.Fido2LoginPayload) -> AnyPublisher<OwnID.CoreSDK.Auth.Response, OwnID.CoreSDK.Error> {
+    public func performAuthRequest(origin: String, fido2Payload: Encodable) -> AnyPublisher<OwnID.CoreSDK.Auth.Response, OwnID.CoreSDK.Error> {
         OwnID.CoreSDK.Auth.Request(type: type,
                                    url: authURL,
                                    context: context,
                                    nonce: nonce,
                                    origin: origin,
                                    sessionVerifier: sessionVerifier,
-                                   fido2LoginPayload: fido2LoginPayload,
+                                   fido2LoginPayload: fido2Payload,
                                    webLanguages: webLanguages)
         .perform()
         .eraseToAnyPublisher()
