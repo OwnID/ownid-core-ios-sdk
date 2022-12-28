@@ -93,8 +93,7 @@ extension OwnID.CoreSDK.Auth {
                     request.httpBody = body
                     request.addUserAgent()
                     request.addAPIVersion()
-                    #warning("hardcoded origin")
-                    request.add(origin: "https://passwordless.staging.ownid.com")
+                    request.add(origin: origin)
                     let languagesString = webLanguages.rawValue.joined(separator: ",")
                     let field = "Accept-Language"
                     request.addValue(languagesString, forHTTPHeaderField: field)
