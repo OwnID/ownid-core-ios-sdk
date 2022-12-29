@@ -51,9 +51,9 @@ extension OwnID.CoreSDK {
     final class AccountManager: NSObject {
         let authenticationAnchor = ASPresentationAnchor()
         
-        private var store: Store<State, Action>
-        private var domain = "" //"ownid.com"//"passwordless.staging.ownid.com"
-        private var challenge = ""
+        private let store: Store<State, Action>
+        private let domain: String
+        private let challenge: String
         
         private var challengeData: Data {
             challenge.data(using: .utf8)!
@@ -64,7 +64,7 @@ extension OwnID.CoreSDK {
         
         init(store: Store<State, Action>, domain: String, challenge: String) {
             self.store = store
-            self.domain = domain
+            self.domain = domain //"ownid.com"//"passwordless.staging.ownid.com"
             self.challenge = challenge
         }
         
@@ -83,7 +83,8 @@ extension OwnID.CoreSDK {
             let appleIDRequest = appleIDProvider.createRequest()
             appleIDRequest.requestedScopes = [.fullName, .email]
             
-            let authController = ASAuthorizationController(authorizationRequests: [ assertionRequest, passwordRequest, appleIDRequest ] )
+            let requests = [ assertionRequest, passwordRequest, appleIDRequest ]
+            let authController = ASAuthorizationController(authorizationRequests: requests)
             authController.delegate = self
             authController.presentationContextProvider = self
             
