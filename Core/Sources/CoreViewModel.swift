@@ -30,6 +30,8 @@ extension OwnID.CoreSDK.ViewModelAction: CustomDebugStringConvertible {
             return "authRequestLoaded"
         case .authManager(let action):
             return "authManagerAction \(action.debugDescription)"
+        case .authManagerCancelled:
+            return "authManagerCancelled"
         }
     }
 }
@@ -46,6 +48,7 @@ extension OwnID.CoreSDK {
         case error(OwnID.CoreSDK.Error)
         case sendStatusRequest
         case browserCancelled
+        case authManagerCancelled
         case statusRequestLoaded(response: OwnID.CoreSDK.Payload)
         case browserVM(BrowserOpenerViewModel.Action)
         case authManager(AccountManager.Action)
@@ -90,7 +93,7 @@ extension OwnID.CoreSDK {
             let config: ClientConfiguration? = .init(logLevel: 1, passkeys: true, rpId: "passwordless.staging.ownid.com", passkeysAutofill: false)
             if passkeysPossibilityAvailable,
                #available(iOS 16, *),
-               let config = config,//state.clientConfiguration,
+               let config = state.clientConfiguration,
                let domain = config.rpId,
                config.passkeys {
                 let authManager = OwnID.CoreSDK.AccountManager(store: state.authManagerStore,
@@ -138,6 +141,10 @@ extension OwnID.CoreSDK {
             state.browserViewModel = .none
             return []
             
+        case .authManagerCancelled:
+            state.authManager = .none
+            return []
+            
         case .statusRequestLoaded:
             return []
             
@@ -168,7 +175,7 @@ extension OwnID.CoreSDK {
                 break
                 
             case .credintialsNotFoundOrCanlelledByUser:
-                break
+                return [Just(.authManagerCancelled).eraseToEffect()]
                 
             case .error(let error):
                 return [Just(.error(error)).eraseToEffect()]
@@ -332,7 +339,8 @@ extension OwnID.CoreSDK {
                         flowsFinished()
                         resultPublisher.send(completion: .failure(error))
                         
-                    case .browserCancelled:
+                    case .browserCancelled,
+                            .authManagerCancelled:
                         internalStatesChange.append(String(describing: action))
                         flowsFinished()
                         resultPublisher.send(.cancelled)
