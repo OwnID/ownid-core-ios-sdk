@@ -94,9 +94,7 @@ extension OwnID.CoreSDK.Auth {
                     request.addUserAgent()
                     request.addAPIVersion()
                     request.add(origin: origin)
-                    let languagesString = webLanguages.rawValue.joined(separator: ",")
-                    let field = "Accept-Language"
-                    request.addValue(languagesString, forHTTPHeaderField: field)
+                    request.add(webLanguages: webLanguages)
                     return request
                 }
                 .eraseToAnyPublisher()
@@ -106,6 +104,7 @@ extension OwnID.CoreSDK.Auth {
                 }
                 .eraseToAnyPublisher()
                 .tryMap { response -> Data in
+                    #warning("make special errors & ADD CONTEXT?")
                     guard !response.data.isEmpty else { throw OwnID.CoreSDK.Error.initRequestResponseIsEmpty }
                     return response.data
                 }

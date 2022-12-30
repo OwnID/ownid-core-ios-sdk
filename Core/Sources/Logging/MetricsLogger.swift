@@ -9,6 +9,7 @@ public extension OwnID.CoreSDK {
         
         private lazy var logQueue: OperationQueue = {
             var queue = OperationQueue()
+            queue.qualityOfService = .utility
             queue.name = "\(MetricsLogger.self) \(OperationQueue.self)"
             queue.maxConcurrentOperationCount = 1
             return queue
@@ -26,8 +27,10 @@ public extension OwnID.CoreSDK {
 
 private extension OwnID.CoreSDK.MetricsLogger {
     func sendEvent(for entry: OwnID.CoreSDK.StandardMetricLogEntry) {
+        #warning("is it crashes?")
         logQueue.addBarrierBlock {
             Just(entry)
+                .subscribe(on: self.logQueue)
                 .map { entry -> OwnID.CoreSDK.StandardMetricLogEntry in
                     entry.metadata[OwnID.CoreSDK.LoggerValues.correlationIDKey] = OwnID.CoreSDK.LoggerValues.instanceID.uuidString
                     return entry
@@ -45,6 +48,7 @@ private extension OwnID.CoreSDK.MetricsLogger {
                     provider.apiResponse(for: request).mapError { $0 as Swift.Error }
                 }
                 .eraseToAnyPublisher()
+                .ignoreOutput()
                 .sink(receiveCompletion: { _ in }, receiveValue: { _ in })
                 .store(in: &self.bag)
         }

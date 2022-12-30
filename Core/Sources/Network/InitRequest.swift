@@ -59,9 +59,7 @@ extension OwnID.CoreSDK.Init {
                     request.httpBody = body
                     request.addUserAgent()
                     request.addAPIVersion()
-                    let languagesString = webLanguages.rawValue.joined(separator: ",")
-                    let field = "Accept-Language"
-                    request.addValue(languagesString, forHTTPHeaderField: field)
+                    request.add(webLanguages: webLanguages)
                     return request
                 }
                 .eraseToAnyPublisher()

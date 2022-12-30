@@ -10,6 +10,11 @@ extension URLRequest {
     }
     
     public mutating func add(origin: String) {
-        addValue(origin, forHTTPHeaderField: "OriginUrl")
+        addValue(origin, forHTTPHeaderField: "Origin")
+    }
+    
+    public mutating func add(webLanguages: OwnID.CoreSDK.Languages) {
+        let languagesString = webLanguages.rawValue.joined(separator: ",")
+        addValue(languagesString, forHTTPHeaderField: "Accept-Language")
     }
 }
