@@ -10,6 +10,10 @@ extension URLRequest {
     }
     
     public mutating func add(origin: String) {
+        var origin = origin
+        if !origin.contains("https://"), !origin.contains("http://"), !origin.contains("http") {
+            origin.append("https://")
+        }
         addValue(origin, forHTTPHeaderField: "Origin")
     }
     

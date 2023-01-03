@@ -39,9 +39,8 @@ public extension OwnID.CoreSDK.Auth {
 
 public extension OwnID.CoreSDK.Auth {
     struct Response: Decodable {
-        public let url: String
-        public let context: String?
-        public let nonce: String?
+        public let status: String
+        public let context: String
     }
 }
 
@@ -98,7 +97,8 @@ extension OwnID.CoreSDK.Auth {
                     return request
                 }
                 .eraseToAnyPublisher()
-                .flatMap { [self] request -> AnyPublisher<URLSession.DataTaskPublisher.Output, OwnID.CoreSDK.Error> in provider.apiResponse(for: request)
+                .flatMap { [self] request -> AnyPublisher<URLSession.DataTaskPublisher.Output, OwnID.CoreSDK.Error> in
+                    provider.apiResponse(for: request)
                     .mapError { OwnID.CoreSDK.Error.initRequestNetworkFailed(underlying: $0) }
                     .eraseToAnyPublisher()
                 }

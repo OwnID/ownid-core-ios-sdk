@@ -77,7 +77,10 @@ extension OwnID.CoreSDK {
             if let email = state.email, !email.rawValue.isEmpty, !email.isValid {
                 return errorEffect(.emailIsInvalid)
             }
-            return [sendInitialRequest(type: state.type, token: state.token, session: state.session)]
+            return [sendInitialRequest(type: state.type,
+                                       token: state.token,
+                                       session: state.session,
+                                       origin: state.clientConfiguration?.rpId)]
             
         case let .initialRequestLoaded(response):
             guard let context = response.context else { return errorEffect(.contextIsMissing) }
@@ -117,7 +120,7 @@ extension OwnID.CoreSDK {
             }
             
         case .authRequestLoaded:
-            return [sendStatusRequest(session: state.session)]
+            return [sendStatusRequest(session: state.session, origin: state.clientConfiguration?.rpId)]
             
 //        case let .settingsRequestLoaded(response):
 //            if let challengeType = response.challengeType, challengeType == .login, response.credId == .none {
@@ -135,7 +138,7 @@ extension OwnID.CoreSDK {
             
         case .sendStatusRequest:
             state.browserViewModel = .none
-            return [sendStatusRequest(session: state.session)]
+            return [sendStatusRequest(session: state.session, origin: state.clientConfiguration?.rpId)]
             
         case .browserCancelled:
             state.browserViewModel = .none
@@ -214,8 +217,9 @@ extension OwnID.CoreSDK {
     
     static func sendInitialRequest(type: OwnID.CoreSDK.RequestType,
                                    token: OwnID.CoreSDK.JWTToken?,
-                                   session: APISessionProtocol) -> Effect<ViewModelAction> {
-        session.performInitRequest(type: type, token: token)
+                                   session: APISessionProtocol,
+                                   origin: String?) -> Effect<ViewModelAction> {
+        session.performInitRequest(type: type, token: token, origin: origin)
             .receive(on: DispatchQueue.main)
             .map { ViewModelAction.initialRequestLoaded(response: $0) }
             .catch { Just(ViewModelAction.error($0)) }
@@ -238,8 +242,8 @@ extension OwnID.CoreSDK {
             .eraseToEffect()
     }
     
-    static func sendStatusRequest(session: APISessionProtocol) -> Effect<ViewModelAction> {
-        session.performStatusRequest()
+    static func sendStatusRequest(session: APISessionProtocol, origin: String?) -> Effect<ViewModelAction> {
+        session.performStatusRequest(origin: origin)
             .map { ViewModelAction.statusRequestLoaded(response: $0) }
             .catch { Just(ViewModelAction.error($0)) }
             .eraseToEffect()

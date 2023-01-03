@@ -10,7 +10,9 @@ public extension OwnID.CoreSDK.Init {
         let sessionChallenge: OwnID.CoreSDK.SessionChallenge
         let type: OwnID.CoreSDK.RequestType
         let data: String?
-//        let originUrl = "https://demo.dev.ownid.com"
+        #warning("do we need this here?")
+        let qr = true
+        let originUrl: String?
     }
 }
 
@@ -30,16 +32,19 @@ extension OwnID.CoreSDK.Init {
         let sessionChallenge: OwnID.CoreSDK.SessionChallenge
         let token: OwnID.CoreSDK.JWTToken?
         let webLanguages: OwnID.CoreSDK.Languages
+        let origin: String?
         
         internal init(type: OwnID.CoreSDK.RequestType,
                       url: OwnID.CoreSDK.ServerURL,
                       sessionChallenge: OwnID.CoreSDK.SessionChallenge,
                       token: OwnID.CoreSDK.JWTToken?,
+                      origin: String?,
                       webLanguages: OwnID.CoreSDK.Languages,
                       provider: APIProvider = URLSession.shared) {
             self.type = type
             self.url = url
             self.sessionChallenge = sessionChallenge
+            self.origin = origin
             self.provider = provider
             self.token = token
             self.webLanguages = webLanguages
@@ -48,7 +53,8 @@ extension OwnID.CoreSDK.Init {
         func perform() -> AnyPublisher<Response, OwnID.CoreSDK.Error> {
             Just(RequestBody(sessionChallenge: sessionChallenge,
                              type: type,
-                             data: token?.jwtString))
+                             data: token?.jwtString,
+                             originUrl: "https://" + (origin ?? "")))
                 .setFailureType(to: Error.self)
                 .eraseToAnyPublisher()
                 .encode(encoder: JSONEncoder())
@@ -59,6 +65,9 @@ extension OwnID.CoreSDK.Init {
                     request.httpBody = body
                     request.addUserAgent()
                     request.addAPIVersion()
+                    if let origin {
+                        request.add(origin: origin)
+                    }
                     request.add(webLanguages: webLanguages)
                     return request
                 }

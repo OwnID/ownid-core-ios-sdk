@@ -6,8 +6,9 @@ public protocol APISessionProtocol {
     var context: OwnID.CoreSDK.Context! { get }
     
     func performInitRequest(type: OwnID.CoreSDK.RequestType,
-                            token: OwnID.CoreSDK.JWTToken?) -> AnyPublisher<OwnID.CoreSDK.Init.Response, OwnID.CoreSDK.Error>
-    func performStatusRequest() -> AnyPublisher<OwnID.CoreSDK.Payload, OwnID.CoreSDK.Error>
+                            token: OwnID.CoreSDK.JWTToken?,
+                            origin: String?) -> AnyPublisher<OwnID.CoreSDK.Init.Response, OwnID.CoreSDK.Error>
+    func performStatusRequest(origin: String?) -> AnyPublisher<OwnID.CoreSDK.Payload, OwnID.CoreSDK.Error>
     func performSettingsRequest(loginID: String, origin: String) -> AnyPublisher<OwnID.CoreSDK.Setting.Response, OwnID.CoreSDK.Error>
     func performAuthRequest(origin: String, fido2Payload: Encodable) -> AnyPublisher<OwnID.CoreSDK.Auth.Response, OwnID.CoreSDK.Error>
 }
@@ -45,11 +46,13 @@ public extension OwnID.CoreSDK {
 
 extension OwnID.CoreSDK.APISession {
     public func performInitRequest(type: OwnID.CoreSDK.RequestType,
-                                   token: OwnID.CoreSDK.JWTToken?) -> AnyPublisher<OwnID.CoreSDK.Init.Response, OwnID.CoreSDK.Error> {
+                                   token: OwnID.CoreSDK.JWTToken?,
+                                   origin: String?) -> AnyPublisher<OwnID.CoreSDK.Init.Response, OwnID.CoreSDK.Error> {
         OwnID.CoreSDK.Init.Request(type: type,
                                    url: serverURL,
                                    sessionChallenge: sessionChallenge,
                                    token: token,
+                                   origin: origin,
                                    webLanguages: webLanguages)
             .perform()
             .map { [unowned self] response in
@@ -86,12 +89,13 @@ extension OwnID.CoreSDK.APISession {
         .eraseToAnyPublisher()
     }
     
-    public func performStatusRequest() -> AnyPublisher<OwnID.CoreSDK.Payload, OwnID.CoreSDK.Error> {
+    public func performStatusRequest(origin: String?) -> AnyPublisher<OwnID.CoreSDK.Payload, OwnID.CoreSDK.Error> {
         OwnID.CoreSDK.Status.Request(url: statusURL,
                                      context: context,
                                      nonce: nonce,
                                      sessionVerifier: sessionVerifier,
                                      type: type,
+                                     origin: origin,
                                      webLanguages: webLanguages)
             .perform()
             .handleEvents(receiveOutput: { payload in
