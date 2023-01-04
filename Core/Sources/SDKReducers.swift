@@ -21,7 +21,9 @@ extension OwnID.CoreSDK {
             state.configurations[userFacingSDK.name] = configuration
             let numberOfConfigurations = state.configurations.count
             return [
-                fetchClientConfig(serverURL: configuration.ownIDServerURL, numberOfConfigurations: numberOfConfigurations),
+                fetchClientConfig(serverURL: configuration.ownIDServerURL,
+                                  numberOfConfigurations: numberOfConfigurations,
+                                  configurationLoadedPublisher: state.configurationLoadedPublisher),
                 startLoggerIfNeeded(numberOfConfigurations: numberOfConfigurations,
                                     userFacingSDK: userFacingSDK,
                                     underlyingSDKs: underlyingSDKs,
@@ -108,8 +110,10 @@ extension OwnID.CoreSDK {
         }
     }
     
-    #warning("what if number of configurations is greater than 1? 2 configs is possible")
-    private static func fetchClientConfig(serverURL: ServerURL, numberOfConfigurations: Int) -> Effect<SDKAction> {
+#warning("what if number of configurations is greater than 1? 2 configs is possible")
+    private static func fetchClientConfig(serverURL: ServerURL,
+                                          numberOfConfigurations: Int,
+                                          configurationLoadedPublisher: PassthroughSubject<OwnID.CoreSDK.ClientConfiguration, Never>) -> Effect<SDKAction> {
         guard numberOfConfigurations == 1 else { return .fireAndForget { } }
         let url = serverURL.appendingPathComponent("client-config")
         let effect = Deferred { URLSession.shared.dataTaskPublisher(for: url)
@@ -120,6 +124,7 @@ extension OwnID.CoreSDK {
                 .replaceError(with: ClientConfiguration(logLevel: 4, passkeys: false, rpId: .none, passkeysAutofill: false))
                 .flatMap { clientConfiguration -> AnyPublisher<SDKAction, Never> in
                     Logger.shared.logLevel = LogLevel(rawValue: clientConfiguration.logLevel) ?? .error
+                    configurationLoadedPublisher.send(clientConfiguration)
                     return Just(.save(clientCongfig: clientConfiguration)).eraseToAnyPublisher()
                 }
                 .eraseToAnyPublisher()

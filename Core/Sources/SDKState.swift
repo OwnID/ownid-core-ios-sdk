@@ -1,10 +1,12 @@
 import Foundation
+import Combine
 
 extension OwnID.CoreSDK {
     struct SDKState: LoggingEnabled {
         var isLoggingEnabled = false
         var configurations = [String: OwnID.CoreSDK.Configuration]()
         var clientConfiguration: ClientConfiguration?
+        let configurationLoadedPublisher: PassthroughSubject<ClientConfiguration, Never>
     }
 }
 

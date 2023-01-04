@@ -29,6 +29,10 @@ extension OwnID.CoreSDK.ViewModelAction: CustomDebugStringConvertible {
             return "authManagerAction \(action.debugDescription)"
         case .authManagerCancelled:
             return "authManagerCancelled"
+        case .addToStateConfig:
+            return "addToStateConfig"
+        case .addToStateShouldStartInitRequest:
+            return "addToStateShouldStartInitRequest"
         }
     }
 }
@@ -37,6 +41,8 @@ extension OwnID.CoreSDK {
     enum ViewModelAction {
         case addToState(browserViewModelStore: Store<BrowserOpenerViewModel.State, BrowserOpenerViewModel.Action>,
                         authStore: Store<AccountManager.State, AccountManager.Action>)
+        case addToStateConfig(clientConfig: ClientConfiguration)
+        case addToStateShouldStartInitRequest(value: Bool)
         case sendInitialRequest
         case initialRequestLoaded(response: OwnID.CoreSDK.Init.Response)
         case authRequestLoaded(response: OwnID.CoreSDK.Auth.Response)
@@ -52,7 +58,7 @@ extension OwnID.CoreSDK {
     
     struct ViewModelState: LoggingEnabled {
         let isLoggingEnabled: Bool
-        let clientConfiguration: ClientConfiguration?
+        var clientConfiguration: ClientConfiguration?
         
         let sdkConfigurationName: String
         let session: APISessionProtocol
@@ -65,6 +71,8 @@ extension OwnID.CoreSDK {
         
         var authManagerStore: Store<AccountManager.State, AccountManager.Action>!
         var authManager: AccountManager?
+        
+        var shouldStartFlowOnConfigurationReceive = true
     }
     
     static func viewModelReducer(state: inout ViewModelState, action: ViewModelAction) -> [Effect<ViewModelAction>] {
@@ -164,6 +172,16 @@ extension OwnID.CoreSDK {
             case .error(let error):
                 return [Just(.error(error)).eraseToEffect()]
             }
+            
+        case let .addToStateConfig(clientConfig):
+            state.clientConfiguration = clientConfig
+            let initialEffect = [Just(OwnID.CoreSDK.ViewModelAction.sendInitialRequest).eraseToEffect()]
+            let effect = state.shouldStartFlowOnConfigurationReceive ? initialEffect : []
+            return effect + [Just(.addToStateShouldStartInitRequest(value: false)).eraseToEffect()]
+            
+        case let .addToStateShouldStartInitRequest(value):
+            state.shouldStartFlowOnConfigurationReceive = value
+            return []
         }
     }
     
@@ -260,7 +278,12 @@ extension OwnID.CoreSDK {
         }
         
         public func start() {
-            store.send(.sendInitialRequest)
+            if (store.value.clientConfiguration != nil) {
+                store.send(.sendInitialRequest)
+            } else {
+                store.send(.addToStateShouldStartInitRequest(value: true))
+                resultPublisher.send(.loading)
+            }
         }
         
         func subscribeToURL(publisher: AnyPublisher<Void, OwnID.CoreSDK.Error>) {
@@ -271,6 +294,14 @@ extension OwnID.CoreSDK {
                     }
                 } receiveValue: { [unowned self] url in
                     store.send(.sendStatusRequest)
+                }
+                .store(in: &bag)
+        }
+        
+        func subscribeToConfiguration(publisher: AnyPublisher<ClientConfiguration, Never>) {
+            publisher
+                .sink { [unowned self] clientConfiguration in
+                    self.store.send(.addToStateConfig(clientConfig: clientConfiguration))
                 }
                 .store(in: &bag)
         }
@@ -299,7 +330,9 @@ extension OwnID.CoreSDK {
                             .browserURLCreated,
                             .sendStatusRequest,
                             .addToState,
+                            .addToStateConfig,
                             .authRequestLoaded,
+                            .addToStateShouldStartInitRequest,
                             .authManager,
                             .browserVM:
                         internalStatesChange.append(String(describing: action))

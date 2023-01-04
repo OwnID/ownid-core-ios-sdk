@@ -27,10 +27,11 @@ public extension OwnID {
         @ObservedObject var store: Store<SDKState, SDKAction>
         
         private let urlPublisher = PassthroughSubject<Void, Error>()
+        private let configurationLoadedPublisher = PassthroughSubject<ClientConfiguration, Never>()
         
         private init() {
             let store = Store(
-                initialValue: SDKState(),
+                initialValue: SDKState(configurationLoadedPublisher: configurationLoadedPublisher),
                 reducer: with(
                     OwnID.CoreSDK.coreReducer,
                     logging
@@ -63,7 +64,11 @@ public extension OwnID {
             coreViewModel.subscribeToURL(publisher: urlPublisher.eraseToAnyPublisher())
         }
         
-        public func configure(appID: String, redirectionURL: String, userFacingSDK: SDKInformation, underlyingSDKs: [SDKInformation], environment: String? = .none) {
+        public func configure(appID: String,
+                              redirectionURL: String,
+                              userFacingSDK: SDKInformation,
+                              underlyingSDKs: [SDKInformation],
+                              environment: String? = .none) {
             store.send(.configure(appID: appID,
                                   redirectionURL: redirectionURL,
                                   userFacingSDK: userFacingSDK,
@@ -98,6 +103,7 @@ public extension OwnID {
                                           isLoggingEnabled: store.value.isLoggingEnabled,
                                           clientConfiguration: store.value.clientConfiguration)
             viewModel.subscribeToURL(publisher: urlPublisher.eraseToAnyPublisher())
+            viewModel.subscribeToConfiguration(publisher: configurationLoadedPublisher.eraseToAnyPublisher())
             return viewModel
         }
         
@@ -119,6 +125,7 @@ public extension OwnID {
                                           isLoggingEnabled: store.value.isLoggingEnabled,
                                           clientConfiguration: store.value.clientConfiguration)
             viewModel.subscribeToURL(publisher: urlPublisher.eraseToAnyPublisher())
+            viewModel.subscribeToConfiguration(publisher: configurationLoadedPublisher.eraseToAnyPublisher())
             return viewModel
         }
         
