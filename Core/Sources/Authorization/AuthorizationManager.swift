@@ -171,6 +171,8 @@ extension OwnID.CoreSDK {
                 store.send(.didFinishLogin(origin: domain, fido2LoginPayload: payload))
                 
             default:
+                #warning("move to other layer of SDKs")
+                OwnID.CoreSDK.logger.logCore(.errorEntry(context: challenge, message: "\(OwnID.CoreSDK.Error.authorizationManagerUnknownAuthType) \(authorization.credential)", Self.self))
                 store.send(.error(error: .authorizationManagerUnknownAuthType))
             }
             
