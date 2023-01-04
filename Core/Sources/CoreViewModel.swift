@@ -88,8 +88,6 @@ extension OwnID.CoreSDK {
                 authContext.canEvaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, error: nil)
                 passkeysPossibilityAvailable = authContext.biometryType != .none
             }
-            #warning("hardcoded values")
-            let config: ClientConfiguration? = .init(logLevel: 1, passkeys: true, rpId: "passwordless.staging.ownid.com", passkeysAutofill: false)
             if passkeysPossibilityAvailable,
                #available(iOS 16, *),
                let config = state.clientConfiguration,
