@@ -22,6 +22,11 @@ public extension OwnID.CoreSDK {
         case initRequestResponseDecodeFailed(underlying: Swift.Error)
         case initRequestResponseIsEmpty
         
+        case authRequestResponseIsEmpty
+        case authRequestResponseDecodeFailed(underlying: Swift.Error)
+        case authRequestNetworkFailed(underlying: URLError)
+        case authRequestBodyEncodeFailed(underlying: Swift.Error)
+        
         case statusRequestNetworkFailed(underlying: URLError)
         case statusRequestBodyEncodeFailed(underlying: Swift.Error)
         case statusRequestResponseDecodeFailed(underlying: Swift.Error)
@@ -57,15 +62,19 @@ extension OwnID.CoreSDK.Error: LocalizedError {
              .initRequestResponseIsEmpty,
              .statusRequestBodyEncodeFailed,
              .statusRequestResponseDecodeFailed,
+             .authRequestResponseDecodeFailed,
              .statusRequestResponseIsEmpty,
+             .authRequestResponseIsEmpty,
              .statusRequestFail,
              .statusRequestResponseContextMismatch,
              .tokenDataIsMissing,
+             .authRequestBodyEncodeFailed,
              .statusRequestTypeIsMissing:
             return "Error while performing request"
             
         case .initRequestNetworkFailed(let underlying),
-                .statusRequestNetworkFailed(let underlying):
+                .statusRequestNetworkFailed(let underlying),
+                .authRequestNetworkFailed(let underlying):
             return underlying.localizedDescription
 
         case .plugin(error: let error):

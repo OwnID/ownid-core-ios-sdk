@@ -4,7 +4,7 @@ import Combine
 public extension OwnID.CoreSDK {
     enum Setting {}
 }
-
+#warning("remove as we do not use it?")
 public extension OwnID.CoreSDK.Setting {
     struct RequestBody: Encodable {
         let loginID: String

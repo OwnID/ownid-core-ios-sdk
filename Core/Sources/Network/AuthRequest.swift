@@ -88,7 +88,7 @@ extension OwnID.CoreSDK.Auth {
                 .setFailureType(to: Error.self)
                 .eraseToAnyPublisher()
                 .encode(encoder: JSONEncoder())
-                .mapError { OwnID.CoreSDK.Error.initRequestBodyEncodeFailed(underlying: $0) }
+                .mapError { OwnID.CoreSDK.Error.authRequestBodyEncodeFailed(underlying: $0) }
                 .map { [self] body -> URLRequest in
                     var request = URLRequest(url: url)
                     request.httpMethod = "POST"
@@ -102,24 +102,23 @@ extension OwnID.CoreSDK.Auth {
                 .eraseToAnyPublisher()
                 .flatMap { [self] request -> AnyPublisher<URLSession.DataTaskPublisher.Output, OwnID.CoreSDK.Error> in
                     provider.apiResponse(for: request)
-                    .mapError { OwnID.CoreSDK.Error.initRequestNetworkFailed(underlying: $0) }
+                    .mapError { OwnID.CoreSDK.Error.authRequestNetworkFailed(underlying: $0) }
                     .eraseToAnyPublisher()
                 }
                 .eraseToAnyPublisher()
                 .tryMap { response -> Data in
-                    #warning("make special errors & ADD CONTEXT?")
-                    guard !response.data.isEmpty else { throw OwnID.CoreSDK.Error.initRequestResponseIsEmpty }
+                    guard !response.data.isEmpty else { throw OwnID.CoreSDK.Error.authRequestResponseIsEmpty }
                     return response.data
                 }
                 .eraseToAnyPublisher()
                 .decode(type: Response.self, decoder: JSONDecoder())
-                .map { decoded in
-                    OwnID.CoreSDK.logger.logCore(.entry(context: decoded.context ?? "no_context", message: "Finished request", Self.self))
+                .map { [weak self] decoded in
+                    OwnID.CoreSDK.logger.logCore(.entry(context: self?.context, message: "Finished request", Self.self))
                     return decoded
                 }
-                .mapError { initError in
-                    OwnID.CoreSDK.logger.logCore(.errorEntry(message: "\(initError.localizedDescription)", Self.self))
-                    guard let error = initError as? OwnID.CoreSDK.Error else { return OwnID.CoreSDK.Error.initRequestResponseDecodeFailed(underlying: initError) }
+                .mapError { [weak self] topError in
+                    OwnID.CoreSDK.logger.logCore(.errorEntry(context: self?.context, message: "\(topError.localizedDescription)", Self.self))
+                    guard let error = topError as? OwnID.CoreSDK.Error else { return OwnID.CoreSDK.Error.authRequestResponseDecodeFailed(underlying: topError) }
                     return error
                 }
                 .eraseToAnyPublisher()
