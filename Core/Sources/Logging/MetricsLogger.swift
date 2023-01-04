@@ -27,7 +27,6 @@ public extension OwnID.CoreSDK {
 
 private extension OwnID.CoreSDK.MetricsLogger {
     func sendEvent(for entry: OwnID.CoreSDK.StandardMetricLogEntry) {
-        #warning("is it crashes?")
         logQueue.addBarrierBlock {
             Just(entry)
                 .subscribe(on: self.logQueue)

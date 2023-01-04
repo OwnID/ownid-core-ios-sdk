@@ -4,7 +4,6 @@ import AuthenticationServices
 /// Designed to be used in plugin SDKs and emit all errors in single format.
 public protocol PluginError: Swift.Error { }
 
-#warning("return context where possible with error?")
 public extension OwnID.CoreSDK {
     enum Error: Swift.Error {
         case unsecuredHttpPassed
