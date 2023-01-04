@@ -24,8 +24,6 @@ extension OwnID.CoreSDK.ViewModelAction: CustomDebugStringConvertible {
         case .browserVM:
             return "browserVM"
             #warning("remove comments")
-//        case .settingsRequestLoaded:
-//            return "settingsRequestLoaded"
         case .authRequestLoaded:
             return "authRequestLoaded"
         case .authManager(let action):
@@ -42,7 +40,6 @@ extension OwnID.CoreSDK {
                         authStore: Store<AccountManager.State, AccountManager.Action>)
         case sendInitialRequest
         case initialRequestLoaded(response: OwnID.CoreSDK.Init.Response)
-//        case settingsRequestLoaded(response: OwnID.CoreSDK.Setting.Response)
         case authRequestLoaded(response: OwnID.CoreSDK.Auth.Response)
         case browserURLCreated(URL)
         case error(OwnID.CoreSDK.Error)
@@ -121,12 +118,6 @@ extension OwnID.CoreSDK {
             
         case .authRequestLoaded:
             return [sendStatusRequest(session: state.session, origin: state.clientConfiguration?.rpId)]
-            
-//        case let .settingsRequestLoaded(response):
-//            if let challengeType = response.challengeType, challengeType == .login, response.credId == .none {
-//                fatalError("throw error here or do some other flow in this case, as for login passkeys we need cred id returned from BE and make sure that BE can do login")
-//            }
-//            return [sendAuthRequest(session: state.session)]
             
         case .error:
             return []
@@ -217,14 +208,6 @@ extension OwnID.CoreSDK {
             .catch { Just(ViewModelAction.error($0)) }
             .eraseToEffect()
     }
-    
-//    static func sendSettingsRequest(session: APISessionProtocol, loginID: String, origin: String) -> Effect<ViewModelAction> {
-//        session.performSettingsRequest(loginID: loginID, origin: origin)
-//            .receive(on: DispatchQueue.main)
-//            .map { ViewModelAction.settingsRequestLoaded(response: $0) }
-//            .catch { Just(ViewModelAction.error($0)) }
-//            .eraseToEffect()
-//    }
     
     static func sendAuthRequest(session: APISessionProtocol, origin: String, fido2Payload: Encodable) -> Effect<ViewModelAction> {
         session.performAuthRequest(origin: origin, fido2Payload: fido2Payload)
@@ -319,7 +302,6 @@ extension OwnID.CoreSDK {
                             .browserURLCreated,
                             .sendStatusRequest,
                             .addToState,
-//                            .settingsRequestLoaded,
                             .authRequestLoaded,
                             .authManager,
                             .browserVM:

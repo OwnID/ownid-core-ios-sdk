@@ -9,7 +9,6 @@ public protocol APISessionProtocol {
                             token: OwnID.CoreSDK.JWTToken?,
                             origin: String?) -> AnyPublisher<OwnID.CoreSDK.Init.Response, OwnID.CoreSDK.Error>
     func performStatusRequest(origin: String?) -> AnyPublisher<OwnID.CoreSDK.Payload, OwnID.CoreSDK.Error>
-    func performSettingsRequest(loginID: String, origin: String) -> AnyPublisher<OwnID.CoreSDK.Setting.Response, OwnID.CoreSDK.Error>
     func performAuthRequest(origin: String, fido2Payload: Encodable) -> AnyPublisher<OwnID.CoreSDK.Auth.Response, OwnID.CoreSDK.Error>
 }
 
@@ -63,17 +62,6 @@ extension OwnID.CoreSDK.APISession {
                 return response
             }
             .eraseToAnyPublisher()
-    }
-    
-    public func performSettingsRequest(loginID: String, origin: String) -> AnyPublisher<OwnID.CoreSDK.Setting.Response, OwnID.CoreSDK.Error> {
-        OwnID.CoreSDK.Setting.Request(url: settingsURL,
-                                      loginID: loginID,
-                                      origin: origin,
-                                      context: context,
-                                      nonce: nonce,
-                                      webLanguages: webLanguages)
-        .perform()
-        .eraseToAnyPublisher()
     }
     
     public func performAuthRequest(origin: String, fido2Payload: Encodable) -> AnyPublisher<OwnID.CoreSDK.Auth.Response, OwnID.CoreSDK.Error> {
