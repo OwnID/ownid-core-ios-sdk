@@ -10,12 +10,6 @@ extension OwnID.CoreSDK.AccountManager.Action: CustomDebugStringConvertible {
         case .didFinishLogin:
             return "didFinishLogin"
             
-        case .didFinishPasswordLogin:
-            return "didFinishPasswordLogin"
-            
-        case .didFinishAppleLogin:
-            return "didFinishAppleLogin"
-            
         case .credintialsNotFoundOrCanlelledByUser:
             return "credintialsNotFoundOrCanlelledByUser"
             
@@ -37,8 +31,6 @@ extension OwnID.CoreSDK.AccountManager {
     enum Action {
         case didFinishRegistration(origin: String, fido2RegisterPayload: OwnID.CoreSDK.Fido2RegisterPayload)
         case didFinishLogin(origin: String, fido2LoginPayload: OwnID.CoreSDK.Fido2LoginPayload)
-        case didFinishPasswordLogin
-        case didFinishAppleLogin
         case credintialsNotFoundOrCanlelledByUser
         case error(error: OwnID.CoreSDK.Error)
     }
@@ -178,22 +170,6 @@ extension OwnID.CoreSDK {
                                                               signature: signature)
                 store.send(.didFinishLogin(origin: domain, fido2LoginPayload: payload))
                 
-            case let passwordCredential as ASPasswordCredential:
-                // Verify the userName and password with your service.
-                let userName = passwordCredential.user
-                let password = passwordCredential.password
-                
-                // After the server verifies the userName and password, sign in the user.
-                store.send(.didFinishPasswordLogin)
-                
-            case let appleIDCredential as ASAuthorizationAppleIDCredential:
-                #warning("remove all prints")
-                print("A ASAuthorizationAppleIDCredential was provided")
-                let userIdentifier = appleIDCredential.user
-                let fullName = appleIDCredential.fullName
-                let email = appleIDCredential.email
-                store.send(.didFinishAppleLogin)
-                
             default:
                 store.send(.error(error: .authorizationManagerUnknownAuthType))
             }
@@ -204,6 +180,7 @@ extension OwnID.CoreSDK {
         func authorizationController(controller: ASAuthorizationController, didCompleteWithError error: Swift.Error) {
             guard let authorizationError = error as? ASAuthorizationError else {
                 isPerformingModalReqest = false
+                OwnID.CoreSDK.logger.logCore(.errorEntry(context: challenge, message: error.localizedDescription, Self.self))
                 store.send(.error(error: .authorizationManagerGeneralError(error: error)))
                 return
             }
@@ -216,7 +193,7 @@ extension OwnID.CoreSDK {
                     store.send(.credintialsNotFoundOrCanlelledByUser)
                 }
             } else {
-                #warning("add to each error loggin with context")
+                OwnID.CoreSDK.logger.logCore(.errorEntry(context: challenge, message: "\((error as NSError).userInfo)", Self.self))
                 store.send(.error(error: .authorizationManagerAuthError(userInfo: (error as NSError).userInfo)))
             }
             
@@ -232,12 +209,6 @@ extension OwnID.CoreSDK.AccountManager {
             return []
             
         case .didFinishLogin:
-            return []
-            
-        case .didFinishPasswordLogin:
-            return []
-            
-        case .didFinishAppleLogin:
             return []
             
         case .credintialsNotFoundOrCanlelledByUser:

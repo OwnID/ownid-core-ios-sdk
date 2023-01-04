@@ -163,7 +163,6 @@ extension OwnID.CoreSDK {
             }
             
         case let .authManager(authManagerAction):
-            #warning("handle all cases⁉️")
             switch authManagerAction {
             case .didFinishRegistration(let origin, let fido2RegisterPayload):
                 return [sendAuthRequest(session: state.session, origin: origin, fido2Payload: fido2RegisterPayload)]
@@ -171,19 +170,12 @@ extension OwnID.CoreSDK {
             case .didFinishLogin(let origin, let fido2LoginPayload):
                 return [sendAuthRequest(session: state.session, origin: origin, fido2Payload: fido2LoginPayload)]
                 
-            case .didFinishPasswordLogin:
-                break
-                
-            case .didFinishAppleLogin:
-                break
-                
             case .credintialsNotFoundOrCanlelledByUser:
                 return [Just(.authManagerCancelled).eraseToEffect()]
                 
             case .error(let error):
                 return [Just(.error(error)).eraseToEffect()]
             }
-            return []
         }
     }
     
