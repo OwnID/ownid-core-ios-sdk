@@ -26,6 +26,12 @@ public extension OwnID.CoreSDK {
         case authRequestNetworkFailed(underlying: URLError)
         case authRequestBodyEncodeFailed(underlying: Swift.Error)
         
+        case settingRequestResponseNotCompliantResponse
+        case settingRequestResponseIsEmpty
+        case settingRequestResponseDecodeFailed(underlying: Swift.Error)
+        case settingRequestNetworkFailed(underlying: URLError)
+        case settingRequestBodyEncodeFailed(underlying: Swift.Error)
+        
         case statusRequestNetworkFailed(underlying: URLError)
         case statusRequestBodyEncodeFailed(underlying: Swift.Error)
         case statusRequestResponseDecodeFailed(underlying: Swift.Error)
@@ -57,18 +63,23 @@ extension OwnID.CoreSDK.Error: LocalizedError {
             return "The email address is badly formatted"
             
         case .initRequestBodyEncodeFailed,
-             .initRequestResponseDecodeFailed,
-             .initRequestResponseIsEmpty,
-             .statusRequestBodyEncodeFailed,
-             .statusRequestResponseDecodeFailed,
-             .authRequestResponseDecodeFailed,
-             .statusRequestResponseIsEmpty,
-             .authRequestResponseIsEmpty,
-             .statusRequestFail,
-             .statusRequestResponseContextMismatch,
-             .tokenDataIsMissing,
-             .authRequestBodyEncodeFailed,
-             .statusRequestTypeIsMissing:
+                .settingRequestResponseIsEmpty,
+                .initRequestResponseDecodeFailed,
+                .initRequestResponseIsEmpty,
+                .statusRequestBodyEncodeFailed,
+                .statusRequestResponseDecodeFailed,
+                .authRequestResponseDecodeFailed,
+                .statusRequestResponseIsEmpty,
+                .authRequestResponseIsEmpty,
+                .statusRequestFail,
+                .statusRequestResponseContextMismatch,
+                .tokenDataIsMissing,
+                .authRequestBodyEncodeFailed,
+                .statusRequestTypeIsMissing,
+                .settingRequestResponseDecodeFailed,
+                .settingRequestNetworkFailed,
+                .settingRequestBodyEncodeFailed,
+                .settingRequestResponseNotCompliantResponse:
             return "Error while performing request"
             
         case .initRequestNetworkFailed(let underlying),

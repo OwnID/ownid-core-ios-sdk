@@ -2,41 +2,6 @@ import Foundation
 import Combine
 import LocalAuthentication
 
-extension OwnID.CoreSDK.ViewModelAction: CustomDebugStringConvertible {
-    var debugDescription: String {
-        switch self {
-        case .addToState:
-            return "addToState"
-        case .sendInitialRequest:
-            return "sendInitialRequest"
-        case .initialRequestLoaded:
-            return "initialRequestLoaded"
-        case .browserURLCreated:
-            return "browserURLCreated"
-        case .error(let error):
-            return "error \(error.localizedDescription)"
-        case .sendStatusRequest:
-            return "sendStatusRequest"
-        case .browserCancelled:
-            return "browserCancelled"
-        case .statusRequestLoaded:
-            return "statusRequestLoaded"
-        case .browserVM:
-            return "browserVM"
-        case .authRequestLoaded:
-            return "authRequestLoaded"
-        case .authManager(let action):
-            return "authManagerAction \(action.debugDescription)"
-        case .authManagerCancelled:
-            return "authManagerCancelled"
-        case .addToStateConfig:
-            return "addToStateConfig"
-        case .addToStateShouldStartInitRequest:
-            return "addToStateShouldStartInitRequest"
-        }
-    }
-}
-
 extension OwnID.CoreSDK {
     enum ViewModelAction {
         case addToState(browserViewModelStore: Store<BrowserOpenerViewModel.State, BrowserOpenerViewModel.Action>,
@@ -45,6 +10,7 @@ extension OwnID.CoreSDK {
         case addToStateShouldStartInitRequest(value: Bool)
         case sendInitialRequest
         case initialRequestLoaded(response: OwnID.CoreSDK.Init.Response)
+        case settingsRequestLoaded(response: OwnID.CoreSDK.Setting.Response, origin: String, fido2Payload: Encodable)
         case authRequestLoaded(response: OwnID.CoreSDK.Auth.Response)
         case browserURLCreated(URL)
         case error(OwnID.CoreSDK.Error)
@@ -124,6 +90,12 @@ extension OwnID.CoreSDK {
         case .authRequestLoaded:
             return [sendStatusRequest(session: state.session, origin: state.clientConfiguration?.rpId)]
             
+        case let .settingsRequestLoaded(response, origin, fido2RegisterPayload):
+            if let challengeType = response.challengeType, challengeType != .register {
+                return [Just(.error(.settingRequestResponseNotCompliantResponse)).eraseToEffect()]
+            }
+            return [sendAuthRequest(session: state.session, origin: origin, fido2Payload: fido2RegisterPayload)]
+            
         case .error:
             return []
             
@@ -161,7 +133,13 @@ extension OwnID.CoreSDK {
         case let .authManager(authManagerAction):
             switch authManagerAction {
             case .didFinishRegistration(let origin, let fido2RegisterPayload):
-                return [sendAuthRequest(session: state.session, origin: origin, fido2Payload: fido2RegisterPayload)]
+                guard let email = state.email else {
+                    return [Just(.error(.emailIsInvalid)).eraseToEffect()]
+                }
+                return [sendSettingsRequest(session: state.session,
+                                            loginID: email.rawValue,
+                                            origin: origin,
+                                            fido2Payload: fido2RegisterPayload)]
                 
             case .didFinishLogin(let origin, let fido2LoginPayload):
                 return [sendAuthRequest(session: state.session, origin: origin, fido2Payload: fido2LoginPayload)]
@@ -220,6 +198,14 @@ extension OwnID.CoreSDK {
         session.performInitRequest(type: type, token: token, origin: origin)
             .receive(on: DispatchQueue.main)
             .map { ViewModelAction.initialRequestLoaded(response: $0) }
+            .catch { Just(ViewModelAction.error($0)) }
+            .eraseToEffect()
+    }
+    
+    static func sendSettingsRequest(session: APISessionProtocol, loginID: String, origin: String, fido2Payload: Encodable) -> Effect<ViewModelAction> {
+        session.performSettingsRequest(loginID: loginID, origin: origin)
+            .receive(on: DispatchQueue.main)
+            .map { ViewModelAction.settingsRequestLoaded(response: $0, origin: origin, fido2Payload: fido2Payload) }
             .catch { Just(ViewModelAction.error($0)) }
             .eraseToEffect()
     }
@@ -331,6 +317,7 @@ extension OwnID.CoreSDK {
                             .sendStatusRequest,
                             .addToState,
                             .addToStateConfig,
+                            .settingsRequestLoaded,
                             .authRequestLoaded,
                             .addToStateShouldStartInitRequest,
                             .authManager,
