@@ -12,7 +12,10 @@ public extension OwnID.CoreSDK.Auth {
             try container.encode(type, forKey: .type)
             try container.encode(context, forKey: .context)
             try container.encode(nonce, forKey: .nonce)
-            try container.encode(sessionVerifier, forKey: .sessionVerifier)
+            #warning("do we really need this here or server is just has bug? https://github.com/OwnID/multi-tenant-server/blob/develop/OwnID.MultiTenant.Core/Commands/Fido2/Passkeys/PasskeysFido2AuthCommand.cs#L75")
+            if type == .register {
+                try container.encode(sessionVerifier, forKey: .sessionVerifier)
+            }
             if let fido2Payload = fido2Payload as? OwnID.CoreSDK.Fido2LoginPayload {
                 try container.encode(fido2Payload, forKey: .fido2Payload)
             }
