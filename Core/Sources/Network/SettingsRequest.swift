@@ -55,7 +55,7 @@ extension OwnID.CoreSDK.Setting {
                 .setFailureType(to: Error.self)
                 .eraseToAnyPublisher()
                 .encode(encoder: JSONEncoder())
-                .mapError { OwnID.CoreSDK.Error.initRequestBodyEncodeFailed(underlying: $0) } //fix error here
+                .mapError { OwnID.CoreSDK.Error.settingRequestBodyEncodeFailed(underlying: $0) }
                 .map { [self] body -> URLRequest in
                     var request = URLRequest(url: url)
                     request.httpMethod = "POST"
@@ -68,13 +68,12 @@ extension OwnID.CoreSDK.Setting {
                 }
                 .eraseToAnyPublisher()
                 .flatMap { [self] request -> AnyPublisher<URLSession.DataTaskPublisher.Output, OwnID.CoreSDK.Error> in provider.apiResponse(for: request)
-                    .mapError { OwnID.CoreSDK.Error.initRequestNetworkFailed(underlying: $0) }
+                    .mapError { OwnID.CoreSDK.Error.settingRequestNetworkFailed(underlying: $0) }
                     .eraseToAnyPublisher()
                 }
                 .eraseToAnyPublisher()
                 .tryMap { response -> Data in
-                    #warning("create proper errors")
-                    guard !response.data.isEmpty else { throw OwnID.CoreSDK.Error.initRequestResponseIsEmpty }
+                    guard !response.data.isEmpty else { throw OwnID.CoreSDK.Error.settingRequestResponseIsEmpty }
                     return response.data
                 }
                 .eraseToAnyPublisher()
@@ -85,7 +84,7 @@ extension OwnID.CoreSDK.Setting {
                 }
                 .mapError { initError in
                     OwnID.CoreSDK.logger.logCore(.errorEntry(message: "\(initError.localizedDescription)", Self.self))
-                    guard let error = initError as? OwnID.CoreSDK.Error else { return OwnID.CoreSDK.Error.initRequestResponseDecodeFailed(underlying: initError) }
+                    guard let error = initError as? OwnID.CoreSDK.Error else { return OwnID.CoreSDK.Error.settingRequestResponseDecodeFailed(underlying: initError) }
                     return error
                 }
                 .eraseToAnyPublisher()
