@@ -110,7 +110,6 @@ extension OwnID.CoreSDK {
         }
     }
     
-#warning("what if number of configurations is greater than 1? 2 configs is possible")
     private static func fetchClientConfig(serverURL: ServerURL,
                                           numberOfConfigurations: Int,
                                           configurationLoadedPublisher: PassthroughSubject<OwnID.CoreSDK.ClientConfiguration, Never>) -> Effect<SDKAction> {
