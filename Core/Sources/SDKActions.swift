@@ -15,4 +15,5 @@ enum SDKAction {
                               isTestingEnvironment: Bool)
     case startDebugLogger
     case configureForTests
+    case save(clientCongfig: OwnID.CoreSDK.ClientConfiguration)
 }

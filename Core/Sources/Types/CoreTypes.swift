@@ -12,6 +12,22 @@ public extension OwnID.CoreSDK {
 }
 
 public extension OwnID.CoreSDK {
+    struct Fido2LoginPayload: Encodable {
+        var credentialId: String
+        var clientDataJSON: String
+        var authenticatorData: String
+        var signature: String
+        let error: String? = nil
+    }
+    
+    struct Fido2RegisterPayload: Encodable {
+        var credentialId: String
+        var clientDataJSON: String
+        var attestationObject: String
+    }
+}
+
+public extension OwnID.CoreSDK {
     enum RequestType: String, Codable {
         case register
         case login

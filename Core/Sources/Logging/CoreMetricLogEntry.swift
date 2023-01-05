@@ -2,12 +2,12 @@ import Foundation
 
 extension OwnID.CoreSDK {
     public final class CoreMetricLogEntry: StandardMetricLogEntry {
-        internal init(context: String,
+        internal init(context: String?,
                       requestPath: String? = .none,
                       logLevel: LogLevel = LogLevel.debug,
                       message: String,
                       codeInitiator: String) {
-            super.init(context: context,
+            super.init(context: context ?? "no_context",
                        requestPath: requestPath,
                        level: logLevel,
                        message: message,
@@ -19,12 +19,12 @@ extension OwnID.CoreSDK {
 }
 
 public extension OwnID.CoreSDK.CoreMetricLogEntry {
-    static func entry<T>(function: String = #function, file: String = #file, context: String = "no_context", message: String = "", _ : T.Type = T.self) -> OwnID.CoreSDK.CoreMetricLogEntry {
+    static func entry<T>(function: String = #function, file: String = #file, context: String? = "no_context", message: String = "", _ : T.Type = T.self) -> OwnID.CoreSDK.CoreMetricLogEntry {
         OwnID.CoreSDK.CoreMetricLogEntry(context: context, message: "\(message) \(function) \(file)", codeInitiator: String(describing: T.self))
     }
     
     static func errorEntry<T>(function: String = #function, file: String = #file, context: String? = "no_context", message: String = "", _ : T.Type = T.self) -> OwnID.CoreSDK.CoreMetricLogEntry {
-        OwnID.CoreSDK.CoreMetricLogEntry(context: context ?? "no_context", logLevel: .error, message: "\(message) \(function) \(file)", codeInitiator: String(describing: T.self))
+        OwnID.CoreSDK.CoreMetricLogEntry(context: context, logLevel: .error, message: "\(message) \(function) \(file)", codeInitiator: String(describing: T.self))
     }
 }
 

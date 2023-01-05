@@ -36,7 +36,7 @@ extension OwnID.CoreSDK {
             try performPropertyChecks()
         }
         
-        let ownIDServerURL: URL
+        let ownIDServerURL: ServerURL
         let redirectionURL: RedirectionURLString
         let environment: String?
         
@@ -44,6 +44,22 @@ extension OwnID.CoreSDK {
             var url = ownIDServerURL
             url.appendPathComponent("status")
             url.appendPathComponent("final")
+            return url
+        }
+        
+        var settingURL: ServerURL {
+            var url = ownIDServerURL
+            url.appendPathComponent("passkeys")
+            url.appendPathComponent("fido2")
+            url.appendPathComponent("settings")
+            return url
+        }
+        
+        var authURL: ServerURL {
+            var url = ownIDServerURL
+            url.appendPathComponent("passkeys")
+            url.appendPathComponent("fido2")
+            url.appendPathComponent("auth")
             return url
         }
     }

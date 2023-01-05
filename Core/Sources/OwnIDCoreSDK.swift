@@ -27,10 +27,11 @@ public extension OwnID {
         @ObservedObject var store: Store<SDKState, SDKAction>
         
         private let urlPublisher = PassthroughSubject<Void, Error>()
+        private let configurationLoadedPublisher = PassthroughSubject<ClientConfiguration, Never>()
         
         private init() {
             let store = Store(
-                initialValue: SDKState(),
+                initialValue: SDKState(configurationLoadedPublisher: configurationLoadedPublisher),
                 reducer: with(
                     OwnID.CoreSDK.coreReducer,
                     logging
@@ -47,7 +48,6 @@ public extension OwnID {
             store.value.configurationName
         }
         
-#warning("Move logger here? Make it as part of SDK instance instead of it own instance and have everything in single place?")
         public static var logger: LoggerProtocol {
             Logger.shared
         }
@@ -64,7 +64,11 @@ public extension OwnID {
             coreViewModel.subscribeToURL(publisher: urlPublisher.eraseToAnyPublisher())
         }
         
-        public func configure(appID: String, redirectionURL: String, userFacingSDK: SDKInformation, underlyingSDKs: [SDKInformation], environment: String? = .none) {
+        public func configure(appID: String,
+                              redirectionURL: String,
+                              userFacingSDK: SDKInformation,
+                              underlyingSDKs: [SDKInformation],
+                              environment: String? = .none) {
             store.send(.configure(appID: appID,
                                   redirectionURL: redirectionURL,
                                   userFacingSDK: userFacingSDK,
@@ -95,8 +99,11 @@ public extension OwnID {
                                           email: email,
                                           token: .none,
                                           session: session,
-                                          sdkConfigurationName: sdkConfigurationName)
+                                          sdkConfigurationName: sdkConfigurationName,
+                                          isLoggingEnabled: store.value.isLoggingEnabled,
+                                          clientConfiguration: store.value.clientConfiguration)
             viewModel.subscribeToURL(publisher: urlPublisher.eraseToAnyPublisher())
+            viewModel.subscribeToConfiguration(publisher: configurationLoadedPublisher.eraseToAnyPublisher())
             return viewModel
         }
         
@@ -114,13 +121,20 @@ public extension OwnID {
                                           email: email,
                                           token: .none,
                                           session: session,
-                                          sdkConfigurationName: sdkConfigurationName)
+                                          sdkConfigurationName: sdkConfigurationName,
+                                          isLoggingEnabled: store.value.isLoggingEnabled,
+                                          clientConfiguration: store.value.clientConfiguration)
             viewModel.subscribeToURL(publisher: urlPublisher.eraseToAnyPublisher())
+            viewModel.subscribeToConfiguration(publisher: configurationLoadedPublisher.eraseToAnyPublisher())
             return viewModel
         }
         
         func apiSession(configurationName: String, webLanguages: OwnID.CoreSDK.Languages) -> APISessionProtocol {
-            return APISession(serverURL: serverURL(for: configurationName), statusURL: statusURL(for: configurationName), webLanguages: webLanguages)
+            APISession(serverURL: serverURL(for: configurationName),
+                       statusURL: statusURL(for: configurationName),
+                       settingsURL: settingURL(for: configurationName),
+                       authURL: authURL(for: configurationName),
+                       webLanguages: webLanguages)
         }
         
         /// Used to handle the redirects from browser after webapp is finished
@@ -154,6 +168,14 @@ public extension OwnID {
 public extension OwnID.CoreSDK {
     func statusURL(for sdkConfigurationName: String) -> ServerURL {
         getConfiguration(for: sdkConfigurationName).statusURL
+    }
+    
+    func settingURL(for sdkConfigurationName: String) -> ServerURL {
+        getConfiguration(for: sdkConfigurationName).settingURL
+    }
+    
+    func authURL(for sdkConfigurationName: String) -> ServerURL {
+        getConfiguration(for: sdkConfigurationName).authURL
     }
 }
 
