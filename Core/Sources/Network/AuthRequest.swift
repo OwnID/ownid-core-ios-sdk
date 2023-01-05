@@ -40,13 +40,6 @@ public extension OwnID.CoreSDK.Auth {
     }
 }
 
-public extension OwnID.CoreSDK.Auth {
-    struct Response: Decodable {
-        public let status: String
-        public let context: String
-    }
-}
-
 extension OwnID.CoreSDK.Auth {
     class Request {
         let type: OwnID.CoreSDK.RequestType
@@ -79,8 +72,8 @@ extension OwnID.CoreSDK.Auth {
             self.origin = origin
         }
         
-        func perform() -> AnyPublisher<Response, OwnID.CoreSDK.Error> {
-            Just(RequestBody(type: type,
+        func perform() -> AnyPublisher<OwnID.CoreSDK.Payload, OwnID.CoreSDK.Error> {
+            let inputPublisher = Just(RequestBody(type: type,
                              context: context,
                              nonce: nonce,
                              sessionVerifier: sessionVerifier,
@@ -100,28 +93,12 @@ extension OwnID.CoreSDK.Auth {
                     return request
                 }
                 .eraseToAnyPublisher()
-                .flatMap { [self] request -> AnyPublisher<URLSession.DataTaskPublisher.Output, OwnID.CoreSDK.Error> in
-                    provider.apiResponse(for: request)
-                    .mapError { OwnID.CoreSDK.Error.authRequestNetworkFailed(underlying: $0) }
-                    .eraseToAnyPublisher()
-                }
-                .eraseToAnyPublisher()
-                .tryMap { response -> Data in
-                    guard !response.data.isEmpty else { throw OwnID.CoreSDK.Error.authRequestResponseIsEmpty }
-                    return response.data
-                }
-                .eraseToAnyPublisher()
-                .decode(type: Response.self, decoder: JSONDecoder())
-                .map { [weak self] decoded in
-                    OwnID.CoreSDK.logger.logCore(.entry(context: self?.context, message: "Finished request", Self.self))
-                    return decoded
-                }
-                .mapError { [weak self] topError in
-                    OwnID.CoreSDK.logger.logCore(.errorEntry(context: self?.context, message: "\(topError.localizedDescription)", Self.self))
-                    guard let error = topError as? OwnID.CoreSDK.Error else { return OwnID.CoreSDK.Error.authRequestResponseDecodeFailed(underlying: topError) }
-                    return error
-                }
-                .eraseToAnyPublisher()
+            let dataParsingPublisher = EndOfFlowHandler.handle(inputPublisher: inputPublisher.eraseToAnyPublisher(),
+                                                               context: context,
+                                                               nonce: nonce,
+                                                               requestLanguage: webLanguages.rawValue.first,
+                                                               provider: provider)
+            return dataParsingPublisher.eraseToAnyPublisher()
         }
     }
 }

@@ -11,12 +11,12 @@ extension OwnID.CoreSDK {
         case sendInitialRequest
         case initialRequestLoaded(response: OwnID.CoreSDK.Init.Response)
         case settingsRequestLoaded(response: OwnID.CoreSDK.Setting.Response, origin: String, fido2Payload: Encodable)
-        case authRequestLoaded(response: OwnID.CoreSDK.Auth.Response)
         case browserURLCreated(URL)
         case error(OwnID.CoreSDK.Error)
         case sendStatusRequest
         case browserCancelled
         case authManagerCancelled
+        case authRequestLoaded(response: OwnID.CoreSDK.Payload)
         case statusRequestLoaded(response: OwnID.CoreSDK.Payload)
         case browserVM(BrowserOpenerViewModel.Action)
         case authManager(AccountManager.Action)
@@ -87,9 +87,6 @@ extension OwnID.CoreSDK {
                 return [browserAffect]
             }
             
-        case .authRequestLoaded:
-            return [sendStatusRequest(session: state.session, origin: state.clientConfiguration?.rpId)]
-            
         case let .settingsRequestLoaded(response, origin, fido2RegisterPayload):
             if let challengeType = response.challengeType, challengeType != .register {
                 return [Just(.error(.settingRequestResponseNotCompliantResponse)).eraseToEffect()]
@@ -116,7 +113,8 @@ extension OwnID.CoreSDK {
             state.authManager = .none
             return []
             
-        case .statusRequestLoaded:
+        case .statusRequestLoaded,
+                .authRequestLoaded:
             return []
             
         case let .addToState(browserViewModelStore, authStore):
@@ -318,13 +316,13 @@ extension OwnID.CoreSDK {
                             .addToState,
                             .addToStateConfig,
                             .settingsRequestLoaded,
-                            .authRequestLoaded,
                             .addToStateShouldStartInitRequest,
                             .authManager,
                             .browserVM:
                         internalStatesChange.append(String(describing: action))
                         
-                    case let .statusRequestLoaded(payload):
+                    case let .statusRequestLoaded(payload),
+                            let .authRequestLoaded(payload):
                         internalStatesChange.append(String(describing: action))
                         flowsFinished()
                         resultPublisher.send(.success(payload))
