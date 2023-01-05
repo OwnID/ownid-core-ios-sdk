@@ -9,8 +9,6 @@ extension OwnID.CoreSDK.ViewModelAction: CustomDebugStringConvertible {
             return "sendInitialRequest"
         case .initialRequestLoaded:
             return "initialRequestLoaded"
-        case .browserURLCreated:
-            return "browserURLCreated"
         case .error(let error):
             return "error \(error.localizedDescription)"
         case .sendStatusRequest:

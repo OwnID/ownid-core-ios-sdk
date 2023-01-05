@@ -31,7 +31,7 @@ extension OwnID.CoreSDK.AccountManager {
     enum Action {
         case didFinishRegistration(origin: String, fido2RegisterPayload: OwnID.CoreSDK.Fido2RegisterPayload)
         case didFinishLogin(origin: String, fido2LoginPayload: OwnID.CoreSDK.Fido2LoginPayload)
-        case credintialsNotFoundOrCanlelledByUser
+        case credintialsNotFoundOrCanlelledByUser(context: OwnID.CoreSDK.Context, browserBaseURL: String)
         case error(error: OwnID.CoreSDK.Error)
     }
 }
@@ -46,6 +46,7 @@ extension OwnID.CoreSDK {
         private let store: Store<State, Action>
         private let domain: String
         private let challenge: String
+        private let browserBaseURL: String
         
         private var challengeData: Data {
             challenge.data(using: .utf8)!
@@ -54,46 +55,32 @@ extension OwnID.CoreSDK {
         private var currentAuthController: ASAuthorizationController?
         private var isPerformingModalReqest = false
         
-        init(store: Store<State, Action>, domain: String, challenge: String) {
+        init(store: Store<State, Action>, domain: String, challenge: String, browserBaseURL: String) {
             self.store = store
-            self.domain = domain //"ownid.com"//"passwordless.staging.ownid.com"
+            self.domain = domain
             self.challenge = challenge
+            self.browserBaseURL = browserBaseURL
         }
         
         @available(iOS 16.0, *)
-        func signInWith(preferImmediatelyAvailableCredentials: Bool) {
+        func signInWith() {
             currentAuthController?.cancel()
+            let securityKeyProvider = ASAuthorizationSecurityKeyPublicKeyCredentialProvider(relyingPartyIdentifier: domain)
             let publicKeyCredentialProvider = ASAuthorizationPlatformPublicKeyCredentialProvider(relyingPartyIdentifier: domain)
             
             let assertionRequest = publicKeyCredentialProvider.createCredentialAssertionRequest(challenge: challengeData)
+            let securityKeyRequest = securityKeyProvider.createCredentialAssertionRequest(challenge: challengeData)
             
-            // Also allow the user to use a saved password, if they have one.
-            let passwordCredentialProvider = ASAuthorizationPasswordProvider()
-            let passwordRequest = passwordCredentialProvider.createRequest()
-            
-            let appleIDProvider = ASAuthorizationAppleIDProvider()
-            let appleIDRequest = appleIDProvider.createRequest()
-            appleIDRequest.requestedScopes = [.fullName, .email]
-            
-            let requests = [ assertionRequest, passwordRequest, appleIDRequest ]
+            let requests = [ assertionRequest, securityKeyRequest ]
             let authController = ASAuthorizationController(authorizationRequests: requests)
             authController.delegate = self
             authController.presentationContextProvider = self
             
             currentAuthController = authController
-            
-            if preferImmediatelyAvailableCredentials {
-                // If credentials are available, presents a modal sign-in sheet.
-                // If there are no locally saved credentials, no UI appears and
-                // the system passes ASAuthorizationError.Code.canceled to call
-                // `AccountManager.authorizationController(controller:didCompleteWithError:)`.
-                authController.performRequests(options: .preferImmediatelyAvailableCredentials)
-            } else {
-                // If credentials are available, presents a modal sign-in sheet.
-                // If there are no locally saved credentials, the system presents a QR code to allow signing in with a
-                // passkey from a nearby device.
-                authController.performRequests()
-            }
+            // If credentials are available, presents a modal sign-in sheet.
+            // If there are no locally saved credentials, the system presents a QR code to allow signing in with a
+            // passkey from a nearby device.
+            authController.performRequests()
             
             isPerformingModalReqest = true
         }
@@ -192,7 +179,7 @@ extension OwnID.CoreSDK {
                 // This is a good time to show a traditional login form, or ask the user to create an account.
                 
                 if isPerformingModalReqest {
-                    store.send(.credintialsNotFoundOrCanlelledByUser)
+                    store.send(.credintialsNotFoundOrCanlelledByUser(context: challenge, browserBaseURL: browserBaseURL))
                 }
             } else {
                 OwnID.CoreSDK.logger.logCore(.errorEntry(context: challenge, message: "\((error as NSError).userInfo)", Self.self))

@@ -11,7 +11,6 @@ extension OwnID.CoreSDK {
         case sendInitialRequest
         case initialRequestLoaded(response: OwnID.CoreSDK.Init.Response)
         case settingsRequestLoaded(response: OwnID.CoreSDK.Setting.Response, origin: String, fido2Payload: Encodable)
-        case browserURLCreated(URL)
         case error(OwnID.CoreSDK.Error)
         case sendStatusRequest
         case browserCancelled
@@ -54,37 +53,31 @@ extension OwnID.CoreSDK {
             
         case let .initialRequestLoaded(response):
             guard let context = response.context else { return errorEffect(.contextIsMissing) }
-            var passkeysPossibilityAvailable = false
-            
-            /// Passkeys available only for > iOS 16
-            if #available(iOS 16, *) {
-                let authContext = LAContext()
-                authContext.canEvaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, error: nil)
-                passkeysPossibilityAvailable = authContext.biometryType != .none
-            }
-            if passkeysPossibilityAvailable,
-               #available(iOS 16, *),
+            if #available(iOS 16, *),
                let config = state.clientConfiguration,
                let domain = config.rpId,
                config.passkeys {
                 let authManager = OwnID.CoreSDK.AccountManager(store: state.authManagerStore,
                                                                domain: domain,
-                                                               challenge: state.session.context)
+                                                               challenge: state.session.context,
+                                                               browserBaseURL: response.url)
                 switch state.type {
                 case .register:
                     authManager.signUpWith(userName: state.email?.rawValue ?? "")
                     
                 case .login:
-                    authManager.signInWith(preferImmediatelyAvailableCredentials: true)
+                    authManager.signInWith()
                 }
                 state.authManager = authManager
                 return []
             } else {
-                let browserAffect = browserURLEffect(for: context,
-                                                     browserURL: response.url,
-                                                     email: state.email,
-                                                     sdkConfigurationName: state.sdkConfigurationName)
-                return [browserAffect]
+                let vm = createBrowserVM(for: context,
+                                         browserURL: response.url,
+                                         email: state.email,
+                                         sdkConfigurationName: state.sdkConfigurationName,
+                                         store: state.browserViewModelStore)
+                state.browserViewModel = vm
+                return []
             }
             
         case let .settingsRequestLoaded(response, origin, fido2RegisterPayload):
@@ -97,11 +90,6 @@ extension OwnID.CoreSDK {
                                     shouldPerformStatusRequest: false)]
             
         case .error:
-            return []
-            
-        case let .browserURLCreated(url):
-            let vm = BrowserOpenerViewModel(store: state.browserViewModelStore, url: url)
-            state.browserViewModel = vm
             return []
             
         case .sendStatusRequest:
@@ -156,8 +144,14 @@ extension OwnID.CoreSDK {
                                         fido2Payload: fido2LoginPayload,
                                         shouldPerformStatusRequest: true)]
                 
-            case .credintialsNotFoundOrCanlelledByUser:
-                return [Just(.authManagerCancelled).eraseToEffect()]
+            case let .credintialsNotFoundOrCanlelledByUser(context, browserBaseURL):
+                let vm = createBrowserVM(for: context,
+                                         browserURL: browserBaseURL,
+                                         email: state.email,
+                                         sdkConfigurationName: state.sdkConfigurationName,
+                                         store: state.browserViewModelStore)
+                state.browserViewModel = vm
+                return []
                 
             case .error(let error):
                 return [Just(.error(error)).eraseToEffect()]
@@ -175,28 +169,29 @@ extension OwnID.CoreSDK {
         }
     }
     
-    static func browserURLEffect(for context: String,
-                                 browserURL: String,
-                                 email: Email?,
-                                 sdkConfigurationName: String) -> Effect<ViewModelAction> {
-        Effect<ViewModelAction>.sync {
-            let redirectionEncoded = OwnID.CoreSDK.shared.getConfiguration(for: sdkConfigurationName)
-                .redirectionURL
-                .addingPercentEncoding(withAllowedCharacters: .urlHostAllowed)
-            let redirect = redirectionEncoded! + "?context=" + context
-            let redirectParameter = "&redirectURI=" + redirect
-            var urlString = browserURL
-            if let email {
-                var emailSet = CharacterSet.urlHostAllowed
-                emailSet.remove("+")
-                if let encoded = email.rawValue.addingPercentEncoding(withAllowedCharacters: emailSet) {
-                    let emailParameter = "&e=" + encoded
-                    urlString.append(emailParameter)
-                }
+    static func createBrowserVM(for context: String,
+                                browserURL: String,
+                                email: Email?,
+                                sdkConfigurationName: String,
+                                store: Store<BrowserOpenerViewModel.State, BrowserOpenerViewModel.Action>) -> BrowserOpenerViewModel {
+        let redirectionEncoded = OwnID.CoreSDK.shared.getConfiguration(for: sdkConfigurationName)
+            .redirectionURL
+            .addingPercentEncoding(withAllowedCharacters: .urlHostAllowed)
+        let redirect = redirectionEncoded! + "?context=" + context
+        let redirectParameter = "&redirectURI=" + redirect
+        var urlString = browserURL
+        if let email {
+            var emailSet = CharacterSet.urlHostAllowed
+            emailSet.remove("+")
+            if let encoded = email.rawValue.addingPercentEncoding(withAllowedCharacters: emailSet) {
+                let emailParameter = "&e=" + encoded
+                urlString.append(emailParameter)
             }
-            urlString.append(redirectParameter)
-            return .browserURLCreated(URL(string: urlString)!)
         }
+        urlString.append(redirectParameter)
+        let url = URL(string: urlString)!
+        let vm = BrowserOpenerViewModel(store: store, url: url)
+        return vm
     }
     
     static func errorEffect(_ error: OwnID.CoreSDK.Error) -> [Effect<ViewModelAction>] {
@@ -328,7 +323,6 @@ extension OwnID.CoreSDK {
                         resultPublisher.send(.loading)
                         
                     case .initialRequestLoaded,
-                            .browserURLCreated,
                             .sendStatusRequest,
                             .addToState,
                             .addToStateConfig,

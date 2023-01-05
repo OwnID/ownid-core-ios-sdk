@@ -10,8 +10,6 @@ public extension OwnID.CoreSDK.Init {
         let sessionChallenge: OwnID.CoreSDK.SessionChallenge
         let type: OwnID.CoreSDK.RequestType
         let data: String?
-        #warning("do we need this here?")
-        let qr = true
         let originUrl: String?
     }
 }
