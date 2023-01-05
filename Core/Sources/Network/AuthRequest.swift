@@ -51,6 +51,7 @@ extension OwnID.CoreSDK.Auth {
         var fido2LoginPayload: Encodable
         let webLanguages: OwnID.CoreSDK.Languages
         let origin: String
+        let shouldIgnoreResponseBody: Bool
         
         internal init(type: OwnID.CoreSDK.RequestType,
                       url: OwnID.CoreSDK.ServerURL,
@@ -60,6 +61,7 @@ extension OwnID.CoreSDK.Auth {
                       sessionVerifier: OwnID.CoreSDK.SessionVerifier,
                       fido2LoginPayload: Encodable,
                       webLanguages: OwnID.CoreSDK.Languages,
+                      shouldIgnoreResponseBody: Bool,
                       provider: APIProvider = URLSession.shared) {
             self.type = type
             self.url = url
@@ -70,6 +72,7 @@ extension OwnID.CoreSDK.Auth {
             self.sessionVerifier = sessionVerifier
             self.fido2LoginPayload = fido2LoginPayload
             self.origin = origin
+            self.shouldIgnoreResponseBody = shouldIgnoreResponseBody
         }
         
         func perform() -> AnyPublisher<OwnID.CoreSDK.Payload, OwnID.CoreSDK.Error> {
@@ -93,11 +96,12 @@ extension OwnID.CoreSDK.Auth {
                     return request
                 }
                 .eraseToAnyPublisher()
-            let dataParsingPublisher = EndOfFlowHandler.handle(inputPublisher: inputPublisher.eraseToAnyPublisher(),
-                                                               context: context,
-                                                               nonce: nonce,
-                                                               requestLanguage: webLanguages.rawValue.first,
-                                                               provider: provider)
+            let dataParsingPublisher = OwnID.CoreSDK.EndOfFlowHandler.handle(inputPublisher: inputPublisher.eraseToAnyPublisher(),
+                                                                             context: context,
+                                                                             nonce: nonce,
+                                                                             requestLanguage: webLanguages.rawValue.first,
+                                                                             provider: provider,
+                                                                             shouldIgnoreResponseBody: shouldIgnoreResponseBody)
             return dataParsingPublisher.eraseToAnyPublisher()
         }
     }

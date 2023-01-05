@@ -70,11 +70,12 @@ extension OwnID.CoreSDK.Status {
                     return request
                 }
                 .eraseToAnyPublisher()
-            let dataParsingPublisher = EndOfFlowHandler.handle(inputPublisher: input.eraseToAnyPublisher(),
-                                                               context: context,
-                                                               nonce: nonce,
-                                                               requestLanguage: webLanguages.rawValue.first,
-                                                               provider: provider)
+            let dataParsingPublisher = OwnID.CoreSDK.EndOfFlowHandler.handle(inputPublisher: input.eraseToAnyPublisher(),
+                                                                             context: context,
+                                                                             nonce: nonce,
+                                                                             requestLanguage: webLanguages.rawValue.first,
+                                                                             provider: provider,
+                                                                             shouldIgnoreResponseBody: false)
             return dataParsingPublisher.eraseToAnyPublisher()
         }
     }

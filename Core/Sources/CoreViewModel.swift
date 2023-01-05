@@ -16,7 +16,7 @@ extension OwnID.CoreSDK {
         case sendStatusRequest
         case browserCancelled
         case authManagerCancelled
-        case authRequestLoaded(response: OwnID.CoreSDK.Payload)
+        case authRequestLoaded(response: OwnID.CoreSDK.Payload, shouldPerformStatusRequest: Bool)
         case statusRequestLoaded(response: OwnID.CoreSDK.Payload)
         case browserVM(BrowserOpenerViewModel.Action)
         case authManager(AccountManager.Action)
@@ -91,7 +91,10 @@ extension OwnID.CoreSDK {
             if let challengeType = response.challengeType, challengeType != .register {
                 return [Just(.error(.settingRequestResponseNotCompliantResponse)).eraseToEffect()]
             }
-            return [sendAuthRequest(session: state.session, origin: origin, fido2Payload: fido2RegisterPayload)]
+            return [sendAuthRequest(session: state.session,
+                                    origin: origin,
+                                    fido2Payload: fido2RegisterPayload,
+                                    shouldPerformStatusRequest: false)]
             
         case .error:
             return []
@@ -113,8 +116,14 @@ extension OwnID.CoreSDK {
             state.authManager = .none
             return []
             
-        case .statusRequestLoaded,
-                .authRequestLoaded:
+        case let .authRequestLoaded(_ , shouldPerformStatusRequest):
+            if shouldPerformStatusRequest {
+                return [sendStatusRequest(session: state.session, origin: state.clientConfiguration?.rpId)]
+            } else {
+                return []
+            }
+            
+        case .statusRequestLoaded:
             return []
             
         case let .addToState(browserViewModelStore, authStore):
@@ -140,7 +149,12 @@ extension OwnID.CoreSDK {
                                             fido2Payload: fido2RegisterPayload)]
                 
             case .didFinishLogin(let origin, let fido2LoginPayload):
-                return [sendAuthRequest(session: state.session, origin: origin, fido2Payload: fido2LoginPayload)]
+                /// We intentionally need to perform status request. It is possible to get information from settings request, in our case we
+                /// do not have login id that is required for this request.
+                return [sendAuthRequest(session: state.session,
+                                        origin: origin,
+                                        fido2Payload: fido2LoginPayload,
+                                        shouldPerformStatusRequest: true)]
                 
             case .credintialsNotFoundOrCanlelledByUser:
                 return [Just(.authManagerCancelled).eraseToEffect()]
@@ -208,10 +222,13 @@ extension OwnID.CoreSDK {
             .eraseToEffect()
     }
     
-    static func sendAuthRequest(session: APISessionProtocol, origin: String, fido2Payload: Encodable) -> Effect<ViewModelAction> {
-        session.performAuthRequest(origin: origin, fido2Payload: fido2Payload)
+    static func sendAuthRequest(session: APISessionProtocol,
+                                origin: String,
+                                fido2Payload: Encodable,
+                                shouldPerformStatusRequest: Bool) -> Effect<ViewModelAction> {
+        session.performAuthRequest(origin: origin, fido2Payload: fido2Payload, shouldIgnoreResponseBody: shouldPerformStatusRequest)
             .receive(on: DispatchQueue.main)
-            .map { ViewModelAction.authRequestLoaded(response: $0) }
+            .map { ViewModelAction.authRequestLoaded(response: $0, shouldPerformStatusRequest: shouldPerformStatusRequest) }
             .catch { Just(ViewModelAction.error($0)) }
             .eraseToEffect()
     }
@@ -321,11 +338,11 @@ extension OwnID.CoreSDK {
                             .browserVM:
                         internalStatesChange.append(String(describing: action))
                         
-                    case let .statusRequestLoaded(payload),
-                            let .authRequestLoaded(payload):
-                        internalStatesChange.append(String(describing: action))
-                        flowsFinished()
-                        resultPublisher.send(.success(payload))
+                    case let .authRequestLoaded(payload, shouldPerformStatusRequest):
+                        finishIfNeeded(shouldPerformStatusRequest: shouldPerformStatusRequest, payload: payload, action: action)
+                        
+                    case let .statusRequestLoaded(payload):
+                        finishIfNeeded(shouldPerformStatusRequest: false, payload: payload, action: action)
                         
                     case .error(let error):
                         internalStatesChange.append(String(describing: action))
@@ -340,6 +357,15 @@ extension OwnID.CoreSDK {
                     }
                 }
                 .store(in: &bag)
+        }
+        
+        private func finishIfNeeded(shouldPerformStatusRequest: Bool, payload: Payload, action: OwnID.CoreSDK.ViewModelAction) {
+                internalStatesChange.append(String(describing: action))
+                if shouldPerformStatusRequest {
+                    return
+                }
+                flowsFinished()
+                resultPublisher.send(.success(payload))
         }
         
         private func flowsFinished() {
