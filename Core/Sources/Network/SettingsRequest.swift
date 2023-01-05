@@ -2,92 +2,89 @@ import Foundation
 import Combine
 
 public extension OwnID.CoreSDK {
-    enum Init {}
+    enum Setting {}
 }
 
-public extension OwnID.CoreSDK.Init {
+public extension OwnID.CoreSDK.Setting {
     struct RequestBody: Encodable {
-        let sessionChallenge: OwnID.CoreSDK.SessionChallenge
-        let type: OwnID.CoreSDK.RequestType
-        let data: String?
-        let originUrl: String?
+        let loginID: String
+        let context: String
+        let nonce: String
     }
 }
 
-public extension OwnID.CoreSDK.Init {
+public extension OwnID.CoreSDK.Setting {
     struct Response: Decodable {
-        public let url: String
-        public let context: String?
-        public let nonce: String?
+        public let credId: String?
+        public let relyingPartyId: String?
+        public let relyingPartyName: String?
+        public let userDisplayName: String?
+        public let userName: String?
+        public let challengeType: OwnID.CoreSDK.RequestType?
     }
 }
 
-extension OwnID.CoreSDK.Init {
+extension OwnID.CoreSDK.Setting {
     class Request {
-        let type: OwnID.CoreSDK.RequestType
         let url: OwnID.CoreSDK.ServerURL
         let provider: APIProvider
-        let sessionChallenge: OwnID.CoreSDK.SessionChallenge
-        let token: OwnID.CoreSDK.JWTToken?
+        let loginID: String
+        let origin: String
+        let context: String
+        let nonce: String
         let webLanguages: OwnID.CoreSDK.Languages
-        let origin: String?
         
-        internal init(type: OwnID.CoreSDK.RequestType,
-                      url: OwnID.CoreSDK.ServerURL,
-                      sessionChallenge: OwnID.CoreSDK.SessionChallenge,
-                      token: OwnID.CoreSDK.JWTToken?,
-                      origin: String?,
+        internal init(url: OwnID.CoreSDK.ServerURL,
+                      loginID: String,
+                      origin: String,
+                      context: String,
+                      nonce: String,
                       webLanguages: OwnID.CoreSDK.Languages,
                       provider: APIProvider = URLSession.shared) {
-            self.type = type
             self.url = url
-            self.sessionChallenge = sessionChallenge
-            self.origin = origin
             self.provider = provider
-            self.token = token
             self.webLanguages = webLanguages
+            self.loginID = loginID
+            self.context = context
+            self.nonce = nonce
+            self.origin = origin
         }
         
         func perform() -> AnyPublisher<Response, OwnID.CoreSDK.Error> {
-            Just(RequestBody(sessionChallenge: sessionChallenge,
-                             type: type,
-                             data: token?.jwtString,
-                             originUrl: "https://" + (origin ?? "")))
+            Just(RequestBody(loginID: loginID, context: context, nonce: nonce))
                 .setFailureType(to: Error.self)
                 .eraseToAnyPublisher()
                 .encode(encoder: JSONEncoder())
-                .mapError { OwnID.CoreSDK.Error.initRequestBodyEncodeFailed(underlying: $0) }
+                .mapError { OwnID.CoreSDK.Error.settingRequestBodyEncodeFailed(underlying: $0) }
                 .map { [self] body -> URLRequest in
                     var request = URLRequest(url: url)
                     request.httpMethod = "POST"
                     request.httpBody = body
                     request.addUserAgent()
                     request.addAPIVersion()
-                    if let origin {
-                        request.add(origin: origin)
-                    }
+                    request.add(origin: origin)
                     request.add(webLanguages: webLanguages)
                     return request
                 }
                 .eraseToAnyPublisher()
                 .flatMap { [self] request -> AnyPublisher<URLSession.DataTaskPublisher.Output, OwnID.CoreSDK.Error> in provider.apiResponse(for: request)
-                    .mapError { OwnID.CoreSDK.Error.initRequestNetworkFailed(underlying: $0) }
+                    .mapError { OwnID.CoreSDK.Error.settingRequestNetworkFailed(underlying: $0) }
                     .eraseToAnyPublisher()
                 }
                 .eraseToAnyPublisher()
                 .tryMap { response -> Data in
-                    guard !response.data.isEmpty else { throw OwnID.CoreSDK.Error.initRequestResponseIsEmpty }
+                    guard !response.data.isEmpty else { throw OwnID.CoreSDK.Error.settingRequestResponseIsEmpty }
                     return response.data
                 }
                 .eraseToAnyPublisher()
                 .decode(type: Response.self, decoder: JSONDecoder())
                 .map { decoded in
-                    OwnID.CoreSDK.logger.logCore(.entry(context: decoded.context, message: "Finished request", Self.self))
+                    OwnID.CoreSDK.logger.logCore(.entry(message: "Finished request, cred id: \(String(describing: decoded.credId?.logValue))", Self.self))
                     return decoded
                 }
                 .mapError { initError in
                     OwnID.CoreSDK.logger.logCore(.errorEntry(message: "\(initError.localizedDescription)", Self.self))
-                    guard let error = initError as? OwnID.CoreSDK.Error else { return OwnID.CoreSDK.Error.initRequestResponseDecodeFailed(underlying: initError) }
+                    guard let error = initError as? OwnID.CoreSDK.Error else { return OwnID.CoreSDK.Error.settingRequestResponseDecodeFailed(underlying: initError) }
                     return error
                 }
                 .eraseToAnyPublisher()
