@@ -63,6 +63,11 @@ extension OwnID.CoreSDK {
         }
         
         @available(iOS 16.0, *)
+        func cancel() {
+            currentAuthController?.cancel()
+        }
+        
+        @available(iOS 16.0, *)
         func signInWith() {
             currentAuthController?.cancel()
             let securityKeyProvider = ASAuthorizationSecurityKeyPublicKeyCredentialProvider(relyingPartyIdentifier: domain)
@@ -166,7 +171,18 @@ extension OwnID.CoreSDK {
             isPerformingModalReqest = false
         }
         
+        deinit {
+            if #available(iOS 16.0, *) {
+                currentAuthController?.cancel()
+            }
+        }
+        
+        @available(iOS 16.0, *)
         func authorizationController(controller: ASAuthorizationController, didCompleteWithError error: Swift.Error) {
+            defer {
+                currentAuthController?.cancel()
+                controller.cancel()
+            }
             guard let authorizationError = error as? ASAuthorizationError else {
                 isPerformingModalReqest = false
                 OwnID.CoreSDK.logger.logCore(.errorEntry(context: challenge, message: error.localizedDescription, Self.self))
