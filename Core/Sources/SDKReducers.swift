@@ -33,11 +33,11 @@ extension OwnID.CoreSDK {
             
         case .startDebugLogger:
             state.isLoggingEnabled = true
-            OwnID.startDebugConsoleLogger()
             return []
             
         case .configureForTests:
-            return [testConfiguration(), Just(.startDebugLogger).eraseToEffect()]
+            OwnID.startDebugConsoleLogger()
+            return [testConfiguration()]
             
         case let .configureFromDefaultConfiguration(userFacingSDK, underlyingSDKs):
             let url = Bundle.main.url(forResource: "OwnIDConfiguration", withExtension: "plist")!

@@ -12,11 +12,16 @@ public extension OwnID {
     
     static func startDebugConsoleLogger() {
         OwnID.CoreSDK.logger.add(OwnID.CoreSDK.ConsoleLogger())
+        OwnID.CoreSDK.shared.enableLogging()
     }
     
     final class CoreSDK {
         public var serverURL: ServerURL {
             getConfiguration(for: configurationName).ownIDServerURL
+        }
+        
+        func enableLogging() {
+            store.send(.startDebugLogger)
         }
         
         public static let shared = CoreSDK()
