@@ -14,6 +14,7 @@ extension OwnID.CoreSDK {
         case error(OwnID.CoreSDK.Error)
         case sendStatusRequest
         case browserCancelled
+        case cancelled
         case authManagerCancelled
         case authRequestLoaded(response: OwnID.CoreSDK.Payload, shouldPerformStatusRequest: Bool)
         case statusRequestLoaded(response: OwnID.CoreSDK.Payload)
@@ -98,6 +99,11 @@ extension OwnID.CoreSDK {
             
         case .browserCancelled:
             state.browserViewModel = .none
+            return []
+            
+        case .cancelled:
+            state.browserViewModel = .none
+            state.authManager = .none
             return []
             
         case .authManagerCancelled:
@@ -282,6 +288,15 @@ extension OwnID.CoreSDK {
             }
         }
         
+        public func cancel() {
+            if #available(iOS 16.0, *) {
+                store.value.authManager?.cancel()
+            }
+            store.value.browserViewModel?.cancel()
+            store.value.browserViewModelStore?.cancel()
+            store.send(.cancelled)
+        }
+        
         func subscribeToURL(publisher: AnyPublisher<Void, OwnID.CoreSDK.Error>) {
             publisher
                 .sink { [unowned self] completion in
@@ -305,10 +320,7 @@ extension OwnID.CoreSDK {
         private var internalStatesChange = [String]()
         
         private func logInternalStates() {
-            let logMessage = "\(internalStatesChange)"
-            if store.value.isLoggingEnabled {
-                print("\(Self.self): \(#function) ➡️ \(logMessage)")
-            }
+            let logMessage = "\(Self.self): finished ➡️ \(internalStatesChange)"
             OwnID.CoreSDK.logger.logCore(.entry(message: logMessage, Self.self))
             internalStatesChange.removeAll()
         }
@@ -344,7 +356,8 @@ extension OwnID.CoreSDK {
                         resultPublisher.send(completion: .failure(error))
                         
                     case .browserCancelled,
-                            .authManagerCancelled:
+                            .authManagerCancelled,
+                            .cancelled:
                         internalStatesChange.append(String(describing: action))
                         flowsFinished()
                         resultPublisher.send(.cancelled)
@@ -364,6 +377,7 @@ extension OwnID.CoreSDK {
         
         private func flowsFinished() {
             logInternalStates()
+            store.cancel()
             bag.removeAll()
         }
     }
