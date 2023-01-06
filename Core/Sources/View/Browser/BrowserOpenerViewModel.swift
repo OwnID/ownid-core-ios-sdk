@@ -5,6 +5,7 @@ import AuthenticationServices
 
 protocol BrowserOpener: AnyObject {
     init(store: Store<OwnID.CoreSDK.BrowserOpenerViewModel.State, OwnID.CoreSDK.BrowserOpenerViewModel.Action>, url: URL)
+    func cancel()
 }
 
 extension OwnID.CoreSDK.BrowserOpenerViewModel {
@@ -18,10 +19,15 @@ extension OwnID.CoreSDK {
     final class BrowserOpenerViewModel: ObservableObject, BrowserOpener {
         private var store: Store<State, Action>
         private let authSessionContext = ASWebAuthenticationPresentationContext()
+        private var cancellableSession: ASWebAuthenticationSession?
         
         init(store: Store<State, Action>, url: URL) {
             self.store = store
             startAuthSession(url: url)
+        }
+        
+        func cancel() {
+            cancellableSession?.cancel()
         }
         
         private func startAuthSession(url: URL) {
@@ -37,6 +43,7 @@ extension OwnID.CoreSDK {
                         OwnID.CoreSDK.shared.handle(url: schemeURL, sdkConfigurationName: configName)
                     }
                 }
+                cancellableSession = session
                 session.presentationContextProvider = authSessionContext
                 session.start()
                 OwnID.CoreSDK.logger.logCore(.entry(message: "Session start", Self.self))
