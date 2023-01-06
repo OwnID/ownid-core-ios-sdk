@@ -33,6 +33,11 @@ public final class Store<Value, Action>: ObservableObject {
         self.value = initialValue
     }
     
+    public func cancel() {
+        viewCancellable?.cancel()
+        effectCancellables.forEach { $0.cancel() }
+    }
+    
     public func send(_ action: Action) {
         actionsPublisher.send(action)
         let effects = self.reducer(&self.value, action)
