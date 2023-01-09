@@ -46,7 +46,7 @@ public extension OwnID.FlowsSDK.LoginView {
         
         let sdkConfigurationName: String
         let webLanguages: OwnID.CoreSDK.Languages
-        public var getEmail: (() -> String)!
+        public var getEmail: (() -> String)?
         
         public var eventPublisher: OwnID.LoginPublisher {
             resultPublisher.eraseToAnyPublisher()
@@ -149,7 +149,7 @@ public extension OwnID.FlowsSDK.LoginView {
                     if state == .initial {
                         OwnID.CoreSDK.logger.logAnalytic(.loginClickMetric(action: .click, context: payload?.context))
                     }
-                    skipPasswordTapped(usersEmail: getEmail())
+                    skipPasswordTapped(usersEmail: obtainEmail())
                 }
                 .store(in: &bag)
         }
@@ -157,9 +157,14 @@ public extension OwnID.FlowsSDK.LoginView {
 }
 
 private extension OwnID.FlowsSDK.LoginView.ViewModel {
+    func obtainEmail() -> String {
+        let email = getEmail?() ?? ""
+        return email
+    }
+    
     func process(payload: OwnID.CoreSDK.Payload) {
         self.payload = payload
-        let loginPerformerPublisher = loginPerformer.login(payload: payload, email: getEmail())
+        let loginPerformerPublisher = loginPerformer.login(payload: payload, email: obtainEmail())
         loginPerformerPublisher
             .sink { [unowned self] completion in
                 if case .failure(let error) = completion {

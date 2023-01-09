@@ -65,7 +65,7 @@ public extension OwnID.FlowsSDK.RegisterView {
         
         let sdkConfigurationName: String
         let webLanguages: OwnID.CoreSDK.Languages
-        public var getEmail: (() -> String)!
+        public var getEmail: (() -> String)?
         
         public var eventPublisher: OwnID.RegistrationPublisher {
             resultPublisher.eraseToAnyPublisher()
@@ -209,7 +209,8 @@ public extension OwnID.FlowsSDK.RegisterView {
                 .sink { _ in
                 } receiveValue: { [unowned self] _ in
                     OwnID.CoreSDK.logger.logAnalytic(.registerClickMetric(action: .click, context: registrationData.payload?.context))
-                        skipPasswordTapped(usersEmail: getEmail())
+                    let email = getEmail?() ?? ""
+                        skipPasswordTapped(usersEmail: obtainEmail())
                 }
                 .store(in: &bag)
         }
@@ -217,8 +218,13 @@ public extension OwnID.FlowsSDK.RegisterView {
 }
 
 private extension OwnID.FlowsSDK.RegisterView.ViewModel {
+    func obtainEmail() -> String {
+        let email = getEmail?() ?? ""
+        return email
+    }
+    
     func processLogin(payload: OwnID.CoreSDK.Payload) {
-        let loginPerformerPublisher = loginPerformer.login(payload: payload, email: getEmail())
+        let loginPerformerPublisher = loginPerformer.login(payload: payload, email: obtainEmail())
         loginPerformerPublisher
             .sink { [unowned self] completion in
                 if case .failure(let error) = completion {
