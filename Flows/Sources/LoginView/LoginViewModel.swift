@@ -73,14 +73,16 @@ public extension OwnID.FlowsSDK.LoginView {
         }
         
         /// Reset visual state and any possible data from web flow
-        public func resetDataAndState() {
+        public func resetDataAndState(isResettingToInitialState: Bool = true) {
             payload = .none
             resetToInitialState()
         }
         
         /// Reset visual state
-        public func resetToInitialState() {
-            state = .initial
+        public func resetToInitialState(isResettingToInitialState: Bool = true) {
+            if isResettingToInitialState {
+                state = .initial
+            }
             coreViewModel.cancel()
             coreViewModelBag.forEach { $0.cancel() }
             coreViewModelBag.removeAll()
@@ -169,7 +171,7 @@ private extension OwnID.FlowsSDK.LoginView.ViewModel {
                                                                    authType: payload.authType))
                 state = .loggedIn
                 resultPublisher.send(.success(.loggedIn(loginResult: loginResult.operationResult, authType: loginResult.authType)))
-                resetDataAndState()
+                resetDataAndState(isResettingToInitialState: false)
             }
             .store(in: &bag)
     }

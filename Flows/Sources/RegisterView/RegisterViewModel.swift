@@ -118,14 +118,16 @@ public extension OwnID.FlowsSDK.RegisterView {
         }
         
         /// Reset visual state and any possible data from web flow
-        public func resetDataAndState() {
+        public func resetDataAndState(isResettingToInitialState: Bool = true) {
             registrationData = RegistrationData()
-            resetToInitialState()
+            resetToInitialState(isResettingToInitialState: isResettingToInitialState)
         }
         
         /// Reset visual state
-        public func resetToInitialState() {
-            state = .initial
+        public func resetToInitialState(isResettingToInitialState: Bool = true) {
+            if isResettingToInitialState {
+                state = .initial
+            }
             coreViewModel.cancel()
             coreViewModelBag.forEach { $0.cancel() }
             coreViewModelBag.removeAll()
@@ -226,7 +228,7 @@ private extension OwnID.FlowsSDK.RegisterView.ViewModel {
                 OwnID.CoreSDK.logger.logAnalytic(.loginTrackMetric(action: .loggedIn, context: payload.context, authType: payload.authType))
                 state = .ownidCreated
                 resultPublisher.send(.success(.userRegisteredAndLoggedIn(registrationResult: registerResult.operationResult, authType: registerResult.authType)))
-                resetDataAndState()
+                resetDataAndState(isResettingToInitialState: false)
             }
             .store(in: &bag)
     }
