@@ -32,7 +32,7 @@ extension OwnID.FlowsSDK.LoginView.ViewModel.State {
 }
 
 public extension OwnID.FlowsSDK.LoginView {
-     final class ViewModel: ObservableObject {
+    final class ViewModel: ObservableObject {
         @Published private(set) var state = State.initial
         @Published public var shouldShowTooltip = true
         
@@ -46,7 +46,7 @@ public extension OwnID.FlowsSDK.LoginView {
         
         let sdkConfigurationName: String
         let webLanguages: OwnID.CoreSDK.Languages
-        public var getEmail: (() -> String)!
+        public var getEmail: (() -> String)?
         
         public var eventPublisher: OwnID.LoginPublisher {
             resultPublisher.eraseToAnyPublisher()
@@ -64,46 +64,60 @@ public extension OwnID.FlowsSDK.LoginView {
                 sendMetric()
             }
         }
-         
-         private func sendMetric() {
-             if let currentMetadata {
-                 OwnID.CoreSDK.shared.currentMetricInformation = currentMetadata
-             }
-             OwnID.CoreSDK.logger.logAnalytic(.loginTrackMetric(action: .loaded, context: payload?.context))
-         }
+        
+        private func sendMetric() {
+            if let currentMetadata {
+                OwnID.CoreSDK.shared.currentMetricInformation = currentMetadata
+            }
+            OwnID.CoreSDK.logger.logAnalytic(.loginTrackMetric(action: .loaded, context: payload?.context))
+        }
         
         /// Reset visual state and any possible data from web flow
-        public func resetDataAndState() {
+        public func resetDataAndState(isResettingToInitialState: Bool = true) {
             payload = .none
-            resetState()
+            resetToInitialState()
         }
         
         /// Reset visual state
-        public func resetState() {
+        public func resetToInitialState(isResettingToInitialState: Bool = true) {
+            if isResettingToInitialState {
+                state = .initial
+            }
+            coreViewModel.cancel()
+            coreViewModelBag.forEach { $0.cancel() }
             coreViewModelBag.removeAll()
             coreViewModel = .none
-            state = .initial
         }
         
         func skipPasswordTapped(usersEmail: String) {
-            DispatchQueue.main.async { [self] in
-                let email = OwnID.CoreSDK.Email(rawValue: usersEmail)
-                let coreViewModel = OwnID.CoreSDK.shared.createCoreViewModelForLogIn(email: email,
-                                                                                 sdkConfigurationName: sdkConfigurationName,
-                                                                                 webLanguages: webLanguages)
-                self.coreViewModel = coreViewModel
-                subscribe(to: coreViewModel.eventPublisher)
-                state = .coreVM
-                
-                /// On iOS 13, this `asyncAfter` is required to make sure that subscription created by the time events start to
-                /// be passed to publiser.
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-                    coreViewModel.start()
+            switch state {
+            case .initial:
+                DispatchQueue.main.async { [self] in
+                    let email = OwnID.CoreSDK.Email(rawValue: usersEmail)
+                    let coreViewModel = OwnID.CoreSDK.shared.createCoreViewModelForLogIn(email: email,
+                                                                                         sdkConfigurationName: sdkConfigurationName,
+                                                                                         webLanguages: webLanguages)
+                    self.coreViewModel = coreViewModel
+                    subscribe(to: coreViewModel.eventPublisher)
+                    state = .coreVM
+                    
+                    /// On iOS 13, this `asyncAfter` is required to make sure that subscription created by the time events start to
+                    /// be passed to publiser.
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                        coreViewModel.start()
+                    }
                 }
+                
+            case .coreVM:
+                resetToInitialState()
+                
+            case .loggedIn:
+                break
             }
         }
         
         func subscribe(to eventsPublisher: OwnID.CoreSDK.EventPublisher) {
+            coreViewModelBag.forEach { $0.cancel() }
             coreViewModelBag.removeAll()
             eventsPublisher
                 .sink { [unowned self] completion in
@@ -124,16 +138,18 @@ public extension OwnID.FlowsSDK.LoginView {
                 }
                 .store(in: &coreViewModelBag)
         }
-         
-         /// Used for custom button setup. Custom button sends events through this publisher
-         /// and by doing that invokes flow.
-         /// - Parameter buttonEventPublisher: publisher to subscribe to
+        
+        /// Used for custom button setup. Custom button sends events through this publisher
+        /// and by doing that invokes flow.
+        /// - Parameter buttonEventPublisher: publisher to subscribe to
         public func subscribe(to buttonEventPublisher: OwnID.UISDK.EventPubliser) {
             buttonEventPublisher
                 .sink { _ in
                 } receiveValue: { [unowned self] event in
-                    OwnID.CoreSDK.logger.logAnalytic(.loginClickMetric(action: .click, context: payload?.context))
-                        skipPasswordTapped(usersEmail: getEmail())
+                    if state == .initial {
+                        OwnID.CoreSDK.logger.logAnalytic(.loginClickMetric(action: .click, context: payload?.context))
+                    }
+                    skipPasswordTapped(usersEmail: obtainEmail())
                 }
                 .store(in: &bag)
         }
@@ -141,9 +157,14 @@ public extension OwnID.FlowsSDK.LoginView {
 }
 
 private extension OwnID.FlowsSDK.LoginView.ViewModel {
+    func obtainEmail() -> String {
+        let email = getEmail?() ?? ""
+        return email
+    }
+    
     func process(payload: OwnID.CoreSDK.Payload) {
         self.payload = payload
-        let loginPerformerPublisher = loginPerformer.login(payload: payload, email: getEmail())
+        let loginPerformerPublisher = loginPerformer.login(payload: payload, email: obtainEmail())
         loginPerformerPublisher
             .sink { [unowned self] completion in
                 if case .failure(let error) = completion {
@@ -155,17 +176,16 @@ private extension OwnID.FlowsSDK.LoginView.ViewModel {
                                                                    authType: payload.authType))
                 state = .loggedIn
                 resultPublisher.send(.success(.loggedIn(loginResult: loginResult.operationResult, authType: loginResult.authType)))
-                resetDataAndState()
+                resetDataAndState(isResettingToInitialState: false)
             }
             .store(in: &bag)
     }
     
     func handle(_ error: OwnID.CoreSDK.Error) {
-        state = .initial
+        resetToInitialState()
         OwnID.CoreSDK.logger.logFlow(.errorEntry(context: payload?.context,
                                                  message: "\(error.localizedDescription)",
                                                  Self.self))
-        resetDataAndState()
         resultPublisher.send(.failure(error))
     }
 }

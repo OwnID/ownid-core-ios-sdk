@@ -92,7 +92,7 @@ private extension OwnID.UISDK.OwnIDView {
     func imageView() -> some View {
         OwnID.UISDK.BorderAndHighlightButton(viewState: $buttonState,
                                              buttonViewConfig: visualConfig.buttonViewConfig,
-                                             action: { if !isLoading { resultPublisher.send(()) }},
+                                             action: { resultPublisher.send(()) },
                                              content: { buttonContents() })
         .layoutPriority(1)
     }

@@ -13,8 +13,8 @@ extension OwnID.CoreSDK.AccountManager.Action: CustomDebugStringConvertible {
         case .credintialsNotFoundOrCanlelledByUser:
             return "credintialsNotFoundOrCanlelledByUser"
             
-        case .error(let error):
-            return error.localizedDescription
+        case .error:
+            return "generalError"
         }
     }
 }
@@ -32,7 +32,7 @@ extension OwnID.CoreSDK.AccountManager {
         case didFinishRegistration(origin: String, fido2RegisterPayload: OwnID.CoreSDK.Fido2RegisterPayload)
         case didFinishLogin(origin: String, fido2LoginPayload: OwnID.CoreSDK.Fido2LoginPayload)
         case credintialsNotFoundOrCanlelledByUser(context: OwnID.CoreSDK.Context, browserBaseURL: String)
-        case error(error: OwnID.CoreSDK.Error)
+        case error(context: OwnID.CoreSDK.Context, browserBaseURL: String)
     }
 }
 
@@ -60,6 +60,11 @@ extension OwnID.CoreSDK {
             self.domain = domain
             self.challenge = challenge
             self.browserBaseURL = browserBaseURL
+        }
+        
+        @available(iOS 16.0, *)
+        func cancel() {
+            currentAuthController?.cancel()
         }
         
         @available(iOS 16.0, *)
@@ -129,7 +134,8 @@ extension OwnID.CoreSDK {
                 // The attestationObject contains the user's new public key to store and use for subsequent sign-ins.
                 guard let attestationObject = credentialRegistration.rawAttestationObject?.base64urlEncodedString()
                 else {
-                    store.send(.error(error: .authorizationManagerDataMissing))
+                    OwnID.CoreSDK.logger.logCore(.errorEntry(context: challenge, message: "\(OwnID.CoreSDK.Error.authorizationManagerDataMissing) \(authorization.credential)", Self.self))
+                    store.send(.error(context: challenge, browserBaseURL: browserBaseURL))
                     return
                 }
                 
@@ -160,17 +166,28 @@ extension OwnID.CoreSDK {
             default:
                 #warning("move to other layer of SDKs")
                 OwnID.CoreSDK.logger.logCore(.errorEntry(context: challenge, message: "\(OwnID.CoreSDK.Error.authorizationManagerUnknownAuthType) \(authorization.credential)", Self.self))
-                store.send(.error(error: .authorizationManagerUnknownAuthType))
+                store.send(.error(context: challenge, browserBaseURL: browserBaseURL))
             }
             
             isPerformingModalReqest = false
         }
         
+        deinit {
+            if #available(iOS 16.0, *) {
+                currentAuthController?.cancel()
+            }
+        }
+        
+        @available(iOS 16.0, *)
         func authorizationController(controller: ASAuthorizationController, didCompleteWithError error: Swift.Error) {
+            defer {
+                currentAuthController?.cancel()
+                controller.cancel()
+            }
             guard let authorizationError = error as? ASAuthorizationError else {
                 isPerformingModalReqest = false
-                OwnID.CoreSDK.logger.logCore(.errorEntry(context: challenge, message: error.localizedDescription, Self.self))
-                store.send(.error(error: .authorizationManagerGeneralError(error: error)))
+                OwnID.CoreSDK.logger.logCore(.errorEntry(context: challenge, message: "\(String(describing: OwnID.CoreSDK.Error.authorizationManagerGeneralError)) " + error.localizedDescription, Self.self))
+                store.send(.error(context: challenge, browserBaseURL: browserBaseURL))
                 return
             }
             
@@ -182,8 +199,8 @@ extension OwnID.CoreSDK {
                     store.send(.credintialsNotFoundOrCanlelledByUser(context: challenge, browserBaseURL: browserBaseURL))
                 }
             } else {
-                OwnID.CoreSDK.logger.logCore(.errorEntry(context: challenge, message: "\((error as NSError).userInfo)", Self.self))
-                store.send(.error(error: .authorizationManagerAuthError(userInfo: (error as NSError).userInfo)))
+                OwnID.CoreSDK.logger.logCore(.errorEntry(context: challenge, message: "\(String(describing: OwnID.CoreSDK.Error.authorizationManagerAuthError)) \((error as NSError).userInfo)", Self.self))
+                store.send(.error(context: challenge, browserBaseURL: browserBaseURL))
             }
             
             isPerformingModalReqest = false

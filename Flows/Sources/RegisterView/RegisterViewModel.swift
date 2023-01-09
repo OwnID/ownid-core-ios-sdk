@@ -65,7 +65,7 @@ public extension OwnID.FlowsSDK.RegisterView {
         
         let sdkConfigurationName: String
         let webLanguages: OwnID.CoreSDK.Languages
-        public var getEmail: (() -> String)!
+        public var getEmail: (() -> String)?
         
         public var eventPublisher: OwnID.RegistrationPublisher {
             resultPublisher.eraseToAnyPublisher()
@@ -118,22 +118,30 @@ public extension OwnID.FlowsSDK.RegisterView {
         }
         
         /// Reset visual state and any possible data from web flow
-        public func resetDataAndState() {
+        public func resetDataAndState(isResettingToInitialState: Bool = true) {
             registrationData = RegistrationData()
-            resetState()
+            resetToInitialState(isResettingToInitialState: isResettingToInitialState)
         }
         
         /// Reset visual state
-        public func resetState() {
+        public func resetToInitialState(isResettingToInitialState: Bool = true) {
+            if isResettingToInitialState {
+                state = .initial
+            }
+            coreViewModel.cancel()
+            coreViewModelBag.forEach { $0.cancel() }
             coreViewModelBag.removeAll()
             coreViewModel = .none
-            state = .initial
         }
         
         func skipPasswordTapped(usersEmail: String) {
+            if case .coreVM = state {
+                resetToInitialState()
+                return
+            }
             if case .ownidCreated = state {
                 OwnID.CoreSDK.logger.logAnalytic(.registerClickMetric(action: .undo, context: registrationData.payload?.context))
-                resetState()
+                resetToInitialState()
                 resultPublisher.send(.success(.resetTapped))
                 return
             }
@@ -159,6 +167,7 @@ public extension OwnID.FlowsSDK.RegisterView {
         
         func subscribe(to eventsPublisher: OwnID.CoreSDK.EventPublisher, persistingEmail: OwnID.CoreSDK.Email) {
             registrationData.persistedEmail = persistingEmail
+            coreViewModelBag.forEach { $0.cancel() }
             coreViewModelBag.removeAll()
             eventsPublisher
                 .sink { [unowned self] completion in
@@ -200,7 +209,8 @@ public extension OwnID.FlowsSDK.RegisterView {
                 .sink { _ in
                 } receiveValue: { [unowned self] _ in
                     OwnID.CoreSDK.logger.logAnalytic(.registerClickMetric(action: .click, context: registrationData.payload?.context))
-                        skipPasswordTapped(usersEmail: getEmail())
+                    let email = getEmail?() ?? ""
+                        skipPasswordTapped(usersEmail: obtainEmail())
                 }
                 .store(in: &bag)
         }
@@ -208,8 +218,13 @@ public extension OwnID.FlowsSDK.RegisterView {
 }
 
 private extension OwnID.FlowsSDK.RegisterView.ViewModel {
+    func obtainEmail() -> String {
+        let email = getEmail?() ?? ""
+        return email
+    }
+    
     func processLogin(payload: OwnID.CoreSDK.Payload) {
-        let loginPerformerPublisher = loginPerformer.login(payload: payload, email: getEmail())
+        let loginPerformerPublisher = loginPerformer.login(payload: payload, email: obtainEmail())
         loginPerformerPublisher
             .sink { [unowned self] completion in
                 if case .failure(let error) = completion {
@@ -219,13 +234,13 @@ private extension OwnID.FlowsSDK.RegisterView.ViewModel {
                 OwnID.CoreSDK.logger.logAnalytic(.loginTrackMetric(action: .loggedIn, context: payload.context, authType: payload.authType))
                 state = .ownidCreated
                 resultPublisher.send(.success(.userRegisteredAndLoggedIn(registrationResult: registerResult.operationResult, authType: registerResult.authType)))
-                resetDataAndState()
+                resetDataAndState(isResettingToInitialState: false)
             }
             .store(in: &bag)
     }
     
     func handle(_ error: OwnID.CoreSDK.Error) {
-        state = .initial
+        resetToInitialState()
         OwnID.CoreSDK.logger.logFlow(.errorEntry(context: registrationData.payload?.context,
                                                  message: "\(error.localizedDescription)",
                                                  Self.self))
