@@ -120,20 +120,26 @@ public extension OwnID.FlowsSDK.RegisterView {
         /// Reset visual state and any possible data from web flow
         public func resetDataAndState() {
             registrationData = RegistrationData()
-            resetState()
+            resetToInitialState()
         }
         
         /// Reset visual state
-        public func resetState() {
+        public func resetToInitialState() {
+            state = .initial
+            coreViewModel.cancel()
+            coreViewModelBag.forEach { $0.cancel() }
             coreViewModelBag.removeAll()
             coreViewModel = .none
-            state = .initial
         }
         
         func skipPasswordTapped(usersEmail: String) {
+            if case .coreVM = state {
+                resetToInitialState()
+                return
+            }
             if case .ownidCreated = state {
                 OwnID.CoreSDK.logger.logAnalytic(.registerClickMetric(action: .undo, context: registrationData.payload?.context))
-                resetState()
+                resetToInitialState()
                 resultPublisher.send(.success(.resetTapped))
                 return
             }
@@ -159,6 +165,7 @@ public extension OwnID.FlowsSDK.RegisterView {
         
         func subscribe(to eventsPublisher: OwnID.CoreSDK.EventPublisher, persistingEmail: OwnID.CoreSDK.Email) {
             registrationData.persistedEmail = persistingEmail
+            coreViewModelBag.forEach { $0.cancel() }
             coreViewModelBag.removeAll()
             eventsPublisher
                 .sink { [unowned self] completion in
@@ -225,7 +232,7 @@ private extension OwnID.FlowsSDK.RegisterView.ViewModel {
     }
     
     func handle(_ error: OwnID.CoreSDK.Error) {
-        state = .initial
+        resetToInitialState()
         OwnID.CoreSDK.logger.logFlow(.errorEntry(context: registrationData.payload?.context,
                                                  message: "\(error.localizedDescription)",
                                                  Self.self))
