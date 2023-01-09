@@ -150,7 +150,8 @@ extension OwnID.CoreSDK {
                                         fido2Payload: fido2LoginPayload,
                                         shouldPerformStatusRequest: true)]
                 
-            case let .credintialsNotFoundOrCanlelledByUser(context, browserBaseURL):
+            case let .credintialsNotFoundOrCanlelledByUser(context, browserBaseURL),
+                let .error(context, browserBaseURL):
                 let vm = createBrowserVM(for: context,
                                          browserURL: browserBaseURL,
                                          email: state.email,
@@ -158,9 +159,6 @@ extension OwnID.CoreSDK {
                                          store: state.browserViewModelStore)
                 state.browserViewModel = vm
                 return []
-                
-            case .error(let error):
-                return [Just(.error(error)).eraseToEffect()]
             }
             
         case let .addToStateConfig(clientConfig):
