@@ -209,7 +209,6 @@ public extension OwnID.FlowsSDK.RegisterView {
                 .sink { _ in
                 } receiveValue: { [unowned self] _ in
                     OwnID.CoreSDK.logger.logAnalytic(.registerClickMetric(action: .click, context: registrationData.payload?.context))
-                    let email = getEmail?() ?? ""
                         skipPasswordTapped(usersEmail: obtainEmail())
                 }
                 .store(in: &bag)
