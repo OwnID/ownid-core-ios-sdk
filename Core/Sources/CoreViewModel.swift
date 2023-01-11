@@ -3,6 +3,147 @@ import Combine
 import LocalAuthentication
 
 extension OwnID.CoreSDK {
+    final class CoreViewModel: ObservableObject {
+        @Published var store: Store<OwnID.CoreSDK.ViewModelState, OwnID.CoreSDK.ViewModelAction>
+        private let resultPublisher = PassthroughSubject<OwnID.CoreSDK.Event, OwnID.CoreSDK.Error>()
+        private var bag = Set<AnyCancellable>()
+        
+        var eventPublisher: OwnID.CoreSDK.EventPublisher { resultPublisher.receive(on: DispatchQueue.main).eraseToAnyPublisher() }
+        
+        init(type: OwnID.CoreSDK.RequestType,
+             email: OwnID.CoreSDK.Email?,
+             token: OwnID.CoreSDK.JWTToken?,
+             session: APISessionProtocol,
+             sdkConfigurationName: String,
+             isLoggingEnabled: Bool,
+             clientConfiguration: ClientConfiguration?) {
+            let initialState = OwnID.CoreSDK.ViewModelState(isLoggingEnabled: isLoggingEnabled,
+                                                            clientConfiguration: clientConfiguration,
+                                                            sdkConfigurationName: sdkConfigurationName,
+                                                            session: session,
+                                                            email: email,
+                                                            token: token,
+                                                            type: type)
+            let store = Store(
+                initialValue: initialState,
+                reducer: with(
+                    OwnID.CoreSDK.viewModelReducer,
+                    logging
+                )
+            )
+            self.store = store
+            let browserStore = self.store.view(value: { $0.sdkConfigurationName } , action: { .browserVM($0) })
+            let authManagerStore = self.store.view(value: { AccountManager.State(isLoggingEnabled: $0.isLoggingEnabled) },
+                                                   action: { .authManager($0) })
+            self.store.send(.addToState(browserViewModelStore: browserStore, authStore: authManagerStore))
+            setupEventPublisher()
+        }
+        
+        public func start() {
+            if (store.value.clientConfiguration != nil) {
+                store.send(.sendInitialRequest)
+            } else {
+                store.send(.addToStateShouldStartInitRequest(value: true))
+                resultPublisher.send(.loading)
+            }
+        }
+        
+        public func cancel() {
+            if #available(iOS 16.0, *) {
+                store.value.authManager?.cancel()
+            }
+            store.value.browserViewModel?.cancel()
+            store.value.browserViewModelStore?.cancel()
+            store.send(.cancelled)
+        }
+        
+        func subscribeToURL(publisher: AnyPublisher<Void, OwnID.CoreSDK.Error>) {
+            publisher
+                .sink { [unowned self] completion in
+                    if case .failure(let error) = completion {
+                        store.send(.error(error))
+                    }
+                } receiveValue: { [unowned self] url in
+                    store.send(.sendStatusRequest)
+                }
+                .store(in: &bag)
+        }
+        
+        func subscribeToConfiguration(publisher: AnyPublisher<ClientConfiguration, Never>) {
+            publisher
+                .sink { [unowned self] clientConfiguration in
+                    self.store.send(.addToStateConfig(clientConfig: clientConfiguration))
+                }
+                .store(in: &bag)
+        }
+        
+        private var internalStatesChange = [String]()
+        
+        private func logInternalStates() {
+            let logMessage = "\(Self.self): finished ➡️ \(internalStatesChange)"
+            OwnID.CoreSDK.logger.logCore(.entry(message: logMessage, Self.self))
+            internalStatesChange.removeAll()
+        }
+        
+        private func setupEventPublisher() {
+            store
+                .actionsPublisher
+                .sink { [unowned self] action in
+                    switch action {
+                    case .sendInitialRequest:
+                        internalStatesChange.append(String(describing: action))
+                        resultPublisher.send(.loading)
+                        
+                    case .initialRequestLoaded,
+                            .sendStatusRequest,
+                            .addToState,
+                            .addToStateConfig,
+                            .settingsRequestLoaded,
+                            .addToStateShouldStartInitRequest,
+                            .authManager,
+                            .browserVM:
+                        internalStatesChange.append(String(describing: action))
+                        
+                    case let .authRequestLoaded(payload, shouldPerformStatusRequest):
+                        finishIfNeeded(shouldPerformStatusRequest: shouldPerformStatusRequest, payload: payload, action: action)
+                        
+                    case let .statusRequestLoaded(payload):
+                        finishIfNeeded(shouldPerformStatusRequest: false, payload: payload, action: action)
+                        
+                    case .error(let error):
+                        internalStatesChange.append(String(describing: action))
+                        flowsFinished()
+                        resultPublisher.send(completion: .failure(error))
+                        
+                    case .browserCancelled,
+                            .authManagerCancelled,
+                            .cancelled:
+                        internalStatesChange.append(String(describing: action))
+                        flowsFinished()
+                        resultPublisher.send(.cancelled)
+                    }
+                }
+                .store(in: &bag)
+        }
+        
+        private func finishIfNeeded(shouldPerformStatusRequest: Bool, payload: Payload, action: OwnID.CoreSDK.ViewModelAction) {
+                internalStatesChange.append(String(describing: action))
+                if shouldPerformStatusRequest {
+                    return
+                }
+                flowsFinished()
+                resultPublisher.send(.success(payload))
+        }
+        
+        private func flowsFinished() {
+            logInternalStates()
+            store.cancel()
+            bag.removeAll()
+        }
+    }
+}
+
+extension OwnID.CoreSDK {
     enum ViewModelAction {
         case addToState(browserViewModelStore: Store<BrowserOpenerViewModel.State, BrowserOpenerViewModel.Action>,
                         authStore: Store<AccountManager.State, AccountManager.Action>)
@@ -237,146 +378,5 @@ extension OwnID.CoreSDK {
             .map { ViewModelAction.statusRequestLoaded(response: $0) }
             .catch { Just(ViewModelAction.error($0)) }
             .eraseToEffect()
-    }
-}
-
-extension OwnID.CoreSDK {
-    public final class CoreViewModel: ObservableObject {
-        @Published var store: Store<OwnID.CoreSDK.ViewModelState, OwnID.CoreSDK.ViewModelAction>
-        private let resultPublisher = PassthroughSubject<OwnID.CoreSDK.Event, OwnID.CoreSDK.Error>()
-        private var bag = Set<AnyCancellable>()
-        
-        public var eventPublisher: OwnID.CoreSDK.EventPublisher { resultPublisher.receive(on: DispatchQueue.main).eraseToAnyPublisher() }
-        
-        init(type: OwnID.CoreSDK.RequestType,
-             email: OwnID.CoreSDK.Email?,
-             token: OwnID.CoreSDK.JWTToken?,
-             session: APISessionProtocol,
-             sdkConfigurationName: String,
-             isLoggingEnabled: Bool,
-             clientConfiguration: ClientConfiguration?) {
-            let initialState = OwnID.CoreSDK.ViewModelState(isLoggingEnabled: isLoggingEnabled,
-                                                            clientConfiguration: clientConfiguration,
-                                                            sdkConfigurationName: sdkConfigurationName,
-                                                            session: session,
-                                                            email: email,
-                                                            token: token,
-                                                            type: type)
-            let store = Store(
-                initialValue: initialState,
-                reducer: with(
-                    OwnID.CoreSDK.viewModelReducer,
-                    logging
-                )
-            )
-            self.store = store
-            let browserStore = self.store.view(value: { $0.sdkConfigurationName } , action: { .browserVM($0) })
-            let authManagerStore = self.store.view(value: { AccountManager.State(isLoggingEnabled: $0.isLoggingEnabled) },
-                                                   action: { .authManager($0) })
-            self.store.send(.addToState(browserViewModelStore: browserStore, authStore: authManagerStore))
-            setupEventPublisher()
-        }
-        
-        public func start() {
-            if (store.value.clientConfiguration != nil) {
-                store.send(.sendInitialRequest)
-            } else {
-                store.send(.addToStateShouldStartInitRequest(value: true))
-                resultPublisher.send(.loading)
-            }
-        }
-        
-        public func cancel() {
-            if #available(iOS 16.0, *) {
-                store.value.authManager?.cancel()
-            }
-            store.value.browserViewModel?.cancel()
-            store.value.browserViewModelStore?.cancel()
-            store.send(.cancelled)
-        }
-        
-        func subscribeToURL(publisher: AnyPublisher<Void, OwnID.CoreSDK.Error>) {
-            publisher
-                .sink { [unowned self] completion in
-                    if case .failure(let error) = completion {
-                        store.send(.error(error))
-                    }
-                } receiveValue: { [unowned self] url in
-                    store.send(.sendStatusRequest)
-                }
-                .store(in: &bag)
-        }
-        
-        func subscribeToConfiguration(publisher: AnyPublisher<ClientConfiguration, Never>) {
-            publisher
-                .sink { [unowned self] clientConfiguration in
-                    self.store.send(.addToStateConfig(clientConfig: clientConfiguration))
-                }
-                .store(in: &bag)
-        }
-        
-        private var internalStatesChange = [String]()
-        
-        private func logInternalStates() {
-            let logMessage = "\(Self.self): finished ➡️ \(internalStatesChange)"
-            OwnID.CoreSDK.logger.logCore(.entry(message: logMessage, Self.self))
-            internalStatesChange.removeAll()
-        }
-        
-        private func setupEventPublisher() {
-            store
-                .actionsPublisher
-                .sink { [unowned self] action in
-                    switch action {
-                    case .sendInitialRequest:
-                        internalStatesChange.append(String(describing: action))
-                        resultPublisher.send(.loading)
-                        
-                    case .initialRequestLoaded,
-                            .sendStatusRequest,
-                            .addToState,
-                            .addToStateConfig,
-                            .settingsRequestLoaded,
-                            .addToStateShouldStartInitRequest,
-                            .authManager,
-                            .browserVM:
-                        internalStatesChange.append(String(describing: action))
-                        
-                    case let .authRequestLoaded(payload, shouldPerformStatusRequest):
-                        finishIfNeeded(shouldPerformStatusRequest: shouldPerformStatusRequest, payload: payload, action: action)
-                        
-                    case let .statusRequestLoaded(payload):
-                        finishIfNeeded(shouldPerformStatusRequest: false, payload: payload, action: action)
-                        
-                    case .error(let error):
-                        internalStatesChange.append(String(describing: action))
-                        flowsFinished()
-                        resultPublisher.send(completion: .failure(error))
-                        
-                    case .browserCancelled,
-                            .authManagerCancelled,
-                            .cancelled:
-                        internalStatesChange.append(String(describing: action))
-                        flowsFinished()
-                        resultPublisher.send(.cancelled)
-                    }
-                }
-                .store(in: &bag)
-        }
-        
-        private func finishIfNeeded(shouldPerformStatusRequest: Bool, payload: Payload, action: OwnID.CoreSDK.ViewModelAction) {
-                internalStatesChange.append(String(describing: action))
-                if shouldPerformStatusRequest {
-                    return
-                }
-                flowsFinished()
-                resultPublisher.send(.success(payload))
-        }
-        
-        private func flowsFinished() {
-            logInternalStates()
-            store.cancel()
-            bag.removeAll()
-        }
     }
 }

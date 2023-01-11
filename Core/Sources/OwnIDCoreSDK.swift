@@ -96,7 +96,7 @@ public extension OwnID {
         ///   - sdkConfigurationName: Name of current running SDK
         ///   - webLanguages: Languages for web view. List of well-formed [IETF BCP 47 language tag](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Accept-Language) .
         /// - Returns: View that is presented in sheet
-        public func createCoreViewModelForRegister(email: Email? = .none,
+        func createCoreViewModelForRegister(email: Email? = .none,
                                                    sdkConfigurationName: String,
                                                    webLanguages: OwnID.CoreSDK.Languages) -> CoreViewModel {
             let session = apiSession(configurationName: sdkConfigurationName, webLanguages: webLanguages)
@@ -118,7 +118,7 @@ public extension OwnID {
         ///   - sdkConfigurationName: Name of current running SDK
         ///   - webLanguages: Languages for web view. List of well-formed [IETF BCP 47 language tag](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Accept-Language) .
         /// - Returns: View that is presented in sheet
-        public func createCoreViewModelForLogIn(email: Email? = .none,
+        func createCoreViewModelForLogIn(email: Email? = .none,
                                                 sdkConfigurationName: String,
                                                 webLanguages: OwnID.CoreSDK.Languages) -> CoreViewModel {
             let session = apiSession(configurationName: sdkConfigurationName, webLanguages: webLanguages)
