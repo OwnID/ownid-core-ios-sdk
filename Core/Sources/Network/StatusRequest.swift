@@ -52,12 +52,12 @@ extension OwnID.CoreSDK.Status {
             self.webLanguages = webLanguages
         }
         
-        func perform() -> AnyPublisher<OwnID.CoreSDK.Payload, OwnID.CoreSDK.Error> {
+        func perform() -> AnyPublisher<OwnID.CoreSDK.Payload, OwnID.CoreSDK.CoreErrorLogWrapper> {
             let input = Just(RequestBody(sessionVerifier: sessionVerifier, context: context, nonce: nonce))
-                .setFailureType(to: OwnID.CoreSDK.Error.self)
+                .setFailureType(to: OwnID.CoreSDK.CoreErrorLogWrapper.self)
                 .eraseToAnyPublisher()
                 .encode(encoder: JSONEncoder())
-                .mapError { OwnID.CoreSDK.Error.statusRequestBodyEncodeFailed(underlying: $0) }
+                .mapError { [self] in OwnID.CoreSDK.CoreErrorLogWrapper.coreLog(entry: .errorEntry(context: context, Self.self), error: .statusRequestBodyEncodeFailed(underlying: $0)) }
                 .map { [self] body -> URLRequest in
                     var request = URLRequest(url: url)
                     request.httpMethod = "POST"
