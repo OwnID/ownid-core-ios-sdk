@@ -3,22 +3,23 @@ import Combine
 extension OwnID.CoreSDK {
     
     final class EndOfFlowHandler {
-        static func handle(inputPublisher: AnyPublisher<URLRequest, OwnID.CoreSDK.Error>,
+#warning("not status request here, others possible too")
+        static func handle(inputPublisher: AnyPublisher<URLRequest, OwnID.CoreSDK.CoreErrorLogWrapper>,
                            context: OwnID.CoreSDK.Context,
                            nonce: OwnID.CoreSDK.Nonce,
                            requestLanguage: String?,
                            provider: APIProvider,
-                           shouldIgnoreResponseBody: Bool) -> AnyPublisher<OwnID.CoreSDK.Payload, OwnID.CoreSDK.Error> {
+                           shouldIgnoreResponseBody: Bool) -> AnyPublisher<OwnID.CoreSDK.Payload, OwnID.CoreSDK.CoreErrorLogWrapper> {
             inputPublisher
-                .flatMap { request -> AnyPublisher<URLSession.DataTaskPublisher.Output, OwnID.CoreSDK.Error> in provider.apiResponse(for: request)
-                        .mapError { OwnID.CoreSDK.Error.statusRequestNetworkFailed(underlying: $0) }
+                .flatMap { request -> AnyPublisher<URLSession.DataTaskPublisher.Output, OwnID.CoreSDK.CoreErrorLogWrapper> in provider.apiResponse(for: request)
+                        .mapError { OwnID.CoreSDK.CoreErrorLogWrapper.coreLog(entry: .errorEntry(context: context, Self.self), error: .statusRequestNetworkFailed(underlying: $0)) }
                         .eraseToAnyPublisher()
                 }
                 .eraseToAnyPublisher()
                 .tryMap { response -> [String: Any] in
                     guard !response.data.isEmpty else { throw OwnID.CoreSDK.Error.statusRequestResponseIsEmpty }
                     guard let json = try JSONSerialization.jsonObject(with: response.data, options: []) as? [String: Any] else {
-                        throw OwnID.CoreSDK.Error.statusRequestResponseIsEmpty
+                        throw OwnID.CoreSDK.CoreErrorLogWrapper.coreLog(entry: .errorEntry(context: context, Self.self), error: .statusRequestResponseIsEmpty)
                     }
                     return json
                 }
@@ -32,7 +33,8 @@ extension OwnID.CoreSDK {
                     guard let responsePayload = response["payload"] as? [String: Any] else { throw OwnID.CoreSDK.Error.statusRequestResponseIsEmpty }
                     
                     if let serverError = responsePayload["error"] as? String {
-                        throw OwnID.CoreSDK.Error.serverError(serverError: OwnID.CoreSDK.ServerError(error: serverError))
+                        let serverError = OwnID.CoreSDK.ServerError(error: serverError)
+                        throw OwnID.CoreSDK.CoreErrorLogWrapper.coreLog(entry: .errorEntry(context: responseContext, Self.self), error: .serverError(serverError: serverError))
                     }
                     
                     let responseData = responsePayload["data"]
@@ -61,11 +63,8 @@ extension OwnID.CoreSDK {
                 }
                 .eraseToAnyPublisher()
                 .mapError { initError in
-                    OwnID.CoreSDK.logger.logCore(.errorEntry(context: context,
-                                                             message: "\(initError.localizedDescription)",
-                                                             Self.self))
-                    guard let error = initError as? OwnID.CoreSDK.Error else { return OwnID.CoreSDK.Error.statusRequestFail(underlying: initError) }
-                    return error
+                    guard let error = initError as? OwnID.CoreSDK.Error else { return  .coreLog(entry: .errorEntry(context: context, Self.self), error: .statusRequestFail(underlying: initError)) }
+                    return .coreLog(entry: .errorEntry(context: context, Self.self), error: error)
                 }
                 .eraseToAnyPublisher()
         }
