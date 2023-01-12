@@ -12,7 +12,6 @@ public extension OwnID.CoreSDK.Auth {
             try container.encode(type, forKey: .type)
             try container.encode(context, forKey: .context)
             try container.encode(nonce, forKey: .nonce)
-            #warning("do we really need this here or server is just has bug? https://github.com/OwnID/multi-tenant-server/blob/develop/OwnID.MultiTenant.Core/Commands/Fido2/Passkeys/PasskeysFido2AuthCommand.cs#L75")
             if type == .register {
                 try container.encode(sessionVerifier, forKey: .sessionVerifier)
             }
@@ -75,7 +74,7 @@ extension OwnID.CoreSDK.Auth {
             self.shouldIgnoreResponseBody = shouldIgnoreResponseBody
         }
         
-        func perform() -> AnyPublisher<OwnID.CoreSDK.Payload, OwnID.CoreSDK.Error> {
+        func perform() -> AnyPublisher<OwnID.CoreSDK.Payload, OwnID.CoreSDK.CoreErrorLogWrapper> {
             let inputPublisher = Just(RequestBody(type: type,
                              context: context,
                              nonce: nonce,
@@ -84,7 +83,7 @@ extension OwnID.CoreSDK.Auth {
                 .setFailureType(to: Error.self)
                 .eraseToAnyPublisher()
                 .encode(encoder: JSONEncoder())
-                .mapError { OwnID.CoreSDK.Error.authRequestBodyEncodeFailed(underlying: $0) }
+                .mapError { [self] in OwnID.CoreSDK.CoreErrorLogWrapper.coreLog(entry: .errorEntry(context: context, Self.self), error: .authRequestBodyEncodeFailed(underlying: $0)) }
                 .map { [self] body -> URLRequest in
                     var request = URLRequest(url: url)
                     request.httpMethod = "POST"
