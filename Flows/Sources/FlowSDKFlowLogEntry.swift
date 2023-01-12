@@ -28,6 +28,12 @@ public extension OwnID.FlowsSDK.FlowLogEntry {
     }
 }
 
+extension OwnID.CoreSDK.CoreErrorLogWrapper {
+    static func flowLog(entry: OwnID.FlowsSDK.FlowLogEntry, error: OwnID.CoreSDK.Error) -> OwnID.CoreSDK.CoreErrorLogWrapper {
+        OwnID.CoreSDK.CoreErrorLogWrapper(entry: entry, error: error)
+    }
+}
+
 extension LoggerProtocol {
     func logFlow(_ entry: OwnID.FlowsSDK.FlowLogEntry) {
         self.log(entry)
