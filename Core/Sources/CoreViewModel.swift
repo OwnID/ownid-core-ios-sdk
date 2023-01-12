@@ -143,6 +143,8 @@ extension OwnID.CoreSDK {
     }
 }
 
+// MARK: ViewModelAction
+
 extension OwnID.CoreSDK {
     enum ViewModelAction {
         case addToState(browserViewModelStore: Store<BrowserOpenerViewModel.State, BrowserOpenerViewModel.Action>,
@@ -272,6 +274,17 @@ extension OwnID.CoreSDK {
                 return [Just(.browserCancelled).eraseToEffect()]
             }
             
+        case let .addToStateConfig(clientConfig):
+            state.clientConfiguration = clientConfig
+            let initialEffect = [Just(OwnID.CoreSDK.ViewModelAction.sendInitialRequest).eraseToEffect()]
+            let effect = state.shouldStartFlowOnConfigurationReceive ? initialEffect : []
+            return effect + [Just(.addToStateShouldStartInitRequest(value: false)).eraseToEffect()]
+            
+        case let .addToStateShouldStartInitRequest(value):
+            state.shouldStartFlowOnConfigurationReceive = value
+            return []
+            
+        // MARK: AuthManager
         case let .authManager(authManagerAction):
             switch authManagerAction {
             case .didFinishRegistration(let origin, let fido2RegisterPayload):
@@ -301,19 +314,14 @@ extension OwnID.CoreSDK {
                 state.browserViewModel = vm
                 return []
             }
-            
-        case let .addToStateConfig(clientConfig):
-            state.clientConfiguration = clientConfig
-            let initialEffect = [Just(OwnID.CoreSDK.ViewModelAction.sendInitialRequest).eraseToEffect()]
-            let effect = state.shouldStartFlowOnConfigurationReceive ? initialEffect : []
-            return effect + [Just(.addToStateShouldStartInitRequest(value: false)).eraseToEffect()]
-            
-        case let .addToStateShouldStartInitRequest(value):
-            state.shouldStartFlowOnConfigurationReceive = value
-            return []
         }
     }
     
+}
+
+// MARK: Action Functions
+
+extension OwnID.CoreSDK {
     static func createBrowserVM(for context: String,
                                 browserURL: String,
                                 email: Email?,

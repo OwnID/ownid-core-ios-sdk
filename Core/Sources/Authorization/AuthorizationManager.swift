@@ -92,7 +92,6 @@ extension OwnID.CoreSDK {
         
         @available(iOS 16.0, *)
         func beginAutoFillAssistedPasskeySignIn() {
-            #warning("fatal error")
             fatalError("For now autofill is not supported right here, we need some other way to enable this as we need new challenge for this")
             currentAuthController?.cancel()
             
@@ -154,7 +153,6 @@ extension OwnID.CoreSDK {
                 let signature = credentialAssertion.signature.base64urlEncodedString()
                 let rawAuthenticatorData = credentialAssertion.rawAuthenticatorData.base64urlEncodedString()
                 let clientDataJSON = credentialAssertion.rawClientDataJSON
-                let userID = credentialAssertion.userID
                 let credentialID = credentialAssertion.credentialID.base64urlEncodedString()
                 
                 let payload = OwnID.CoreSDK.Fido2LoginPayload(credentialId: credentialID,
