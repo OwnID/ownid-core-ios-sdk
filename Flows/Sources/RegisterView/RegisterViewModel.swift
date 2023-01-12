@@ -96,10 +96,13 @@ public extension OwnID.FlowsSDK.RegisterView {
         public func register(with email: String,
                              registerParameters: RegisterParameters = EmptyRegisterParameters()) {
             if email.isEmpty {
-                handle(.plugin(error: OwnID.FlowsSDK.RegisterError.emailIsMissing))
+                handle(.flowLog(entry: .errorEntry(context: registrationData.payload?.context, Self.self), error: .plugin(error: OwnID.FlowsSDK.RegisterError.emailIsMissing)))
                 return
             }
-            guard let payload = registrationData.payload else { handle(.payloadMissing(underlying: .none)); return }
+            guard let payload = registrationData.payload else {
+                handle(.flowLog(entry: .errorEntry(context: registrationData.payload?.context, Self.self), error: .payloadMissing(underlying: .none)))
+                return
+            }
             let config = OwnID.FlowsSDK.RegistrationConfiguration(payload: payload,
                                                                   email: OwnID.CoreSDK.Email(rawValue: email))
             registrationPerformer.register(configuration: config, parameters: registerParameters)
@@ -192,7 +195,7 @@ public extension OwnID.FlowsSDK.RegisterView {
                         }
                         
                     case .cancelled:
-                        handle(.flowCancelled)
+                        handle(.flowLog(entry: .errorEntry(context: registrationData.payload?.context, Self.self), error: .flowCancelled))
                         
                     case .loading:
                         resultPublisher.send(.success(.loading))
@@ -238,11 +241,9 @@ private extension OwnID.FlowsSDK.RegisterView.ViewModel {
             .store(in: &bag)
     }
     
-    func handle(_ error: OwnID.CoreSDK.Error) {
+    func handle(_ error: OwnID.CoreSDK.CoreErrorLogWrapper) {
         resetToInitialState()
-        OwnID.CoreSDK.logger.logFlow(.errorEntry(context: registrationData.payload?.context,
-                                                 message: "\(error.localizedDescription)",
-                                                 Self.self))
-        resultPublisher.send(.failure(error))
+        OwnID.FlowsSDK.ErrorLogSender.sendLog(error: error)
+        resultPublisher.send(.failure(error.error))
     }
 }
