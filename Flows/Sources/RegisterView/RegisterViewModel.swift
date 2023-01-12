@@ -96,7 +96,7 @@ public extension OwnID.FlowsSDK.RegisterView {
         public func register(with email: String,
                              registerParameters: RegisterParameters = EmptyRegisterParameters()) {
             if email.isEmpty {
-                handle(.flowLog(entry: .errorEntry(context: registrationData.payload?.context, Self.self), error: .plugin(error: OwnID.FlowsSDK.RegisterError.emailIsMissing)))
+                handle(.flowLog(entry: .errorEntry(context: registrationData.payload?.context, Self.self), error: .plugin(underlying: OwnID.FlowsSDK.RegisterError.emailIsMissing)))
                 return
             }
             guard let payload = registrationData.payload else {

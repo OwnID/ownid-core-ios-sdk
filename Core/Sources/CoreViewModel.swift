@@ -95,6 +95,7 @@ extension OwnID.CoreSDK {
                         resultPublisher.send(.loading)
                         
                     case .initialRequestLoaded,
+                            .addErrorToInternalStates,
                             .sendStatusRequest,
                             .addToState,
                             .addToStateConfig,
@@ -102,7 +103,7 @@ extension OwnID.CoreSDK {
                             .addToStateShouldStartInitRequest,
                             .authManager,
                             .browserVM:
-                        internalStatesChange.append(String(describing: action))
+                        internalStatesChange.append(action.debugDescription)
                         
                     case let .authRequestLoaded(payload, shouldPerformStatusRequest):
                         finishIfNeeded(shouldPerformStatusRequest: shouldPerformStatusRequest, payload: payload, action: action)
@@ -163,6 +164,7 @@ extension OwnID.CoreSDK {
         case statusRequestLoaded(response: OwnID.CoreSDK.Payload)
         case browserVM(BrowserOpenerViewModel.Action)
         case authManager(AccountManager.Action)
+        case addErrorToInternalStates(OwnID.CoreSDK.Error)
     }
     
     struct ViewModelState: LoggingEnabled {
@@ -284,6 +286,9 @@ extension OwnID.CoreSDK {
             state.shouldStartFlowOnConfigurationReceive = value
             return []
             
+        case .addErrorToInternalStates:
+            return []
+            
         // MARK: AuthManager
         case let .authManager(authManagerAction):
             switch authManagerAction {
@@ -304,15 +309,14 @@ extension OwnID.CoreSDK {
                                         fido2Payload: fido2LoginPayload,
                                         shouldPerformStatusRequest: true)]
                 
-            case let .credintialsNotFoundOrCanlelledByUser(context, browserBaseURL),
-                let .error(context, browserBaseURL):
+            case let .error(error, context, browserBaseURL):
                 let vm = createBrowserVM(for: context,
                                          browserURL: browserBaseURL,
                                          email: state.email,
                                          sdkConfigurationName: state.sdkConfigurationName,
                                          store: state.browserViewModelStore)
                 state.browserViewModel = vm
-                return []
+                return [Just(.addErrorToInternalStates(error)).eraseToEffect()]
             }
         }
     }

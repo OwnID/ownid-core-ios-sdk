@@ -41,9 +41,10 @@ public extension OwnID.CoreSDK {
         case statusRequestTypeIsMissing
         case statusRequestResponseContextMismatch
         case serverError(serverError: ServerError)
-        case plugin(error: PluginError)
+        case plugin(underlying: PluginError)
         
-        case authorizationManagerGeneralError(error: Swift.Error)
+        case authorizationManagerGeneralError(underlying: Swift.Error)
+        case authorizationManagerCredintialsNotFoundOrCanlelledByUser(underlying: ASAuthorizationError)
         case authorizationManagerAuthError(userInfo: [String : Any])
         case authorizationManagerDataMissing
         case authorizationManagerUnknownAuthType
@@ -87,7 +88,7 @@ extension OwnID.CoreSDK.Error: LocalizedError {
                 .authRequestNetworkFailed(let underlying):
             return underlying.localizedDescription
 
-        case .plugin(error: let error):
+        case .plugin(let error):
             return error.localizedDescription
             
         case .loadJWTTokenFailed(let underlying):
@@ -111,7 +112,8 @@ extension OwnID.CoreSDK.Error: LocalizedError {
         case .authorizationManagerAuthError,
                 .authorizationManagerGeneralError,
                 .authorizationManagerDataMissing,
-                .authorizationManagerUnknownAuthType:
+                .authorizationManagerUnknownAuthType,
+                .authorizationManagerCredintialsNotFoundOrCanlelledByUser:
             return "Error while performing action"
         }
     }
@@ -192,6 +194,9 @@ extension OwnID.CoreSDK.Error: CustomDebugStringConvertible {
             
         case .statusRequestResponseContextMismatch:
             return "statusRequestResponseContextMismatch"
+            
+        case .authorizationManagerCredintialsNotFoundOrCanlelledByUser(let underlying):
+            return "authorizationManagerCredintialsNotFoundOrCanlelledByUser \(underlying)"
         }
     }
 }
