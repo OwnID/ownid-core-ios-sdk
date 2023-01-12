@@ -116,3 +116,48 @@ extension OwnID.CoreSDK.Error: LocalizedError {
         }
     }
 }
+
+extension OwnID.CoreSDK.Error: CustomDebugStringConvertible {
+    public var debugDescription: String {
+        switch self {
+        case .unsecuredHttpPassed,
+                .notValidRedirectionURLOrNotMatchingFromConfiguration,
+                .emailIsInvalid,
+                .authorizationManagerAuthError,
+                .authorizationManagerGeneralError,
+                .authorizationManagerDataMissing,
+                .authorizationManagerUnknownAuthType,
+                .contextIsMissing,
+                .flowCancelled,
+                .redirectParameterFromURLCancelledOpeningSDK,
+                .initRequestNetworkFailed,
+                .statusRequestNetworkFailed,
+                .authRequestNetworkFailed,
+                .plugin,
+                .loadJWTTokenFailed,
+                .serverError,
+                .payloadMissing:
+            return errorDescription ?? ""
+            
+        case .initRequestBodyEncodeFailed,
+                .settingRequestResponseIsEmpty,
+                .initRequestResponseDecodeFailed,
+                .initRequestResponseIsEmpty,
+                .statusRequestBodyEncodeFailed,
+                .statusRequestResponseDecodeFailed,
+                .authRequestResponseDecodeFailed,
+                .statusRequestResponseIsEmpty,
+                .authRequestResponseIsEmpty,
+                .statusRequestFail,
+                .statusRequestResponseContextMismatch,
+                .tokenDataIsMissing,
+                .authRequestBodyEncodeFailed,
+                .statusRequestTypeIsMissing,
+                .settingRequestResponseDecodeFailed,
+                .settingRequestNetworkFailed,
+                .settingRequestBodyEncodeFailed,
+                .settingRequestResponseNotCompliantResponse:
+            return "Error while performing request"
+        }
+    }
+}
