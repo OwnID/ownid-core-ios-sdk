@@ -130,7 +130,7 @@ public extension OwnID.FlowsSDK.LoginView {
                         process(payload: payload)
                         
                     case .cancelled:
-                        handle(.flowCancelled)
+                        handle(.flowLog(entry: .errorEntry(context: payload?.context, Self.self), error: .flowCancelled))
                         
                     case .loading:
                         resultPublisher.send(.success(.loading))
@@ -181,11 +181,9 @@ private extension OwnID.FlowsSDK.LoginView.ViewModel {
             .store(in: &bag)
     }
     
-    func handle(_ error: OwnID.CoreSDK.Error) {
+    func handle(_ error: OwnID.CoreSDK.CoreErrorLogWrapper) {
         resetToInitialState()
-        OwnID.CoreSDK.logger.logFlow(.errorEntry(context: payload?.context,
-                                                 message: "\(error.localizedDescription)",
-                                                 Self.self))
-        resultPublisher.send(.failure(error))
+        OwnID.FlowsSDK.ErrorLogSender.sendLog(error: error)
+        resultPublisher.send(.failure(error.error))
     }
 }
