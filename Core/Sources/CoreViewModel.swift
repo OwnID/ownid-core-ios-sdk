@@ -5,7 +5,7 @@ import LocalAuthentication
 extension OwnID.CoreSDK {
     final class CoreViewModel: ObservableObject {
         @Published var store: Store<OwnID.CoreSDK.ViewModelState, OwnID.CoreSDK.ViewModelAction>
-        private let resultPublisher = PassthroughSubject<OwnID.CoreSDK.Event, OwnID.CoreSDK.Error>()
+        private let resultPublisher = PassthroughSubject<OwnID.CoreSDK.Event, OwnID.CoreSDK.CoreErrorLogWrapper>()
         private var bag = Set<AnyCancellable>()
         
         var eventPublisher: OwnID.CoreSDK.EventPublisher { resultPublisher.receive(on: DispatchQueue.main).eraseToAnyPublisher() }
@@ -57,7 +57,7 @@ extension OwnID.CoreSDK {
             store.send(.cancelled)
         }
         
-        func subscribeToURL(publisher: AnyPublisher<Void, OwnID.CoreSDK.Error>) {
+        func subscribeToURL(publisher: AnyPublisher<Void, OwnID.CoreSDK.CoreErrorLogWrapper>) {
             publisher
                 .sink { [unowned self] completion in
                     if case .failure(let error) = completion {
@@ -152,7 +152,7 @@ extension OwnID.CoreSDK {
         case sendInitialRequest
         case initialRequestLoaded(response: OwnID.CoreSDK.Init.Response)
         case settingsRequestLoaded(response: OwnID.CoreSDK.Setting.Response, origin: String, fido2Payload: Encodable)
-        case error(OwnID.CoreSDK.Error)
+        case error(OwnID.CoreSDK.CoreErrorLogWrapper)
         case sendStatusRequest
         case browserCancelled
         case cancelled
@@ -186,7 +186,7 @@ extension OwnID.CoreSDK {
         switch action {
         case .sendInitialRequest:
             if let email = state.email, !email.rawValue.isEmpty, !email.isValid {
-                return errorEffect(.emailIsInvalid)
+                return errorEffect(.coreLog(entry: .errorEntry(Self.self), error: .emailIsInvalid))
             }
             return [sendInitialRequest(type: state.type,
                                        token: state.token,
@@ -194,7 +194,7 @@ extension OwnID.CoreSDK {
                                        origin: state.clientConfiguration?.rpId)]
             
         case let .initialRequestLoaded(response):
-            guard let context = response.context else { return errorEffect(.contextIsMissing) }
+            guard let context = response.context else { return errorEffect(.coreLog(entry: .errorEntry(Self.self), error: .contextIsMissing)) }
             if #available(iOS 16, *),
                let config = state.clientConfiguration,
                let domain = config.rpId,
@@ -224,7 +224,7 @@ extension OwnID.CoreSDK {
             
         case let .settingsRequestLoaded(response, origin, fido2RegisterPayload):
             if let challengeType = response.challengeType, challengeType != .register {
-                return [Just(.error(.settingRequestResponseNotCompliantResponse)).eraseToEffect()]
+                return errorEffect(.coreLog(entry: .errorEntry(Self.self), error: .settingRequestResponseNotCompliantResponse))
             }
             return [sendAuthRequest(session: state.session,
                                     origin: origin,
@@ -276,7 +276,7 @@ extension OwnID.CoreSDK {
             switch authManagerAction {
             case .didFinishRegistration(let origin, let fido2RegisterPayload):
                 guard let email = state.email else {
-                    return [Just(.error(.emailIsInvalid)).eraseToEffect()]
+                    return errorEffect(.coreLog(entry: .errorEntry(Self.self), error: .emailIsInvalid))
                 }
                 return [sendSettingsRequest(session: state.session,
                                             loginID: email.rawValue,
@@ -339,7 +339,7 @@ extension OwnID.CoreSDK {
         return vm
     }
     
-    static func errorEffect(_ error: OwnID.CoreSDK.Error) -> [Effect<ViewModelAction>] {
+    static func errorEffect(_ error: OwnID.CoreSDK.CoreErrorLogWrapper) -> [Effect<ViewModelAction>] {
         [Just(.error(error)).eraseToEffect()]
     }
     
