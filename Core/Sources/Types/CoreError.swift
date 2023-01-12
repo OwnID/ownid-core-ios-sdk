@@ -139,25 +139,59 @@ extension OwnID.CoreSDK.Error: CustomDebugStringConvertible {
                 .payloadMissing:
             return errorDescription ?? ""
             
-        case .initRequestBodyEncodeFailed,
-                .settingRequestResponseIsEmpty,
-                .initRequestResponseDecodeFailed,
-                .initRequestResponseIsEmpty,
-                .statusRequestBodyEncodeFailed,
-                .statusRequestResponseDecodeFailed,
-                .authRequestResponseDecodeFailed,
-                .statusRequestResponseIsEmpty,
-                .authRequestResponseIsEmpty,
-                .statusRequestFail,
-                .statusRequestResponseContextMismatch,
-                .tokenDataIsMissing,
-                .authRequestBodyEncodeFailed,
-                .statusRequestTypeIsMissing,
-                .settingRequestResponseDecodeFailed,
-                .settingRequestNetworkFailed,
-                .settingRequestBodyEncodeFailed,
-                .settingRequestResponseNotCompliantResponse:
-            return "Error while performing request"
+        case .tokenDataIsMissing:
+            return "tokenDataIsMissing"
+            
+        case .initRequestBodyEncodeFailed(underlying: let underlying):
+            return "initRequestBodyEncodeFailed \(underlying)"
+            
+        case .initRequestResponseDecodeFailed(underlying: let underlying):
+            return "initRequestResponseDecodeFailed \(underlying)"
+            
+        case .initRequestResponseIsEmpty:
+            return "initRequestResponseIsEmpty"
+            
+        case .authRequestResponseIsEmpty:
+            return "authRequestResponseIsEmpty"
+            
+        case .authRequestResponseDecodeFailed(underlying: let underlying):
+            return "authRequestResponseDecodeFailed \(underlying)"
+            
+        case .authRequestBodyEncodeFailed(underlying: let underlying):
+            return "authRequestBodyEncodeFailed \(underlying)"
+            
+        case .settingRequestResponseNotCompliantResponse:
+            return "settingRequestResponseNotCompliantResponse"
+            
+        case .settingRequestResponseIsEmpty:
+            return "settingRequestResponseIsEmpty"
+            
+        case .settingRequestResponseDecodeFailed(underlying: let underlying):
+            return "settingRequestResponseDecodeFailed \(underlying)"
+            
+        case .settingRequestNetworkFailed(underlying: let underlying):
+            return "settingRequestNetworkFailed \(underlying)"
+            
+        case .settingRequestBodyEncodeFailed(underlying: let underlying):
+            return "settingRequestBodyEncodeFailed \(underlying)"
+            
+        case .statusRequestBodyEncodeFailed(underlying: let underlying):
+            return "statusRequestBodyEncodeFailed \(underlying)"
+            
+        case .statusRequestResponseDecodeFailed(underlying: let underlying):
+            return "statusRequestResponseDecodeFailed \(underlying)"
+            
+        case .statusRequestResponseIsEmpty:
+            return "statusRequestResponseIsEmpty"
+            
+        case .statusRequestFail(underlying: let underlying):
+            return "statusRequestFail \(underlying)"
+            
+        case .statusRequestTypeIsMissing:
+            return "statusRequestTypeIsMissing"
+            
+        case .statusRequestResponseContextMismatch:
+            return "statusRequestResponseContextMismatch"
         }
     }
 }
