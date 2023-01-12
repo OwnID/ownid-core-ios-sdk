@@ -31,7 +31,7 @@ public extension OwnID {
         
         @ObservedObject var store: Store<SDKState, SDKAction>
         
-        private let urlPublisher = PassthroughSubject<Void, Error>()
+        private let urlPublisher = PassthroughSubject<Void, OwnID.CoreSDK.CoreErrorLogWrapper>()
         private let configurationLoadedPublisher = PassthroughSubject<ClientConfiguration, Never>()
         
         private init() {
@@ -151,7 +151,7 @@ public extension OwnID {
             let components = URLComponents(url: url, resolvingAgainstBaseURL: false)?.queryItems
             let redirectParameterValue = components?.first(where: { $0.name == redirectParamKey })?.value
             if redirectParameterValue == "false" {
-                urlPublisher.send(completion: .failure(.redirectParameterFromURLCancelledOpeningSDK))
+                urlPublisher.send(completion: .failure(.coreLog(entry: .errorEntry(Self.self), error: .redirectParameterFromURLCancelledOpeningSDK)))
                 return
             }
             
@@ -162,7 +162,7 @@ public extension OwnID {
                     .redirectionURL
                     .lowercased())
             else {
-                urlPublisher.send(completion: .failure(.notValidRedirectionURLOrNotMatchingFromConfiguration))
+                urlPublisher.send(completion: .failure(.coreLog(entry: .errorEntry(Self.self), error: .notValidRedirectionURLOrNotMatchingFromConfiguration)))
                 return
             }
             urlPublisher.send(())
