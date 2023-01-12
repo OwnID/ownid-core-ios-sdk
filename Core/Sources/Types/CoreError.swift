@@ -48,6 +48,9 @@ public extension OwnID.CoreSDK {
         case authorizationManagerAuthError(userInfo: [String : Any])
         case authorizationManagerDataMissing
         case authorizationManagerUnknownAuthType
+        
+        case localizationManager(underlying: Swift.Error)
+        case localizationDownloader(underlying: Swift.Error)
     }
 }
 
@@ -76,6 +79,7 @@ extension OwnID.CoreSDK.Error: LocalizedError {
                 .statusRequestResponseContextMismatch,
                 .tokenDataIsMissing,
                 .authRequestBodyEncodeFailed,
+                .localizationDownloader,
                 .statusRequestTypeIsMissing,
                 .settingRequestResponseDecodeFailed,
                 .settingRequestNetworkFailed,
@@ -115,6 +119,9 @@ extension OwnID.CoreSDK.Error: LocalizedError {
                 .authorizationManagerUnknownAuthType,
                 .authorizationManagerCredintialsNotFoundOrCanlelledByUser:
             return "Error while performing action"
+            
+        case .localizationManager(underlying: let underlying):
+            return underlying.localizedDescription
         }
     }
 }
@@ -197,6 +204,12 @@ extension OwnID.CoreSDK.Error: CustomDebugStringConvertible {
             
         case .authorizationManagerCredintialsNotFoundOrCanlelledByUser(let underlying):
             return "authorizationManagerCredintialsNotFoundOrCanlelledByUser \(underlying)"
+            
+        case .localizationManager(underlying: let underlying):
+            return "localizationManager \(underlying)"
+            
+        case .localizationDownloader(underlying: let underlying):
+            return "localizationDownloader \(underlying)"
         }
     }
 }
