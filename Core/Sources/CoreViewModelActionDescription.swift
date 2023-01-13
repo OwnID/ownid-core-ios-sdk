@@ -31,6 +31,11 @@ extension OwnID.CoreSDK.ViewModelAction: CustomDebugStringConvertible {
             return "addToStateConfig"
         case .addToStateShouldStartInitRequest:
             return "addToStateShouldStartInitRequest"
+        case .cancelled:
+            return "cancelled"
+        case .addErrorToInternalStates(let error):
+            let message = "addErrorToInternalStates " + error.localizedDescription + " " + error.debugDescription
+            return message
         }
     }
 }

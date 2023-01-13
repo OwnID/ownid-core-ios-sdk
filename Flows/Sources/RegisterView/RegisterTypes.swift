@@ -13,7 +13,7 @@ extension OwnID.FlowsSDK.RegisterError: LocalizedError {
 
 public extension OwnID {
     typealias RegistrationPublisher = AnyPublisher<Result<OwnID.FlowsSDK.RegistrationEvent, OwnID.CoreSDK.Error>, Never>
-    typealias RegistrationResultPublisher = AnyPublisher<OwnID.RegisterResult, OwnID.CoreSDK.Error>
+    typealias RegistrationResultPublisher = AnyPublisher<OwnID.RegisterResult, OwnID.CoreSDK.CoreErrorLogWrapper>
     
     struct RegisterResult {
         public init(operationResult: OperationResult, authType: OwnID.CoreSDK.AuthType? = .none) {

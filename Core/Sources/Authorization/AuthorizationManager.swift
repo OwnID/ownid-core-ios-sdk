@@ -10,11 +10,8 @@ extension OwnID.CoreSDK.AccountManager.Action: CustomDebugStringConvertible {
         case .didFinishLogin:
             return "didFinishLogin"
             
-        case .credintialsNotFoundOrCanlelledByUser:
-            return "credintialsNotFoundOrCanlelledByUser"
-            
-        case .error(let error):
-            return error.localizedDescription
+        case .error:
+            return "generalError"
         }
     }
 }
@@ -31,8 +28,7 @@ extension OwnID.CoreSDK.AccountManager {
     enum Action {
         case didFinishRegistration(origin: String, fido2RegisterPayload: OwnID.CoreSDK.Fido2RegisterPayload)
         case didFinishLogin(origin: String, fido2LoginPayload: OwnID.CoreSDK.Fido2LoginPayload)
-        case credintialsNotFoundOrCanlelledByUser(context: OwnID.CoreSDK.Context, browserBaseURL: String)
-        case error(error: OwnID.CoreSDK.Error)
+        case error(error: OwnID.CoreSDK.Error, context: OwnID.CoreSDK.Context, browserBaseURL: String)
     }
 }
 
@@ -63,6 +59,11 @@ extension OwnID.CoreSDK {
         }
         
         @available(iOS 16.0, *)
+        func cancel() {
+            currentAuthController?.cancel()
+        }
+        
+        @available(iOS 16.0, *)
         func signInWith() {
             currentAuthController?.cancel()
             let securityKeyProvider = ASAuthorizationSecurityKeyPublicKeyCredentialProvider(relyingPartyIdentifier: domain)
@@ -87,7 +88,6 @@ extension OwnID.CoreSDK {
         
         @available(iOS 16.0, *)
         func beginAutoFillAssistedPasskeySignIn() {
-            #warning("fatal error")
             fatalError("For now autofill is not supported right here, we need some other way to enable this as we need new challenge for this")
             currentAuthController?.cancel()
             
@@ -129,7 +129,7 @@ extension OwnID.CoreSDK {
                 // The attestationObject contains the user's new public key to store and use for subsequent sign-ins.
                 guard let attestationObject = credentialRegistration.rawAttestationObject?.base64urlEncodedString()
                 else {
-                    store.send(.error(error: .authorizationManagerDataMissing))
+                    store.send(.error(error: .authorizationManagerDataMissing, context: challenge, browserBaseURL: browserBaseURL))
                     return
                 }
                 
@@ -148,7 +148,6 @@ extension OwnID.CoreSDK {
                 let signature = credentialAssertion.signature.base64urlEncodedString()
                 let rawAuthenticatorData = credentialAssertion.rawAuthenticatorData.base64urlEncodedString()
                 let clientDataJSON = credentialAssertion.rawClientDataJSON
-                let userID = credentialAssertion.userID
                 let credentialID = credentialAssertion.credentialID.base64urlEncodedString()
                 
                 let payload = OwnID.CoreSDK.Fido2LoginPayload(credentialId: credentialID,
@@ -158,19 +157,27 @@ extension OwnID.CoreSDK {
                 store.send(.didFinishLogin(origin: domain, fido2LoginPayload: payload))
                 
             default:
-                #warning("move to other layer of SDKs")
-                OwnID.CoreSDK.logger.logCore(.errorEntry(context: challenge, message: "\(OwnID.CoreSDK.Error.authorizationManagerUnknownAuthType) \(authorization.credential)", Self.self))
-                store.send(.error(error: .authorizationManagerUnknownAuthType))
+                store.send(.error(error: .authorizationManagerUnknownAuthType, context: challenge, browserBaseURL: browserBaseURL))
             }
             
             isPerformingModalReqest = false
         }
         
+        deinit {
+            if #available(iOS 16.0, *) {
+                currentAuthController?.cancel()
+            }
+        }
+        
+        @available(iOS 16.0, *)
         func authorizationController(controller: ASAuthorizationController, didCompleteWithError error: Swift.Error) {
+            defer {
+                currentAuthController?.cancel()
+                controller.cancel()
+            }
             guard let authorizationError = error as? ASAuthorizationError else {
                 isPerformingModalReqest = false
-                OwnID.CoreSDK.logger.logCore(.errorEntry(context: challenge, message: error.localizedDescription, Self.self))
-                store.send(.error(error: .authorizationManagerGeneralError(error: error)))
+                store.send(.error(error: .authorizationManagerGeneralError(underlying: error), context: challenge, browserBaseURL: browserBaseURL))
                 return
             }
             
@@ -179,11 +186,10 @@ extension OwnID.CoreSDK {
                 // This is a good time to show a traditional login form, or ask the user to create an account.
                 
                 if isPerformingModalReqest {
-                    store.send(.credintialsNotFoundOrCanlelledByUser(context: challenge, browserBaseURL: browserBaseURL))
+                    store.send(.error(error: .authorizationManagerCredintialsNotFoundOrCanlelledByUser(underlying: authorizationError), context: challenge, browserBaseURL: browserBaseURL))
                 }
             } else {
-                OwnID.CoreSDK.logger.logCore(.errorEntry(context: challenge, message: "\((error as NSError).userInfo)", Self.self))
-                store.send(.error(error: .authorizationManagerAuthError(userInfo: (error as NSError).userInfo)))
+                store.send(.error(error: .authorizationManagerAuthError(userInfo: (error as NSError).userInfo), context: challenge, browserBaseURL: browserBaseURL))
             }
             
             isPerformingModalReqest = false
@@ -198,9 +204,6 @@ extension OwnID.CoreSDK.AccountManager {
             return []
             
         case .didFinishLogin:
-            return []
-            
-        case .credintialsNotFoundOrCanlelledByUser:
             return []
             
         case .error:

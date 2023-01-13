@@ -1,8 +1,8 @@
 import Combine
 
 public extension OwnID {
-    typealias LoginResultPublisher = AnyPublisher<OwnID.LoginResult, OwnID.CoreSDK.Error>
     typealias LoginPublisher = AnyPublisher<Result<OwnID.FlowsSDK.LoginEvent, OwnID.CoreSDK.Error>, Never>
+    typealias LoginResultPublisher = AnyPublisher<OwnID.LoginResult, OwnID.CoreSDK.CoreErrorLogWrapper>
     
     struct LoginResult {
         public init(operationResult: OperationResult, authType: OwnID.CoreSDK.AuthType? = .none) {

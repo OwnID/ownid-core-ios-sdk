@@ -28,7 +28,7 @@ public extension OwnID.CoreSDK.CoreMetricLogEntry {
     }
 }
 
-extension LoggerProtocol {
+public extension LoggerProtocol {
     func logCore(_ entry: OwnID.CoreSDK.CoreMetricLogEntry) {
         self.log(entry)
     }

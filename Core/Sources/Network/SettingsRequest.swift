@@ -50,7 +50,7 @@ extension OwnID.CoreSDK.Setting {
             self.origin = origin
         }
         
-        func perform() -> AnyPublisher<Response, OwnID.CoreSDK.Error> {
+        func perform() -> AnyPublisher<Response, OwnID.CoreSDK.CoreErrorLogWrapper> {
             Just(RequestBody(loginID: loginID, context: context, nonce: nonce))
                 .setFailureType(to: Error.self)
                 .eraseToAnyPublisher()
@@ -82,10 +82,9 @@ extension OwnID.CoreSDK.Setting {
                     OwnID.CoreSDK.logger.logCore(.entry(message: "Finished request, cred id: \(String(describing: decoded.credId?.logValue))", Self.self))
                     return decoded
                 }
-                .mapError { initError in
-                    OwnID.CoreSDK.logger.logCore(.errorEntry(message: "\(initError.localizedDescription)", Self.self))
-                    guard let error = initError as? OwnID.CoreSDK.Error else { return OwnID.CoreSDK.Error.settingRequestResponseDecodeFailed(underlying: initError) }
-                    return error
+                .mapError { [self] initError in
+                    guard let error = initError as? OwnID.CoreSDK.Error else { return .coreLog(entry: .errorEntry(context: context, Self.self), error: .settingRequestResponseDecodeFailed(underlying: initError)) }
+                    return .coreLog(entry: .errorEntry(Self.self), error: error)
                 }
                 .eraseToAnyPublisher()
         }

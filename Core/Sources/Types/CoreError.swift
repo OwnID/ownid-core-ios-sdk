@@ -22,6 +22,8 @@ public extension OwnID.CoreSDK {
         case initRequestResponseIsEmpty
         
         case authRequestResponseIsEmpty
+        case authRequestTypeIsMissing
+        case authRequestResponseContextMismatch
         case authRequestResponseDecodeFailed(underlying: Swift.Error)
         case authRequestNetworkFailed(underlying: URLError)
         case authRequestBodyEncodeFailed(underlying: Swift.Error)
@@ -41,12 +43,16 @@ public extension OwnID.CoreSDK {
         case statusRequestTypeIsMissing
         case statusRequestResponseContextMismatch
         case serverError(serverError: ServerError)
-        case plugin(error: PluginError)
+        case plugin(underlying: PluginError)
         
-        case authorizationManagerGeneralError(error: Swift.Error)
+        case authorizationManagerGeneralError(underlying: Swift.Error)
+        case authorizationManagerCredintialsNotFoundOrCanlelledByUser(underlying: ASAuthorizationError)
         case authorizationManagerAuthError(userInfo: [String : Any])
         case authorizationManagerDataMissing
         case authorizationManagerUnknownAuthType
+        
+        case localizationManager(underlying: Swift.Error)
+        case localizationDownloader(underlying: Swift.Error)
     }
 }
 
@@ -72,10 +78,13 @@ extension OwnID.CoreSDK.Error: LocalizedError {
                 .statusRequestResponseIsEmpty,
                 .authRequestResponseIsEmpty,
                 .statusRequestFail,
+                .authRequestResponseContextMismatch,
                 .statusRequestResponseContextMismatch,
                 .tokenDataIsMissing,
                 .authRequestBodyEncodeFailed,
+                .localizationDownloader,
                 .statusRequestTypeIsMissing,
+                .authRequestTypeIsMissing,
                 .settingRequestResponseDecodeFailed,
                 .settingRequestNetworkFailed,
                 .settingRequestBodyEncodeFailed,
@@ -87,7 +96,7 @@ extension OwnID.CoreSDK.Error: LocalizedError {
                 .authRequestNetworkFailed(let underlying):
             return underlying.localizedDescription
 
-        case .plugin(error: let error):
+        case .plugin(let error):
             return error.localizedDescription
             
         case .loadJWTTokenFailed(let underlying):
@@ -111,8 +120,106 @@ extension OwnID.CoreSDK.Error: LocalizedError {
         case .authorizationManagerAuthError,
                 .authorizationManagerGeneralError,
                 .authorizationManagerDataMissing,
-                .authorizationManagerUnknownAuthType:
+                .authorizationManagerUnknownAuthType,
+                .authorizationManagerCredintialsNotFoundOrCanlelledByUser:
             return "Error while performing action"
+            
+        case .localizationManager(underlying: let underlying):
+            return underlying.localizedDescription
+        }
+    }
+}
+
+extension OwnID.CoreSDK.Error: CustomDebugStringConvertible {
+    public var debugDescription: String {
+        switch self {
+        case .unsecuredHttpPassed,
+                .notValidRedirectionURLOrNotMatchingFromConfiguration,
+                .emailIsInvalid,
+                .authorizationManagerAuthError,
+                .authorizationManagerGeneralError,
+                .authorizationManagerDataMissing,
+                .authorizationManagerUnknownAuthType,
+                .contextIsMissing,
+                .flowCancelled,
+                .redirectParameterFromURLCancelledOpeningSDK,
+                .initRequestNetworkFailed,
+                .statusRequestNetworkFailed,
+                .authRequestNetworkFailed,
+                .plugin,
+                .loadJWTTokenFailed,
+                .serverError,
+                .payloadMissing:
+            return errorDescription ?? ""
+            
+        case .tokenDataIsMissing:
+            return "tokenDataIsMissing"
+            
+        case .initRequestBodyEncodeFailed(underlying: let underlying):
+            return "initRequestBodyEncodeFailed \(underlying)"
+            
+        case .initRequestResponseDecodeFailed(underlying: let underlying):
+            return "initRequestResponseDecodeFailed \(underlying)"
+            
+        case .initRequestResponseIsEmpty:
+            return "initRequestResponseIsEmpty"
+            
+        case .authRequestResponseIsEmpty:
+            return "authRequestResponseIsEmpty"
+            
+        case .authRequestResponseDecodeFailed(underlying: let underlying):
+            return "authRequestResponseDecodeFailed \(underlying)"
+            
+        case .authRequestBodyEncodeFailed(underlying: let underlying):
+            return "authRequestBodyEncodeFailed \(underlying)"
+            
+        case .settingRequestResponseNotCompliantResponse:
+            return "settingRequestResponseNotCompliantResponse"
+            
+        case .settingRequestResponseIsEmpty:
+            return "settingRequestResponseIsEmpty"
+            
+        case .settingRequestResponseDecodeFailed(underlying: let underlying):
+            return "settingRequestResponseDecodeFailed \(underlying)"
+            
+        case .settingRequestNetworkFailed(underlying: let underlying):
+            return "settingRequestNetworkFailed \(underlying)"
+            
+        case .settingRequestBodyEncodeFailed(underlying: let underlying):
+            return "settingRequestBodyEncodeFailed \(underlying)"
+            
+        case .statusRequestBodyEncodeFailed(underlying: let underlying):
+            return "statusRequestBodyEncodeFailed \(underlying)"
+            
+        case .statusRequestResponseDecodeFailed(underlying: let underlying):
+            return "statusRequestResponseDecodeFailed \(underlying)"
+            
+        case .statusRequestResponseIsEmpty:
+            return "statusRequestResponseIsEmpty"
+            
+        case .statusRequestFail(underlying: let underlying):
+            return "statusRequestFail \(underlying)"
+            
+        case .statusRequestTypeIsMissing:
+            return "statusRequestTypeIsMissing"
+            
+        case .authRequestTypeIsMissing:
+            return "authRequestTypeIsMissing"
+            
+        case .statusRequestResponseContextMismatch:
+            return "statusRequestResponseContextMismatch"
+            
+        case .authRequestResponseContextMismatch:
+            return "authRequestResponseContextMismatch"
+            
+        case .authorizationManagerCredintialsNotFoundOrCanlelledByUser(let underlying):
+            return "authorizationManagerCredintialsNotFoundOrCanlelledByUser \(underlying)"
+            
+        case .localizationManager(underlying: let underlying):
+            return "localizationManager \(underlying)"
+            
+        case .localizationDownloader(underlying: let underlying):
+            return "localizationDownloader \(underlying)"
         }
     }
 }

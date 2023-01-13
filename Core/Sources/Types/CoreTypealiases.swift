@@ -7,7 +7,7 @@ public extension OwnID.CoreSDK {
     typealias Context = String
     typealias SessionChallenge = String
     typealias SessionVerifier = String
-    typealias EventPublisher = AnyPublisher<Event, Error>
+    typealias EventPublisher = AnyPublisher<Event, CoreErrorLogWrapper>
     typealias ServerURL = URL
     typealias RedirectionURLString = String
     typealias AuthType = String

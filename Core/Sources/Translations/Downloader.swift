@@ -9,7 +9,7 @@ extension OwnID.CoreSDK.TranslationsSDK.Downloader {
 
 extension OwnID.CoreSDK.TranslationsSDK {
     final class Downloader {
-        typealias DownloaderPublisher = AnyPublisher<(systemLanguage: String, language: [String: String]), Error>
+        typealias DownloaderPublisher = AnyPublisher<(systemLanguage: String, language: [String: String]), OwnID.CoreSDK.CoreErrorLogWrapper>
         
         private let session: URLSession
         
@@ -51,13 +51,16 @@ private extension OwnID.CoreSDK.TranslationsSDK.Downloader {
         basei18nURL.appendingPathComponent(currentLanguage).appendingPathComponent("mobile-sdk.json")
     }
     
-    func downloadSupportedTranslationsList() -> AnyPublisher<[String], Error> {
+    func downloadSupportedTranslationsList() -> AnyPublisher<[String], OwnID.CoreSDK.CoreErrorLogWrapper> {
         return session.dataTaskPublisher(for: langsURL)
             .eraseToAnyPublisher()
             .map { $0.data }
             .eraseToAnyPublisher()
             .decode(type: SupportedLanguages.self, decoder: JSONDecoder())
             .map { $0.langs }
+            .mapError {
+                OwnID.CoreSDK.CoreErrorLogWrapper.coreLog(entry: .errorEntry(Self.self), error: .localizationDownloader(underlying: $0))
+            }
             .eraseToAnyPublisher()
     }
     
@@ -67,7 +70,9 @@ private extension OwnID.CoreSDK.TranslationsSDK.Downloader {
             .map { $0.data }
             .compactMap { try? JSONSerialization.jsonObject(with: $0, options: []) as? [String: String] }
             .map { (correspondingSystemLanguage, $0) }
-            .mapError { $0 as Error }
+            .mapError {
+                OwnID.CoreSDK.CoreErrorLogWrapper.coreLog(entry: .errorEntry(Self.self), error: .localizationDownloader(underlying: $0))
+            }
             .eraseToAnyPublisher()
     }
 }

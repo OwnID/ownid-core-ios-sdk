@@ -49,7 +49,7 @@ extension OwnID.CoreSDK {
                 return
             }
             entry.metadata[LoggerValues.correlationIDKey] = LoggerValues.instanceID.uuidString
-            entry.metadata["sessionRequestSequenceNumber"] = String(sessionRequestSequenceNumber)
+            entry.metadata[LoggerValues.sequenceNumber] = String(sessionRequestSequenceNumber)
             entry.version = UserAgentManager.shared.userFacingSDKVersion
             entry.userAgent = UserAgentManager.shared.SDKUserAgent
             sessionRequestSequenceNumber += 1
