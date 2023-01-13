@@ -47,12 +47,11 @@ extension OwnID.CoreSDK.Init {
             self.token = token
             self.webLanguages = webLanguages
         }
-        #warning("remove hardcode")
         func perform() -> AnyPublisher<Response, OwnID.CoreSDK.CoreErrorLogWrapper> {
             Just(RequestBody(sessionChallenge: sessionChallenge,
                              type: type,
                              data: token?.jwtString,
-                             originUrl: "https://" + (origin ?? "")))
+                             originUrl: origin?.extendHttpsIfNeeded()))
                 .setFailureType(to: Error.self)
                 .eraseToAnyPublisher()
                 .encode(encoder: JSONEncoder())

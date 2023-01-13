@@ -10,15 +10,20 @@ extension URLRequest {
     }
     
     public mutating func add(origin: String) {
-        var origin = origin
-        if !origin.contains("https://"), !origin.contains("http://"), !origin.contains("http") {
-            origin = "https://" + origin
-        }
-        addValue(origin, forHTTPHeaderField: "Origin")
+        addValue(origin.extendHttpsIfNeeded(), forHTTPHeaderField: "Origin")
     }
     
     public mutating func add(webLanguages: OwnID.CoreSDK.Languages) {
         let languagesString = webLanguages.rawValue.joined(separator: ",")
         addValue(languagesString, forHTTPHeaderField: "Accept-Language")
+    }
+}
+
+extension String {
+    func extendHttpsIfNeeded() -> Self {
+        if !contains("https://"), !contains("http://"), !contains("http") {
+            return "https://" + self
+        }
+        return self
     }
 }
