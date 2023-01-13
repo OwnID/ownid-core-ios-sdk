@@ -96,11 +96,11 @@ public extension OwnID.FlowsSDK.RegisterView {
         public func register(with email: String,
                              registerParameters: RegisterParameters = EmptyRegisterParameters()) {
             if email.isEmpty {
-                handle(.flowLog(entry: .errorEntry(context: registrationData.payload?.context, Self.self), error: .plugin(underlying: OwnID.FlowsSDK.RegisterError.emailIsMissing)))
+                handle(.coreLog(entry: .errorEntry(context: registrationData.payload?.context, Self.self), error: .plugin(underlying: OwnID.FlowsSDK.RegisterError.emailIsMissing)))
                 return
             }
             guard let payload = registrationData.payload else {
-                handle(.flowLog(entry: .errorEntry(context: registrationData.payload?.context, Self.self), error: .payloadMissing(underlying: .none)))
+                handle(.coreLog(entry: .errorEntry(context: registrationData.payload?.context, Self.self), error: .payloadMissing(underlying: .none)))
                 return
             }
             let config = OwnID.FlowsSDK.RegistrationConfiguration(payload: payload,
@@ -180,7 +180,7 @@ public extension OwnID.FlowsSDK.RegisterView {
                 } receiveValue: { [unowned self] event in
                     switch event {
                     case .success(let payload):
-                        OwnID.CoreSDK.logger.logFlow(.entry(context: payload.context, Self.self))
+                        OwnID.CoreSDK.logger.logCore(.entry(context: payload.context, Self.self))
                         switch payload.responseType {
                         case .registrationInfo:
                             self.registrationData.payload = payload
@@ -195,7 +195,7 @@ public extension OwnID.FlowsSDK.RegisterView {
                         }
                         
                     case .cancelled:
-                        handle(.flowLog(entry: .errorEntry(context: registrationData.payload?.context, Self.self), error: .flowCancelled))
+                        handle(.coreLog(entry: .errorEntry(context: registrationData.payload?.context, Self.self), error: .flowCancelled))
                         
                     case .loading:
                         resultPublisher.send(.success(.loading))

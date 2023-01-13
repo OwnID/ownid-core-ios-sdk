@@ -130,7 +130,7 @@ public extension OwnID.FlowsSDK.LoginView {
                         process(payload: payload)
                         
                     case .cancelled:
-                        handle(.flowLog(entry: .errorEntry(context: payload?.context, Self.self), error: .flowCancelled))
+                        handle(.coreLog(entry: .errorEntry(context: payload?.context, Self.self), error: .flowCancelled))
                         
                     case .loading:
                         resultPublisher.send(.success(.loading))
