@@ -69,3 +69,19 @@ extension OwnID.CoreSDK {
         public var category: EventCategory?
     }
 }
+
+extension OwnID.CoreSDK.StandardMetricLogEntry: CustomDebugStringConvertible {
+    public var debugDescription: String {
+        """
+        appURL: \(appURL ?? "")
+        context: \(context)
+        message: \(message)
+        codeInitiator: \(codeInitiator)
+        userAgent: \(userAgent)
+        version: \(version)
+        metadata: \(metadata)
+        type: \(type ?? .click)
+        action: \(action ?? "")
+    """
+    }
+}

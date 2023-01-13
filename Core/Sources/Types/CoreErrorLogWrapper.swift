@@ -17,3 +17,9 @@ public extension OwnID.CoreSDK.CoreErrorLogWrapper {
         OwnID.CoreSDK.CoreErrorLogWrapper(entry: entry, error: error)
     }
 }
+
+extension OwnID.CoreSDK.CoreErrorLogWrapper: CustomDebugStringConvertible {
+    public var debugDescription: String {
+        "\(error.localizedDescription) \(error.debugDescription) \(entry.message)"
+    }
+}

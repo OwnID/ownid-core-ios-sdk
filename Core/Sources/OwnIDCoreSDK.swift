@@ -11,7 +11,7 @@ public extension OwnID.CoreSDK {
 public extension OwnID {
     
     static func startDebugConsoleLogger() {
-        OwnID.CoreSDK.logger.add(OwnID.CoreSDK.ConsoleLogger())
+        OwnID.CoreSDK.logger.add(OwnID.CoreSDK.OSLogger())
         OwnID.CoreSDK.shared.enableLogging()
     }
     
