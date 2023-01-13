@@ -6,7 +6,7 @@ extension OwnID.CoreSDK {
         var identifier = UUID()
         
         func log(_ entry: OwnID.CoreSDK.StandardMetricLogEntry) {
-            os_log("Log 🪵 %{public}@", log: OSLog.OSLogging, type: entry.level?.osLogType ?? .debug, entry.debugDescription)
+            os_log("Log 🪵 \n%{public}@", log: OSLog.OSLogging, type: entry.level?.osLogType ?? .debug, entry.debugDescription)
         }
     }
 }
@@ -36,6 +36,6 @@ extension OwnID.CoreSDK.LogLevel {
 }
 
 extension OSLog {
-    private static var subsystem = String(describing: OwnID.CoreSDK.self)
+    private static var subsystem = "OwnID.\(String(describing: OwnID.CoreSDK.self))"
     static let OSLogging = OSLog(subsystem: subsystem, category: "OSLogger")
 }

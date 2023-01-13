@@ -73,15 +73,15 @@ extension OwnID.CoreSDK {
 extension OwnID.CoreSDK.StandardMetricLogEntry: CustomDebugStringConvertible {
     public var debugDescription: String {
         """
-        \(\OwnID.CoreSDK.StandardMetricLogEntry.appURL): \(appURL ?? "")
-        \(\OwnID.CoreSDK.StandardMetricLogEntry.context): \(context)
-        \(\OwnID.CoreSDK.StandardMetricLogEntry.message): \(message)
-        \(\OwnID.CoreSDK.StandardMetricLogEntry.codeInitiator): \(codeInitiator)
-        \(\OwnID.CoreSDK.StandardMetricLogEntry.userAgent): \(userAgent)
-        \(\OwnID.CoreSDK.StandardMetricLogEntry.version): \(version)
-        \(\OwnID.CoreSDK.StandardMetricLogEntry.metadata): \(metadata)
-        \(\OwnID.CoreSDK.StandardMetricLogEntry.type): \(type ?? .click)
-        \(\OwnID.CoreSDK.StandardMetricLogEntry.action): \(action ?? "")
+        appURL: \(appURL ?? "")
+        context: \(context)
+        message: \(message)
+        codeInitiator: \(codeInitiator)
+        userAgent: \(userAgent)
+        version: \(version)
+        metadata: \(metadata)
+        type: \(type ?? .click)
+        action: \(action ?? "")
     """
     }
 }
