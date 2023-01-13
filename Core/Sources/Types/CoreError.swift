@@ -22,6 +22,7 @@ public extension OwnID.CoreSDK {
         case initRequestResponseIsEmpty
         
         case authRequestResponseIsEmpty
+        case authRequestTypeIsMissing
         case authRequestResponseDecodeFailed(underlying: Swift.Error)
         case authRequestNetworkFailed(underlying: URLError)
         case authRequestBodyEncodeFailed(underlying: Swift.Error)
@@ -81,6 +82,7 @@ extension OwnID.CoreSDK.Error: LocalizedError {
                 .authRequestBodyEncodeFailed,
                 .localizationDownloader,
                 .statusRequestTypeIsMissing,
+                .authRequestTypeIsMissing,
                 .settingRequestResponseDecodeFailed,
                 .settingRequestNetworkFailed,
                 .settingRequestBodyEncodeFailed,
@@ -198,6 +200,9 @@ extension OwnID.CoreSDK.Error: CustomDebugStringConvertible {
             
         case .statusRequestTypeIsMissing:
             return "statusRequestTypeIsMissing"
+            
+        case .authRequestTypeIsMissing:
+            return "authRequestTypeIsMissing"
             
         case .statusRequestResponseContextMismatch:
             return "statusRequestResponseContextMismatch"

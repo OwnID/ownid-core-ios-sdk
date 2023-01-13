@@ -100,7 +100,9 @@ extension OwnID.CoreSDK.Auth {
                                                                              nonce: nonce,
                                                                              requestLanguage: webLanguages.rawValue.first,
                                                                              provider: provider,
-                                                                             shouldIgnoreResponseBody: shouldIgnoreResponseBody)
+                                                                             shouldIgnoreResponseBody: shouldIgnoreResponseBody,
+                                                                             emptyResponseError: { .authRequestResponseIsEmpty },,
+                                                                             typeMissingError: { .authRequestTypeIsMissing }, networkFailError: { .authRequestNetworkFailed(underlying: $0) })
             return dataParsingPublisher.eraseToAnyPublisher()
         }
     }

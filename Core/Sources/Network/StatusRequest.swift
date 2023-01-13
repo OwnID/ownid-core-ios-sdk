@@ -75,7 +75,10 @@ extension OwnID.CoreSDK.Status {
                                                                              nonce: nonce,
                                                                              requestLanguage: webLanguages.rawValue.first,
                                                                              provider: provider,
-                                                                             shouldIgnoreResponseBody: false)
+                                                                             shouldIgnoreResponseBody: false,
+                                                                             emptyResponseError: { .statusRequestResponseIsEmpty },
+                                                                             typeMissingError: { .statusRequestTypeIsMissing },
+                                                                             networkFailError: { .statusRequestNetworkFailed(underlying: $0) } )
             return dataParsingPublisher.eraseToAnyPublisher()
         }
     }

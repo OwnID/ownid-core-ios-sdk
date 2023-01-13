@@ -45,17 +45,11 @@ public extension OwnID {
             self.store = store
         }
         
-        public var isSDKConfigured: Bool {
-            !store.value.configurations.isEmpty
-        }
+        public var isSDKConfigured: Bool { !store.value.configurations.isEmpty }
         
-        var configurationName: String {
-            store.value.configurationName
-        }
+        var configurationName: String { store.value.configurationName }
         
-        public static var logger: LoggerProtocol {
-            Logger.shared
-        }
+        public static var logger: LoggerProtocol { Logger.shared }
         
         public func configureForTests() {
             store.send(.configureForTests)
@@ -170,7 +164,7 @@ public extension OwnID {
     }
 }
 
-public extension OwnID.CoreSDK {
+extension OwnID.CoreSDK {
     func statusURL(for sdkConfigurationName: String) -> ServerURL {
         getConfiguration(for: sdkConfigurationName).statusURL
     }
