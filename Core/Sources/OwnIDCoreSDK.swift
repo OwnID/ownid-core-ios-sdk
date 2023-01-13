@@ -31,7 +31,7 @@ public extension OwnID {
         
         @ObservedObject var store: Store<SDKState, SDKAction>
         
-        private let urlPublisher = PassthroughSubject<Void, Error>()
+        private let urlPublisher = PassthroughSubject<Void, OwnID.CoreSDK.CoreErrorLogWrapper>()
         private let configurationLoadedPublisher = PassthroughSubject<ClientConfiguration, Never>()
         
         private init() {
@@ -45,17 +45,11 @@ public extension OwnID {
             self.store = store
         }
         
-        public var isSDKConfigured: Bool {
-            !store.value.configurations.isEmpty
-        }
+        public var isSDKConfigured: Bool { !store.value.configurations.isEmpty }
         
-        var configurationName: String {
-            store.value.configurationName
-        }
+        var configurationName: String { store.value.configurationName }
         
-        public static var logger: LoggerProtocol {
-            Logger.shared
-        }
+        public static var logger: LoggerProtocol { Logger.shared }
         
         public func configureForTests() {
             store.send(.configureForTests)
@@ -96,7 +90,7 @@ public extension OwnID {
         ///   - sdkConfigurationName: Name of current running SDK
         ///   - webLanguages: Languages for web view. List of well-formed [IETF BCP 47 language tag](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Accept-Language) .
         /// - Returns: View that is presented in sheet
-        public func createCoreViewModelForRegister(email: Email? = .none,
+        func createCoreViewModelForRegister(email: Email? = .none,
                                                    sdkConfigurationName: String,
                                                    webLanguages: OwnID.CoreSDK.Languages) -> CoreViewModel {
             let session = apiSession(configurationName: sdkConfigurationName, webLanguages: webLanguages)
@@ -118,7 +112,7 @@ public extension OwnID {
         ///   - sdkConfigurationName: Name of current running SDK
         ///   - webLanguages: Languages for web view. List of well-formed [IETF BCP 47 language tag](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Accept-Language) .
         /// - Returns: View that is presented in sheet
-        public func createCoreViewModelForLogIn(email: Email? = .none,
+        func createCoreViewModelForLogIn(email: Email? = .none,
                                                 sdkConfigurationName: String,
                                                 webLanguages: OwnID.CoreSDK.Languages) -> CoreViewModel {
             let session = apiSession(configurationName: sdkConfigurationName, webLanguages: webLanguages)
@@ -151,7 +145,7 @@ public extension OwnID {
             let components = URLComponents(url: url, resolvingAgainstBaseURL: false)?.queryItems
             let redirectParameterValue = components?.first(where: { $0.name == redirectParamKey })?.value
             if redirectParameterValue == "false" {
-                urlPublisher.send(completion: .failure(.redirectParameterFromURLCancelledOpeningSDK))
+                urlPublisher.send(completion: .failure(.coreLog(entry: .errorEntry(Self.self), error: .redirectParameterFromURLCancelledOpeningSDK)))
                 return
             }
             
@@ -162,7 +156,7 @@ public extension OwnID {
                     .redirectionURL
                     .lowercased())
             else {
-                urlPublisher.send(completion: .failure(.notValidRedirectionURLOrNotMatchingFromConfiguration))
+                urlPublisher.send(completion: .failure(.coreLog(entry: .errorEntry(Self.self), error: .notValidRedirectionURLOrNotMatchingFromConfiguration)))
                 return
             }
             urlPublisher.send(())
@@ -170,7 +164,7 @@ public extension OwnID {
     }
 }
 
-public extension OwnID.CoreSDK {
+extension OwnID.CoreSDK {
     func statusURL(for sdkConfigurationName: String) -> ServerURL {
         getConfiguration(for: sdkConfigurationName).statusURL
     }

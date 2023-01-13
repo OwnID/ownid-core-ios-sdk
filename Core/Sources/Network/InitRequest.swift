@@ -47,12 +47,11 @@ extension OwnID.CoreSDK.Init {
             self.token = token
             self.webLanguages = webLanguages
         }
-        
-        func perform() -> AnyPublisher<Response, OwnID.CoreSDK.Error> {
+        func perform() -> AnyPublisher<Response, OwnID.CoreSDK.CoreErrorLogWrapper> {
             Just(RequestBody(sessionChallenge: sessionChallenge,
                              type: type,
                              data: token?.jwtString,
-                             originUrl: "https://" + (origin ?? "")))
+                             originUrl: origin?.extendHttpsIfNeeded()))
                 .setFailureType(to: Error.self)
                 .eraseToAnyPublisher()
                 .encode(encoder: JSONEncoder())
@@ -86,9 +85,8 @@ extension OwnID.CoreSDK.Init {
                     return decoded
                 }
                 .mapError { initError in
-                    OwnID.CoreSDK.logger.logCore(.errorEntry(message: "\(initError.localizedDescription)", Self.self))
-                    guard let error = initError as? OwnID.CoreSDK.Error else { return OwnID.CoreSDK.Error.initRequestResponseDecodeFailed(underlying: initError) }
-                    return error
+                    guard let error = initError as? OwnID.CoreSDK.Error else { return .coreLog(entry: .errorEntry(Self.self), error: .initRequestResponseDecodeFailed(underlying: initError)) }
+                    return .coreLog(entry: .errorEntry(Self.self), error: error)
                 }
                 .eraseToAnyPublisher()
         }

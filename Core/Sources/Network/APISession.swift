@@ -7,10 +7,10 @@ public protocol APISessionProtocol {
     
     func performInitRequest(type: OwnID.CoreSDK.RequestType,
                             token: OwnID.CoreSDK.JWTToken?,
-                            origin: String?) -> AnyPublisher<OwnID.CoreSDK.Init.Response, OwnID.CoreSDK.Error>
-    func performStatusRequest(origin: String?) -> AnyPublisher<OwnID.CoreSDK.Payload, OwnID.CoreSDK.Error>
-    func performSettingsRequest(loginID: String, origin: String) -> AnyPublisher<OwnID.CoreSDK.Setting.Response, OwnID.CoreSDK.Error>
-    func performAuthRequest(origin: String, fido2Payload: Encodable, shouldIgnoreResponseBody: Bool) -> AnyPublisher<OwnID.CoreSDK.Payload, OwnID.CoreSDK.Error>
+                            origin: String?) -> AnyPublisher<OwnID.CoreSDK.Init.Response, OwnID.CoreSDK.CoreErrorLogWrapper>
+    func performStatusRequest(origin: String?) -> AnyPublisher<OwnID.CoreSDK.Payload, OwnID.CoreSDK.CoreErrorLogWrapper>
+    func performSettingsRequest(loginID: String, origin: String) -> AnyPublisher<OwnID.CoreSDK.Setting.Response, OwnID.CoreSDK.CoreErrorLogWrapper>
+    func performAuthRequest(origin: String, fido2Payload: Encodable, shouldIgnoreResponseBody: Bool) -> AnyPublisher<OwnID.CoreSDK.Payload, OwnID.CoreSDK.CoreErrorLogWrapper>
 }
 
 public extension OwnID.CoreSDK {
@@ -47,7 +47,7 @@ public extension OwnID.CoreSDK {
 extension OwnID.CoreSDK.APISession {
     public func performInitRequest(type: OwnID.CoreSDK.RequestType,
                                    token: OwnID.CoreSDK.JWTToken?,
-                                   origin: String?) -> AnyPublisher<OwnID.CoreSDK.Init.Response, OwnID.CoreSDK.Error> {
+                                   origin: String?) -> AnyPublisher<OwnID.CoreSDK.Init.Response, OwnID.CoreSDK.CoreErrorLogWrapper> {
         OwnID.CoreSDK.Init.Request(type: type,
                                    url: serverURL,
                                    sessionChallenge: sessionChallenge,
@@ -65,7 +65,7 @@ extension OwnID.CoreSDK.APISession {
             .eraseToAnyPublisher()
     }
     
-    public func performSettingsRequest(loginID: String, origin: String) -> AnyPublisher<OwnID.CoreSDK.Setting.Response, OwnID.CoreSDK.Error> {
+    public func performSettingsRequest(loginID: String, origin: String) -> AnyPublisher<OwnID.CoreSDK.Setting.Response, OwnID.CoreSDK.CoreErrorLogWrapper> {
         OwnID.CoreSDK.Setting.Request(url: settingsURL,
                                       loginID: loginID,
                                       origin: origin,
@@ -76,7 +76,7 @@ extension OwnID.CoreSDK.APISession {
         .eraseToAnyPublisher()
     }
     
-    public func performAuthRequest(origin: String, fido2Payload: Encodable, shouldIgnoreResponseBody: Bool) -> AnyPublisher<OwnID.CoreSDK.Payload, OwnID.CoreSDK.Error> {
+    public func performAuthRequest(origin: String, fido2Payload: Encodable, shouldIgnoreResponseBody: Bool) -> AnyPublisher<OwnID.CoreSDK.Payload, OwnID.CoreSDK.CoreErrorLogWrapper> {
         OwnID.CoreSDK.Auth.Request(type: type,
                                    url: authURL,
                                    context: context,
@@ -90,7 +90,7 @@ extension OwnID.CoreSDK.APISession {
         .eraseToAnyPublisher()
     }
     
-    public func performStatusRequest(origin: String?) -> AnyPublisher<OwnID.CoreSDK.Payload, OwnID.CoreSDK.Error> {
+    public func performStatusRequest(origin: String?) -> AnyPublisher<OwnID.CoreSDK.Payload, OwnID.CoreSDK.CoreErrorLogWrapper> {
         OwnID.CoreSDK.Status.Request(url: statusURL,
                                      context: context,
                                      nonce: nonce,

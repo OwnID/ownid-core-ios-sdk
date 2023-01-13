@@ -44,7 +44,7 @@ extension OwnID.CoreSDK.TranslationsSDK {
         
         private func initializeLanguages() {
             downloader.downloadTranslations()
-                .map { self.bundleManager.save(languageKey: $0.systemLanguage, language: $0.language) }
+                .tryMap { try self.bundleManager.save(languageKey: $0.systemLanguage, language: $0.language) }
                 .sink { completion in
                     switch completion {
                     case .finished:
