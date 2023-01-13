@@ -80,9 +80,12 @@ extension OwnID.CoreSDK {
         private var internalStatesChange = [String]()
         
         private func logInternalStates() {
-            let logMessage = "\(Self.self): finished ➡️ \(internalStatesChange)"
-            OwnID.CoreSDK.logger.logCore(.entry(message: logMessage, Self.self))
+            OwnID.CoreSDK.logger.logCore(.entry(message: internalStatesLog(states: internalStatesChange), Self.self))
             internalStatesChange.removeAll()
+        }
+        
+        private func internalStatesLog(states: [String]) -> String {
+            "\(Self.self): finished states ➡️ \(internalStatesChange)"
         }
         
         private func setupEventPublisher() {
@@ -113,6 +116,7 @@ extension OwnID.CoreSDK {
                         
                     case .error(let error):
                         internalStatesChange.append(String(describing: action))
+                        error.entry.message += " " + internalStatesLog(states: internalStatesChange)
                         flowsFinished()
                         resultPublisher.send(completion: .failure(error))
                         
