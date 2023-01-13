@@ -69,3 +69,19 @@ extension OwnID.CoreSDK {
         public var category: EventCategory?
     }
 }
+
+extension OwnID.CoreSDK.StandardMetricLogEntry: CustomDebugStringConvertible {
+    public var debugDescription: String {
+        """
+        \(\OwnID.CoreSDK.StandardMetricLogEntry.appURL): \(appURL ?? "")
+        \(\OwnID.CoreSDK.StandardMetricLogEntry.context): \(context)
+        \(\OwnID.CoreSDK.StandardMetricLogEntry.message): \(message)
+        \(\OwnID.CoreSDK.StandardMetricLogEntry.codeInitiator): \(codeInitiator)
+        \(\OwnID.CoreSDK.StandardMetricLogEntry.userAgent): \(userAgent)
+        \(\OwnID.CoreSDK.StandardMetricLogEntry.version): \(version)
+        \(\OwnID.CoreSDK.StandardMetricLogEntry.metadata): \(metadata)
+        \(\OwnID.CoreSDK.StandardMetricLogEntry.type): \(type ?? .click)
+        \(\OwnID.CoreSDK.StandardMetricLogEntry.action): \(action ?? "")
+    """
+    }
+}
