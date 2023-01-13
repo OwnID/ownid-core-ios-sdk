@@ -78,6 +78,7 @@ extension OwnID.CoreSDK.Status {
                                                                              shouldIgnoreResponseBody: false,
                                                                              emptyResponseError: { .statusRequestResponseIsEmpty },
                                                                              typeMissingError: { .statusRequestTypeIsMissing },
+                                                                             contextMismatchError: { .statusRequestResponseContextMismatch },
                                                                              networkFailError: { .statusRequestNetworkFailed(underlying: $0) } )
             return dataParsingPublisher.eraseToAnyPublisher()
         }

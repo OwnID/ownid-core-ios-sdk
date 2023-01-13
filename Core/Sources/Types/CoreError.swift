@@ -23,6 +23,7 @@ public extension OwnID.CoreSDK {
         
         case authRequestResponseIsEmpty
         case authRequestTypeIsMissing
+        case authRequestResponseContextMismatch
         case authRequestResponseDecodeFailed(underlying: Swift.Error)
         case authRequestNetworkFailed(underlying: URLError)
         case authRequestBodyEncodeFailed(underlying: Swift.Error)
@@ -77,6 +78,7 @@ extension OwnID.CoreSDK.Error: LocalizedError {
                 .statusRequestResponseIsEmpty,
                 .authRequestResponseIsEmpty,
                 .statusRequestFail,
+                .authRequestResponseContextMismatch,
                 .statusRequestResponseContextMismatch,
                 .tokenDataIsMissing,
                 .authRequestBodyEncodeFailed,
@@ -206,6 +208,9 @@ extension OwnID.CoreSDK.Error: CustomDebugStringConvertible {
             
         case .statusRequestResponseContextMismatch:
             return "statusRequestResponseContextMismatch"
+            
+        case .authRequestResponseContextMismatch:
+            return "authRequestResponseContextMismatch"
             
         case .authorizationManagerCredintialsNotFoundOrCanlelledByUser(let underlying):
             return "authorizationManagerCredintialsNotFoundOrCanlelledByUser \(underlying)"

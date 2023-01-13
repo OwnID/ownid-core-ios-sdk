@@ -66,8 +66,8 @@ extension OwnID.CoreSDK {
                 }
                 .eraseToAnyPublisher()
                 .mapError { initError in
-                    guard let error = initError as? OwnID.CoreSDK.Error else { return  .coreLog(entry: .errorEntry(context: context, Self.self), error: .statusRequestFail(underlying: initError)) }
-                    return .coreLog(entry: .errorEntry(context: context, Self.self), error: error)
+                    guard let error = initError as? OwnID.CoreSDK.CoreErrorLogWrapper else { return  .coreLog(entry: .errorEntry(context: context, Self.self), error: .statusRequestFail(underlying: initError)) }
+                    return error
                 }
                 .eraseToAnyPublisher()
         }
