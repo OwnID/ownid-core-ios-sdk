@@ -131,7 +131,7 @@ public extension OwnID.FlowsSDK.RegisterView {
             if isResettingToInitialState {
                 state = .initial
             }
-            coreViewModel.cancel()
+            coreViewModel?.cancel()
             coreViewModelBag.forEach { $0.cancel() }
             coreViewModelBag.removeAll()
             coreViewModel = .none
