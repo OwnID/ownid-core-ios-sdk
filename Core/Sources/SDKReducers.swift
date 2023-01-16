@@ -31,7 +31,8 @@ extension OwnID.CoreSDK {
                 startTranslationsDownloader()
             ]
             
-        case .startDebugLogger:
+        case .startDebugLogger(let level):
+            Logger.shared.logLevel = level
             state.isLoggingEnabled = true
             return []
             
