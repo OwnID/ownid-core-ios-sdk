@@ -67,6 +67,7 @@ extension OwnID.CoreSDK.Status {
                     if let origin {
                         request.add(origin: origin)
                     }
+                    request.add(supportedLanguages: supportedLanguages)
                     return request
                 }
                 .eraseToAnyPublisher()
