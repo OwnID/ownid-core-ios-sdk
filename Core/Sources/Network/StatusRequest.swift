@@ -31,7 +31,7 @@ extension OwnID.CoreSDK.Status {
         let provider: APIProvider
         let sessionVerifier: OwnID.CoreSDK.SessionVerifier
         let type: OwnID.CoreSDK.RequestType
-        let webLanguages: OwnID.CoreSDK.Languages
+        let supportedLanguages: OwnID.CoreSDK.Languages
         let origin: String?
         
         internal init(url: OwnID.CoreSDK.ServerURL,
@@ -40,7 +40,7 @@ extension OwnID.CoreSDK.Status {
                       sessionVerifier: OwnID.CoreSDK.SessionVerifier,
                       type: OwnID.CoreSDK.RequestType,
                       origin: String?,
-                      webLanguages: OwnID.CoreSDK.Languages,
+                      supportedLanguages: OwnID.CoreSDK.Languages,
                       provider: APIProvider = URLSession.shared) {
             self.context = context
             self.nonce = nonce
@@ -49,7 +49,7 @@ extension OwnID.CoreSDK.Status {
             self.sessionVerifier = sessionVerifier
             self.provider = provider
             self.type = type
-            self.webLanguages = webLanguages
+            self.supportedLanguages = supportedLanguages
         }
         
         func perform() -> AnyPublisher<OwnID.CoreSDK.Payload, OwnID.CoreSDK.CoreErrorLogWrapper> {
@@ -73,7 +73,7 @@ extension OwnID.CoreSDK.Status {
             let dataParsingPublisher = OwnID.CoreSDK.EndOfFlowHandler.handle(inputPublisher: input.eraseToAnyPublisher(),
                                                                              context: context,
                                                                              nonce: nonce,
-                                                                             requestLanguage: webLanguages.rawValue.first,
+                                                                             requestLanguage: supportedLanguages.rawValue.first,
                                                                              provider: provider,
                                                                              shouldIgnoreResponseBody: false,
                                                                              emptyResponseError: { .statusRequestResponseIsEmpty },

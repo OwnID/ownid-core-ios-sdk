@@ -48,7 +48,7 @@ extension OwnID.CoreSDK.Auth {
         let nonce: OwnID.CoreSDK.Nonce
         let sessionVerifier: OwnID.CoreSDK.SessionVerifier
         var fido2LoginPayload: Encodable
-        let webLanguages: OwnID.CoreSDK.Languages
+        let supportedLanguages: OwnID.CoreSDK.Languages
         let origin: String
         let shouldIgnoreResponseBody: Bool
         
@@ -59,13 +59,13 @@ extension OwnID.CoreSDK.Auth {
                       origin: String,
                       sessionVerifier: OwnID.CoreSDK.SessionVerifier,
                       fido2LoginPayload: Encodable,
-                      webLanguages: OwnID.CoreSDK.Languages,
+                      supportedLanguages: OwnID.CoreSDK.Languages,
                       shouldIgnoreResponseBody: Bool,
                       provider: APIProvider = URLSession.shared) {
             self.type = type
             self.url = url
             self.provider = provider
-            self.webLanguages = webLanguages
+            self.supportedLanguages = supportedLanguages
             self.context = context
             self.nonce = nonce
             self.sessionVerifier = sessionVerifier
@@ -91,14 +91,14 @@ extension OwnID.CoreSDK.Auth {
                     request.addUserAgent()
                     request.addAPIVersion()
                     request.add(origin: origin)
-                    request.add(webLanguages: webLanguages)
+                    request.add(supportedLanguages: supportedLanguages)
                     return request
                 }
                 .eraseToAnyPublisher()
             let dataParsingPublisher = OwnID.CoreSDK.EndOfFlowHandler.handle(inputPublisher: inputPublisher.eraseToAnyPublisher(),
                                                                              context: context,
                                                                              nonce: nonce,
-                                                                             requestLanguage: webLanguages.rawValue.first,
+                                                                             requestLanguage: supportedLanguages.rawValue.first,
                                                                              provider: provider,
                                                                              shouldIgnoreResponseBody: shouldIgnoreResponseBody,
                                                                              emptyResponseError: { .authRequestResponseIsEmpty },

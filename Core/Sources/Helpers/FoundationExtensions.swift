@@ -13,8 +13,8 @@ extension URLRequest {
         addValue(origin.extendHttpsIfNeeded(), forHTTPHeaderField: "Origin")
     }
     
-    public mutating func add(webLanguages: OwnID.CoreSDK.Languages) {
-        let languagesString = webLanguages.rawValue.joined(separator: ",")
+    public mutating func add(supportedLanguages: OwnID.CoreSDK.Languages) {
+        let languagesString = supportedLanguages.rawValue.joined(separator: ",")
         addValue(languagesString, forHTTPHeaderField: "Accept-Language")
     }
 }

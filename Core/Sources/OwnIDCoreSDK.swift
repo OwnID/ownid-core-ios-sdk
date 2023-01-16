@@ -88,12 +88,12 @@ public extension OwnID {
         /// - Parameters:
         ///   - email: Used in plugin SDKs to find identity in web app FIDO2 storage and to display it for login
         ///   - sdkConfigurationName: Name of current running SDK
-        ///   - webLanguages: Languages for web view. List of well-formed [IETF BCP 47 language tag](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Accept-Language) .
+        ///   - supportedLanguages: Languages for web view. List of well-formed [IETF BCP 47 language tag](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Accept-Language) .
         /// - Returns: View that is presented in sheet
         func createCoreViewModelForRegister(email: Email? = .none,
-                                                   sdkConfigurationName: String,
-                                                   webLanguages: OwnID.CoreSDK.Languages) -> CoreViewModel {
-            let session = apiSession(configurationName: sdkConfigurationName, webLanguages: webLanguages)
+                                            sdkConfigurationName: String,
+                                            supportedLanguages: OwnID.CoreSDK.Languages) -> CoreViewModel {
+            let session = apiSession(configurationName: sdkConfigurationName, supportedLanguages: supportedLanguages)
             let viewModel = CoreViewModel(type: .register,
                                           email: email,
                                           token: .none,
@@ -110,12 +110,12 @@ public extension OwnID {
         /// - Parameters:
         ///   - email: Used in plugin SDKs to find identity in web app FIDO2 storage and to display it for login
         ///   - sdkConfigurationName: Name of current running SDK
-        ///   - webLanguages: Languages for web view. List of well-formed [IETF BCP 47 language tag](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Accept-Language) .
+        ///   - supportedLanguages: Languages for web view. List of well-formed [IETF BCP 47 language tag](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Accept-Language) .
         /// - Returns: View that is presented in sheet
         func createCoreViewModelForLogIn(email: Email? = .none,
-                                                sdkConfigurationName: String,
-                                                webLanguages: OwnID.CoreSDK.Languages) -> CoreViewModel {
-            let session = apiSession(configurationName: sdkConfigurationName, webLanguages: webLanguages)
+                                         sdkConfigurationName: String,
+                                         supportedLanguages: OwnID.CoreSDK.Languages) -> CoreViewModel {
+            let session = apiSession(configurationName: sdkConfigurationName, supportedLanguages: supportedLanguages)
             let viewModel = CoreViewModel(type: .login,
                                           email: email,
                                           token: .none,
@@ -128,12 +128,12 @@ public extension OwnID {
             return viewModel
         }
         
-        func apiSession(configurationName: String, webLanguages: OwnID.CoreSDK.Languages) -> APISessionProtocol {
+        func apiSession(configurationName: String, supportedLanguages: OwnID.CoreSDK.Languages) -> APISessionProtocol {
             APISession(serverURL: serverURL(for: configurationName),
                        statusURL: statusURL(for: configurationName),
                        settingsURL: settingURL(for: configurationName),
                        authURL: authURL(for: configurationName),
-                       webLanguages: webLanguages)
+                       supportedLanguages: supportedLanguages)
         }
         
         /// Used to handle the redirects from browser after webapp is finished
