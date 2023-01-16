@@ -1,14 +1,20 @@
 import Foundation
 
 enum SDKAction {
-    case configureFromDefaultConfiguration(userFacingSDK: OwnID.CoreSDK.SDKInformation, underlyingSDKs: [OwnID.CoreSDK.SDKInformation])
-    case configureFrom(plistUrl: URL, userFacingSDK: OwnID.CoreSDK.SDKInformation, underlyingSDKs: [OwnID.CoreSDK.SDKInformation])
+    case configureFromDefaultConfiguration(userFacingSDK: OwnID.CoreSDK.SDKInformation,
+                                           underlyingSDKs: [OwnID.CoreSDK.SDKInformation],
+                                           supportedLanguages: OwnID.CoreSDK.Languages)
+    case configureFrom(plistUrl: URL,
+                       userFacingSDK: OwnID.CoreSDK.SDKInformation,
+                       underlyingSDKs: [OwnID.CoreSDK.SDKInformation],
+                       supportedLanguages: OwnID.CoreSDK.Languages)
     case configure(appID: String,
                    redirectionURL: String,
                    userFacingSDK: OwnID.CoreSDK.SDKInformation,
                    underlyingSDKs: [OwnID.CoreSDK.SDKInformation],
                    isTestingEnvironment: Bool,
-                   environment: String?)
+                   environment: String?,
+                   supportedLanguages: OwnID.CoreSDK.Languages)
     case configurationCreated(configuration: OwnID.CoreSDK.Configuration,
                               userFacingSDK: OwnID.CoreSDK.SDKInformation,
                               underlyingSDKs: [OwnID.CoreSDK.SDKInformation],

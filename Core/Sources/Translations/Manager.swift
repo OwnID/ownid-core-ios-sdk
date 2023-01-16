@@ -26,24 +26,28 @@ extension OwnID.CoreSDK.TranslationsSDK {
         private let bundleManager = RuntimeLocalizableSaver()
         private let downloader = Downloader()
         private var bag = Set<AnyCancellable>()
+        private var supportedLanguages: OwnID.CoreSDK.Languages = .init(rawValue: [])
         
         init() {
             NotificationCenter.default.publisher(for: NSLocale.currentLocaleDidChangeNotification)
                 .sink { [weak self] notification in
                         let message = "Recieve notification about language change \(notification)"
                         OwnID.CoreSDK.logger.logCore(.entry(message: message, OwnID.CoreSDK.TranslationsSDK.Downloader.self))
-                    self?.initializeLanguages()
+                    if let value = self?.supportedLanguages.shouldChangeLanguageOnSystemLanguageChange, value {
+                        self?.initializeLanguages(supportedLanguages: .init(rawValue: Locale.preferredLanguages))
+                    }
                 }
                 .store(in: &bag)
         }
         
         
-        func SDKConfigured() {
-            initializeLanguages()
+        func SDKConfigured(supportedLanguages: OwnID.CoreSDK.Languages) {
+            self.supportedLanguages = supportedLanguages
+            initializeLanguages(supportedLanguages: supportedLanguages)
         }
         
-        private func initializeLanguages() {
-            downloader.downloadTranslations()
+        private func initializeLanguages(supportedLanguages: OwnID.CoreSDK.Languages) {
+            downloader.downloadTranslations(supportedLanguages: supportedLanguages)
                 .tryMap { try self.bundleManager.save(languageKey: $0.systemLanguage, language: $0.language) }
                 .sink { completion in
                     switch completion {

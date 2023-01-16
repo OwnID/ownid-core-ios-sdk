@@ -9,7 +9,9 @@ extension OwnID.CoreSDK {
                             userFacingSDK,
                             underlyingSDKs,
                             isTestingEnvironment,
-                            environment):
+                            environment,
+                            supportedLanguages):
+            state.supportedLanguages = supportedLanguages
             return [createConfiguration(appID: appID,
                                         redirectionURL: redirectionURL,
                                         userFacingSDK: userFacingSDK,
@@ -28,7 +30,7 @@ extension OwnID.CoreSDK {
                                     userFacingSDK: userFacingSDK,
                                     underlyingSDKs: underlyingSDKs,
                                     isTestingEnvironment: isTestingEnvironment),
-                startTranslationsDownloader()
+                startTranslationsDownloader(supportedLanguages: state.supportedLanguages)
             ]
             
         case .startDebugLogger(let level):
@@ -40,11 +42,12 @@ extension OwnID.CoreSDK {
             OwnID.startDebugConsoleLogger()
             return [testConfiguration()]
             
-        case let .configureFromDefaultConfiguration(userFacingSDK, underlyingSDKs):
+        case let .configureFromDefaultConfiguration(userFacingSDK, underlyingSDKs, supportedLanguages):
             let url = Bundle.main.url(forResource: "OwnIDConfiguration", withExtension: "plist")!
-            return [Just(.configureFrom(plistUrl: url, userFacingSDK: userFacingSDK, underlyingSDKs: underlyingSDKs)).eraseToEffect()]
+            return [Just(.configureFrom(plistUrl: url, userFacingSDK: userFacingSDK, underlyingSDKs: underlyingSDKs, supportedLanguages: supportedLanguages)).eraseToEffect()]
             
-        case let .configureFrom(plistUrl, userFacingSDK, underlyingSDKs):
+        case let .configureFrom(plistUrl, userFacingSDK, underlyingSDKs, supportedLanguages):
+            state.supportedLanguages = supportedLanguages
             return [getDataFrom(plistUrl: plistUrl,
                                 userFacingSDK: userFacingSDK,
                                 underlyingSDKs: underlyingSDKs,
@@ -76,7 +79,8 @@ extension OwnID.CoreSDK {
                                          userFacingSDK: (OwnID.CoreSDK.sdkName, OwnID.CoreSDK.version),
                                          underlyingSDKs: [],
                                          isTestingEnvironment: true,
-                                         environment: .none)
+                                         environment: .none,
+                                         supportedLanguages: .init(rawValue: Locale.preferredLanguages))
         return Just(action).eraseToEffect()
     }
     
@@ -132,9 +136,9 @@ extension OwnID.CoreSDK {
         return effect.eraseToEffect()
     }
     
-    private static func startTranslationsDownloader() -> Effect<SDKAction> {
+    private static func startTranslationsDownloader(supportedLanguages: OwnID.CoreSDK.Languages) -> Effect<SDKAction> {
         .fireAndForget {
-            OwnID.CoreSDK.shared.translationsModule.SDKConfigured()
+            OwnID.CoreSDK.shared.translationsModule.SDKConfigured(supportedLanguages: supportedLanguages)
             OwnID.CoreSDK.logger.logCore(.entry(OwnID.CoreSDK.self))
         }
     }

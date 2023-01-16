@@ -54,9 +54,14 @@ public extension OwnID {
         public func configureForTests() {
             store.send(.configureForTests)
         }
-        
-        public func configure(userFacingSDK: SDKInformation, underlyingSDKs: [SDKInformation]) {
-            store.send(.configureFromDefaultConfiguration(userFacingSDK: userFacingSDK, underlyingSDKs: underlyingSDKs))
+        #warning("update comments on all public APIs")
+        ///   - supportedLanguages: Languages for web view. List of well-formed [IETF BCP 47 language tag](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Accept-Language) .
+        public func configure(userFacingSDK: SDKInformation,
+                              underlyingSDKs: [SDKInformation],
+                              supportedLanguages: OwnID.CoreSDK.Languages) {
+            store.send(.configureFromDefaultConfiguration(userFacingSDK: userFacingSDK,
+                                                          underlyingSDKs: underlyingSDKs,
+                                                          supportedLanguages: supportedLanguages))
         }
         
         func subscribeForURL(coreViewModel: CoreViewModel) {
@@ -67,17 +72,25 @@ public extension OwnID {
                               redirectionURL: String,
                               userFacingSDK: SDKInformation,
                               underlyingSDKs: [SDKInformation],
-                              environment: String? = .none) {
+                              environment: String? = .none,
+                              supportedLanguages: OwnID.CoreSDK.Languages) {
             store.send(.configure(appID: appID,
                                   redirectionURL: redirectionURL,
                                   userFacingSDK: userFacingSDK,
                                   underlyingSDKs: underlyingSDKs,
                                   isTestingEnvironment: false,
-                                  environment: environment))
+                                  environment: environment,
+                                  supportedLanguages: supportedLanguages))
         }
         
-        public func configureFor(plistUrl: URL, userFacingSDK: SDKInformation, underlyingSDKs: [SDKInformation]) {
-            store.send(.configureFrom(plistUrl: plistUrl, userFacingSDK: userFacingSDK, underlyingSDKs: underlyingSDKs))
+        public func configureFor(plistUrl: URL,
+                                 userFacingSDK: SDKInformation,
+                                 underlyingSDKs: [SDKInformation],
+                                 supportedLanguages: OwnID.CoreSDK.Languages) {
+            store.send(.configureFrom(plistUrl: plistUrl,
+                                      userFacingSDK: userFacingSDK,
+                                      underlyingSDKs: underlyingSDKs,
+                                      supportedLanguages: supportedLanguages))
         }
         
         func getConfiguration(for sdkConfigurationName: String) -> Configuration {
@@ -88,12 +101,11 @@ public extension OwnID {
         /// - Parameters:
         ///   - email: Used in plugin SDKs to find identity in web app FIDO2 storage and to display it for login
         ///   - sdkConfigurationName: Name of current running SDK
-        ///   - supportedLanguages: Languages for web view. List of well-formed [IETF BCP 47 language tag](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Accept-Language) .
         /// - Returns: View that is presented in sheet
         func createCoreViewModelForRegister(email: Email? = .none,
-                                            sdkConfigurationName: String,
-                                            supportedLanguages: OwnID.CoreSDK.Languages) -> CoreViewModel {
-            let session = apiSession(configurationName: sdkConfigurationName, supportedLanguages: supportedLanguages)
+                                            sdkConfigurationName: String) -> CoreViewModel {
+            let languages = store.value.supportedLanguages
+            let session = apiSession(configurationName: sdkConfigurationName, supportedLanguages: languages)
             let viewModel = CoreViewModel(type: .register,
                                           email: email,
                                           token: .none,
@@ -110,12 +122,11 @@ public extension OwnID {
         /// - Parameters:
         ///   - email: Used in plugin SDKs to find identity in web app FIDO2 storage and to display it for login
         ///   - sdkConfigurationName: Name of current running SDK
-        ///   - supportedLanguages: Languages for web view. List of well-formed [IETF BCP 47 language tag](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Accept-Language) .
         /// - Returns: View that is presented in sheet
         func createCoreViewModelForLogIn(email: Email? = .none,
-                                         sdkConfigurationName: String,
-                                         supportedLanguages: OwnID.CoreSDK.Languages) -> CoreViewModel {
-            let session = apiSession(configurationName: sdkConfigurationName, supportedLanguages: supportedLanguages)
+                                         sdkConfigurationName: String) -> CoreViewModel {
+            let languages = store.value.supportedLanguages
+            let session = apiSession(configurationName: sdkConfigurationName, supportedLanguages: languages)
             let viewModel = CoreViewModel(type: .login,
                                           email: email,
                                           token: .none,
