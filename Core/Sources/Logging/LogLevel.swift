@@ -1,7 +1,7 @@
 import Foundation
 
-extension OwnID.CoreSDK {
-    public enum LogLevel: Int, Encodable {
+public extension OwnID.CoreSDK {
+    enum LogLevel: Int, Encodable {
         /// Logs that contain the most detailed messages. These messages may contain sensitive application data.
         /// These messages are disabled by default and should never be enabled in a production environment.
         case trace = 0

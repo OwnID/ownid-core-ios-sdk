@@ -13,7 +13,7 @@ enum SDKAction {
                               userFacingSDK: OwnID.CoreSDK.SDKInformation,
                               underlyingSDKs: [OwnID.CoreSDK.SDKInformation],
                               isTestingEnvironment: Bool)
-    case startDebugLogger
+    case startDebugLogger(logLevel: OwnID.CoreSDK.LogLevel)
     case configureForTests
     case save(clientCongfig: OwnID.CoreSDK.ClientConfiguration)
 }

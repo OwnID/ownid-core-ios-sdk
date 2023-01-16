@@ -10,9 +10,9 @@ public extension OwnID.CoreSDK {
 /// OwnID class represents core part of SDK. It performs initialization and creates views. It reads OwnIDConfiguration from disc, parses it and loads to memory for later usage. It is a singleton so the URL returned from browser can be linked to corresponding view.
 public extension OwnID {
     
-    static func startDebugConsoleLogger() {
+    static func startDebugConsoleLogger(logLevel: OwnID.CoreSDK.LogLevel = .error) {
         OwnID.CoreSDK.logger.add(OwnID.CoreSDK.OSLogger())
-        OwnID.CoreSDK.shared.enableLogging()
+        OwnID.CoreSDK.shared.enableLogging(logLevel: logLevel)
     }
     
     final class CoreSDK {
@@ -20,8 +20,8 @@ public extension OwnID {
             getConfiguration(for: configurationName).ownIDServerURL
         }
         
-        func enableLogging() {
-            store.send(.startDebugLogger)
+        func enableLogging(logLevel: OwnID.CoreSDK.LogLevel) {
+            store.send(.startDebugLogger(logLevel: logLevel))
         }
         
         public static let shared = CoreSDK()
