@@ -6,5 +6,5 @@ public extension OwnID {
 
 extension OwnID.FlowsSDK {
     static let sdkName = String(describing: OwnID.FlowsSDK.self)
-    static let version = "2.1.1"
+    static let version = "2.2.0"
 }
