@@ -62,6 +62,7 @@ private extension OwnID.UISDK.OwnIDView {
     func buttonAndTooltipView() -> some View {
         if isTooltipPresented, buttonState.isTooltipShown, #available(iOS 16.0, *) {
             tooltipOnTopOfButtonView()
+                .zIndex(1)
         } else {
             imageView()
         }
