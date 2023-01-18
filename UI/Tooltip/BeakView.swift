@@ -19,7 +19,7 @@ public extension OwnID.UISDK {
                 Triangle()
                     .stroke(tooltipVisualLookConfig.borderColor, style: StrokeStyle(lineWidth: 1, lineCap: .round, lineJoin: .round))
                 TriangleSide()
-                    .stroke(tooltipVisualLookConfig.backgroundColor, style: StrokeStyle(lineWidth: Self.bottomlineWidth, lineCap: .round, lineJoin: .round))
+                    .stroke(tooltipVisualLookConfig.backgroundColor, style: StrokeStyle(lineWidth: Self.bottomlineWidth, lineCap: .square, lineJoin: .bevel))
             }
             .frame(width: Self.width, height: Self.height)
             .compositingGroup()

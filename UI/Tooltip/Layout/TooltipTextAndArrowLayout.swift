@@ -60,12 +60,12 @@ extension OwnID.UISDK {
             switch tooltipVisualLookConfig.tooltipPosition {
             case .top:
                 let x = bounds.minX - (beakSize.width / 2) // puts beak top pin directly in the center of the start point
-                let y = bounds.maxY - (BeakView.bottomlineWidth / 2)
+                let y = bounds.maxY
                 beakSubview.place(at: .init(x: x, y: y), proposal: .unspecified)
                 
             case .bottom:
                 let x = bounds.minX - (beakSize.width / 2) // puts beak top pin directly in the center of the start point
-                let y = bounds.minY - beakSize.height + (BeakView.bottomlineWidth / 1.15)
+                let y = bounds.minY - beakSize.height
                 beakSubview.place(at: .init(x: x, y: y), proposal: .unspecified)
                 
             case .left:
