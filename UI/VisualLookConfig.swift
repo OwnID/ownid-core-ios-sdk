@@ -47,7 +47,7 @@ public extension OwnID.UISDK {
                     backgroundColor: Color = OwnID.Colors.biometricsButtonBackground,
                     borderColor: Color = OwnID.Colors.biometricsButtonBorder,
                     shadowColor: Color = OwnID.Colors.biometricsButtonBorder.opacity(0.7),
-                    variant: ButtonVariant = .fingerprint) {
+                    variant: ButtonVariant = .faceId) {
             self.iconColor = iconColor
             self.backgroundColor = backgroundColor
             self.borderColor = borderColor
