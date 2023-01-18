@@ -32,18 +32,18 @@ extension OwnID.CoreSDK.Setting {
         let origin: String
         let context: String
         let nonce: String
-        let webLanguages: OwnID.CoreSDK.Languages
+        let supportedLanguages: OwnID.CoreSDK.Languages
         
         internal init(url: OwnID.CoreSDK.ServerURL,
                       loginID: String,
                       origin: String,
                       context: String,
                       nonce: String,
-                      webLanguages: OwnID.CoreSDK.Languages,
+                      supportedLanguages: OwnID.CoreSDK.Languages,
                       provider: APIProvider = URLSession.shared) {
             self.url = url
             self.provider = provider
-            self.webLanguages = webLanguages
+            self.supportedLanguages = supportedLanguages
             self.loginID = loginID
             self.context = context
             self.nonce = nonce
@@ -63,7 +63,7 @@ extension OwnID.CoreSDK.Setting {
                     request.addUserAgent()
                     request.addAPIVersion()
                     request.add(origin: origin)
-                    request.add(webLanguages: webLanguages)
+                    request.add(supportedLanguages: supportedLanguages)
                     return request
                 }
                 .eraseToAnyPublisher()

@@ -24,18 +24,18 @@ public extension OwnID.CoreSDK {
         private let statusURL: ServerURL
         private let settingsURL: ServerURL
         private let authURL: ServerURL
-        private let webLanguages: OwnID.CoreSDK.Languages
+        private let supportedLanguages: OwnID.CoreSDK.Languages
         
         public init(serverURL: ServerURL,
                     statusURL: ServerURL,
                     settingsURL: ServerURL,
                     authURL: ServerURL,
-                    webLanguages: OwnID.CoreSDK.Languages) {
+                    supportedLanguages: OwnID.CoreSDK.Languages) {
             self.serverURL = serverURL
             self.statusURL = statusURL
             self.settingsURL = settingsURL
             self.authURL = authURL
-            self.webLanguages = webLanguages
+            self.supportedLanguages = supportedLanguages
             let sessionVerifierData = Self.random()
             sessionVerifier = sessionVerifierData.toBase64URL()
             let sessionChallengeData = SHA256.hash(data: sessionVerifierData).data
@@ -53,7 +53,7 @@ extension OwnID.CoreSDK.APISession {
                                    sessionChallenge: sessionChallenge,
                                    token: token,
                                    origin: origin,
-                                   webLanguages: webLanguages)
+                                   supportedLanguages: supportedLanguages)
             .perform()
             .map { [unowned self] response in
                 nonce = response.nonce
@@ -71,7 +71,7 @@ extension OwnID.CoreSDK.APISession {
                                       origin: origin,
                                       context: context,
                                       nonce: nonce,
-                                      webLanguages: webLanguages)
+                                      supportedLanguages: supportedLanguages)
         .perform()
         .eraseToAnyPublisher()
     }
@@ -84,7 +84,7 @@ extension OwnID.CoreSDK.APISession {
                                    origin: origin,
                                    sessionVerifier: sessionVerifier,
                                    fido2LoginPayload: fido2Payload,
-                                   webLanguages: webLanguages,
+                                   supportedLanguages: supportedLanguages,
                                    shouldIgnoreResponseBody: shouldIgnoreResponseBody)
         .perform()
         .eraseToAnyPublisher()
@@ -97,7 +97,7 @@ extension OwnID.CoreSDK.APISession {
                                      sessionVerifier: sessionVerifier,
                                      type: type,
                                      origin: origin,
-                                     webLanguages: webLanguages)
+                                     supportedLanguages: supportedLanguages)
             .perform()
             .handleEvents(receiveOutput: { payload in
                 OwnID.CoreSDK.logger.logCore(.entry(context: payload.context, message: "\(OwnID.CoreSDK.Status.Request.self): Finished", Self.self))

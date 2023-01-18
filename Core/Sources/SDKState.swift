@@ -7,6 +7,7 @@ extension OwnID.CoreSDK {
         var configurations = [String: OwnID.CoreSDK.Configuration]()
         var clientConfiguration: ClientConfiguration?
         let configurationLoadedPublisher: PassthroughSubject<ClientConfiguration, Never>
+        var supportedLanguages: OwnID.CoreSDK.Languages = .init(rawValue: ["en"])
     }
 }
 

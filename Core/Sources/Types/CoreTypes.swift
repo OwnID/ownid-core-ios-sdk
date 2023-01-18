@@ -7,6 +7,8 @@ public extension OwnID.CoreSDK {
             self.rawValue = rawValue
         }
         
+        var shouldChangeLanguageOnSystemLanguageChange = true
+        
         public let rawValue: [String]
     }
 }

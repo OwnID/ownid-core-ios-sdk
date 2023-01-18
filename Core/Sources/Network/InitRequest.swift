@@ -29,7 +29,7 @@ extension OwnID.CoreSDK.Init {
         let provider: APIProvider
         let sessionChallenge: OwnID.CoreSDK.SessionChallenge
         let token: OwnID.CoreSDK.JWTToken?
-        let webLanguages: OwnID.CoreSDK.Languages
+        let supportedLanguages: OwnID.CoreSDK.Languages
         let origin: String?
         
         internal init(type: OwnID.CoreSDK.RequestType,
@@ -37,7 +37,7 @@ extension OwnID.CoreSDK.Init {
                       sessionChallenge: OwnID.CoreSDK.SessionChallenge,
                       token: OwnID.CoreSDK.JWTToken?,
                       origin: String?,
-                      webLanguages: OwnID.CoreSDK.Languages,
+                      supportedLanguages: OwnID.CoreSDK.Languages,
                       provider: APIProvider = URLSession.shared) {
             self.type = type
             self.url = url
@@ -45,7 +45,7 @@ extension OwnID.CoreSDK.Init {
             self.origin = origin
             self.provider = provider
             self.token = token
-            self.webLanguages = webLanguages
+            self.supportedLanguages = supportedLanguages
         }
         func perform() -> AnyPublisher<Response, OwnID.CoreSDK.CoreErrorLogWrapper> {
             Just(RequestBody(sessionChallenge: sessionChallenge,
@@ -65,7 +65,7 @@ extension OwnID.CoreSDK.Init {
                     if let origin {
                         request.add(origin: origin)
                     }
-                    request.add(webLanguages: webLanguages)
+                    request.add(supportedLanguages: supportedLanguages)
                     return request
                 }
                 .eraseToAnyPublisher()

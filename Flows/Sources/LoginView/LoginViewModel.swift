@@ -45,19 +45,15 @@ public extension OwnID.FlowsSDK.LoginView {
         var currentMetadata: OwnID.CoreSDK.MetricLogEntry.CurrentMetricInformation?
         
         let sdkConfigurationName: String
-        let webLanguages: OwnID.CoreSDK.Languages
         public var getEmail: (() -> String)?
         
         public var eventPublisher: OwnID.LoginPublisher {
             resultPublisher.eraseToAnyPublisher()
         }
         
-        public init(loginPerformer: LoginPerformer,
-                    sdkConfigurationName: String,
-                    webLanguages: OwnID.CoreSDK.Languages) {
+        public init(loginPerformer: LoginPerformer, sdkConfigurationName: String) {
             self.sdkConfigurationName = sdkConfigurationName
             self.loginPerformer = loginPerformer
-            self.webLanguages = webLanguages
             Task {
                 // Delay the task by 1 second
                 try? await Task.sleep(nanoseconds: 1_000_000_000)
@@ -94,9 +90,7 @@ public extension OwnID.FlowsSDK.LoginView {
             case .initial:
                 DispatchQueue.main.async { [self] in
                     let email = OwnID.CoreSDK.Email(rawValue: usersEmail)
-                    let coreViewModel = OwnID.CoreSDK.shared.createCoreViewModelForLogIn(email: email,
-                                                                                         sdkConfigurationName: sdkConfigurationName,
-                                                                                         webLanguages: webLanguages)
+                    let coreViewModel = OwnID.CoreSDK.shared.createCoreViewModelForLogIn(email: email, sdkConfigurationName: sdkConfigurationName)
                     self.coreViewModel = coreViewModel
                     subscribe(to: coreViewModel.eventPublisher)
                     state = .coreVM

@@ -19,9 +19,9 @@ extension OwnID.CoreSDK.TranslationsSDK {
             session = URLSession(configuration: config)
         }
         
-        func downloadTranslations() -> DownloaderPublisher {
+        func downloadTranslations(supportedLanguages: OwnID.CoreSDK.Languages) -> DownloaderPublisher {
             downloadSupportedTranslationsList()
-                .map { serverLanguages in LanguageMapper().matchSystemLanguage(to: serverLanguages) }
+                .map { serverLanguages in LanguageMapper().matchSystemLanguage(to: serverLanguages, userDefinedLanguages: supportedLanguages.rawValue) }
                 .eraseToAnyPublisher()
                 .flatMap { currentUserLanguages -> DownloaderPublisher in
                     let message = "Mapped user language to the server languages. serverLanguage: \(currentUserLanguages.serverLanguage), systemLanguage: \(currentUserLanguages.systemLanguage)"

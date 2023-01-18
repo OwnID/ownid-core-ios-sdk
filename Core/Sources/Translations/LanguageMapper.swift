@@ -8,7 +8,7 @@ extension OwnID.CoreSDK.TranslationsSDK {
             "zh-TW": ["zh-Hant-TW", "zh-Hant-HK", "zh-Hant", "zh-Hans-TW", "zh-Hant-US"],
         ]
         
-        func matchSystemLanguage(to serverLanguages: [String], userDefinedLanguages: [String] = Locale.preferredLanguages) -> (serverLanguage: String, systemLanguage: String) {
+        func matchSystemLanguage(to serverLanguages: [String], userDefinedLanguages: [String]) -> (serverLanguage: String, systemLanguage: String) {
             for userLanguage in userDefinedLanguages {
                 if serverLanguages.contains(userLanguage) {
                     return (userLanguage, userLanguage)
