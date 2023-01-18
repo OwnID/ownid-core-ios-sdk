@@ -28,7 +28,7 @@ public extension OwnID.UISDK {
                     lineHeight: CGFloat = 23,
                     shadowColor: Color = OwnID.Colors.defaultBlackColor,
                     isNativePlatform: Bool = true,
-                    tooltipPosition: OwnID.UISDK.TooltipPositionType = .top) {
+                    tooltipPosition: OwnID.UISDK.TooltipPositionType = .bottom) {
             self.backgroundColor = backgroundColor
             self.borderColor = borderColor
             self.textColor = textColor
