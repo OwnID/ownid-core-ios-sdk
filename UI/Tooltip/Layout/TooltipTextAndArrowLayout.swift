@@ -69,12 +69,12 @@ extension OwnID.UISDK {
                 beakSubview.place(at: .init(x: x, y: y), proposal: .unspecified)
                 
             case .left:
-                let x = bounds.minX - (BeakView.bottomlineWidth * 3)
+                let x = bounds.minX - (BeakView.bottomlineWidth * 2.2)
                 let y = bounds.midY - (beakSize.height / 2)
                 beakSubview.place(at: .init(x: x, y: y), proposal: .unspecified)
                 
             case .right:
-                let x = bounds.minX - beakSize.width + (BeakView.bottomlineWidth * 3)
+                let x = bounds.minX - beakSize.width + (BeakView.bottomlineWidth * 2.2)
                 let y = bounds.midY - (beakSize.height / 2)
                 beakSubview.place(at: .init(x: x, y: y), proposal: .unspecified)
             }
