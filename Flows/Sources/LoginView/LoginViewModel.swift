@@ -140,10 +140,11 @@ public extension OwnID.FlowsSDK.LoginView {
             buttonEventPublisher
                 .sink { _ in
                 } receiveValue: { [unowned self] event in
+                    let email = obtainEmail()
                     if state == .initial {
-                        OwnID.CoreSDK.logger.logAnalytic(.loginClickMetric(action: .click, context: payload?.context))
+                        OwnID.CoreSDK.logger.logAnalytic(.loginClickMetric(context: payload?.context, hasLoginId: !email.isEmpty))
                     }
-                    skipPasswordTapped(usersEmail: obtainEmail())
+                    skipPasswordTapped(usersEmail: email)
                 }
                 .store(in: &bag)
         }
