@@ -47,7 +47,8 @@ public extension OwnID.FlowsSDK.RegisterView {
         @Published private(set) var state = State.initial
         @Published public var shouldShowTooltip = false
         
-        /// Checks email if it is valid for tooltip display
+        /// Checks email if it is valid for tooltip display. On each change of email,
+        /// provide email to this closure for determinig if tooltop should be shown
         public var shouldShowTooltipEmailProcessingClosure: ((String?) -> Bool) = { emailString in
             guard let emailString else { return false }
             let emailObject = OwnID.CoreSDK.Email(rawValue: emailString)

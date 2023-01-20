@@ -44,7 +44,6 @@ extension OwnID.UISDK {
             self.translationText = localizationClosure()
         }
         
-#warning("disabled translations")
         var body: some View {
             Button(action: {
                 action()
