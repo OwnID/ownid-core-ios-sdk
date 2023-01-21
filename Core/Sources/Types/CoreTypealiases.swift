@@ -9,7 +9,12 @@ public extension OwnID.CoreSDK {
     typealias SessionVerifier = String
     typealias EventPublisher = AnyPublisher<Event, CoreErrorLogWrapper>
     typealias ServerURL = URL
+    
+    /// Represents path to open app back when certain flows finished. Example `com.ownid.CustomIntegrationDemo://ownid/redirect/`
     typealias RedirectionURLString = String
+    
+    /// Represents app console identifier. Example `q4qy97xgj02r37`
+    typealias AppID = String
     typealias AuthType = String
 }
 

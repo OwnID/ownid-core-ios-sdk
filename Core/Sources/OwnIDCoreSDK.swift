@@ -68,8 +68,8 @@ public extension OwnID {
             coreViewModel.subscribeToURL(publisher: urlPublisher.eraseToAnyPublisher())
         }
         
-        public func configure(appID: String,
-                              redirectionURL: String,
+        public func configure(appID: OwnID.CoreSDK.AppID,
+                              redirectionURL: RedirectionURLString,
                               userFacingSDK: SDKInformation,
                               underlyingSDKs: [SDKInformation],
                               environment: String? = .none,

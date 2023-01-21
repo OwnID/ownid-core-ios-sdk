@@ -10,7 +10,7 @@ extension OwnID.CoreSDK.Configuration {
 extension OwnID.CoreSDK {
     
     struct Configuration: Decodable {
-        init(appID: String, redirectionURL: OwnID.CoreSDK.RedirectionURLString, environment: String?) throws {
+        init(appID: OwnID.CoreSDK.AppID, redirectionURL: OwnID.CoreSDK.RedirectionURLString, environment: String?) throws {
             self.environment = environment
             self.ownIDServerURL = try Self.prepare(serverURL: Self.buildServerURL(for: appID, env: environment))
             self.redirectionURL = redirectionURL
@@ -66,7 +66,7 @@ extension OwnID.CoreSDK {
 }
 
 private extension OwnID.CoreSDK.Configuration {
-    static func buildServerURL(for appID: String, env: String?) -> URL {
+    static func buildServerURL(for appID: OwnID.CoreSDK.AppID, env: String?) -> URL {
         var serverURLString = "https://\(appID).server.ownid.com"
         if let env {
             serverURLString = "https://\(appID).server.\(env).ownid.com"
