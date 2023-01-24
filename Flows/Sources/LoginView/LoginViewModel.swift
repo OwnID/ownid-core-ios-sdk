@@ -53,7 +53,7 @@ public extension OwnID.FlowsSDK.LoginView {
         
         public init(loginPerformer: LoginPerformer,
                     sdkConfigurationName: String,
-                    emailPublisher: AnyPublisher<String, Never>) {
+                    emailPublisher: OwnID.CoreSDK.EmailPublisher) {
             self.sdkConfigurationName = sdkConfigurationName
             self.loginPerformer = loginPerformer
             emailPublisher.assign(to: \.email, on: self).store(in: &bag)

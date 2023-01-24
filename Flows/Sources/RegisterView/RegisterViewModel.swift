@@ -74,7 +74,7 @@ public extension OwnID.FlowsSDK.RegisterView {
         public init(registrationPerformer: RegistrationPerformer,
                     loginPerformer: LoginPerformer,
                     sdkConfigurationName: String,
-                    emailPublisher: AnyPublisher<String, Never>) {
+                    emailPublisher: OwnID.CoreSDK.EmailPublisher) {
             self.sdkConfigurationName = sdkConfigurationName
             self.registrationPerformer = registrationPerformer
             self.loginPerformer = loginPerformer
