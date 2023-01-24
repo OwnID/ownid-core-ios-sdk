@@ -61,11 +61,11 @@ public extension OwnID.FlowsSDK.RegisterView {
         private let registrationPerformer: RegistrationPerformer
         private var registrationData = RegistrationData()
         private let loginPerformer: LoginPerformer
+        private var email = ""
         var coreViewModel: OwnID.CoreSDK.CoreViewModel!
         var currentMetadata: OwnID.CoreSDK.MetricLogEntry.CurrentMetricInformation?
         
         let sdkConfigurationName: String
-        public var getEmail: (() -> String)?
         
         public var eventPublisher: OwnID.RegistrationPublisher {
             resultPublisher.eraseToAnyPublisher()
@@ -73,10 +73,12 @@ public extension OwnID.FlowsSDK.RegisterView {
         
         public init(registrationPerformer: RegistrationPerformer,
                     loginPerformer: LoginPerformer,
-                    sdkConfigurationName: String) {
+                    sdkConfigurationName: String,
+                    emailPublisher: AnyPublisher<String, Never>) {
             self.sdkConfigurationName = sdkConfigurationName
             self.registrationPerformer = registrationPerformer
             self.loginPerformer = loginPerformer
+            emailPublisher.assign(to: \.email, on: self).store(in: &bag)
             Task {
                 // Delay the task by 1 second
                 try? await Task.sleep(nanoseconds: 1_000_000_000)
@@ -207,7 +209,6 @@ public extension OwnID.FlowsSDK.RegisterView {
             buttonEventPublisher
                 .sink { _ in
                 } receiveValue: { [unowned self] _ in
-                    let email = obtainEmail()
                     OwnID.CoreSDK.logger.logAnalytic(.registerClickMetric(action: .click, context: registrationData.payload?.context, hasLoginId: !email.isEmpty))
                     skipPasswordTapped(usersEmail: email)
                 }
@@ -217,13 +218,9 @@ public extension OwnID.FlowsSDK.RegisterView {
 }
 
 private extension OwnID.FlowsSDK.RegisterView.ViewModel {
-    func obtainEmail() -> String {
-        let email = getEmail?() ?? ""
-        return email
-    }
     
     func processLogin(payload: OwnID.CoreSDK.Payload) {
-        let loginPerformerPublisher = loginPerformer.login(payload: payload, email: obtainEmail())
+        let loginPerformerPublisher = loginPerformer.login(payload: payload, email: email)
         loginPerformerPublisher
             .sink { [unowned self] completion in
                 if case .failure(let error) = completion {
