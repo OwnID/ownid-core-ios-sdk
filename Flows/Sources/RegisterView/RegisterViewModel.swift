@@ -48,7 +48,9 @@ public extension OwnID.FlowsSDK.RegisterView {
         @Published public var shouldShowTooltip = false
         
         /// Checks email if it is valid for tooltip display. On each change of email,
-        /// provide email to this closure for determinig if tooltop should be shown
+        /// this closure determines if tooltop should be shown. To change this behaviour,
+        /// provide your closure. To disable, provide empty closure:
+        /// `{ _ in false }`
         public var shouldShowTooltipEmailProcessingClosure: ((String?) -> Bool) = { emailString in
             guard let emailString else { return false }
             let emailObject = OwnID.CoreSDK.Email(rawValue: emailString)
@@ -79,6 +81,13 @@ public extension OwnID.FlowsSDK.RegisterView {
             self.registrationPerformer = registrationPerformer
             self.loginPerformer = loginPerformer
             emailPublisher.assign(to: \.email, on: self).store(in: &bag)
+            emailPublisher
+                .removeDuplicates()
+                .debounce(for: .seconds(0.77), scheduler: DispatchQueue.main)
+                .sink { [unowned self] userEmail in
+                shouldShowTooltip = shouldShowTooltipEmailProcessingClosure(userEmail)
+            }
+            .store(in: &bag)
             Task {
                 // Delay the task by 1 second
                 try? await Task.sleep(nanoseconds: 1_000_000_000)
@@ -93,8 +102,7 @@ public extension OwnID.FlowsSDK.RegisterView {
             OwnID.CoreSDK.logger.logAnalytic(.registerTrackMetric(action: .loaded, context: registrationData.payload?.context))
         }
         
-        public func register(with email: String,
-                             registerParameters: RegisterParameters = EmptyRegisterParameters()) {
+        public func register(registerParameters: RegisterParameters = EmptyRegisterParameters()) {
             if email.isEmpty {
                 handle(.coreLog(entry: .errorEntry(context: registrationData.payload?.context, Self.self), error: .plugin(underlying: OwnID.FlowsSDK.RegisterError.emailIsMissing)))
                 return
