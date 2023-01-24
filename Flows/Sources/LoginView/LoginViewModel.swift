@@ -41,19 +41,22 @@ public extension OwnID.FlowsSDK.LoginView {
         private let resultPublisher = PassthroughSubject<Result<OwnID.FlowsSDK.LoginEvent, OwnID.CoreSDK.Error>, Never>()
         private let loginPerformer: LoginPerformer
         private var payload: OwnID.CoreSDK.Payload?
+        private var email = ""
         var coreViewModel: OwnID.CoreSDK.CoreViewModel!
         var currentMetadata: OwnID.CoreSDK.MetricLogEntry.CurrentMetricInformation?
         
         let sdkConfigurationName: String
-        public var getEmail: (() -> String)?
         
         public var eventPublisher: OwnID.LoginPublisher {
             resultPublisher.eraseToAnyPublisher()
         }
         
-        public init(loginPerformer: LoginPerformer, sdkConfigurationName: String) {
+        public init(loginPerformer: LoginPerformer,
+                    sdkConfigurationName: String,
+                    emailPublisher: AnyPublisher<String, Never>) {
             self.sdkConfigurationName = sdkConfigurationName
             self.loginPerformer = loginPerformer
+            emailPublisher.assign(to: \.email, on: self).store(in: &bag)
             Task {
                 // Delay the task by 1 second
                 try? await Task.sleep(nanoseconds: 1_000_000_000)
@@ -140,7 +143,6 @@ public extension OwnID.FlowsSDK.LoginView {
             buttonEventPublisher
                 .sink { _ in
                 } receiveValue: { [unowned self] event in
-                    let email = obtainEmail()
                     if state == .initial {
                         OwnID.CoreSDK.logger.logAnalytic(.loginClickMetric(context: payload?.context, hasLoginId: !email.isEmpty))
                     }
@@ -152,14 +154,9 @@ public extension OwnID.FlowsSDK.LoginView {
 }
 
 private extension OwnID.FlowsSDK.LoginView.ViewModel {
-    func obtainEmail() -> String {
-        let email = getEmail?() ?? ""
-        return email
-    }
-    
     func process(payload: OwnID.CoreSDK.Payload) {
         self.payload = payload
-        let loginPerformerPublisher = loginPerformer.login(payload: payload, email: obtainEmail())
+        let loginPerformerPublisher = loginPerformer.login(payload: payload, email: email)
         loginPerformerPublisher
             .sink { [unowned self] completion in
                 if case .failure(let error) = completion {
