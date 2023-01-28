@@ -2,6 +2,10 @@ import Foundation
 import UIKit.UIDevice
 
 public extension OwnID.CoreSDK {
+    /// Relates version and name of the client.
+    /// Examples:
+    /// name - "com.example.myapp", "DemoApplication"
+    /// version - "0.0.5", "3.34.7"
     typealias SDKInformation = (name: String, verison: String)
     
     final class UserAgentManager {
@@ -17,9 +21,7 @@ public extension OwnID.CoreSDK {
             SDKUserAgent = userAgent(for: userFacingSDK, underlyingSDKs: allUnderlyingSDKs)
         }
         
-        var userFacingSDKVersion: String {
-            version
-        }
+        var userFacingSDKVersion: String { version }
         
         public lazy var underlyingSDKs = [OwnID.CoreSDK.sdkName]
         public lazy var SDKUserAgent = userAgent(for: (OwnID.CoreSDK.sdkName, OwnID.CoreSDK.version), underlyingSDKs: [])

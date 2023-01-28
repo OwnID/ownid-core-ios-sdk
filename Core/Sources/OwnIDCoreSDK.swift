@@ -7,9 +7,10 @@ public extension OwnID.CoreSDK {
     static let APIVersion = "1"
 }
 
-/// OwnID class represents core part of SDK. It performs initialization and creates views. It reads OwnIDConfiguration from disc, parses it and loads to memory for later usage. It is a singleton so the URL returned from browser can be linked to corresponding view.
+/// OwnID class represents core part of SDK. It performs initialization and creates views. It reads OwnIDConfiguration from disk, parses it and loads to memory for later usage. It is a singleton, so the URL returned from outside can be linked to corresponding flow.
 public extension OwnID {
     
+    /// Turns on logs to console app & console
     static func startDebugConsoleLogger(logLevel: OwnID.CoreSDK.LogLevel = .error) {
         OwnID.CoreSDK.logger.add(OwnID.CoreSDK.OSLogger())
         OwnID.CoreSDK.shared.enableLogging(logLevel: logLevel)
@@ -54,8 +55,7 @@ public extension OwnID {
         public func configureForTests() {
             store.send(.configureForTests)
         }
-        #warning("update comments on all public APIs")
-        ///   - supportedLanguages: Languages for web view. List of well-formed [IETF BCP 47 language tag](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Accept-Language) .
+        
         public func configure(userFacingSDK: SDKInformation,
                               underlyingSDKs: [SDKInformation],
                               supportedLanguages: OwnID.CoreSDK.Languages) {
@@ -68,8 +68,8 @@ public extension OwnID {
             coreViewModel.subscribeToURL(publisher: urlPublisher.eraseToAnyPublisher())
         }
         
-        public func configure(appID: String,
-                              redirectionURL: String,
+        public func configure(appID: OwnID.CoreSDK.AppID,
+                              redirectionURL: RedirectionURLString,
                               userFacingSDK: SDKInformation,
                               underlyingSDKs: [SDKInformation],
                               environment: String? = .none,
@@ -97,11 +97,6 @@ public extension OwnID {
             store.value.getConfiguration(for: sdkConfigurationName)
         }
         
-        /// Starts registration flow
-        /// - Parameters:
-        ///   - email: Used in plugin SDKs to find identity in web app FIDO2 storage and to display it for login
-        ///   - sdkConfigurationName: Name of current running SDK
-        /// - Returns: View that is presented in sheet
         func createCoreViewModelForRegister(email: Email? = .none,
                                             sdkConfigurationName: String) -> CoreViewModel {
             let languages = store.value.supportedLanguages
@@ -118,11 +113,6 @@ public extension OwnID {
             return viewModel
         }
         
-        /// Starts login flow
-        /// - Parameters:
-        ///   - email: Used in plugin SDKs to find identity in web app FIDO2 storage and to display it for login
-        ///   - sdkConfigurationName: Name of current running SDK
-        /// - Returns: View that is presented in sheet
         func createCoreViewModelForLogIn(email: Email? = .none,
                                          sdkConfigurationName: String) -> CoreViewModel {
             let languages = store.value.supportedLanguages

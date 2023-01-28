@@ -2,11 +2,13 @@ import Foundation
 import SwiftUI
 
 public extension OwnID.CoreSDK {
+    /// Describes translations to be used in SDK. Languages chosen by order of initialization.
     struct Languages: RawRepresentable {
         public init(rawValue: [String]) {
             self.rawValue = rawValue
         }
         
+        /// Tells SDK to change language if system language changes
         var shouldChangeLanguageOnSystemLanguageChange = true
         
         public let rawValue: [String]

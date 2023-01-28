@@ -8,8 +8,8 @@ enum SDKAction {
                        userFacingSDK: OwnID.CoreSDK.SDKInformation,
                        underlyingSDKs: [OwnID.CoreSDK.SDKInformation],
                        supportedLanguages: OwnID.CoreSDK.Languages)
-    case configure(appID: String,
-                   redirectionURL: String,
+    case configure(appID: OwnID.CoreSDK.AppID,
+                   redirectionURL: OwnID.CoreSDK.RedirectionURLString,
                    userFacingSDK: OwnID.CoreSDK.SDKInformation,
                    underlyingSDKs: [OwnID.CoreSDK.SDKInformation],
                    isTestingEnvironment: Bool,

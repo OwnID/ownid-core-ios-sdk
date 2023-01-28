@@ -84,8 +84,8 @@ extension OwnID.CoreSDK {
         return Just(action).eraseToEffect()
     }
     
-    private static func createConfiguration(appID: String,
-                                            redirectionURL: String,
+    private static func createConfiguration(appID: OwnID.CoreSDK.AppID,
+                                            redirectionURL: RedirectionURLString,
                                             userFacingSDK: SDKInformation,
                                             underlyingSDKs: [SDKInformation],
                                             isTestingEnvironment: Bool,
