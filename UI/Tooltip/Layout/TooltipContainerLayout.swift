@@ -42,11 +42,11 @@ extension OwnID.UISDK {
             let spaceFromButton = BeakView.height + paddingFromButton
             
             switch tooltipPosition {
-            case .left:
+            case .leading:
                 let x = bounds.origin.x - spaceFromButton
                 textAndArrowContainerSubview.place(at: .init(x: x, y: leftRightYPosition), proposal: .unspecified)
                 
-            case .right:
+            case .trailing:
                 let x = bounds.origin.x + buttonSize.width + spaceFromButton
                 textAndArrowContainerSubview.place(at: .init(x: x, y: leftRightYPosition), proposal: .unspecified)
                 

@@ -21,8 +21,8 @@ public extension OwnID.UISDK {
     }
     
     enum WidgetPosition: String {
-        case start
-        case end
+        case leading
+        case trailing
     }
     
     struct OrViewConfig: Equatable {
@@ -66,7 +66,7 @@ public extension OwnID.UISDK {
         public init(buttonViewConfig: ButtonViewConfig = ButtonViewConfig(),
                     orViewConfig: OrViewConfig = OrViewConfig(),
                     tooltipVisualLookConfig: TooltipVisualLookConfig = TooltipVisualLookConfig(),
-                    widgetPosition: WidgetPosition = .start,
+                    widgetPosition: WidgetPosition = .leading,
                     loaderViewConfig: LoaderViewConfig = LoaderViewConfig()) {
             self.buttonViewConfig = buttonViewConfig
             self.orViewConfig = orViewConfig
@@ -87,10 +87,10 @@ extension OwnID.UISDK.VisualLookConfig {
     func convertToCurrentMetric() -> OwnID.CoreSDK.MetricLogEntry.CurrentMetricInformation {
         var current = OwnID.CoreSDK.MetricLogEntry.CurrentMetricInformation()
         switch self.widgetPosition {
-        case .start:
+        case .leading:
             current.widgetPositionTypeMetric = .start
             
-        case .end:
+        case .trailing:
             current.widgetPositionTypeMetric = .end
         }
         switch self.buttonViewConfig.variant {

@@ -35,11 +35,11 @@ public extension OwnID.UISDK {
         public var body: some View {
             HStack(spacing: 8) {
                 switch visualConfig.widgetPosition {
-                case .end:
+                case .trailing:
                     orView()
                     buttonAndTooltipView()
                     
-                case .start:
+                case .leading:
                     buttonAndTooltipView()
                     orView()
                 }
