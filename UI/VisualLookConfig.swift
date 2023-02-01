@@ -15,9 +15,14 @@ public extension OwnID.UISDK {
         public var isSpinnerEnabled: Bool
     }
     
-    enum ButtonVariant: String {
+    enum IconButtonVariant: String {
         case fingerprint = "touchidImage"
         case faceId = "faceidImage"
+    }
+    
+    enum ButtonVariant: Equatable {
+        case iconButton(IconButtonVariant)
+        case authButton
     }
     
     enum WidgetPosition: String {
@@ -47,7 +52,7 @@ public extension OwnID.UISDK {
                     backgroundColor: Color = OwnID.Colors.biometricsButtonBackground,
                     borderColor: Color = OwnID.Colors.biometricsButtonBorder,
                     shadowColor: Color = OwnID.Colors.biometricsButtonBorder.opacity(0.7),
-                    variant: ButtonVariant = .faceId) {
+                    variant: ButtonVariant = .iconButton(.faceId)) {
             self.iconColor = iconColor
             self.backgroundColor = backgroundColor
             self.borderColor = borderColor
@@ -93,12 +98,19 @@ extension OwnID.UISDK.VisualLookConfig {
         case .trailing:
             current.widgetPositionTypeMetric = .end
         }
+        
         switch self.buttonViewConfig.variant {
-        case .fingerprint:
-            current.widgetTypeMetric = .fingerprint
+        case .iconButton(let iconType):
+            switch iconType {
+            case .fingerprint:
+                current.widgetTypeMetric = .fingerprint
+                
+            case .faceId:
+                current.widgetTypeMetric = .faceid
+            }
             
-        case .faceId:
-            current.widgetTypeMetric = .faceid
+        case .authButton:
+            current.widgetTypeMetric = .auth
         }
         return current
     }

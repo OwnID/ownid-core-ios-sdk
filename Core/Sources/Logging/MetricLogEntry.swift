@@ -16,6 +16,7 @@ public extension OwnID.CoreSDK.StandardMetricLogEntry {
         case fingerprint = "button-fingerprint"
         case faceid = "button-faceid"
         case client = "client-button"
+        case auth = "ownid-auth-button"
     }
     
     enum WidgetPositionTypeMetric: String {
