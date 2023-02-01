@@ -2,17 +2,17 @@ import SwiftUI
 
 public extension OwnID.UISDK {
     struct LoaderViewConfig: Equatable {
-        public init(spinnerColor: Color = OwnID.Colors.spinnerColor,
-                    spinnerBackgroundColor: Color = OwnID.Colors.spinnerBackgroundColor,
-                    isSpinnerEnabled: Bool = true) {
-            self.spinnerColor = spinnerColor
-            self.spinnerBackgroundColor = spinnerBackgroundColor
-            self.isSpinnerEnabled = isSpinnerEnabled
+        public init(color: Color = OwnID.Colors.spinnerColor,
+                    backgroundColor: Color = OwnID.Colors.spinnerBackgroundColor,
+                    isEnabled: Bool = true) {
+            self.color = color
+            self.backgroundColor = backgroundColor
+            self.isEnabled = isEnabled
         }
         
-        public var spinnerColor: Color
-        public var spinnerBackgroundColor: Color
-        public var isSpinnerEnabled: Bool
+        public var color: Color
+        public var backgroundColor: Color
+        public var isEnabled: Bool
     }
     
     enum IconButtonVariant: String {
@@ -25,26 +25,46 @@ public extension OwnID.UISDK {
         case authButton
     }
     
+    struct AuthButtonViewConfig: Equatable {
+        public init(textSize: CGFloat = 14.0,
+                    lineHeight: CGFloat = 24.0,
+                    textColor: Color = .white,
+                    iconColor: Color = .white,
+                    backgroungColor: Color = OwnID.Colors.blue) {
+            self.textSize = textSize
+            self.lineHeight = lineHeight
+            self.textColor = textColor
+            self.iconColor = iconColor
+            self.backgroungColor = backgroungColor
+        }
+        
+        public var iconColor: Color
+        public var textSize: CGFloat
+        public var lineHeight: CGFloat
+        public var textColor: Color
+        public var backgroungColor: Color
+    }
+    
     enum WidgetPosition: String {
         case leading
         case trailing
     }
     
     struct OrViewConfig: Equatable {
-        public init(isOrViewEnabled: Bool = true,
-                    orTextSize: CGFloat = 16.0,
-                    orLineHeight: CGFloat = 24.0,
-                    orTextColor: Color = OwnID.Colors.textGrey) {
-            self.isOrViewEnabled = isOrViewEnabled
-            self.orTextSize = orTextSize
-            self.orLineHeight = orLineHeight
-            self.orTextColor = orTextColor
+        public init(isEnabled: Bool = true,
+                    textSize: CGFloat = 16.0,
+                    lineHeight: CGFloat = 24.0,
+                    textColor: Color = OwnID.Colors.textGrey) {
+            self.isEnabled = isEnabled
+            self.textSize = textSize
+            self.lineHeight = lineHeight
+            self.textColor = textColor
         }
         
-        public var isOrViewEnabled: Bool
-        public var orTextSize: CGFloat
-        public var orLineHeight: CGFloat
-        public var orTextColor: Color
+        public var isEnabled: Bool
+        public var textSize: CGFloat
+        public var lineHeight: CGFloat
+        public var textColor: Color
     }
     
     struct ButtonViewConfig: Equatable {
@@ -72,8 +92,10 @@ public extension OwnID.UISDK {
                     orViewConfig: OrViewConfig = OrViewConfig(),
                     tooltipVisualLookConfig: TooltipVisualLookConfig = TooltipVisualLookConfig(),
                     widgetPosition: WidgetPosition = .leading,
-                    loaderViewConfig: LoaderViewConfig = LoaderViewConfig()) {
+                    loaderViewConfig: LoaderViewConfig = LoaderViewConfig(),
+                    authButtonConfig: AuthButtonViewConfig = AuthButtonViewConfig()) {
             self.buttonViewConfig = buttonViewConfig
+            self.authButtonConfig = authButtonConfig
             self.orViewConfig = orViewConfig
             self.tooltipVisualLookConfig = tooltipVisualLookConfig
             self.widgetPosition = widgetPosition
@@ -81,6 +103,7 @@ public extension OwnID.UISDK {
         }
         
         public var buttonViewConfig: ButtonViewConfig
+        public var authButtonConfig: AuthButtonViewConfig
         public var orViewConfig: OrViewConfig
         public var tooltipVisualLookConfig: TooltipVisualLookConfig
         public var widgetPosition: WidgetPosition

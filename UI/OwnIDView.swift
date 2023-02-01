@@ -35,7 +35,7 @@ public extension OwnID.UISDK {
         public var body: some View {
             switch visualConfig.buttonViewConfig.variant {
             case .authButton:
-                AuthButton()
+                AuthButton(visualConfig: visualConfig, actionHandler: { resultPublisher.send(()) })
                 
             case .iconButton(let variant):
                 IconButton(visualConfig: visualConfig,

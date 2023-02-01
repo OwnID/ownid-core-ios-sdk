@@ -10,7 +10,7 @@ extension OwnID.UISDK {
         
         init(tooltipVisualLookConfig: TooltipVisualLookConfig) {
             self.tooltipVisualLookConfig = tooltipVisualLookConfig
-            let localizationChangedClosure = { "tooltip-ios".ownIDLocalized() }
+            let localizationChangedClosure = { OwnID.CoreSDK.TranslationsSDK.TranslationKey.tooltip.localized() }
             self.localizationChangedClosure = localizationChangedClosure
             _translationText = State(initialValue: localizationChangedClosure())
         }

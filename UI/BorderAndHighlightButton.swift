@@ -35,7 +35,7 @@ extension OwnID.UISDK {
              buttonViewConfig: ButtonViewConfig,
              action: @escaping () -> Void,
              content: @escaping () -> any View) {
-            let localizationClosure = { "skipPassword".ownIDLocalized() }
+            let localizationClosure = { OwnID.CoreSDK.TranslationsSDK.TranslationKey.skipPassword.localized() }
             self._viewState = viewState
             self.buttonViewConfig = buttonViewConfig
             self.action = action
@@ -45,9 +45,7 @@ extension OwnID.UISDK {
         }
         
         var body: some View {
-            Button(action: {
-                action()
-            }, label: {
+            Button(action: action, label: {
                 EmptyView()
             })
             .buttonStyle(buttonStyle())

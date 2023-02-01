@@ -33,10 +33,10 @@ extension OwnID.UISDK {
 private extension OwnID.UISDK.IconButton {
     @ViewBuilder
     func orView() -> some View {
-        if visualConfig.orViewConfig.isOrViewEnabled {
-            OwnID.UISDK.OrView(textSize: visualConfig.orViewConfig.orTextSize,
-                               lineHeight: visualConfig.orViewConfig.orLineHeight,
-                               textColor: visualConfig.orViewConfig.orTextColor)
+        if visualConfig.orViewConfig.isEnabled {
+            OwnID.UISDK.OrView(textSize: visualConfig.orViewConfig.textSize,
+                               lineHeight: visualConfig.orViewConfig.lineHeight,
+                               textColor: visualConfig.orViewConfig.textColor)
         }
     }
     
@@ -63,8 +63,8 @@ private extension OwnID.UISDK.IconButton {
             variantImage()
                 .layoutPriority(1)
                 .opacity(isLoading ? 0 : 1)
-            OwnID.UISDK.SpinnerLoaderView(spinnerColor: visualConfig.loaderViewConfig.spinnerColor,
-                                          spinnerBackgroundColor: visualConfig.loaderViewConfig.spinnerBackgroundColor,
+            OwnID.UISDK.SpinnerLoaderView(spinnerColor: visualConfig.loaderViewConfig.color,
+                                          spinnerBackgroundColor: visualConfig.loaderViewConfig.backgroundColor,
                                           viewBackgroundColor: visualConfig.buttonViewConfig.backgroundColor)
             .opacity(isLoading ? 1 : 0)
         }

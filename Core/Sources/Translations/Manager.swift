@@ -1,13 +1,20 @@
 import Foundation
 import Combine
 
-extension String {
-    public func ownIDLocalized() -> String {
-        if let bundle = OwnID.CoreSDK.shared.translationsModule.localizationBundle {
-            let localizedString = bundle.localizedString(forKey: self, value: self, table: nil)
-            return localizedString
+extension OwnID.CoreSDK.TranslationsSDK {
+    enum TranslationKey: String {
+        case skipPassword
+        case tooltip = "tooltip-ios"
+        case or
+        case `continue`
+        
+        public func localized() -> String {
+            if let bundle = OwnID.CoreSDK.shared.translationsModule.localizationBundle {
+                let localizedString = bundle.localizedString(forKey: rawValue, value: rawValue, table: nil)
+                return localizedString
+            }
+            return rawValue
         }
-        return self
     }
 }
 

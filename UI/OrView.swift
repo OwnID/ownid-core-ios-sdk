@@ -9,7 +9,7 @@ extension OwnID.UISDK {
         let textColor: Color
         
         init(textSize: CGFloat, lineHeight: CGFloat, textColor: Color) {
-            let localizationChangedClosure = { "or".ownIDLocalized() }
+            let localizationChangedClosure = { OwnID.CoreSDK.TranslationsSDK.TranslationKey.or.localized() }
             self.localizationChangedClosure = localizationChangedClosure
             _translationText = State(initialValue: localizationChangedClosure())
             self.textSize = textSize
