@@ -52,7 +52,9 @@ private extension OwnID.UISDK.IconButton {
     
     func variantImage() -> some View {
         let image = Image(imageName, bundle: .resourceBundle)
+            .resizable()
             .renderingMode(.template)
+            .frame(width: visualConfig.buttonViewConfig.iconHeight, height: visualConfig.buttonViewConfig.iconHeight)
             .foregroundColor(visualConfig.buttonViewConfig.iconColor)
         return image
     }
@@ -75,7 +77,7 @@ private extension OwnID.UISDK.IconButton {
         OwnID.UISDK.BorderAndHighlightButton(viewState: $buttonState,
                                              buttonViewConfig: visualConfig.buttonViewConfig,
                                              action: actionHandler,
-                                             content: { buttonContents() })
+                                             content: buttonContents())
         .layoutPriority(1)
     }
     

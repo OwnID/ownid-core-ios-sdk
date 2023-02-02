@@ -34,7 +34,7 @@ extension OwnID.UISDK {
         init(viewState: Binding<ButtonState>,
              buttonViewConfig: ButtonViewConfig,
              action: @escaping () -> Void,
-             content: @escaping () -> any View) {
+             content: @autoclosure @escaping () -> any View) {
             let localizationClosure = { OwnID.CoreSDK.TranslationsSDK.TranslationKey.skipPassword.localized() }
             self._viewState = viewState
             self.buttonViewConfig = buttonViewConfig
