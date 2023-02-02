@@ -4,38 +4,38 @@ import SwiftUI
 extension OwnID.UISDK {
     struct AuthButton: View {
         init(visualConfig: OwnID.UISDK.VisualLookConfig,
-             actionHandler: @escaping (() -> Void)) {
+             actionHandler: @escaping (() -> Void),
+             isLoading: Binding<Bool>) {
             let localizationChangedClosure = { OwnID.CoreSDK.TranslationsSDK.TranslationKey.continue.localized() }
             self.localizationChangedClosure = localizationChangedClosure
             _translationText = State(initialValue: localizationChangedClosure())
             self.visualConfig = visualConfig
             self.actionHandler = actionHandler
+            self._isLoading = isLoading
         }
         
         let visualConfig: VisualLookConfig
         let actionHandler: (() -> Void)
+        @Binding var isLoading: Bool
         
         private let localizationChangedClosure: (() -> String)
         @State private var translationText: String
         
         var body: some View {
             Button(action: actionHandler) {
-                HStack(alignment: .center, spacing: 8) {
-                    variantImage()
-                    Text(translationText)
-                        .fontWithLineHeight(font: .systemFont(ofSize: visualConfig.authButtonConfig.textSize, weight: .bold), lineHeight: visualConfig.authButtonConfig.lineHeight)
-                        .foregroundColor(visualConfig.authButtonConfig.textColor)
-                        .multilineTextAlignment(.center)
-                        .frame(
-                            minWidth: 0,
-                            maxWidth: .infinity,
-                            alignment: .center
-                        )
+                ZStack {
+                    contents()
+                        .layoutPriority(1)
+                        .opacity(isLoading ? 0 : 1)
+                    OwnID.UISDK.SpinnerLoaderView(spinnerColor: visualConfig.loaderViewConfig.color,
+                                                  spinnerBackgroundColor: visualConfig.loaderViewConfig.backgroundColor,
+                                                  viewBackgroundColor: visualConfig.authButtonConfig.backgroundColor)
+                    .opacity(isLoading ? 1 : 0)
                 }
+                .frame(maxWidth: .infinity)
             }
-            .frame(maxWidth: .infinity)
             .padding(EdgeInsets(top: 10, leading: 8, bottom: 10, trailing: 8))
-            .background(visualConfig.authButtonConfig.backgroungColor)
+            .background(visualConfig.authButtonConfig.backgroundColor)
             .cornerRadius(6)
             .onReceive(OwnID.CoreSDK.shared.translationsModule.translationsChangePublisher) {
                 translationText = localizationChangedClosure()
@@ -45,6 +45,16 @@ extension OwnID.UISDK {
 }
 
 private extension OwnID.UISDK.AuthButton {
+    @ViewBuilder
+    func contents() -> some View {
+        HStack(alignment: .center, spacing: 8) {
+            variantImage()
+            Text(translationText)
+                .fontWithLineHeight(font: .systemFont(ofSize: visualConfig.authButtonConfig.textSize, weight: .bold), lineHeight: visualConfig.authButtonConfig.lineHeight)
+                .foregroundColor(visualConfig.authButtonConfig.textColor)
+        }
+    }
+    
     func variantImage() -> some View {
         let image = Image(OwnID.UISDK.IconButtonVariant.faceId.rawValue, bundle: .resourceBundle)
             .renderingMode(.template)
