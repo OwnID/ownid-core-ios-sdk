@@ -38,6 +38,7 @@ extension OwnID.UISDK {
                 .frame(maxWidth: .infinity)
             }
             .disabled(!buttonState.isEnabled)
+            .frame(height: visualConfig.authButtonConfig.height)
             .padding(EdgeInsets(top: 10, leading: 8, bottom: 10, trailing: 8))
             .background(visualConfig.authButtonConfig.backgroundColor)
             .cornerRadius(6)
@@ -61,7 +62,9 @@ private extension OwnID.UISDK.AuthButton {
     
     func variantImage() -> some View {
         let image = Image(OwnID.UISDK.IconButtonVariant.faceId.rawValue, bundle: .resourceBundle)
+            .resizable()
             .renderingMode(.template)
+            .frame(width: visualConfig.authButtonConfig.imageHeight, height: visualConfig.authButtonConfig.imageHeight)
             .foregroundColor(visualConfig.authButtonConfig.iconColor)
         return image
     }
