@@ -30,19 +30,19 @@ public extension OwnID.UISDK {
                     lineHeight: CGFloat = 24.0,
                     textColor: Color = .white,
                     iconColor: Color = .white,
-                    backgroungColor: Color = OwnID.Colors.blue) {
+                    backgroundColor: Color = OwnID.Colors.blue) {
             self.textSize = textSize
             self.lineHeight = lineHeight
             self.textColor = textColor
             self.iconColor = iconColor
-            self.backgroungColor = backgroungColor
+            self.backgroundColor = backgroundColor
         }
         
         public var iconColor: Color
         public var textSize: CGFloat
         public var lineHeight: CGFloat
         public var textColor: Color
-        public var backgroungColor: Color
+        public var backgroundColor: Color
     }
     
     enum WidgetPosition: String {
