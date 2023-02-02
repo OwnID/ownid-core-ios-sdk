@@ -10,9 +10,6 @@ public extension OwnID.UISDK {
         @Binding private var isLoading: Bool
         @Binding private var buttonState: ButtonState
         
-        @Environment(\.colorScheme) var colorScheme
-        @Environment(\.layoutDirection) var direction
-        
         private let resultPublisher = PassthroughSubject<Void, Never>()
         
         public var eventPublisher: OwnID.UISDK.EventPubliser {
@@ -35,7 +32,10 @@ public extension OwnID.UISDK {
         public var body: some View {
             switch visualConfig.buttonViewConfig.variant {
             case .authButton:
-                AuthButton(visualConfig: visualConfig, actionHandler: { resultPublisher.send(()) }, isLoading: $isLoading)
+                AuthButton(visualConfig: visualConfig,
+                           actionHandler: { resultPublisher.send(()) },
+                           isLoading: $isLoading,
+                           buttonState: $buttonState)
                 
             case .iconButton(let variant):
                 IconButton(visualConfig: visualConfig,

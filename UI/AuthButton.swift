@@ -3,23 +3,26 @@ import SwiftUI
 
 extension OwnID.UISDK {
     struct AuthButton: View {
-        init(visualConfig: OwnID.UISDK.VisualLookConfig,
-             actionHandler: @escaping (() -> Void),
-             isLoading: Binding<Bool>) {
-            let localizationChangedClosure = { OwnID.CoreSDK.TranslationsSDK.TranslationKey.continue.localized() }
-            self.localizationChangedClosure = localizationChangedClosure
-            _translationText = State(initialValue: localizationChangedClosure())
-            self.visualConfig = visualConfig
-            self.actionHandler = actionHandler
-            self._isLoading = isLoading
-        }
-        
         let visualConfig: VisualLookConfig
         let actionHandler: (() -> Void)
         @Binding var isLoading: Bool
         
         private let localizationChangedClosure: (() -> String)
         @State private var translationText: String
+        @Binding private var buttonState: ButtonState
+        
+        init(visualConfig: OwnID.UISDK.VisualLookConfig,
+             actionHandler: @escaping (() -> Void),
+             isLoading: Binding<Bool>,
+             buttonState: Binding<ButtonState>) {
+            let localizationChangedClosure = { OwnID.CoreSDK.TranslationsSDK.TranslationKey.continue.localized() }
+            self.localizationChangedClosure = localizationChangedClosure
+            _translationText = State(initialValue: localizationChangedClosure())
+            self.visualConfig = visualConfig
+            self.actionHandler = actionHandler
+            self._isLoading = isLoading
+            self._buttonState = buttonState
+        }
         
         var body: some View {
             Button(action: actionHandler) {
@@ -34,6 +37,7 @@ extension OwnID.UISDK {
                 }
                 .frame(maxWidth: .infinity)
             }
+            .disabled(!buttonState.isEnabled)
             .padding(EdgeInsets(top: 10, leading: 8, bottom: 10, trailing: 8))
             .background(visualConfig.authButtonConfig.backgroundColor)
             .cornerRadius(6)
