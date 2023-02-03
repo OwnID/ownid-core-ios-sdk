@@ -26,16 +26,7 @@ extension OwnID.UISDK {
         
         var body: some View {
             Button(action: actionHandler) {
-                ZStack {
-                    contents()
-                        .layoutPriority(1)
-                        .opacity(isLoading ? 0 : 1)
-                    OwnID.UISDK.SpinnerLoaderView(spinnerColor: visualConfig.loaderViewConfig.color,
-                                                  spinnerBackgroundColor: visualConfig.loaderViewConfig.backgroundColor,
-                                                  viewBackgroundColor: visualConfig.authButtonConfig.backgroundColor)
-                    .opacity(isLoading ? 1 : 0)
-                }
-                .frame(maxWidth: .infinity)
+                contents()
             }
             .disabled(!buttonState.isEnabled)
             .frame(height: visualConfig.authButtonConfig.height)
@@ -51,13 +42,27 @@ extension OwnID.UISDK {
 
 private extension OwnID.UISDK.AuthButton {
     @ViewBuilder
-    func contents() -> some View {
-        HStack(alignment: .center, spacing: 8) {
+    func imageWithLoader() -> some View {
+        ZStack {
             variantImage()
+                .layoutPriority(1)
+                .opacity(isLoading ? 0 : 1)
+            OwnID.UISDK.SpinnerLoaderView(spinnerColor: visualConfig.loaderViewConfig.color,
+                                          spinnerBackgroundColor: visualConfig.loaderViewConfig.backgroundColor,
+                                          viewBackgroundColor: visualConfig.authButtonConfig.backgroundColor)
+            .opacity(isLoading ? 1 : 0)
+        }
+    }
+    
+    @ViewBuilder
+    func contents() -> some View {
+        HStack(alignment: .center, spacing: 15) {
+            imageWithLoader()
             Text(translationText)
                 .fontWithLineHeight(font: .systemFont(ofSize: visualConfig.authButtonConfig.textSize, weight: .bold), lineHeight: visualConfig.authButtonConfig.lineHeight)
                 .foregroundColor(visualConfig.authButtonConfig.textColor)
         }
+        .frame(maxWidth: .infinity)
     }
     
     func variantImage() -> some View {
