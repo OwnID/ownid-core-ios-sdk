@@ -78,13 +78,11 @@ public extension OwnID.UISDK {
                     iconHeight: CGFloat = 28.0,
                     backgroundColor: Color = OwnID.Colors.biometricsButtonBackground,
                     borderColor: Color = OwnID.Colors.biometricsButtonBorder,
-                    shadowColor: Color = OwnID.Colors.biometricsButtonBorder.opacity(0.7),
                     variant: ButtonVariant = .iconButton(.faceId)) {
             self.iconColor = iconColor
             self.iconHeight = iconHeight
             self.backgroundColor = backgroundColor
             self.borderColor = borderColor
-            self.shadowColor = shadowColor
             self.variant = variant
         }
         
@@ -92,7 +90,6 @@ public extension OwnID.UISDK {
         public var iconHeight: CGFloat
         public var backgroundColor: Color
         public var borderColor: Color
-        public var shadowColor: Color
         public var variant: ButtonVariant
     }
     
