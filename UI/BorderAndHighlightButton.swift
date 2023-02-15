@@ -60,10 +60,6 @@ extension OwnID.UISDK {
             view
                 .background(backgroundRectangle(color: buttonViewConfig.backgroundColor))
                 .border(color: buttonViewConfig.borderColor)
-                .shadow(color: shouldDisplayHighlighted ? buttonViewConfig.shadowColor : .clear,
-                        radius: cornerRadiusValue,
-                        x: 0,
-                        y: cornerRadiusValue / 2)
         }
         
         @ViewBuilder
