@@ -8,14 +8,14 @@ public extension OwnID.UISDK {
             X──────────────X──────────────X
             |                             |
             |                             |
-      left  X           button            X  right
+   leading  X           button            X  trailing
             |                             |
             |                             |
             X──────────────X──────────────X
                          bottom
      */
     enum TooltipPositionType: String {
-        case top, bottom, left, right
+        case top, bottom, leading, trailing
     }
 }
 
@@ -57,9 +57,9 @@ extension OwnID.UISDK.TooltipPositionType {
             return 180
         case .bottom:
             return 0
-        case .left:
+        case .leading:
             return 90
-        case .right:
+        case .trailing:
             return -90
         }
     }
