@@ -1,2 +1,4 @@
 "skipPassword" = "Skip Password";
 "or" = "or";
+"tooltip-ios" = "Login with Face ID";
+"continue" = "Continue";

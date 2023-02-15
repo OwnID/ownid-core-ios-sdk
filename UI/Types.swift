@@ -11,6 +11,19 @@ public extension OwnID.UISDK {
 }
 
 extension OwnID.UISDK.ButtonState {
+    var isEnabled: Bool {
+        switch self {
+        case .disabled:
+            return false
+            
+        case .enabled:
+            return true
+            
+        case .activated:
+            return true
+        }
+    }
+    
     var isTooltipShown: Bool {
         switch self {
         case .disabled:
