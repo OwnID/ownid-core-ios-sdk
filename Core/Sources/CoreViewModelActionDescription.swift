@@ -36,6 +36,8 @@ extension OwnID.CoreSDK.ViewModelAction: CustomDebugStringConvertible {
         case .addErrorToInternalStates(let error):
             let message = "addErrorToInternalStates " + error.localizedDescription + " " + error.debugDescription
             return message
+        case .authManagerRequestFail(let error, _):
+            return "authManagerRequestFail \(error.error.localizedDescription)"
         }
     }
 }

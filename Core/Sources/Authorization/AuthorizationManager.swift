@@ -26,8 +26,8 @@ extension OwnID.CoreSDK.AccountManager {
     }
     
     enum Action {
-        case didFinishRegistration(origin: String, fido2RegisterPayload: OwnID.CoreSDK.Fido2RegisterPayload)
-        case didFinishLogin(origin: String, fido2LoginPayload: OwnID.CoreSDK.Fido2LoginPayload)
+        case didFinishRegistration(origin: String, fido2RegisterPayload: OwnID.CoreSDK.Fido2RegisterPayload, browserBaseURL: String)
+        case didFinishLogin(origin: String, fido2LoginPayload: OwnID.CoreSDK.Fido2LoginPayload, browserBaseURL: String)
         case error(error: OwnID.CoreSDK.Error, context: OwnID.CoreSDK.Context, browserBaseURL: String)
     }
 }
@@ -71,7 +71,9 @@ extension OwnID.CoreSDK {
             
             let assertionRequest = publicKeyCredentialProvider.createCredentialAssertionRequest(challenge: challengeData)
             let securityKeyRequest = securityKeyProvider.createCredentialAssertionRequest(challenge: challengeData)
-            
+//            let data = Data(base64Encoded: "SGbM/adQJLNhDTeO03MdWx351QY=", options: .ignoreUnknownCharacters)
+//            let cred = ASAuthorizationPlatformPublicKeyCredentialDescriptor(credentialID: data!)
+//            assertionRequest.allowedCredentials = [cred]
             let requests = [ assertionRequest, securityKeyRequest ]
             let authController = ASAuthorizationController(authorizationRequests: requests)
             authController.delegate = self
@@ -141,7 +143,7 @@ extension OwnID.CoreSDK {
                 let payload = OwnID.CoreSDK.Fido2RegisterPayload(credentialId: credentialID,
                                                                  clientDataJSON: clientDataJSON,
                                                                  attestationObject: attestationObject)
-                store.send(.didFinishRegistration(origin: domain, fido2RegisterPayload: payload))
+                store.send(.didFinishRegistration(origin: domain, fido2RegisterPayload: payload, browserBaseURL: browserBaseURL))
                 
             case let credentialAssertion as ASAuthorizationPlatformPublicKeyCredentialAssertion:
                 // Verify the below signature and clientDataJSON with your service for the given userID.
@@ -154,7 +156,7 @@ extension OwnID.CoreSDK {
                                                               clientDataJSON: clientDataJSON.base64urlEncodedString(),
                                                               authenticatorData: rawAuthenticatorData,
                                                               signature: signature)
-                store.send(.didFinishLogin(origin: domain, fido2LoginPayload: payload))
+                store.send(.didFinishLogin(origin: domain, fido2LoginPayload: payload, browserBaseURL: browserBaseURL))
                 
             default:
                 store.send(.error(error: .authorizationManagerUnknownAuthType, context: challenge, browserBaseURL: browserBaseURL))
