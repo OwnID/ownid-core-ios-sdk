@@ -5,6 +5,12 @@ public extension OwnID.CoreSDK {
     enum Setting {}
 }
 
+extension OwnID.CoreSDK.Setting {
+    enum InternalError: Error {
+        case dataIsEmpty
+    }
+}
+
 public extension OwnID.CoreSDK.Setting {
     struct RequestBody: Encodable {
         let loginID: String
