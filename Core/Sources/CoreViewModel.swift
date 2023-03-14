@@ -16,9 +16,9 @@ extension OwnID.CoreSDK {
              session: APISessionProtocol,
              sdkConfigurationName: String,
              isLoggingEnabled: Bool,
-             clientConfiguration: ClientConfiguration?) {
+             clientConfiguration: LocalConfiguration?) {
             let initialState = OwnID.CoreSDK.ViewModelState(isLoggingEnabled: isLoggingEnabled,
-                                                            clientConfiguration: clientConfiguration,
+                                                            configuration: clientConfiguration,
                                                             sdkConfigurationName: sdkConfigurationName,
                                                             session: session,
                                                             email: email,
@@ -40,7 +40,7 @@ extension OwnID.CoreSDK {
         }
         
         public func start() {
-            if (store.value.clientConfiguration != nil) {
+            if (store.value.configuration != nil) {
                 store.send(.sendInitialRequest)
             } else {
                 store.send(.addToStateShouldStartInitRequest(value: true))
@@ -69,10 +69,10 @@ extension OwnID.CoreSDK {
                 .store(in: &bag)
         }
         
-        func subscribeToConfiguration(publisher: AnyPublisher<ClientConfiguration, Never>) {
+        func subscribeToConfiguration(publisher: AnyPublisher<LocalConfiguration, Never>) {
             publisher
-                .sink { [unowned self] clientConfiguration in
-                    self.store.send(.addToStateConfig(clientConfig: clientConfiguration))
+                .sink { [unowned self] configuration in
+                    self.store.send(.addToStateConfig(config: configuration))
                 }
                 .store(in: &bag)
         }
@@ -155,7 +155,7 @@ extension OwnID.CoreSDK {
     enum ViewModelAction {
         case addToState(browserViewModelStore: Store<BrowserOpenerViewModel.State, BrowserOpenerViewModel.Action>,
                         authStore: Store<AccountManager.State, AccountManager.Action>)
-        case addToStateConfig(clientConfig: ClientConfiguration)
+        case addToStateConfig(config: LocalConfiguration)
         case addToStateShouldStartInitRequest(value: Bool)
         case sendInitialRequest
         case initialRequestLoaded(response: OwnID.CoreSDK.Init.Response)
@@ -175,7 +175,7 @@ extension OwnID.CoreSDK {
     
     struct ViewModelState: LoggingEnabled {
         let isLoggingEnabled: Bool
-        var clientConfiguration: ClientConfiguration?
+        var configuration: LocalConfiguration?
         
         let sdkConfigurationName: String
         let session: APISessionProtocol
@@ -201,14 +201,14 @@ extension OwnID.CoreSDK {
             return [sendInitialRequest(type: state.type,
                                        token: state.token,
                                        session: state.session,
-                                       origin: state.clientConfiguration?.rpId)]
+                                       origin: state.configuration?.fidoSettings?.rpID)]
             
         case let .initialRequestLoaded(response):
             guard let context = response.context else { return errorEffect(.coreLog(entry: .errorEntry(Self.self), error: .contextIsMissing)) }
             if #available(iOS 16, *),
-               let config = state.clientConfiguration,
-               let domain = config.rpId,
-               config.passkeys {
+               let config = state.configuration,
+               let domain = config.fidoSettings?.rpID,
+               config.passkeysAutofillEnabled {
                 let authManager = OwnID.CoreSDK.AccountManager(store: state.authManagerStore,
                                                                domain: domain,
                                                                challenge: state.session.context,
@@ -227,7 +227,8 @@ extension OwnID.CoreSDK {
                                          browserURL: response.url,
                                          email: state.email,
                                          sdkConfigurationName: state.sdkConfigurationName,
-                                         store: state.browserViewModelStore)
+                                         store: state.browserViewModelStore,
+                                         redirectionURLString: state.configuration?.redirectionURL)
                 state.browserViewModel = vm
                 return []
             }
@@ -247,7 +248,7 @@ extension OwnID.CoreSDK {
             
         case .sendStatusRequest:
             state.browserViewModel = .none
-            return [sendStatusRequest(session: state.session, origin: state.clientConfiguration?.rpId)]
+            return [sendStatusRequest(session: state.session, origin: state.configuration?.fidoSettings?.rpID)]
             
         case .browserCancelled:
             state.browserViewModel = .none
@@ -264,7 +265,7 @@ extension OwnID.CoreSDK {
             
         case let .authRequestLoaded(_ , shouldPerformStatusRequest):
             if shouldPerformStatusRequest {
-                return [sendStatusRequest(session: state.session, origin: state.clientConfiguration?.rpId)]
+                return [sendStatusRequest(session: state.session, origin: state.configuration?.fidoSettings?.rpID)]
             } else {
                 return []
             }
@@ -277,7 +278,8 @@ extension OwnID.CoreSDK {
                                      browserURL: browserBaseURL,
                                      email: state.email,
                                      sdkConfigurationName: state.sdkConfigurationName,
-                                     store: state.browserViewModelStore)
+                                     store: state.browserViewModelStore,
+                                     redirectionURLString: state.configuration?.redirectionURL)
             state.browserViewModel = vm
             return [Just(.addErrorToInternalStates(error.error)).eraseToEffect()]
             
@@ -293,7 +295,7 @@ extension OwnID.CoreSDK {
             }
             
         case let .addToStateConfig(clientConfig):
-            state.clientConfiguration = clientConfig
+            state.configuration = clientConfig
             let initialEffect = [Just(OwnID.CoreSDK.ViewModelAction.sendInitialRequest).eraseToEffect()]
             let effect = state.shouldStartFlowOnConfigurationReceive ? initialEffect : []
             return effect + [Just(.addToStateShouldStartInitRequest(value: false)).eraseToEffect()]
@@ -330,7 +332,8 @@ extension OwnID.CoreSDK {
                                          browserURL: browserBaseURL,
                                          email: state.email,
                                          sdkConfigurationName: state.sdkConfigurationName,
-                                         store: state.browserViewModelStore)
+                                         store: state.browserViewModelStore,
+                                         redirectionURLString: state.configuration?.redirectionURL)
                 state.browserViewModel = vm
                 return [Just(.addErrorToInternalStates(error)).eraseToEffect()]
             }
@@ -346,10 +349,9 @@ extension OwnID.CoreSDK {
                                 browserURL: String,
                                 email: Email?,
                                 sdkConfigurationName: String,
-                                store: Store<BrowserOpenerViewModel.State, BrowserOpenerViewModel.Action>) -> BrowserOpenerViewModel {
-        let redirectionEncoded = OwnID.CoreSDK.shared.getConfiguration(for: sdkConfigurationName)
-            .redirectionURL
-            .addingPercentEncoding(withAllowedCharacters: .urlHostAllowed)
+                                store: Store<BrowserOpenerViewModel.State, BrowserOpenerViewModel.Action>,
+                                redirectionURLString: RedirectionURLString?) -> BrowserOpenerViewModel {
+        let redirectionEncoded = (redirectionURLString ?? "").addingPercentEncoding(withAllowedCharacters: .urlHostAllowed)
         let redirect = redirectionEncoded! + "?context=" + context
         let redirectParameter = "&redirectURI=" + redirect
         var urlString = browserURL
@@ -363,7 +365,7 @@ extension OwnID.CoreSDK {
         }
         urlString.append(redirectParameter)
         let url = URL(string: urlString)!
-        let vm = BrowserOpenerViewModel(store: store, url: url)
+        let vm = BrowserOpenerViewModel(store: store, url: url, redirectionURL: redirectionURLString ?? "")
         return vm
     }
     
