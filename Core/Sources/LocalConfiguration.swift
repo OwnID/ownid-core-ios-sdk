@@ -12,6 +12,7 @@ extension OwnID.CoreSDK {
     struct LocalConfiguration: Decodable {
         init(appID: OwnID.CoreSDK.AppID, redirectionURL: OwnID.CoreSDK.RedirectionURLString, environment: String?) throws {
             self.environment = environment
+            self.appID = appID
             self.ownIDServerConfigurationURL = try Self.prepare(serverURL: Self.buildServerConfigurationURL(for: appID, env: environment))
             self.redirectionURL = redirectionURL
             try performPropertyChecks()
@@ -27,6 +28,7 @@ extension OwnID.CoreSDK {
             let container = try decoder.container(keyedBy: CodingKeys.self)
             let appID = try container.decode(String.self, forKey: .appID)
             let env = try container.decodeIfPresent(String.self, forKey: .env)
+            self.appID = appID
             self.environment = env
             self.redirectionURL = try container.decode(String.self, forKey: .redirectionURL)
             
@@ -38,17 +40,21 @@ extension OwnID.CoreSDK {
         
         let ownIDServerConfigurationURL: ServerURL
         let redirectionURL: RedirectionURLString
+        let appID: OwnID.CoreSDK.AppID
         let environment: String?
+        var serverURL: ServerURL!
+        var fidoSettings: FidoSettings?
+        var passkeysAutofillEnabled: Bool!
         
         var statusURL: ServerURL {
-            var url = ownIDServerConfigurationURL
+            var url = serverURL!
             url.appendPathComponent("status")
             url.appendPathComponent("final")
             return url
         }
         
         var settingURL: ServerURL {
-            var url = ownIDServerConfigurationURL
+            var url = serverURL!
             url.appendPathComponent("passkeys")
             url.appendPathComponent("fido2")
             url.appendPathComponent("settings")
@@ -56,11 +62,15 @@ extension OwnID.CoreSDK {
         }
         
         var authURL: ServerURL {
-            var url = ownIDServerConfigurationURL
+            var url = serverURL!
             url.appendPathComponent("passkeys")
             url.appendPathComponent("fido2")
             url.appendPathComponent("auth")
             return url
+        }
+        
+        var metricsURL: ServerURL {
+            URL(string: "https://\(appID).server.ownid.com/events")!
         }
     }
 }
