@@ -3,9 +3,10 @@ import Foundation
 extension OwnID.CoreSDK {
     // MARK: - ServerConfiguration
     struct ServerConfiguration: Codable {
+        var isFailed = false
         let supportedLocales: [String]
         let logLevel: LogLevel
-        let fidoSettings: FidoSettings
+        let fidoSettings: FidoSettings?
         let passkeysAutofillEnabled: Bool
         let serverURL: ServerURL
         let cacheTTL: Int

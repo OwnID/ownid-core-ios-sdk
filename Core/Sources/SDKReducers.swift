@@ -23,7 +23,8 @@ extension OwnID.CoreSDK {
             let numberOfConfigurations = state.configurations.count
             return [
                 fetchServerConfiguration(config: configuration,
-                                         numberOfConfigurations: numberOfConfigurations),
+                                         numberOfConfigurations: numberOfConfigurations,
+                                         userFacingSDK: userFacingSDK),
                 startLoggerIfNeeded(numberOfConfigurations: numberOfConfigurations,
                                     userFacingSDK: userFacingSDK,
                                     underlyingSDKs: underlyingSDKs,
@@ -51,7 +52,7 @@ extension OwnID.CoreSDK {
                                 underlyingSDKs: underlyingSDKs,
                                 isTestingEnvironment: false)]
             
-        case .save(let config):
+        case .save(let config, let userFacingSDK):
             state.configurationLoadedPublisher.send(config)
             state.configurations[userFacingSDK.name] = config
             return []
@@ -115,19 +116,25 @@ extension OwnID.CoreSDK {
     }
     
     private static func fetchServerConfiguration(config: LocalConfiguration,
-                                                 numberOfConfigurations: Int) -> Effect<SDKAction> {
+                                                 numberOfConfigurations: Int,
+                                                 userFacingSDK: OwnID.CoreSDK.SDKInformation) -> Effect<SDKAction> {
         guard numberOfConfigurations == 1 else { return .fireAndForget { } }
         let effect = Deferred { URLSession.shared.dataTaskPublisher(for: config.ownIDServerConfigurationURL)
                 .map { data, _ in return data }
                 .eraseToAnyPublisher()
                 .decode(type: ServerConfiguration.self, decoder: JSONDecoder())
                 .eraseToAnyPublisher()
-//                .catch { Just(.error(error: $0)).eraseToAnyPublisher() }
+                .replaceError(with: ServerConfiguration(isFailed: true, supportedLocales: [], logLevel: .error, fidoSettings: .none, passkeysAutofillEnabled: false, serverURL: URL(string: "https://ownid.com")!, cacheTTL: 0, redirectURLString: .none, platformSettings: .none))
+                .eraseToAnyPublisher()
                 .flatMap { serverConfiguration -> AnyPublisher<SDKAction, Never> in
+                    if serverConfiguration.isFailed {
+                        return Just(.save(config: local, userFacingSDK: userFacingSDK)).eraseToAnyPublisher()
+                    }
                     Logger.shared.logLevel = serverConfiguration.logLevel
                     var local = config
                     local.serverURL = serverConfiguration.serverURL
-                    return Just(.save(config: local)).eraseToAnyPublisher()
+                    looo
+                    return Just(.save(config: local, userFacingSDK: userFacingSDK)).eraseToAnyPublisher()
                 }
                 .eraseToAnyPublisher()
         }

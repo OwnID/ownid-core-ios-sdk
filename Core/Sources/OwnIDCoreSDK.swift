@@ -99,12 +99,10 @@ public extension OwnID {
         
         func createCoreViewModelForRegister(email: Email? = .none,
                                             sdkConfigurationName: String) -> CoreViewModel {
-            let languages = store.value.supportedLanguages
-            let session = apiSession(configurationName: sdkConfigurationName, supportedLanguages: languages)
             let viewModel = CoreViewModel(type: .register,
                                           email: email,
                                           token: .none,
-                                          session: session,
+                                          supportedLanguages: store.value.supportedLanguages,
                                           sdkConfigurationName: sdkConfigurationName,
                                           isLoggingEnabled: store.value.isLoggingEnabled,
                                           clientConfiguration: store.value.getConfiguration(for: sdkConfigurationName))
@@ -115,26 +113,16 @@ public extension OwnID {
         
         func createCoreViewModelForLogIn(email: Email? = .none,
                                          sdkConfigurationName: String) -> CoreViewModel {
-            let languages = store.value.supportedLanguages
-            let session = apiSession(configurationName: sdkConfigurationName, supportedLanguages: languages)
             let viewModel = CoreViewModel(type: .login,
                                           email: email,
                                           token: .none,
-                                          session: session,
+                                          supportedLanguages: store.value.supportedLanguages,
                                           sdkConfigurationName: sdkConfigurationName,
                                           isLoggingEnabled: store.value.isLoggingEnabled,
                                           clientConfiguration: store.value.getConfiguration(for: sdkConfigurationName))
             viewModel.subscribeToURL(publisher: urlPublisher.eraseToAnyPublisher())
             viewModel.subscribeToConfiguration(publisher: configurationLoadedPublisher.eraseToAnyPublisher())
             return viewModel
-        }
-        
-        func apiSession(configurationName: String, supportedLanguages: OwnID.CoreSDK.Languages) -> APISessionProtocol {
-            APISession(serverURL: serverURL(for: configurationName),
-                       statusURL: statusURL(for: configurationName),
-                       settingsURL: settingURL(for: configurationName),
-                       authURL: authURL(for: configurationName),
-                       supportedLanguages: supportedLanguages)
         }
         
         /// Used to handle the redirects from browser after webapp is finished
@@ -162,20 +150,6 @@ public extension OwnID {
             }
             urlPublisher.send(())
         }
-    }
-}
-
-extension OwnID.CoreSDK {
-    func statusURL(for sdkConfigurationName: String) -> ServerURL {
-        getConfiguration(for: sdkConfigurationName).statusURL
-    }
-    
-    func settingURL(for sdkConfigurationName: String) -> ServerURL {
-        getConfiguration(for: sdkConfigurationName).settingURL
-    }
-    
-    func authURL(for sdkConfigurationName: String) -> ServerURL {
-        getConfiguration(for: sdkConfigurationName).authURL
     }
 }
 

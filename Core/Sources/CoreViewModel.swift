@@ -13,14 +13,14 @@ extension OwnID.CoreSDK {
         init(type: OwnID.CoreSDK.RequestType,
              email: OwnID.CoreSDK.Email?,
              token: OwnID.CoreSDK.JWTToken?,
-             session: APISessionProtocol,
+             supportedLanguages: OwnID.CoreSDK.Languages,
              sdkConfigurationName: String,
              isLoggingEnabled: Bool,
              clientConfiguration: LocalConfiguration?) {
             let initialState = OwnID.CoreSDK.ViewModelState(isLoggingEnabled: isLoggingEnabled,
                                                             configuration: clientConfiguration,
                                                             sdkConfigurationName: sdkConfigurationName,
-                                                            session: session,
+                                                            supportedLanguages: supportedLanguages,
                                                             email: email,
                                                             token: token,
                                                             type: type)
@@ -72,7 +72,7 @@ extension OwnID.CoreSDK {
         func subscribeToConfiguration(publisher: AnyPublisher<LocalConfiguration, Never>) {
             publisher
                 .sink { [unowned self] configuration in
-                    self.store.send(.addToStateConfig(config: configuration))
+                    store.send(.addToStateConfig(config: configuration))
                 }
                 .store(in: &bag)
         }
@@ -178,10 +178,11 @@ extension OwnID.CoreSDK {
         var configuration: LocalConfiguration?
         
         let sdkConfigurationName: String
-        let session: APISessionProtocol
+        var session: APISessionProtocol!
         let email: OwnID.CoreSDK.Email?
         let token: OwnID.CoreSDK.JWTToken?
         let type: OwnID.CoreSDK.RequestType
+        let supportedLanguages: OwnID.CoreSDK.Languages
         
         var browserViewModelStore: Store<BrowserOpenerViewModel.State, BrowserOpenerViewModel.Action>!
         var browserViewModel: BrowserOpener?
@@ -198,9 +199,16 @@ extension OwnID.CoreSDK {
             if let email = state.email, !email.rawValue.isEmpty, !email.isValid {
                 return errorEffect(.coreLog(entry: .errorEntry(Self.self), error: .emailIsInvalid))
             }
+            guard let configuration = state.configuration else { return errorEffect(.coreLog(entry: .errorEntry(Self.self), error: .localConfigIsNotPresent)) }
+            let session = APISession(initURL: configuration.initURL,
+                                     statusURL: configuration.statusURL,
+                                     finalStatusURL: configuration.finalStatusURL,
+                                     authURL: configuration.authURL,
+                                     supportedLanguages: state.supportedLanguages)
+            state.session = session
             return [sendInitialRequest(type: state.type,
                                        token: state.token,
-                                       session: state.session,
+                                       session: session,
                                        origin: state.configuration?.fidoSettings?.rpID)]
             
         case let .initialRequestLoaded(response):
@@ -409,7 +417,7 @@ extension OwnID.CoreSDK {
     }
     
     static func sendStatusRequest(session: APISessionProtocol, origin: String?) -> Effect<ViewModelAction> {
-        session.performStatusRequest(origin: origin)
+        session.performFinalStatusRequest(origin: origin)
             .map { ViewModelAction.statusRequestLoaded(response: $0) }
             .catch { Just(ViewModelAction.error($0)) }
             .eraseToEffect()

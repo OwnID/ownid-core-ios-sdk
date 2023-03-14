@@ -46,24 +46,38 @@ extension OwnID.CoreSDK {
         var fidoSettings: FidoSettings?
         var passkeysAutofillEnabled: Bool!
         
-        var statusURL: ServerURL {
+        var finalStatusURL: ServerURL {
             var url = serverURL!
+            url.appendPathComponent("mobile")
+            url.appendPathComponent("v1")
+            url.appendPathComponent("ownid")
             url.appendPathComponent("status")
             url.appendPathComponent("final")
             return url
         }
         
-        var settingURL: ServerURL {
+        var statusURL: ServerURL {
             var url = serverURL!
-            url.appendPathComponent("passkeys")
-            url.appendPathComponent("fido2")
-            url.appendPathComponent("settings")
+            url.appendPathComponent("mobile")
+            url.appendPathComponent("v1")
+            url.appendPathComponent("ownid")
+            url.appendPathComponent("status")
+            return url
+        }
+        
+        var initURL: ServerURL {
+            var url = serverURL!
+            url.appendPathComponent("mobile")
+            url.appendPathComponent("v1")
+            url.appendPathComponent("ownid")
             return url
         }
         
         var authURL: ServerURL {
             var url = serverURL!
-            url.appendPathComponent("passkeys")
+            url.appendPathComponent("mobile")
+            url.appendPathComponent("v1")
+            url.appendPathComponent("ownid")
             url.appendPathComponent("fido2")
             url.appendPathComponent("auth")
             return url

@@ -8,8 +8,8 @@ public protocol APISessionProtocol {
     func performInitRequest(type: OwnID.CoreSDK.RequestType,
                             token: OwnID.CoreSDK.JWTToken?,
                             origin: String?) -> AnyPublisher<OwnID.CoreSDK.Init.Response, OwnID.CoreSDK.CoreErrorLogWrapper>
-    func performStatusRequest(origin: String?) -> AnyPublisher<OwnID.CoreSDK.Payload, OwnID.CoreSDK.CoreErrorLogWrapper>
-    func performSettingsRequest(loginID: String, origin: String) -> AnyPublisher<OwnID.CoreSDK.Setting.Response, OwnID.CoreSDK.CoreErrorLogWrapper>
+    func performFinalStatusRequest(origin: String?) -> AnyPublisher<OwnID.CoreSDK.Payload, OwnID.CoreSDK.CoreErrorLogWrapper>
+//    func performSettingsRequest(loginID: String, origin: String) -> AnyPublisher<OwnID.CoreSDK.Setting.Response, OwnID.CoreSDK.CoreErrorLogWrapper>
     func performAuthRequest(origin: String, fido2Payload: Encodable, shouldIgnoreResponseBody: Bool) -> AnyPublisher<OwnID.CoreSDK.Payload, OwnID.CoreSDK.CoreErrorLogWrapper>
 }
 
@@ -20,20 +20,20 @@ public extension OwnID.CoreSDK {
         private var nonce: Nonce!
         public var context: Context!
         private var type: OwnID.CoreSDK.RequestType!
-        private let serverURL: ServerURL
+        private let initURL: ServerURL
         private let statusURL: ServerURL
-        private let settingsURL: ServerURL
+        private let finalStatusURL: ServerURL
         private let authURL: ServerURL
         private let supportedLanguages: OwnID.CoreSDK.Languages
         
-        public init(serverURL: ServerURL,
+        public init(initURL: ServerURL,
                     statusURL: ServerURL,
-                    settingsURL: ServerURL,
+                    finalStatusURL: ServerURL,
                     authURL: ServerURL,
                     supportedLanguages: OwnID.CoreSDK.Languages) {
-            self.serverURL = serverURL
+            self.initURL = initURL
             self.statusURL = statusURL
-            self.settingsURL = settingsURL
+            self.finalStatusURL = finalStatusURL
             self.authURL = authURL
             self.supportedLanguages = supportedLanguages
             let sessionVerifierData = Self.random()
@@ -49,7 +49,7 @@ extension OwnID.CoreSDK.APISession {
                                    token: OwnID.CoreSDK.JWTToken?,
                                    origin: String?) -> AnyPublisher<OwnID.CoreSDK.Init.Response, OwnID.CoreSDK.CoreErrorLogWrapper> {
         OwnID.CoreSDK.Init.Request(type: type,
-                                   url: serverURL,
+                                   url: initURL,
                                    sessionChallenge: sessionChallenge,
                                    token: token,
                                    origin: origin,
@@ -65,16 +65,16 @@ extension OwnID.CoreSDK.APISession {
             .eraseToAnyPublisher()
     }
     
-    public func performSettingsRequest(loginID: String, origin: String) -> AnyPublisher<OwnID.CoreSDK.Setting.Response, OwnID.CoreSDK.CoreErrorLogWrapper> {
-        OwnID.CoreSDK.Setting.Request(url: settingsURL,
-                                      loginID: loginID,
-                                      origin: origin,
-                                      context: context,
-                                      nonce: nonce,
-                                      supportedLanguages: supportedLanguages)
-        .perform()
-        .eraseToAnyPublisher()
-    }
+//    public func performSettingsRequest(loginID: String, origin: String) -> AnyPublisher<OwnID.CoreSDK.Setting.Response, OwnID.CoreSDK.CoreErrorLogWrapper> {
+//        OwnID.CoreSDK.Setting.Request(url: settingsURL,
+//                                      loginID: loginID,
+//                                      origin: origin,
+//                                      context: context,
+//                                      nonce: nonce,
+//                                      supportedLanguages: supportedLanguages)
+//        .perform()
+//        .eraseToAnyPublisher()
+//    }
     
     public func performAuthRequest(origin: String, fido2Payload: Encodable, shouldIgnoreResponseBody: Bool) -> AnyPublisher<OwnID.CoreSDK.Payload, OwnID.CoreSDK.CoreErrorLogWrapper> {
         OwnID.CoreSDK.Auth.Request(type: type,
@@ -90,8 +90,8 @@ extension OwnID.CoreSDK.APISession {
         .eraseToAnyPublisher()
     }
     
-    public func performStatusRequest(origin: String?) -> AnyPublisher<OwnID.CoreSDK.Payload, OwnID.CoreSDK.CoreErrorLogWrapper> {
-        OwnID.CoreSDK.Status.Request(url: statusURL,
+    public func performFinalStatusRequest(origin: String?) -> AnyPublisher<OwnID.CoreSDK.Payload, OwnID.CoreSDK.CoreErrorLogWrapper> {
+        OwnID.CoreSDK.Status.Request(url: finalStatusURL,
                                      context: context,
                                      nonce: nonce,
                                      sessionVerifier: sessionVerifier,
