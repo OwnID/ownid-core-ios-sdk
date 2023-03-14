@@ -4,7 +4,7 @@ import Combine
 extension OwnID.CoreSDK {
     struct SDKState: LoggingEnabled {
         var isLoggingEnabled = false
-        var configurations = [String: OwnID.CoreSDK.Configuration]()
+        var configurations = [String: OwnID.CoreSDK.LocalConfiguration]()
         var clientConfiguration: ClientConfiguration?
         let configurationLoadedPublisher: PassthroughSubject<ClientConfiguration, Never>
         var supportedLanguages: OwnID.CoreSDK.Languages = .init(rawValue: ["en"])
@@ -16,7 +16,7 @@ extension OwnID.CoreSDK.SDKState {
         configurations.first!.key
     }
     
-    func getConfiguration(for sdkConfigurationName: String) -> OwnID.CoreSDK.Configuration {
+    func getConfiguration(for sdkConfigurationName: String) -> OwnID.CoreSDK.LocalConfiguration {
         guard let config = configurations[sdkConfigurationName] else { fatalError("Configuration does not exist for name") }
         return config
     }

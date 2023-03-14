@@ -1,6 +1,6 @@
 import Foundation
 
-extension OwnID.CoreSDK.Configuration {
+extension OwnID.CoreSDK.LocalConfiguration {
     enum Error: Swift.Error {
         case redirectURLSchemeNotComplete
         case serverURLIsNotComplete
@@ -9,10 +9,10 @@ extension OwnID.CoreSDK.Configuration {
 
 extension OwnID.CoreSDK {
     
-    struct Configuration: Decodable {
+    struct LocalConfiguration: Decodable {
         init(appID: OwnID.CoreSDK.AppID, redirectionURL: OwnID.CoreSDK.RedirectionURLString, environment: String?) throws {
             self.environment = environment
-            self.ownIDServerURL = try Self.prepare(serverURL: Self.buildServerURL(for: appID, env: environment))
+            self.ownIDServerConfigurationURL = try Self.prepare(serverURL: Self.buildServerConfigurationURL(for: appID, env: environment))
             self.redirectionURL = redirectionURL
             try performPropertyChecks()
         }
@@ -30,25 +30,25 @@ extension OwnID.CoreSDK {
             self.environment = env
             self.redirectionURL = try container.decode(String.self, forKey: .redirectionURL)
             
-            let serverURL = Self.buildServerURL(for: appID, env: env)
-            self.ownIDServerURL = try Self.prepare(serverURL: serverURL)
+            let serverURL = Self.buildServerConfigurationURL(for: appID, env: env)
+            self.ownIDServerConfigurationURL = try Self.prepare(serverURL: serverURL)
             
             try performPropertyChecks()
         }
         
-        let ownIDServerURL: ServerURL
+        let ownIDServerConfigurationURL: ServerURL
         let redirectionURL: RedirectionURLString
         let environment: String?
         
         var statusURL: ServerURL {
-            var url = ownIDServerURL
+            var url = ownIDServerConfigurationURL
             url.appendPathComponent("status")
             url.appendPathComponent("final")
             return url
         }
         
         var settingURL: ServerURL {
-            var url = ownIDServerURL
+            var url = ownIDServerConfigurationURL
             url.appendPathComponent("passkeys")
             url.appendPathComponent("fido2")
             url.appendPathComponent("settings")
@@ -56,7 +56,7 @@ extension OwnID.CoreSDK {
         }
         
         var authURL: ServerURL {
-            var url = ownIDServerURL
+            var url = ownIDServerConfigurationURL
             url.appendPathComponent("passkeys")
             url.appendPathComponent("fido2")
             url.appendPathComponent("auth")
@@ -65,14 +65,14 @@ extension OwnID.CoreSDK {
     }
 }
 
-private extension OwnID.CoreSDK.Configuration {
-    static func buildServerURL(for appID: OwnID.CoreSDK.AppID, env: String?) -> URL {
-        var serverURLString = "https://\(appID).server.ownid.com"
+private extension OwnID.CoreSDK.LocalConfiguration {
+    static func buildServerConfigurationURL(for appID: OwnID.CoreSDK.AppID, env: String?) -> URL {
+        var serverConfigURLString = "https://cdn.ownid.com/sdk/\(appID)/mobile"
         if let env {
-            serverURLString = "https://\(appID).server.\(env).ownid.com"
+            serverConfigURLString = "https://cdn.\(env).ownid.com/sdk/\(appID)/mobile"
         }
-        let serverURL = URL(string: serverURLString)!
-        return serverURL
+        let serverConfigURL = URL(string: serverConfigURLString)!
+        return serverConfigURL
     }
     
     static func prepare(serverURL: URL) throws -> URL {
@@ -87,19 +87,19 @@ private extension OwnID.CoreSDK.Configuration {
     func check(redirectionURL: String) throws {
         let parts = redirectionURL.components(separatedBy: ":")
         if parts.count < 2 {
-            throw OwnID.CoreSDK.Configuration.Error.redirectURLSchemeNotComplete
+            throw OwnID.CoreSDK.LocalConfiguration.Error.redirectURLSchemeNotComplete
         }
         let secondPart = parts[1]
         if secondPart.isEmpty {
-            throw OwnID.CoreSDK.Configuration.Error.redirectURLSchemeNotComplete
+            throw OwnID.CoreSDK.LocalConfiguration.Error.redirectURLSchemeNotComplete
         }
     }
     
     func check(ownIDServerURL: URL) throws {
-        guard ownIDServerURL.scheme == "https" else { throw OwnID.CoreSDK.Configuration.Error.serverURLIsNotComplete }
+        guard ownIDServerURL.scheme == "https" else { throw OwnID.CoreSDK.LocalConfiguration.Error.serverURLIsNotComplete }
         
         let domain = "ownid.com"
-        guard let hostName = ownIDServerURL.host else { throw OwnID.CoreSDK.Configuration.Error.serverURLIsNotComplete }
+        guard let hostName = ownIDServerURL.host else { throw OwnID.CoreSDK.LocalConfiguration.Error.serverURLIsNotComplete }
         let subStrings = hostName.components(separatedBy: ".")
         var domainName = ""
         let count = subStrings.count
@@ -108,13 +108,13 @@ private extension OwnID.CoreSDK.Configuration {
         } else if count == 2 {
             domainName = hostName
         }
-        guard domain == domainName else { throw OwnID.CoreSDK.Configuration.Error.serverURLIsNotComplete }
+        guard domain == domainName else { throw OwnID.CoreSDK.LocalConfiguration.Error.serverURLIsNotComplete }
         
-        guard ownIDServerURL.lastPathComponent == "ownid" else { throw OwnID.CoreSDK.Configuration.Error.serverURLIsNotComplete }
+        guard ownIDServerURL.lastPathComponent == "ownid" else { throw OwnID.CoreSDK.LocalConfiguration.Error.serverURLIsNotComplete }
     }
     
     func performPropertyChecks() throws {
-        try check(ownIDServerURL: ownIDServerURL)
+        try check(ownIDServerURL: ownIDServerConfigurationURL)
         try check(redirectionURL: redirectionURL)
     }
 }

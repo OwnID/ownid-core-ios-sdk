@@ -17,8 +17,8 @@ public extension OwnID {
     }
     
     final class CoreSDK {
-        public var serverURL: ServerURL {
-            getConfiguration(for: configurationName).ownIDServerURL
+        public var serverConfigurationURL: ServerURL {
+            getConfiguration(for: configurationName).ownIDServerConfigurationURL
         }
         
         func enableLogging(logLevel: OwnID.CoreSDK.LogLevel) {
@@ -93,7 +93,8 @@ public extension OwnID {
                                       supportedLanguages: supportedLanguages))
         }
         
-        func getConfiguration(for sdkConfigurationName: String) -> Configuration {
+        #warning("use working configw")
+        func getConfiguration(for sdkConfigurationName: String) -> LocalConfiguration {
             store.value.getConfiguration(for: sdkConfigurationName)
         }
         
@@ -184,7 +185,8 @@ public extension OwnID.CoreSDK {
         getConfiguration(for: configurationName).environment
     }
     
+#warning("use some other server URL, working config")
     var metricsURL: ServerURL {
-        serverURL.deletingLastPathComponent().appendingPathComponent("events")
+        serverConfigurationURL.deletingLastPathComponent().appendingPathComponent("events")
     }
 }

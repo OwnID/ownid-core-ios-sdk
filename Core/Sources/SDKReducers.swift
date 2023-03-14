@@ -23,9 +23,9 @@ extension OwnID.CoreSDK {
             state.configurations[userFacingSDK.name] = configuration
             let numberOfConfigurations = state.configurations.count
             return [
-                fetchClientConfig(serverURL: configuration.ownIDServerURL,
-                                  numberOfConfigurations: numberOfConfigurations,
-                                  configurationLoadedPublisher: state.configurationLoadedPublisher),
+                fetchServerConfiguration(serverConfigurationURL: configuration.ownIDServerConfigurationURL,
+                                         numberOfConfigurations: numberOfConfigurations,
+                                         configurationLoadedPublisher: state.configurationLoadedPublisher),
                 startLoggerIfNeeded(numberOfConfigurations: numberOfConfigurations,
                                     userFacingSDK: userFacingSDK,
                                     underlyingSDKs: underlyingSDKs,
@@ -65,7 +65,7 @@ extension OwnID.CoreSDK {
                                     isTestingEnvironment: Bool) -> Effect<SDKAction> {
         let data = try! Data(contentsOf: plistUrl)
         let decoder = PropertyListDecoder()
-        let config = try! decoder.decode(OwnID.CoreSDK.Configuration.self, from: data)
+        let config = try! decoder.decode(OwnID.CoreSDK.LocalConfiguration.self, from: data)
         let action = SDKAction.configurationCreated(configuration: config,
                                                     userFacingSDK: userFacingSDK,
                                                     underlyingSDKs: underlyingSDKs,
@@ -90,7 +90,7 @@ extension OwnID.CoreSDK {
                                             underlyingSDKs: [SDKInformation],
                                             isTestingEnvironment: Bool,
                                             environment: String?) -> Effect<SDKAction> {
-        let config = try! OwnID.CoreSDK.Configuration(appID: appID,
+        let config = try! OwnID.CoreSDK.LocalConfiguration(appID: appID,
                                                       redirectionURL: redirectionURL,
                                                       environment: environment)
         return Just(.configurationCreated(configuration: config,
@@ -115,17 +115,17 @@ extension OwnID.CoreSDK {
         }
     }
     
-    private static func fetchClientConfig(serverURL: ServerURL,
-                                          numberOfConfigurations: Int,
-                                          configurationLoadedPublisher: PassthroughSubject<OwnID.CoreSDK.ClientConfiguration, Never>) -> Effect<SDKAction> {
+    #warning("do other way around configuration publisher?")
+    private static func fetchServerConfiguration(serverConfigurationURL: ServerURL,
+                                                 numberOfConfigurations: Int,
+                                                 configurationLoadedPublisher: PassthroughSubject<OwnID.CoreSDK.ServerConfiguration, Never>) -> Effect<SDKAction> {
         guard numberOfConfigurations == 1 else { return .fireAndForget { } }
-        let url = serverURL.appendingPathComponent("client-config")
-        let effect = Deferred { URLSession.shared.dataTaskPublisher(for: url)
+        let effect = Deferred { URLSession.shared.dataTaskPublisher(for: serverConfigurationURL)
                 .map { data, _ in return data }
                 .eraseToAnyPublisher()
-                .decode(type: ClientConfiguration.self, decoder: JSONDecoder())
+                .decode(type: ServerConfiguration.self, decoder: JSONDecoder())
                 .eraseToAnyPublisher()
-                .replaceError(with: ClientConfiguration(logLevel: 4, passkeys: false, rpId: .none, passkeysAutofill: false))
+                .replaceError(with: ServerConfiguration(logLevel: 4, passkeys: false, rpId: .none, passkeysAutofill: false))
                 .flatMap { clientConfiguration -> AnyPublisher<SDKAction, Never> in
                     Logger.shared.logLevel = LogLevel(rawValue: clientConfiguration.logLevel) ?? .error
                     configurationLoadedPublisher.send(clientConfiguration)

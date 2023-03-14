@@ -15,7 +15,7 @@ enum SDKAction {
                    isTestingEnvironment: Bool,
                    environment: String?,
                    supportedLanguages: OwnID.CoreSDK.Languages)
-    case configurationCreated(configuration: OwnID.CoreSDK.Configuration,
+    case configurationCreated(configuration: OwnID.CoreSDK.LocalConfiguration,
                               userFacingSDK: OwnID.CoreSDK.SDKInformation,
                               underlyingSDKs: [OwnID.CoreSDK.SDKInformation],
                               isTestingEnvironment: Bool)

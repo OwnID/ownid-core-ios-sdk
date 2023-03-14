@@ -1,7 +1,7 @@
 import Foundation
 
 extension OwnID.CoreSDK {
-    struct ClientConfiguration: Decodable {
+    struct ServerConfiguration: Decodable {
         let logLevel: Int
         let passkeys: Bool
         let rpId: String?
