@@ -20,12 +20,10 @@ extension OwnID.CoreSDK {
                                         environment: environment)]
             
         case let .configurationCreated(configuration, userFacingSDK, underlyingSDKs, isTestingEnvironment):
-            state.configurations[userFacingSDK.name] = configuration
             let numberOfConfigurations = state.configurations.count
             return [
-                fetchServerConfiguration(serverConfigurationURL: configuration.ownIDServerConfigurationURL,
-                                         numberOfConfigurations: numberOfConfigurations,
-                                         configurationLoadedPublisher: state.configurationLoadedPublisher),
+                fetchServerConfiguration(config: configuration,
+                                         numberOfConfigurations: numberOfConfigurations),
                 startLoggerIfNeeded(numberOfConfigurations: numberOfConfigurations,
                                     userFacingSDK: userFacingSDK,
                                     underlyingSDKs: underlyingSDKs,
@@ -53,8 +51,9 @@ extension OwnID.CoreSDK {
                                 underlyingSDKs: underlyingSDKs,
                                 isTestingEnvironment: false)]
             
-        case .save(clientCongfig: let clientCongfig):
-            state.clientConfiguration = clientCongfig
+        case .save(let config):
+            state.configurationLoadedPublisher.send(config)
+            state.configurations[userFacingSDK.name] = config
             return []
         }
     }
@@ -115,21 +114,20 @@ extension OwnID.CoreSDK {
         }
     }
     
-    #warning("do other way around configuration publisher?")
-    private static func fetchServerConfiguration(serverConfigurationURL: ServerURL,
-                                                 numberOfConfigurations: Int,
-                                                 configurationLoadedPublisher: PassthroughSubject<OwnID.CoreSDK.ServerConfiguration, Never>) -> Effect<SDKAction> {
+    private static func fetchServerConfiguration(config: LocalConfiguration,
+                                                 numberOfConfigurations: Int) -> Effect<SDKAction> {
         guard numberOfConfigurations == 1 else { return .fireAndForget { } }
-        let effect = Deferred { URLSession.shared.dataTaskPublisher(for: serverConfigurationURL)
+        let effect = Deferred { URLSession.shared.dataTaskPublisher(for: config.ownIDServerConfigurationURL)
                 .map { data, _ in return data }
                 .eraseToAnyPublisher()
                 .decode(type: ServerConfiguration.self, decoder: JSONDecoder())
                 .eraseToAnyPublisher()
-                .replaceError(with: ServerConfiguration(logLevel: 4, passkeys: false, rpId: .none, passkeysAutofill: false))
-                .flatMap { clientConfiguration -> AnyPublisher<SDKAction, Never> in
-                    Logger.shared.logLevel = LogLevel(rawValue: clientConfiguration.logLevel) ?? .error
-                    configurationLoadedPublisher.send(clientConfiguration)
-                    return Just(.save(clientCongfig: clientConfiguration)).eraseToAnyPublisher()
+//                .catch { Just(.error(error: $0)).eraseToAnyPublisher() }
+                .flatMap { serverConfiguration -> AnyPublisher<SDKAction, Never> in
+                    Logger.shared.logLevel = serverConfiguration.logLevel
+                    var local = config
+                    local.serverURL = serverConfiguration.serverURL
+                    return Just(.save(config: local)).eraseToAnyPublisher()
                 }
                 .eraseToAnyPublisher()
         }

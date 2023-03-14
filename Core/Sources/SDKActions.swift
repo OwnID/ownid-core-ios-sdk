@@ -21,5 +21,6 @@ enum SDKAction {
                               isTestingEnvironment: Bool)
     case startDebugLogger(logLevel: OwnID.CoreSDK.LogLevel)
     case configureForTests
-    case save(clientCongfig: OwnID.CoreSDK.ClientConfiguration)
+    case save(config: OwnID.CoreSDK.LocalConfiguration)
+    case error(error: Swift.Error)
 }

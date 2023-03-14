@@ -33,7 +33,7 @@ public extension OwnID {
         @ObservedObject var store: Store<SDKState, SDKAction>
         
         private let urlPublisher = PassthroughSubject<Void, OwnID.CoreSDK.CoreErrorLogWrapper>()
-        private let configurationLoadedPublisher = PassthroughSubject<ClientConfiguration, Never>()
+        private let configurationLoadedPublisher = PassthroughSubject<LocalConfiguration, Never>()
         
         private init() {
             let store = Store(
@@ -93,7 +93,6 @@ public extension OwnID {
                                       supportedLanguages: supportedLanguages))
         }
         
-        #warning("use working configw")
         func getConfiguration(for sdkConfigurationName: String) -> LocalConfiguration {
             store.value.getConfiguration(for: sdkConfigurationName)
         }
@@ -108,7 +107,7 @@ public extension OwnID {
                                           session: session,
                                           sdkConfigurationName: sdkConfigurationName,
                                           isLoggingEnabled: store.value.isLoggingEnabled,
-                                          clientConfiguration: store.value.clientConfiguration)
+                                          clientConfiguration: store.value.getConfiguration(for: sdkConfigurationName))
             viewModel.subscribeToURL(publisher: urlPublisher.eraseToAnyPublisher())
             viewModel.subscribeToConfiguration(publisher: configurationLoadedPublisher.eraseToAnyPublisher())
             return viewModel
@@ -124,7 +123,7 @@ public extension OwnID {
                                           session: session,
                                           sdkConfigurationName: sdkConfigurationName,
                                           isLoggingEnabled: store.value.isLoggingEnabled,
-                                          clientConfiguration: store.value.clientConfiguration)
+                                          clientConfiguration: store.value.getConfiguration(for: sdkConfigurationName))
             viewModel.subscribeToURL(publisher: urlPublisher.eraseToAnyPublisher())
             viewModel.subscribeToConfiguration(publisher: configurationLoadedPublisher.eraseToAnyPublisher())
             return viewModel
@@ -185,8 +184,7 @@ public extension OwnID.CoreSDK {
         getConfiguration(for: configurationName).environment
     }
     
-#warning("use some other server URL, working config")
     var metricsURL: ServerURL {
-        serverConfigurationURL.deletingLastPathComponent().appendingPathComponent("events")
+        getConfiguration(for: configurationName).metricsURL
     }
 }
