@@ -40,7 +40,7 @@ extension OwnID.CoreSDK {
             self.metadata = metadata
         }
         
-        public var appURL: String? = OwnID.CoreSDK.shared.serverURL(for: OwnID.CoreSDK.shared.configurationName).deletingLastPathComponent().host
+        public var appURL: String? = OwnID.CoreSDK.shared.serverConfigurationURL.deletingLastPathComponent().host
         
         public var context: String
         
