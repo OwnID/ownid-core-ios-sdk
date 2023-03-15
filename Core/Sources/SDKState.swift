@@ -5,7 +5,7 @@ extension OwnID.CoreSDK {
     struct SDKState: LoggingEnabled {
         var isLoggingEnabled = false
         var configurations = [String: OwnID.CoreSDK.LocalConfiguration]()
-        let configurationLoadedPublisher: PassthroughSubject<LocalConfiguration, Never>
+        let configurationLoadingEventPublisher: PassthroughSubject<ConfigurationLoadingEvent, Never>
         var supportedLanguages: OwnID.CoreSDK.Languages = .init(rawValue: ["en"])
     }
 }

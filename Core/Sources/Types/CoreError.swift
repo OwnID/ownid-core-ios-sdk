@@ -138,6 +138,7 @@ extension OwnID.CoreSDK.Error: CustomDebugStringConvertible {
     public var debugDescription: String {
         switch self {
         case .unsecuredHttpPassed,
+                .localConfigIsNotPresent,
                 .notValidRedirectionURLOrNotMatchingFromConfiguration,
                 .emailIsInvalid,
                 .authorizationManagerAuthError,

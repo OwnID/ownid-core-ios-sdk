@@ -20,10 +20,10 @@ extension OwnID.CoreSDK {
             let initialState = OwnID.CoreSDK.ViewModelState(isLoggingEnabled: isLoggingEnabled,
                                                             configuration: clientConfiguration,
                                                             sdkConfigurationName: sdkConfigurationName,
-                                                            supportedLanguages: supportedLanguages,
                                                             email: email,
                                                             token: token,
-                                                            type: type)
+                                                            type: type,
+                                                            supportedLanguages: supportedLanguages)
             let store = Store(
                 initialValue: initialState,
                 reducer: with(
@@ -69,10 +69,17 @@ extension OwnID.CoreSDK {
                 .store(in: &bag)
         }
         
-        func subscribeToConfiguration(publisher: AnyPublisher<LocalConfiguration, Never>) {
+        func subscribeToConfiguration(publisher: AnyPublisher<ConfigurationLoadingEvent, Never>) {
             publisher
-                .sink { [unowned self] configuration in
-                    store.send(.addToStateConfig(config: configuration))
+                .sink { [unowned self] event in
+                    switch event {
+                        
+                    case .loaded(let configuration):
+                        store.send(.addToStateConfig(config: configuration))
+                        
+                    case .error:
+                        store.send(.error(.coreLog(entry: .errorEntry(Self.self), error: .localConfigIsNotPresent)))
+                    }
                 }
                 .store(in: &bag)
         }
@@ -322,11 +329,12 @@ extension OwnID.CoreSDK {
                 guard let email = state.email else {
                     return errorEffect(.coreLog(entry: .errorEntry(Self.self), error: .emailIsInvalid))
                 }
-                return [sendSettingsRequest(session: state.session,
-                                            loginID: email.rawValue,
-                                            origin: origin,
-                                            fido2Payload: fido2RegisterPayload,
-                                            browserBaseURL: browserBaseURL)]
+                fatalError("implement")
+//                return [sendSettingsRequest(session: state.session,
+//                                            loginID: email.rawValue,
+//                                            origin: origin,
+//                                            fido2Payload: fido2RegisterPayload,
+//                                            browserBaseURL: browserBaseURL)]
                 
             case .didFinishLogin(let origin, let fido2LoginPayload, let browserBaseURL):
                 return [sendAuthRequest(session: state.session,
@@ -392,17 +400,17 @@ extension OwnID.CoreSDK {
             .eraseToEffect()
     }
     
-    static func sendSettingsRequest(session: APISessionProtocol,
-                                    loginID: String,
-                                    origin: String,
-                                    fido2Payload: Encodable,
-                                    browserBaseURL: String) -> Effect<ViewModelAction> {
-        session.performSettingsRequest(loginID: loginID, origin: origin)
-            .receive(on: DispatchQueue.main)
-            .map { ViewModelAction.settingsRequestLoaded(response: $0, origin: origin, fido2Payload: fido2Payload, browserBaseURL: browserBaseURL) }
-            .catch { Just(ViewModelAction.authManagerRequestFail(error: $0, browserBaseURL: browserBaseURL)) }
-            .eraseToEffect()
-    }
+//    static func sendSettingsRequest(session: APISessionProtocol,
+//                                    loginID: String,
+//                                    origin: String,
+//                                    fido2Payload: Encodable,
+//                                    browserBaseURL: String) -> Effect<ViewModelAction> {
+//        session.performSettingsRequest(loginID: loginID, origin: origin)
+//            .receive(on: DispatchQueue.main)
+//            .map { ViewModelAction.settingsRequestLoaded(response: $0, origin: origin, fido2Payload: fido2Payload, browserBaseURL: browserBaseURL) }
+//            .catch { Just(ViewModelAction.authManagerRequestFail(error: $0, browserBaseURL: browserBaseURL)) }
+//            .eraseToEffect()
+//    }
     
     static func sendAuthRequest(session: APISessionProtocol,
                                 origin: String,

@@ -7,6 +7,13 @@ public extension OwnID.CoreSDK {
     static let APIVersion = "1"
 }
 
+extension OwnID.CoreSDK {
+    enum ConfigurationLoadingEvent {
+        case loaded(LocalConfiguration)
+        case error
+    }
+}
+
 /// OwnID class represents core part of SDK. It performs initialization and creates views. It reads OwnIDConfiguration from disk, parses it and loads to memory for later usage. It is a singleton, so the URL returned from outside can be linked to corresponding flow.
 public extension OwnID {
     
@@ -33,11 +40,11 @@ public extension OwnID {
         @ObservedObject var store: Store<SDKState, SDKAction>
         
         private let urlPublisher = PassthroughSubject<Void, OwnID.CoreSDK.CoreErrorLogWrapper>()
-        private let configurationLoadedPublisher = PassthroughSubject<LocalConfiguration, Never>()
+        private let configurationLoadingEventPublisher = PassthroughSubject<ConfigurationLoadingEvent, Never>()
         
         private init() {
             let store = Store(
-                initialValue: SDKState(configurationLoadedPublisher: configurationLoadedPublisher),
+                initialValue: SDKState(configurationLoadingEventPublisher: configurationLoadingEventPublisher),
                 reducer: with(
                     OwnID.CoreSDK.coreReducer,
                     logging
@@ -107,7 +114,7 @@ public extension OwnID {
                                           isLoggingEnabled: store.value.isLoggingEnabled,
                                           clientConfiguration: store.value.getConfiguration(for: sdkConfigurationName))
             viewModel.subscribeToURL(publisher: urlPublisher.eraseToAnyPublisher())
-            viewModel.subscribeToConfiguration(publisher: configurationLoadedPublisher.eraseToAnyPublisher())
+            viewModel.subscribeToConfiguration(publisher: configurationLoadingEventPublisher.eraseToAnyPublisher())
             return viewModel
         }
         
@@ -121,7 +128,7 @@ public extension OwnID {
                                           isLoggingEnabled: store.value.isLoggingEnabled,
                                           clientConfiguration: store.value.getConfiguration(for: sdkConfigurationName))
             viewModel.subscribeToURL(publisher: urlPublisher.eraseToAnyPublisher())
-            viewModel.subscribeToConfiguration(publisher: configurationLoadedPublisher.eraseToAnyPublisher())
+            viewModel.subscribeToConfiguration(publisher: configurationLoadingEventPublisher.eraseToAnyPublisher())
             return viewModel
         }
         

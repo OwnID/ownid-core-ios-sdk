@@ -39,7 +39,7 @@ extension OwnID.CoreSDK {
         }
         
         let ownIDServerConfigurationURL: ServerURL
-        let redirectionURL: RedirectionURLString
+        var redirectionURL: RedirectionURLString
         let appID: OwnID.CoreSDK.AppID
         let environment: String?
         var serverURL: ServerURL!

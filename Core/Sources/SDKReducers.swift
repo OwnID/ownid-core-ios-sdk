@@ -52,9 +52,15 @@ extension OwnID.CoreSDK {
                                 underlyingSDKs: underlyingSDKs,
                                 isTestingEnvironment: false)]
             
-        case .save(let config, let userFacingSDK):
-            state.configurationLoadedPublisher.send(config)
-            state.configurations[userFacingSDK.name] = config
+        case .save(let configurationLoadingEvent, let userFacingSDK):
+            switch configurationLoadingEvent {
+            case .loaded(let config):
+                state.configurations[userFacingSDK.name] = config
+                
+            case .error:
+                break
+            }
+            state.configurationLoadingEventPublisher.send(configurationLoadingEvent)
             return []
         }
     }
@@ -128,13 +134,15 @@ extension OwnID.CoreSDK {
                 .eraseToAnyPublisher()
                 .flatMap { serverConfiguration -> AnyPublisher<SDKAction, Never> in
                     if serverConfiguration.isFailed {
-                        return Just(.save(config: local, userFacingSDK: userFacingSDK)).eraseToAnyPublisher()
+                        return Just(.save(configurationLoadingEvent: .error, userFacingSDK: userFacingSDK)).eraseToAnyPublisher()
                     }
                     Logger.shared.logLevel = serverConfiguration.logLevel
                     var local = config
                     local.serverURL = serverConfiguration.serverURL
-                    looo
-                    return Just(.save(config: local, userFacingSDK: userFacingSDK)).eraseToAnyPublisher()
+                    local.redirectionURL = (serverConfiguration.platformSettings?.redirectUrlOverride ?? serverConfiguration.redirectURLString) ?? local.redirectionURL
+                    local.fidoSettings = serverConfiguration.fidoSettings
+                    local.passkeysAutofillEnabled = serverConfiguration.passkeysAutofillEnabled
+                    return Just(.save(configurationLoadingEvent: .loaded(local), userFacingSDK: userFacingSDK)).eraseToAnyPublisher()
                 }
                 .eraseToAnyPublisher()
         }

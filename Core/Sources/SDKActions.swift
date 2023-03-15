@@ -21,5 +21,5 @@ enum SDKAction {
                               isTestingEnvironment: Bool)
     case startDebugLogger(logLevel: OwnID.CoreSDK.LogLevel)
     case configureForTests
-    case save(config: OwnID.CoreSDK.LocalConfiguration, userFacingSDK: OwnID.CoreSDK.SDKInformation)
+    case save(configurationLoadingEvent: OwnID.CoreSDK.ConfigurationLoadingEvent, userFacingSDK: OwnID.CoreSDK.SDKInformation)
 }
