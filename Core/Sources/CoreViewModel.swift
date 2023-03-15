@@ -314,22 +314,10 @@ extension OwnID.CoreSDK {
         case let .authManager(authManagerAction):
             switch authManagerAction {
             case .didFinishRegistration(let origin, let fido2RegisterPayload, let browserBaseURL):
-                guard let email = state.email else {
-                    return errorEffect(.coreLog(entry: .errorEntry(Self.self), error: .emailIsInvalid))
-                }
-                fatalError("change for new payload")
-                return [sendAuthRequest(session: state.session,
-                                        origin: origin,
-                                        fido2Payload: fido2RegisterPayload,
-                                        shouldPerformStatusRequest: true,
-                                        browserBaseURL: browserBaseURL)]
+                return didFinishAuthManagerAction(state, origin, fido2RegisterPayload, browserBaseURL)
                 
             case .didFinishLogin(let origin, let fido2LoginPayload, let browserBaseURL):
-                return [sendAuthRequest(session: state.session,
-                                        origin: origin,
-                                        fido2Payload: fido2LoginPayload,
-                                        shouldPerformStatusRequest: true,
-                                        browserBaseURL: browserBaseURL)]
+                return didFinishAuthManagerAction(state, origin, fido2LoginPayload, browserBaseURL)
                 
             case let .error(error, context, browserBaseURL):
                 let vm = createBrowserVM(for: context,
@@ -349,6 +337,17 @@ extension OwnID.CoreSDK {
 // MARK: Action Functions
 
 extension OwnID.CoreSDK {
+    static func didFinishAuthManagerAction(_ state: OwnID.CoreSDK.ViewModelState,
+                                           _ origin: String,
+                                           _ fido2RegisterPayload: Encodable,
+                                           _ browserBaseURL: String) -> [Effect<OwnID.CoreSDK.ViewModelAction>] {
+        [sendAuthRequest(session: state.session,
+                         origin: origin,
+                         fido2Payload: fido2RegisterPayload,
+                         shouldPerformStatusRequest: true,
+                         browserBaseURL: browserBaseURL)]
+    }
+    
     static func createBrowserVM(for context: String,
                                 browserURL: String,
                                 email: Email?,
