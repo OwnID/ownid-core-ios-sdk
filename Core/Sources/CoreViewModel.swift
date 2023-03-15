@@ -110,7 +110,6 @@ extension OwnID.CoreSDK {
                             .authManagerRequestFail,
                             .addToState,
                             .addToStateConfig,
-                            .settingsRequestLoaded,
                             .addToStateShouldStartInitRequest,
                             .authManager,
                             .browserVM:
@@ -166,7 +165,6 @@ extension OwnID.CoreSDK {
         case addToStateShouldStartInitRequest(value: Bool)
         case sendInitialRequest
         case initialRequestLoaded(response: OwnID.CoreSDK.Init.Response)
-        case settingsRequestLoaded(response: OwnID.CoreSDK.Setting.Response, origin: String, fido2Payload: Encodable, browserBaseURL: String)
         case authManagerRequestFail(error: OwnID.CoreSDK.CoreErrorLogWrapper, browserBaseURL: String)
         case error(OwnID.CoreSDK.CoreErrorLogWrapper)
         case sendStatusRequest
@@ -248,16 +246,6 @@ extension OwnID.CoreSDK {
                 return []
             }
             
-        case let .settingsRequestLoaded(response, origin, fido2RegisterPayload, browserBaseURL):
-            if let challengeType = response.challengeType, challengeType != .register {
-                return errorEffect(.coreLog(entry: .errorEntry(Self.self), error: .settingRequestResponseNotCompliantResponse))
-            }
-            return [sendAuthRequest(session: state.session,
-                                    origin: origin,
-                                    fido2Payload: fido2RegisterPayload,
-                                    shouldPerformStatusRequest: false,
-                                    browserBaseURL: browserBaseURL)]
-            
         case .error:
             return []
             
@@ -329,12 +317,12 @@ extension OwnID.CoreSDK {
                 guard let email = state.email else {
                     return errorEffect(.coreLog(entry: .errorEntry(Self.self), error: .emailIsInvalid))
                 }
-                fatalError("implement")
-//                return [sendSettingsRequest(session: state.session,
-//                                            loginID: email.rawValue,
-//                                            origin: origin,
-//                                            fido2Payload: fido2RegisterPayload,
-//                                            browserBaseURL: browserBaseURL)]
+                fatalError("change for new payload")
+                return [sendAuthRequest(session: state.session,
+                                        origin: origin,
+                                        fido2Payload: fido2RegisterPayload,
+                                        shouldPerformStatusRequest: true,
+                                        browserBaseURL: browserBaseURL)]
                 
             case .didFinishLogin(let origin, let fido2LoginPayload, let browserBaseURL):
                 return [sendAuthRequest(session: state.session,
@@ -399,18 +387,6 @@ extension OwnID.CoreSDK {
             .catch { Just(ViewModelAction.error($0)) }
             .eraseToEffect()
     }
-    
-//    static func sendSettingsRequest(session: APISessionProtocol,
-//                                    loginID: String,
-//                                    origin: String,
-//                                    fido2Payload: Encodable,
-//                                    browserBaseURL: String) -> Effect<ViewModelAction> {
-//        session.performSettingsRequest(loginID: loginID, origin: origin)
-//            .receive(on: DispatchQueue.main)
-//            .map { ViewModelAction.settingsRequestLoaded(response: $0, origin: origin, fido2Payload: fido2Payload, browserBaseURL: browserBaseURL) }
-//            .catch { Just(ViewModelAction.authManagerRequestFail(error: $0, browserBaseURL: browserBaseURL)) }
-//            .eraseToEffect()
-//    }
     
     static func sendAuthRequest(session: APISessionProtocol,
                                 origin: String,

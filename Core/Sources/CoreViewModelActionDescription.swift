@@ -19,8 +19,6 @@ extension OwnID.CoreSDK.ViewModelAction: CustomDebugStringConvertible {
             return "statusRequestLoaded"
         case .browserVM:
             return "browserVM"
-        case .settingsRequestLoaded:
-            return "settingsRequestLoaded"
         case .authRequestLoaded:
             return "authRequestLoaded"
         case .authManager(let action):
