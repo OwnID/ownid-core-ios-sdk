@@ -20,13 +20,10 @@ extension OwnID.CoreSDK {
                                         environment: environment)]
             
         case let .configurationCreated(configuration, userFacingSDK, underlyingSDKs, isTestingEnvironment):
-            let numberOfConfigurations = state.configurations.count
             return [
                 fetchServerConfiguration(config: configuration,
-                                         numberOfConfigurations: numberOfConfigurations,
                                          userFacingSDK: userFacingSDK),
-                startLoggerIfNeeded(numberOfConfigurations: numberOfConfigurations,
-                                    userFacingSDK: userFacingSDK,
+                startLoggerIfNeeded(userFacingSDK: userFacingSDK,
                                     underlyingSDKs: underlyingSDKs,
                                     isTestingEnvironment: isTestingEnvironment),
                 startTranslationsDownloader(supportedLanguages: state.supportedLanguages)
@@ -106,25 +103,20 @@ extension OwnID.CoreSDK {
         .eraseToEffect()
     }
     
-    private static func startLoggerIfNeeded(numberOfConfigurations: Int,
-                                            userFacingSDK: SDKInformation,
+    private static func startLoggerIfNeeded(userFacingSDK: SDKInformation,
                                             underlyingSDKs: [SDKInformation],
                                             isTestingEnvironment: Bool) -> Effect<SDKAction> {
         return .fireAndForget {
-            if numberOfConfigurations == 1 {
-                OwnID.CoreSDK.UserAgentManager.shared.registerUserFacingSDKName(userFacingSDK, underlyingSDKs: underlyingSDKs)
-                if !isTestingEnvironment {
-                    OwnID.CoreSDK.logger.add(OwnID.CoreSDK.MetricsLogger())
-                }
+            OwnID.CoreSDK.UserAgentManager.shared.registerUserFacingSDKName(userFacingSDK, underlyingSDKs: underlyingSDKs)
+            if !isTestingEnvironment {
+                OwnID.CoreSDK.logger.add(OwnID.CoreSDK.MetricsLogger())
             }
             OwnID.CoreSDK.logger.logCore(.entry(OwnID.CoreSDK.self))
         }
     }
     
     private static func fetchServerConfiguration(config: LocalConfiguration,
-                                                 numberOfConfigurations: Int,
                                                  userFacingSDK: OwnID.CoreSDK.SDKInformation) -> Effect<SDKAction> {
-        guard numberOfConfigurations == 1 else { return .fireAndForget { } }
         let effect = Deferred { URLSession.shared.dataTaskPublisher(for: config.ownIDServerConfigurationURL)
                 .map { data, _ in return data }
                 .eraseToAnyPublisher()
