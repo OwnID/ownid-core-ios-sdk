@@ -24,9 +24,7 @@ public extension OwnID {
     }
     
     final class CoreSDK {
-        public var serverConfigurationURL: ServerURL {
-            getConfiguration(for: configurationName).ownIDServerConfigurationURL
-        }
+        public var serverConfigurationURL: ServerURL? { store.value.firstConfiguration?.ownIDServerConfigurationURL }
         
         func enableLogging(logLevel: OwnID.CoreSDK.LogLevel) {
             store.send(.startDebugLogger(logLevel: logLevel))
@@ -54,8 +52,6 @@ public extension OwnID {
         }
         
         public var isSDKConfigured: Bool { !store.value.configurations.isEmpty }
-        
-        var configurationName: String { store.value.configurationName }
         
         public static var logger: LoggerProtocol { Logger.shared }
         
@@ -100,10 +96,6 @@ public extension OwnID {
                                       supportedLanguages: supportedLanguages))
         }
         
-        func getConfiguration(for sdkConfigurationName: String) -> LocalConfiguration {
-            store.value.getConfiguration(for: sdkConfigurationName)
-        }
-        
         func createCoreViewModelForRegister(email: Email? = .none,
                                             sdkConfigurationName: String) -> CoreViewModel {
             let viewModel = CoreViewModel(type: .register,
@@ -126,7 +118,7 @@ public extension OwnID {
                                           supportedLanguages: store.value.supportedLanguages,
                                           sdkConfigurationName: sdkConfigurationName,
                                           isLoggingEnabled: store.value.isLoggingEnabled,
-                                          clientConfiguration: store.value.getConfiguration(for: sdkConfigurationName))
+                                          clientConfiguration: store.value.getOptionalConfiguration(for: sdkConfigurationName))
             viewModel.subscribeToURL(publisher: urlPublisher.eraseToAnyPublisher())
             viewModel.subscribeToConfiguration(publisher: configurationLoadingEventPublisher.eraseToAnyPublisher())
             return viewModel
@@ -148,7 +140,7 @@ public extension OwnID {
             guard url
                 .absoluteString
                 .lowercased()
-                .starts(with: getConfiguration(for: sdkConfigurationName)
+                .starts(with: store.value.getConfiguration(for: sdkConfigurationName)
                     .redirectionURL
                     .lowercased())
             else {
@@ -162,10 +154,10 @@ public extension OwnID {
 
 public extension OwnID.CoreSDK {
     var environment: String? {
-        getConfiguration(for: configurationName).environment
+        store.value.firstConfiguration?.environment
     }
     
-    var metricsURL: ServerURL {
-        getConfiguration(for: configurationName).metricsURL
+    var metricsURL: ServerURL? {
+        store.value.firstConfiguration?.metricsURL
     }
 }
