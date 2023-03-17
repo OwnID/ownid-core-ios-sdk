@@ -13,15 +13,8 @@ extension OwnID.CoreSDK {
         init(appID: OwnID.CoreSDK.AppID, redirectionURL: OwnID.CoreSDK.RedirectionURLString, environment: String?) throws {
             self.environment = environment
             self.appID = appID
-            self.ownIDServerConfigurationURL = try Self.prepare(serverURL: Self.buildServerConfigurationURL(for: appID, env: environment))
             self.redirectionURL = redirectionURL
-            try performPropertyChecks()
-        }
-        
-        private enum CodingKeys: String, CodingKey {
-            case appID = "OwnIDAppID"
-            case redirectionURL = "OwnIDRedirectionURL"
-            case env = "OwnIDEnv"
+            try buildURLFrom(appID, environment)
         }
         
         init(from decoder: Decoder) throws {
@@ -32,13 +25,23 @@ extension OwnID.CoreSDK {
             self.environment = env
             self.redirectionURL = try container.decode(String.self, forKey: .redirectionURL)
             
+            try buildURLFrom(appID, env)
+        }
+        
+        private mutating func buildURLFrom(_ appID: String, _ env: String?) throws {
             let serverURL = Self.buildServerConfigurationURL(for: appID, env: env)
-            self.ownIDServerConfigurationURL = try Self.prepare(serverURL: serverURL)
+            ownIDServerConfigurationURL = serverURL
             
             try performPropertyChecks()
         }
         
-        let ownIDServerConfigurationURL: ServerURL
+        private enum CodingKeys: String, CodingKey {
+            case appID = "OwnIDAppID"
+            case redirectionURL = "OwnIDRedirectionURL"
+            case env = "OwnIDEnv"
+        }
+        
+        private(set) var ownIDServerConfigurationURL: ServerURL = ServerURL(string: "ownid.com")!
         var redirectionURL: RedirectionURLString
         let appID: OwnID.CoreSDK.AppID
         let environment: String?
@@ -48,9 +51,7 @@ extension OwnID.CoreSDK {
         
         var finalStatusURL: ServerURL {
             var url = serverURL!
-            url.appendPathComponent("mobile")
-            url.appendPathComponent("v1")
-            url.appendPathComponent("ownid")
+            addBasePathComponents(&url)
             url.appendPathComponent("status")
             url.appendPathComponent("final")
             return url
@@ -58,26 +59,20 @@ extension OwnID.CoreSDK {
         
         var statusURL: ServerURL {
             var url = serverURL!
-            url.appendPathComponent("mobile")
-            url.appendPathComponent("v1")
-            url.appendPathComponent("ownid")
+            addBasePathComponents(&url)
             url.appendPathComponent("status")
             return url
         }
         
         var initURL: ServerURL {
             var url = serverURL!
-            url.appendPathComponent("mobile")
-            url.appendPathComponent("v1")
-            url.appendPathComponent("ownid")
+            addBasePathComponents(&url)
             return url
         }
         
         var authURL: ServerURL {
             var url = serverURL!
-            url.appendPathComponent("mobile")
-            url.appendPathComponent("v1")
-            url.appendPathComponent("ownid")
+            addBasePathComponents(&url)
             url.appendPathComponent("fido2")
             url.appendPathComponent("auth")
             return url
@@ -86,26 +81,28 @@ extension OwnID.CoreSDK {
         var metricsURL: ServerURL {
             URL(string: "https://\(appID).server.ownid.com/events")!
         }
+        
+        private static let mobileSuffix = "mobile"
+        private static let mobileVersion = "v1"
+        private static let pathComponent = "v1"
     }
 }
 
 private extension OwnID.CoreSDK.LocalConfiguration {
+    
+    func addBasePathComponents(_ url: inout URL) {
+        url.appendPathComponent(Self.mobileSuffix)
+        url.appendPathComponent(Self.mobileVersion)
+        url.appendPathComponent(Self.pathComponent)
+    }
+    
     static func buildServerConfigurationURL(for appID: OwnID.CoreSDK.AppID, env: String?) -> URL {
-        var serverConfigURLString = "https://cdn.ownid.com/sdk/\(appID)/mobile"
+        var serverConfigURLString = "https://cdn.ownid.com/sdk/\(appID)/\(mobileSuffix)"
         if let env {
-            serverConfigURLString = "https://cdn.\(env).ownid.com/sdk/\(appID)/mobile"
+            serverConfigURLString = "https://cdn.\(env).ownid.com/sdk/\(appID)/\(mobileSuffix)"
         }
         let serverConfigURL = URL(string: serverConfigURLString)!
         return serverConfigURL
-    }
-    
-    static func prepare(serverURL: URL) throws -> URL {
-        var ownIDServerURL = serverURL
-        var components = URLComponents(url: ownIDServerURL, resolvingAgainstBaseURL: false)!
-        components.path = ""
-        ownIDServerURL = components.url!
-        ownIDServerURL = ownIDServerURL.appendingPathComponent("ownid")
-        return ownIDServerURL
     }
     
     func check(redirectionURL: String) throws {
@@ -134,7 +131,7 @@ private extension OwnID.CoreSDK.LocalConfiguration {
         }
         guard domain == domainName else { throw OwnID.CoreSDK.LocalConfiguration.Error.serverURLIsNotComplete }
         
-        guard ownIDServerURL.lastPathComponent == "ownid" else { throw OwnID.CoreSDK.LocalConfiguration.Error.serverURLIsNotComplete }
+        guard ownIDServerURL.lastPathComponent == Self.mobileSuffix else { throw OwnID.CoreSDK.LocalConfiguration.Error.serverURLIsNotComplete }
     }
     
     func performPropertyChecks() throws {
