@@ -104,7 +104,7 @@ public extension OwnID {
                                           supportedLanguages: store.value.supportedLanguages,
                                           sdkConfigurationName: sdkConfigurationName,
                                           isLoggingEnabled: store.value.isLoggingEnabled,
-                                          clientConfiguration: store.value.getConfiguration(for: sdkConfigurationName))
+                                          clientConfiguration: store.value.getOptionalConfiguration(for: sdkConfigurationName))
             viewModel.subscribeToURL(publisher: urlPublisher.eraseToAnyPublisher())
             viewModel.subscribeToConfiguration(publisher: configurationLoadingEventPublisher.eraseToAnyPublisher())
             return viewModel
@@ -137,12 +137,8 @@ public extension OwnID {
                 return
             }
             
-            guard url
-                .absoluteString
-                .lowercased()
-                .starts(with: store.value.getConfiguration(for: sdkConfigurationName)
-                    .redirectionURL
-                    .lowercased())
+            guard let redirection = store.value.getOptionalConfiguration(for: sdkConfigurationName),
+                  url.absoluteString.lowercased().starts(with: redirection.redirectionURL.lowercased())
             else {
                 urlPublisher.send(completion: .failure(.coreLog(entry: .errorEntry(Self.self), error: .notValidRedirectionURLOrNotMatchingFromConfiguration)))
                 return

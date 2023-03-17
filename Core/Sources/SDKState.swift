@@ -20,9 +20,4 @@ extension OwnID.CoreSDK.SDKState {
         guard let config = configurations[sdkConfigurationName] else { return .none }
         return config
     }
-    
-    func getConfiguration(for sdkConfigurationName: String) -> OwnID.CoreSDK.LocalConfiguration {
-        guard let config = configurations[sdkConfigurationName] else { fatalError("Configuration does not exist for name") }
-        return config
-    }
 }
