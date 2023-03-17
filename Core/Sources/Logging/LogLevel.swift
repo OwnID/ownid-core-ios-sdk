@@ -16,5 +16,18 @@ public extension OwnID.CoreSDK {
         /// Logs that highlight when the current flow of execution is stopped due to a failure. These should indicate a
         /// failure in the current activity, not an application-wide failure.
         case error = "Error"
+        
+        var priority: Int {
+            switch self {
+            case .debug:
+                return 0
+            case .information:
+                return 1
+            case .warning:
+                return 2
+            case .error:
+                return 3
+            }
+        }
     }
 }
