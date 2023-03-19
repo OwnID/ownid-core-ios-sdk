@@ -11,6 +11,7 @@ public extension OwnID.CoreSDK.Init {
         let type: OwnID.CoreSDK.RequestType
         let data: String?
         let originUrl: String?
+        let deviceInfo = ["os": "ios", "osVersion": OwnID.CoreSDK.UserAgentManager.shared.systemVersion]
     }
 }
 

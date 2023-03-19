@@ -84,7 +84,7 @@ extension OwnID.CoreSDK {
         
         private static let mobileSuffix = "mobile"
         private static let mobileVersion = "v1"
-        private static let pathComponent = "v1"
+        private static let pathComponent = "ownid"
     }
 }
 
