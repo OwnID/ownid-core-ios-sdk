@@ -49,14 +49,12 @@ extension OwnID.CoreSDK.Auth {
         let sessionVerifier: OwnID.CoreSDK.SessionVerifier
         var fido2LoginPayload: Encodable
         let supportedLanguages: OwnID.CoreSDK.Languages
-        let origin: String
         let shouldIgnoreResponseBody: Bool
         
         internal init(type: OwnID.CoreSDK.RequestType,
                       url: OwnID.CoreSDK.ServerURL,
                       context: OwnID.CoreSDK.Context,
                       nonce: OwnID.CoreSDK.Nonce,
-                      origin: String,
                       sessionVerifier: OwnID.CoreSDK.SessionVerifier,
                       fido2LoginPayload: Encodable,
                       supportedLanguages: OwnID.CoreSDK.Languages,
@@ -70,7 +68,6 @@ extension OwnID.CoreSDK.Auth {
             self.nonce = nonce
             self.sessionVerifier = sessionVerifier
             self.fido2LoginPayload = fido2LoginPayload
-            self.origin = origin
             self.shouldIgnoreResponseBody = shouldIgnoreResponseBody
         }
         
@@ -90,7 +87,6 @@ extension OwnID.CoreSDK.Auth {
                     request.httpBody = body
                     request.addUserAgent()
                     request.addAPIVersion()
-                    request.add(origin: origin)
                     request.add(supportedLanguages: supportedLanguages)
                     return request
                 }

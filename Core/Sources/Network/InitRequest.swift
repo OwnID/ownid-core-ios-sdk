@@ -9,7 +9,6 @@ public extension OwnID.CoreSDK.Init {
     struct RequestBody: Encodable {
         let sessionChallenge: OwnID.CoreSDK.SessionChallenge
         let type: OwnID.CoreSDK.RequestType
-        let originUrl: String?
         let deviceInfo = ["os": "ios", "osVersion": OwnID.CoreSDK.UserAgentManager.shared.systemVersion]
     }
 }
@@ -29,25 +28,21 @@ extension OwnID.CoreSDK.Init {
         let provider: APIProvider
         let sessionChallenge: OwnID.CoreSDK.SessionChallenge
         let supportedLanguages: OwnID.CoreSDK.Languages
-        let origin: String?
         
         internal init(type: OwnID.CoreSDK.RequestType,
                       url: OwnID.CoreSDK.ServerURL,
                       sessionChallenge: OwnID.CoreSDK.SessionChallenge,
-                      origin: String?,
                       supportedLanguages: OwnID.CoreSDK.Languages,
                       provider: APIProvider = URLSession.shared) {
             self.type = type
             self.url = url
             self.sessionChallenge = sessionChallenge
-            self.origin = origin
             self.provider = provider
             self.supportedLanguages = supportedLanguages
         }
         func perform() -> AnyPublisher<Response, OwnID.CoreSDK.CoreErrorLogWrapper> {
             Just(RequestBody(sessionChallenge: sessionChallenge,
-                             type: type,
-                             originUrl: origin?.extendHttpsIfNeeded()))
+                             type: type))
                 .setFailureType(to: Error.self)
                 .eraseToAnyPublisher()
                 .encode(encoder: JSONEncoder())
@@ -58,9 +53,6 @@ extension OwnID.CoreSDK.Init {
                     request.httpBody = body
                     request.addUserAgent()
                     request.addAPIVersion()
-                    if let origin {
-                        request.add(origin: origin)
-                    }
                     request.add(supportedLanguages: supportedLanguages)
                     return request
                 }

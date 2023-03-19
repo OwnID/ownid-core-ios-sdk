@@ -210,8 +210,7 @@ extension OwnID.CoreSDK {
                                      supportedLanguages: state.supportedLanguages)
             state.session = session
             return [sendInitialRequest(type: state.type,
-                                       session: session,
-                                       origin: state.configuration?.fidoSettings?.rpID)]
+                                       session: session)]
             
         case let .initialRequestLoaded(response):
             guard let context = response.context else { return errorEffect(.coreLog(entry: .errorEntry(Self.self), error: .contextIsMissing)) }
@@ -248,7 +247,7 @@ extension OwnID.CoreSDK {
             
         case .sendStatusRequest:
             state.browserViewModel = .none
-            return [sendStatusRequest(session: state.session, origin: state.configuration?.fidoSettings?.rpID)]
+            return [sendStatusRequest(session: state.session)]
             
         case .browserCancelled:
             state.browserViewModel = .none
@@ -265,7 +264,7 @@ extension OwnID.CoreSDK {
             
         case let .authRequestLoaded(_ , shouldPerformStatusRequest):
             if shouldPerformStatusRequest {
-                return [sendStatusRequest(session: state.session, origin: state.configuration?.fidoSettings?.rpID)]
+                return [sendStatusRequest(session: state.session)]
             } else {
                 return []
             }
@@ -310,11 +309,11 @@ extension OwnID.CoreSDK {
         // MARK: AuthManager
         case let .authManager(authManagerAction):
             switch authManagerAction {
-            case .didFinishRegistration(let origin, let fido2RegisterPayload, let browserBaseURL):
-                return didFinishAuthManagerAction(state, origin, fido2RegisterPayload, browserBaseURL)
+            case .didFinishRegistration(let fido2RegisterPayload, let browserBaseURL):
+                return didFinishAuthManagerAction(state, fido2RegisterPayload, browserBaseURL)
                 
-            case .didFinishLogin(let origin, let fido2LoginPayload, let browserBaseURL):
-                return didFinishAuthManagerAction(state, origin, fido2LoginPayload, browserBaseURL)
+            case .didFinishLogin(let fido2LoginPayload, let browserBaseURL):
+                return didFinishAuthManagerAction(state, fido2LoginPayload, browserBaseURL)
                 
             case let .error(error, context, browserBaseURL):
                 let vm = createBrowserVM(for: context,
@@ -335,11 +334,9 @@ extension OwnID.CoreSDK {
 
 extension OwnID.CoreSDK {
     static func didFinishAuthManagerAction(_ state: OwnID.CoreSDK.ViewModelState,
-                                           _ origin: String,
                                            _ fido2RegisterPayload: Encodable,
                                            _ browserBaseURL: String) -> [Effect<OwnID.CoreSDK.ViewModelAction>] {
         [sendAuthRequest(session: state.session,
-                         origin: origin,
                          fido2Payload: fido2RegisterPayload,
                          shouldPerformStatusRequest: true,
                          browserBaseURL: browserBaseURL)]
@@ -374,9 +371,8 @@ extension OwnID.CoreSDK {
     }
     
     static func sendInitialRequest(type: OwnID.CoreSDK.RequestType,
-                                   session: APISessionProtocol,
-                                   origin: String?) -> Effect<ViewModelAction> {
-        session.performInitRequest(type: type, origin: origin)
+                                   session: APISessionProtocol) -> Effect<ViewModelAction> {
+        session.performInitRequest(type: type)
             .receive(on: DispatchQueue.main)
             .map { ViewModelAction.initialRequestLoaded(response: $0) }
             .catch { Just(ViewModelAction.error($0)) }
@@ -384,19 +380,18 @@ extension OwnID.CoreSDK {
     }
     
     static func sendAuthRequest(session: APISessionProtocol,
-                                origin: String,
                                 fido2Payload: Encodable,
                                 shouldPerformStatusRequest: Bool,
                                 browserBaseURL: String) -> Effect<ViewModelAction> {
-        session.performAuthRequest(origin: origin, fido2Payload: fido2Payload, shouldIgnoreResponseBody: shouldPerformStatusRequest)
+        session.performAuthRequest(fido2Payload: fido2Payload, shouldIgnoreResponseBody: shouldPerformStatusRequest)
             .receive(on: DispatchQueue.main)
             .map { ViewModelAction.authRequestLoaded(response: $0, shouldPerformStatusRequest: shouldPerformStatusRequest) }
             .catch { Just(ViewModelAction.authManagerRequestFail(error: $0, browserBaseURL: browserBaseURL)) }
             .eraseToEffect()
     }
     
-    static func sendStatusRequest(session: APISessionProtocol, origin: String?) -> Effect<ViewModelAction> {
-        session.performFinalStatusRequest(origin: origin)
+    static func sendStatusRequest(session: APISessionProtocol) -> Effect<ViewModelAction> {
+        session.performFinalStatusRequest()
             .map { ViewModelAction.statusRequestLoaded(response: $0) }
             .catch { Just(ViewModelAction.error($0)) }
             .eraseToEffect()

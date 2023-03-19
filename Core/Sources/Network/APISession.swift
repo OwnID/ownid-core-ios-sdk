@@ -5,10 +5,9 @@ import Combine
 public protocol APISessionProtocol {
     var context: OwnID.CoreSDK.Context! { get }
     
-    func performInitRequest(type: OwnID.CoreSDK.RequestType,
-                            origin: String?) -> AnyPublisher<OwnID.CoreSDK.Init.Response, OwnID.CoreSDK.CoreErrorLogWrapper>
-    func performFinalStatusRequest(origin: String?) -> AnyPublisher<OwnID.CoreSDK.Payload, OwnID.CoreSDK.CoreErrorLogWrapper>
-    func performAuthRequest(origin: String, fido2Payload: Encodable, shouldIgnoreResponseBody: Bool) -> AnyPublisher<OwnID.CoreSDK.Payload, OwnID.CoreSDK.CoreErrorLogWrapper>
+    func performInitRequest(type: OwnID.CoreSDK.RequestType) -> AnyPublisher<OwnID.CoreSDK.Init.Response, OwnID.CoreSDK.CoreErrorLogWrapper>
+    func performFinalStatusRequest() -> AnyPublisher<OwnID.CoreSDK.Payload, OwnID.CoreSDK.CoreErrorLogWrapper>
+    func performAuthRequest(fido2Payload: Encodable, shouldIgnoreResponseBody: Bool) -> AnyPublisher<OwnID.CoreSDK.Payload, OwnID.CoreSDK.CoreErrorLogWrapper>
 }
 
 public extension OwnID.CoreSDK {
@@ -43,12 +42,10 @@ public extension OwnID.CoreSDK {
 }
 
 extension OwnID.CoreSDK.APISession {
-    public func performInitRequest(type: OwnID.CoreSDK.RequestType,
-                                   origin: String?) -> AnyPublisher<OwnID.CoreSDK.Init.Response, OwnID.CoreSDK.CoreErrorLogWrapper> {
+    public func performInitRequest(type: OwnID.CoreSDK.RequestType) -> AnyPublisher<OwnID.CoreSDK.Init.Response, OwnID.CoreSDK.CoreErrorLogWrapper> {
         OwnID.CoreSDK.Init.Request(type: type,
                                    url: initURL,
                                    sessionChallenge: sessionChallenge,
-                                   origin: origin,
                                    supportedLanguages: supportedLanguages)
             .perform()
             .map { [unowned self] response in
@@ -61,12 +58,11 @@ extension OwnID.CoreSDK.APISession {
             .eraseToAnyPublisher()
     }
     
-    public func performAuthRequest(origin: String, fido2Payload: Encodable, shouldIgnoreResponseBody: Bool) -> AnyPublisher<OwnID.CoreSDK.Payload, OwnID.CoreSDK.CoreErrorLogWrapper> {
+    public func performAuthRequest(fido2Payload: Encodable, shouldIgnoreResponseBody: Bool) -> AnyPublisher<OwnID.CoreSDK.Payload, OwnID.CoreSDK.CoreErrorLogWrapper> {
         OwnID.CoreSDK.Auth.Request(type: type,
                                    url: authURL,
                                    context: context,
                                    nonce: nonce,
-                                   origin: origin,
                                    sessionVerifier: sessionVerifier,
                                    fido2LoginPayload: fido2Payload,
                                    supportedLanguages: supportedLanguages,
@@ -75,13 +71,12 @@ extension OwnID.CoreSDK.APISession {
         .eraseToAnyPublisher()
     }
     
-    public func performFinalStatusRequest(origin: String?) -> AnyPublisher<OwnID.CoreSDK.Payload, OwnID.CoreSDK.CoreErrorLogWrapper> {
+    public func performFinalStatusRequest() -> AnyPublisher<OwnID.CoreSDK.Payload, OwnID.CoreSDK.CoreErrorLogWrapper> {
         OwnID.CoreSDK.Status.Request(url: finalStatusURL,
                                      context: context,
                                      nonce: nonce,
                                      sessionVerifier: sessionVerifier,
                                      type: type,
-                                     origin: origin,
                                      supportedLanguages: supportedLanguages)
             .perform()
             .handleEvents(receiveOutput: { payload in
