@@ -9,7 +9,6 @@ public extension OwnID.CoreSDK.Init {
     struct RequestBody: Encodable {
         let sessionChallenge: OwnID.CoreSDK.SessionChallenge
         let type: OwnID.CoreSDK.RequestType
-        let data: String?
         let originUrl: String?
         let deviceInfo = ["os": "ios", "osVersion": OwnID.CoreSDK.UserAgentManager.shared.systemVersion]
     }
@@ -29,14 +28,12 @@ extension OwnID.CoreSDK.Init {
         let url: OwnID.CoreSDK.ServerURL
         let provider: APIProvider
         let sessionChallenge: OwnID.CoreSDK.SessionChallenge
-        let token: OwnID.CoreSDK.JWTToken?
         let supportedLanguages: OwnID.CoreSDK.Languages
         let origin: String?
         
         internal init(type: OwnID.CoreSDK.RequestType,
                       url: OwnID.CoreSDK.ServerURL,
                       sessionChallenge: OwnID.CoreSDK.SessionChallenge,
-                      token: OwnID.CoreSDK.JWTToken?,
                       origin: String?,
                       supportedLanguages: OwnID.CoreSDK.Languages,
                       provider: APIProvider = URLSession.shared) {
@@ -45,13 +42,11 @@ extension OwnID.CoreSDK.Init {
             self.sessionChallenge = sessionChallenge
             self.origin = origin
             self.provider = provider
-            self.token = token
             self.supportedLanguages = supportedLanguages
         }
         func perform() -> AnyPublisher<Response, OwnID.CoreSDK.CoreErrorLogWrapper> {
             Just(RequestBody(sessionChallenge: sessionChallenge,
                              type: type,
-                             data: token?.jwtString,
                              originUrl: origin?.extendHttpsIfNeeded()))
                 .setFailureType(to: Error.self)
                 .eraseToAnyPublisher()

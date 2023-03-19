@@ -12,7 +12,6 @@ extension OwnID.CoreSDK {
         
         init(type: OwnID.CoreSDK.RequestType,
              email: OwnID.CoreSDK.Email?,
-             token: OwnID.CoreSDK.JWTToken?,
              supportedLanguages: OwnID.CoreSDK.Languages,
              sdkConfigurationName: String,
              isLoggingEnabled: Bool,
@@ -21,7 +20,6 @@ extension OwnID.CoreSDK {
                                                             configuration: clientConfiguration,
                                                             sdkConfigurationName: sdkConfigurationName,
                                                             email: email,
-                                                            token: token,
                                                             type: type,
                                                             supportedLanguages: supportedLanguages)
             let store = Store(
@@ -186,7 +184,6 @@ extension OwnID.CoreSDK {
         let sdkConfigurationName: String
         var session: APISessionProtocol!
         let email: OwnID.CoreSDK.Email?
-        let token: OwnID.CoreSDK.JWTToken?
         let type: OwnID.CoreSDK.RequestType
         let supportedLanguages: OwnID.CoreSDK.Languages
         
@@ -213,7 +210,6 @@ extension OwnID.CoreSDK {
                                      supportedLanguages: state.supportedLanguages)
             state.session = session
             return [sendInitialRequest(type: state.type,
-                                       token: state.token,
                                        session: session,
                                        origin: state.configuration?.fidoSettings?.rpID)]
             
@@ -378,10 +374,9 @@ extension OwnID.CoreSDK {
     }
     
     static func sendInitialRequest(type: OwnID.CoreSDK.RequestType,
-                                   token: OwnID.CoreSDK.JWTToken?,
                                    session: APISessionProtocol,
                                    origin: String?) -> Effect<ViewModelAction> {
-        session.performInitRequest(type: type, token: token, origin: origin)
+        session.performInitRequest(type: type, origin: origin)
             .receive(on: DispatchQueue.main)
             .map { ViewModelAction.initialRequestLoaded(response: $0) }
             .catch { Just(ViewModelAction.error($0)) }

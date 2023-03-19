@@ -13,7 +13,6 @@ public extension OwnID.CoreSDK {
         case localConfigIsNotPresent
         case tokenDataIsMissing
         case contextIsMissing
-        case loadJWTTokenFailed(underlying: Swift.Error)
         case flowCancelled
         case payloadMissing(underlying: String?)
         
@@ -103,9 +102,6 @@ extension OwnID.CoreSDK.Error: LocalizedError {
         case .plugin(let error):
             return error.localizedDescription
             
-        case .loadJWTTokenFailed(let underlying):
-            return underlying.localizedDescription
-            
         case .serverError(let underlying):
             return underlying.error
             
@@ -152,7 +148,6 @@ extension OwnID.CoreSDK.Error: CustomDebugStringConvertible {
                 .statusRequestNetworkFailed,
                 .authRequestNetworkFailed,
                 .plugin,
-                .loadJWTTokenFailed,
                 .serverError,
                 .payloadMissing:
             return errorDescription ?? ""

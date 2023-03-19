@@ -6,7 +6,6 @@ public protocol APISessionProtocol {
     var context: OwnID.CoreSDK.Context! { get }
     
     func performInitRequest(type: OwnID.CoreSDK.RequestType,
-                            token: OwnID.CoreSDK.JWTToken?,
                             origin: String?) -> AnyPublisher<OwnID.CoreSDK.Init.Response, OwnID.CoreSDK.CoreErrorLogWrapper>
     func performFinalStatusRequest(origin: String?) -> AnyPublisher<OwnID.CoreSDK.Payload, OwnID.CoreSDK.CoreErrorLogWrapper>
     func performAuthRequest(origin: String, fido2Payload: Encodable, shouldIgnoreResponseBody: Bool) -> AnyPublisher<OwnID.CoreSDK.Payload, OwnID.CoreSDK.CoreErrorLogWrapper>
@@ -45,12 +44,10 @@ public extension OwnID.CoreSDK {
 
 extension OwnID.CoreSDK.APISession {
     public func performInitRequest(type: OwnID.CoreSDK.RequestType,
-                                   token: OwnID.CoreSDK.JWTToken?,
                                    origin: String?) -> AnyPublisher<OwnID.CoreSDK.Init.Response, OwnID.CoreSDK.CoreErrorLogWrapper> {
         OwnID.CoreSDK.Init.Request(type: type,
                                    url: initURL,
                                    sessionChallenge: sessionChallenge,
-                                   token: token,
                                    origin: origin,
                                    supportedLanguages: supportedLanguages)
             .perform()

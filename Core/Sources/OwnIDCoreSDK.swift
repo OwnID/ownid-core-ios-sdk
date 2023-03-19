@@ -100,7 +100,6 @@ public extension OwnID {
                                             sdkConfigurationName: String) -> CoreViewModel {
             let viewModel = CoreViewModel(type: .register,
                                           email: email,
-                                          token: .none,
                                           supportedLanguages: store.value.supportedLanguages,
                                           sdkConfigurationName: sdkConfigurationName,
                                           isLoggingEnabled: store.value.isLoggingEnabled,
@@ -114,7 +113,6 @@ public extension OwnID {
                                          sdkConfigurationName: String) -> CoreViewModel {
             let viewModel = CoreViewModel(type: .login,
                                           email: email,
-                                          token: .none,
                                           supportedLanguages: store.value.supportedLanguages,
                                           sdkConfigurationName: sdkConfigurationName,
                                           isLoggingEnabled: store.value.isLoggingEnabled,
