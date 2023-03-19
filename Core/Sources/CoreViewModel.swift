@@ -209,7 +209,9 @@ extension OwnID.CoreSDK {
                                      authURL: configuration.authURL,
                                      supportedLanguages: state.supportedLanguages)
             state.session = session
-            return [sendInitialRequest(type: state.type,
+            return [sendInitialRequest(requestData: OwnID.CoreSDK.Init.RequestData(loginId: state.email?.rawValue,
+                                                                                   type: state.type,
+                                                                                   supportsFido2: supportsPasskeys),
                                        session: session)]
             
         case let .initialRequestLoaded(response):
@@ -327,12 +329,28 @@ extension OwnID.CoreSDK {
             }
         }
     }
-    
 }
 
 // MARK: Action Functions
 
 extension OwnID.CoreSDK {
+    static var supportsPasskeys: Bool {
+        let leastPasskeysSupportediOS = ProcessInfo().isOperatingSystemAtLeast(OperatingSystemVersion(majorVersion: 16, minorVersion: 0, patchVersion: 0))
+        var biometricsAvailable = false
+        let authContext = LAContext()
+        let _ = authContext.canEvaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, error: nil)
+        switch authContext.biometryType {
+        case .none:
+            break
+        case .touchID:
+            biometricsAvailable = true
+        case .faceID:
+            biometricsAvailable = true
+        @unknown default:
+            print("please update biometrics types")
+        }
+        return leastPasskeysSupportediOS && biometricsAvailable
+    }
     static func didFinishAuthManagerAction(_ state: OwnID.CoreSDK.ViewModelState,
                                            _ fido2RegisterPayload: Encodable,
                                            _ browserBaseURL: String) -> [Effect<OwnID.CoreSDK.ViewModelAction>] {
@@ -370,9 +388,9 @@ extension OwnID.CoreSDK {
         [Just(.error(error)).eraseToEffect()]
     }
     
-    static func sendInitialRequest(type: OwnID.CoreSDK.RequestType,
+    static func sendInitialRequest(requestData: OwnID.CoreSDK.Init.RequestData,
                                    session: APISessionProtocol) -> Effect<ViewModelAction> {
-        session.performInitRequest(type: type)
+        session.performInitRequest(requestData: requestData)
             .receive(on: DispatchQueue.main)
             .map { ViewModelAction.initialRequestLoaded(response: $0) }
             .catch { Just(ViewModelAction.error($0)) }

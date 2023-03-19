@@ -5,7 +5,7 @@ import Combine
 public protocol APISessionProtocol {
     var context: OwnID.CoreSDK.Context! { get }
     
-    func performInitRequest(type: OwnID.CoreSDK.RequestType) -> AnyPublisher<OwnID.CoreSDK.Init.Response, OwnID.CoreSDK.CoreErrorLogWrapper>
+    func performInitRequest(requestData: OwnID.CoreSDK.Init.RequestData) -> AnyPublisher<OwnID.CoreSDK.Init.Response, OwnID.CoreSDK.CoreErrorLogWrapper>
     func performFinalStatusRequest() -> AnyPublisher<OwnID.CoreSDK.Payload, OwnID.CoreSDK.CoreErrorLogWrapper>
     func performAuthRequest(fido2Payload: Encodable, shouldIgnoreResponseBody: Bool) -> AnyPublisher<OwnID.CoreSDK.Payload, OwnID.CoreSDK.CoreErrorLogWrapper>
 }
@@ -42,20 +42,20 @@ public extension OwnID.CoreSDK {
 }
 
 extension OwnID.CoreSDK.APISession {
-    public func performInitRequest(type: OwnID.CoreSDK.RequestType) -> AnyPublisher<OwnID.CoreSDK.Init.Response, OwnID.CoreSDK.CoreErrorLogWrapper> {
-        OwnID.CoreSDK.Init.Request(type: type,
+    public func performInitRequest(requestData: OwnID.CoreSDK.Init.RequestData) -> AnyPublisher<OwnID.CoreSDK.Init.Response, OwnID.CoreSDK.CoreErrorLogWrapper> {
+        OwnID.CoreSDK.Init.Request(requestData: requestData,
                                    url: initURL,
                                    sessionChallenge: sessionChallenge,
                                    supportedLanguages: supportedLanguages)
-            .perform()
-            .map { [unowned self] response in
-                nonce = response.nonce
-                context = response.context
-                self.type = type
-                OwnID.CoreSDK.logger.logCore(.entry(context: context, message: "\(OwnID.CoreSDK.Init.Request.self): Finished", Self.self))
-                return response
-            }
-            .eraseToAnyPublisher()
+        .perform()
+        .map { [unowned self] response in
+            nonce = response.nonce
+            context = response.context
+            self.type = type
+            OwnID.CoreSDK.logger.logCore(.entry(context: context, message: "\(OwnID.CoreSDK.Init.Request.self): Finished", Self.self))
+            return response
+        }
+        .eraseToAnyPublisher()
     }
     
     public func performAuthRequest(fido2Payload: Encodable, shouldIgnoreResponseBody: Bool) -> AnyPublisher<OwnID.CoreSDK.Payload, OwnID.CoreSDK.CoreErrorLogWrapper> {
@@ -78,11 +78,11 @@ extension OwnID.CoreSDK.APISession {
                                      sessionVerifier: sessionVerifier,
                                      type: type,
                                      supportedLanguages: supportedLanguages)
-            .perform()
-            .handleEvents(receiveOutput: { payload in
-                OwnID.CoreSDK.logger.logCore(.entry(context: payload.context, message: "\(OwnID.CoreSDK.Status.Request.self): Finished", Self.self))
-            })
-            .eraseToAnyPublisher()
+        .perform()
+        .handleEvents(receiveOutput: { payload in
+            OwnID.CoreSDK.logger.logCore(.entry(context: payload.context, message: "\(OwnID.CoreSDK.Status.Request.self): Finished", Self.self))
+        })
+        .eraseToAnyPublisher()
     }
 }
 

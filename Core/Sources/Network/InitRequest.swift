@@ -6,10 +6,23 @@ public extension OwnID.CoreSDK {
 }
 
 public extension OwnID.CoreSDK.Init {
+    
+    struct RequestData {
+        let loginId: String?
+        let type: OwnID.CoreSDK.RequestType
+        let supportsFido2: Bool
+    }
+    
     struct RequestBody: Encodable {
         let sessionChallenge: OwnID.CoreSDK.SessionChallenge
         let type: OwnID.CoreSDK.RequestType
+        let loginId: String?
+        let supportsFido2: Bool
         let deviceInfo = ["os": "ios", "osVersion": OwnID.CoreSDK.UserAgentManager.shared.systemVersion]
+        
+        static func create(sessionChallenge: OwnID.CoreSDK.SessionChallenge, data: RequestData) -> Self {
+            Self(sessionChallenge: sessionChallenge, type: data.type, loginId: data.loginId, supportsFido2: data.supportsFido2)
+        }
     }
 }
 
@@ -23,26 +36,25 @@ public extension OwnID.CoreSDK.Init {
 
 extension OwnID.CoreSDK.Init {
     class Request {
-        let type: OwnID.CoreSDK.RequestType
+        let requestData: RequestData
         let url: OwnID.CoreSDK.ServerURL
         let provider: APIProvider
         let sessionChallenge: OwnID.CoreSDK.SessionChallenge
         let supportedLanguages: OwnID.CoreSDK.Languages
         
-        internal init(type: OwnID.CoreSDK.RequestType,
+        internal init(requestData: RequestData,
                       url: OwnID.CoreSDK.ServerURL,
                       sessionChallenge: OwnID.CoreSDK.SessionChallenge,
                       supportedLanguages: OwnID.CoreSDK.Languages,
                       provider: APIProvider = URLSession.shared) {
-            self.type = type
+            self.requestData = requestData
             self.url = url
             self.sessionChallenge = sessionChallenge
             self.provider = provider
             self.supportedLanguages = supportedLanguages
         }
         func perform() -> AnyPublisher<Response, OwnID.CoreSDK.CoreErrorLogWrapper> {
-            Just(RequestBody(sessionChallenge: sessionChallenge,
-                             type: type))
+            Just(RequestBody.create(sessionChallenge: sessionChallenge, data: requestData))
                 .setFailureType(to: Error.self)
                 .eraseToAnyPublisher()
                 .encode(encoder: JSONEncoder())
