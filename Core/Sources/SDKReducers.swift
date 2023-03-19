@@ -122,7 +122,7 @@ extension OwnID.CoreSDK {
                 .eraseToAnyPublisher()
                 .decode(type: ServerConfiguration.self, decoder: JSONDecoder())
                 .eraseToAnyPublisher()
-                .replaceError(with: ServerConfiguration(isFailed: true, supportedLocales: [], logLevel: .error, fidoSettings: .none, passkeysAutofillEnabled: false, serverURL: URL(string: "https://ownid.com")!, cacheTTL: 0, redirectURLString: .none, platformSettings: .none))
+                .replaceError(with: ServerConfiguration(isFailed: true, supportedLocales: [], logLevel: .error, fidoSettings: .none, passkeysAutofillEnabled: false, serverURL: URL(string: "https://ownid.com")!, redirectURLString: .none, platformSettings: .none))
                 .eraseToAnyPublisher()
                 .flatMap { serverConfiguration -> AnyPublisher<SDKAction, Never> in
                     if serverConfiguration.isFailed {

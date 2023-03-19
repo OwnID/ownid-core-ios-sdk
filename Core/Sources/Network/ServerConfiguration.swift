@@ -9,14 +9,12 @@ extension OwnID.CoreSDK {
         let fidoSettings: FidoSettings?
         let passkeysAutofillEnabled: Bool
         let serverURL: ServerURL
-        let cacheTTL: Int
         let redirectURLString: RedirectionURLString?
         let platformSettings: PlatformSettings?
 
         enum CodingKeys: String, CodingKey {
             case supportedLocales, logLevel, fidoSettings, passkeysAutofillEnabled
             case serverURL = "serverUrl"
-            case cacheTTL = "cacheTtl"
             case redirectURLString = "redirectUrl"
             case platformSettings = "iosSettings"
         }

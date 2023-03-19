@@ -87,7 +87,8 @@ extension OwnID.CoreSDK {
         private var internalStatesChange = [String]()
         
         private func logInternalStates() {
-            OwnID.CoreSDK.logger.logCore(.entry(message: internalStatesLog(states: internalStatesChange), Self.self))
+            let states = internalStatesLog(states: internalStatesChange)
+            OwnID.CoreSDK.logger.logCore(.entry(message: states, Self.self))
             internalStatesChange.removeAll()
         }
         
