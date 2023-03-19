@@ -211,7 +211,7 @@ extension OwnID.CoreSDK {
             state.session = session
             return [sendInitialRequest(requestData: OwnID.CoreSDK.Init.RequestData(loginId: state.email?.rawValue,
                                                                                    type: state.type,
-                                                                                   supportsFido2: supportsPasskeys),
+                                                                                   supportsFido2: isPasskeysSupported),
                                        session: session)]
             
         case let .initialRequestLoaded(response):
@@ -334,22 +334,24 @@ extension OwnID.CoreSDK {
 // MARK: Action Functions
 
 extension OwnID.CoreSDK {
-    static var supportsPasskeys: Bool {
-        let leastPasskeysSupportediOS = ProcessInfo().isOperatingSystemAtLeast(OperatingSystemVersion(majorVersion: 16, minorVersion: 0, patchVersion: 0))
-        var biometricsAvailable = false
+    static var isPasskeysSupported: Bool {
+        let isLeastPasskeysSupportediOS = ProcessInfo().isOperatingSystemAtLeast(OperatingSystemVersion(majorVersion: 16, minorVersion: 0, patchVersion: 0))
+        var isBiometricsAvailable = false
         let authContext = LAContext()
         let _ = authContext.canEvaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, error: nil)
         switch authContext.biometryType {
         case .none:
             break
         case .touchID:
-            biometricsAvailable = true
+            isBiometricsAvailable = true
         case .faceID:
-            biometricsAvailable = true
+            isBiometricsAvailable = true
         @unknown default:
             print("please update biometrics types")
         }
-        return leastPasskeysSupportediOS && biometricsAvailable
+        let isPasscodeAvailable = LAContext().canEvaluatePolicy(.deviceOwnerAuthentication, error: nil)
+        let isPasskeysSupported = isLeastPasskeysSupportediOS && (isBiometricsAvailable || isPasscodeAvailable)
+        return isPasskeysSupported
     }
     static func didFinishAuthManagerAction(_ state: OwnID.CoreSDK.ViewModelState,
                                            _ fido2RegisterPayload: Encodable,
