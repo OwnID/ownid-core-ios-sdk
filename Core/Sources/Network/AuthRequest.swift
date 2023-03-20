@@ -12,9 +12,6 @@ public extension OwnID.CoreSDK.Auth {
             try container.encode(type, forKey: .type)
             try container.encode(context, forKey: .context)
             try container.encode(nonce, forKey: .nonce)
-            if type == .register {
-                try container.encode(sessionVerifier, forKey: .sessionVerifier)
-            }
             if let fido2Payload = fido2Payload as? OwnID.CoreSDK.Fido2LoginPayload {
                 try container.encode(fido2Payload, forKey: .fido2Payload)
             }
@@ -26,7 +23,6 @@ public extension OwnID.CoreSDK.Auth {
         let type: OwnID.CoreSDK.RequestType
         let context: OwnID.CoreSDK.Context
         let nonce: OwnID.CoreSDK.Nonce
-        let sessionVerifier: OwnID.CoreSDK.SessionVerifier
         let fido2Payload: Encodable
         
         enum CodingKeys: CodingKey {
@@ -46,7 +42,6 @@ extension OwnID.CoreSDK.Auth {
         let provider: APIProvider
         let context: OwnID.CoreSDK.Context
         let nonce: OwnID.CoreSDK.Nonce
-        let sessionVerifier: OwnID.CoreSDK.SessionVerifier
         var fido2LoginPayload: Encodable
         let supportedLanguages: OwnID.CoreSDK.Languages
         
@@ -54,7 +49,6 @@ extension OwnID.CoreSDK.Auth {
                       url: OwnID.CoreSDK.ServerURL,
                       context: OwnID.CoreSDK.Context,
                       nonce: OwnID.CoreSDK.Nonce,
-                      sessionVerifier: OwnID.CoreSDK.SessionVerifier,
                       fido2LoginPayload: Encodable,
                       supportedLanguages: OwnID.CoreSDK.Languages,
                       provider: APIProvider = URLSession.shared) {
@@ -64,7 +58,6 @@ extension OwnID.CoreSDK.Auth {
             self.supportedLanguages = supportedLanguages
             self.context = context
             self.nonce = nonce
-            self.sessionVerifier = sessionVerifier
             self.fido2LoginPayload = fido2LoginPayload
         }
         
@@ -72,7 +65,6 @@ extension OwnID.CoreSDK.Auth {
             let inputPublisher = Just(RequestBody(type: type,
                              context: context,
                              nonce: nonce,
-                             sessionVerifier: sessionVerifier,
                              fido2Payload: fido2LoginPayload))
                 .setFailureType(to: Error.self)
                 .eraseToAnyPublisher()

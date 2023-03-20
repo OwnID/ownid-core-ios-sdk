@@ -63,7 +63,6 @@ extension OwnID.CoreSDK.APISession {
                                    url: authURL,
                                    context: context,
                                    nonce: nonce,
-                                   sessionVerifier: sessionVerifier,
                                    fido2LoginPayload: fido2Payload,
                                    supportedLanguages: supportedLanguages)
         .perform()
