@@ -26,7 +26,7 @@ extension OwnID.CoreSDK {
                 startLoggerIfNeeded(userFacingSDK: userFacingSDK,
                                     underlyingSDKs: underlyingSDKs,
                                     isTestingEnvironment: isTestingEnvironment),
-                startTranslationsDownloader(supportedLanguages: state.supportedLanguages)
+                translationsDownloaderSDKConfigured(with: state.supportedLanguages)
             ]
             
         case .startDebugLogger(let level):
@@ -58,7 +58,10 @@ extension OwnID.CoreSDK {
                 break
             }
             state.configurationLoadingEventPublisher.send(configurationLoadingEvent)
-            return [startTranslationsDownloader(supportedLanguages: state.supportedLanguages)]
+            return [
+                translationsDownloaderSDKConfigured(with: state.supportedLanguages),
+                sendLoggerSDKConfigured()
+            ]
         }
     }
     
@@ -143,10 +146,16 @@ extension OwnID.CoreSDK {
         return effect.eraseToEffect()
     }
     
-    private static func startTranslationsDownloader(supportedLanguages: OwnID.CoreSDK.Languages) -> Effect<SDKAction> {
+    private static func translationsDownloaderSDKConfigured(with supportedLanguages: OwnID.CoreSDK.Languages) -> Effect<SDKAction> {
         .fireAndForget {
             OwnID.CoreSDK.shared.translationsModule.SDKConfigured(supportedLanguages: supportedLanguages)
             OwnID.CoreSDK.logger.logCore(.entry(OwnID.CoreSDK.self))
+        }
+    }
+    
+    private static func sendLoggerSDKConfigured() -> Effect<SDKAction> {
+        .fireAndForget {
+            OwnID.CoreSDK.logger.sdkConfigured()
         }
     }
 }

@@ -29,5 +29,9 @@ public extension OwnID.CoreSDK {
                 return 3
             }
         }
+        
+        func shouldLog(for priority: Int) -> Bool {
+            priority > self.priority
+        }
     }
 }

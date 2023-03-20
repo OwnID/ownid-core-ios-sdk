@@ -69,6 +69,10 @@ extension OwnID.CoreSDK {
         public var category: EventCategory?
         
         func isMetric() -> Bool { false }
+        
+        func shouldLog(for priority: Int) -> Bool {
+            level?.shouldLog(for: priority) ?? false
+        }
     }
 }
 
