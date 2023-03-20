@@ -134,6 +134,7 @@ extension OwnID.CoreSDK {
                     local.redirectionURL = (serverConfiguration.platformSettings?.redirectUrlOverride ?? serverConfiguration.redirectURLString) ?? local.redirectionURL
                     local.fidoSettings = serverConfiguration.fidoSettings
                     local.passkeysAutofillEnabled = serverConfiguration.passkeysAutofillEnabled
+                    local.supportedLocales = serverConfiguration.supportedLocales
                     return Just(.save(configurationLoadingEvent: .loaded(local), userFacingSDK: userFacingSDK)).eraseToAnyPublisher()
                 }
                 .eraseToAnyPublisher()

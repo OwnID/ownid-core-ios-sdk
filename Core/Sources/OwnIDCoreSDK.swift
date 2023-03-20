@@ -154,4 +154,8 @@ public extension OwnID.CoreSDK {
     var metricsURL: ServerURL? {
         store.value.firstConfiguration?.metricsURL
     }
+    
+    var supportedLocales: [String]? {
+        store.value.firstConfiguration?.supportedLocales
+    }
 }
