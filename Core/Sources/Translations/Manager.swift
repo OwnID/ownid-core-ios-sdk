@@ -32,19 +32,19 @@ extension OwnID.CoreSDK.TranslationsSDK {
         
         private let bundleManager = RuntimeLocalizableSaver()
         private let downloader = Downloader()
-        private var bag = Set<AnyCancellable>()
+        private var notificationCenterCancellable: AnyCancellable?
+        private var downloaderCancellable: AnyCancellable?
         private var supportedLanguages: OwnID.CoreSDK.Languages = .init(rawValue: [])
         
         init() {
-            NotificationCenter.default.publisher(for: NSLocale.currentLocaleDidChangeNotification)
+            notificationCenterCancellable = NotificationCenter.default.publisher(for: NSLocale.currentLocaleDidChangeNotification)
                 .sink { [weak self] notification in
-                        let message = "Recieve notification about language change \(notification)"
-                        OwnID.CoreSDK.logger.logCore(.entry(message: message, OwnID.CoreSDK.TranslationsSDK.Downloader.self))
+                    let message = "Recieve notification about language change \(notification)"
+                    OwnID.CoreSDK.logger.logCore(.entry(message: message, OwnID.CoreSDK.TranslationsSDK.Downloader.self))
                     if let value = self?.supportedLanguages.shouldChangeLanguageOnSystemLanguageChange, value {
                         self?.initializeLanguages(supportedLanguages: .init(rawValue: Locale.preferredLanguages))
                     }
                 }
-                .store(in: &bag)
         }
         
         
@@ -54,7 +54,7 @@ extension OwnID.CoreSDK.TranslationsSDK {
         }
         
         private func initializeLanguages(supportedLanguages: OwnID.CoreSDK.Languages) {
-            downloader.downloadTranslations(supportedLanguages: supportedLanguages)
+            downloaderCancellable = downloader.downloadTranslations(supportedLanguages: supportedLanguages)
                 .tryMap { try self.bundleManager.save(languageKey: $0.systemLanguage, language: $0.language) }
                 .sink { completion in
                     switch completion {
@@ -68,7 +68,6 @@ extension OwnID.CoreSDK.TranslationsSDK {
                     let message = "Translations downloaded and saved"
                     OwnID.CoreSDK.logger.logCore(.entry(message: message, OwnID.CoreSDK.TranslationsSDK.Manager.self))
                 }
-                .store(in: &bag)
         }
     }
 }

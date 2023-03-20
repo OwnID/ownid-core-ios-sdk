@@ -58,7 +58,7 @@ extension OwnID.CoreSDK {
                 break
             }
             state.configurationLoadingEventPublisher.send(configurationLoadingEvent)
-            return []
+            return [startTranslationsDownloader(supportedLanguages: state.supportedLanguages)]
         }
     }
     
