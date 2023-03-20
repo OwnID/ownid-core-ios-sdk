@@ -118,6 +118,7 @@ extension OwnID.CoreSDK {
     private static func fetchServerConfiguration(config: LocalConfiguration,
                                                  userFacingSDK: OwnID.CoreSDK.SDKInformation) -> Effect<SDKAction> {
         let effect = Deferred { URLSession.shared.dataTaskPublisher(for: config.ownIDServerConfigurationURL)
+                .retry(2)
                 .map { data, _ in return data }
                 .eraseToAnyPublisher()
                 .decode(type: ServerConfiguration.self, decoder: JSONDecoder())
