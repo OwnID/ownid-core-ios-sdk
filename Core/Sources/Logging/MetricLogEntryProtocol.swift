@@ -67,6 +67,8 @@ extension OwnID.CoreSDK {
         public var action: String?
         
         public var category: EventCategory?
+        
+        func isMetric() -> Bool { false }
     }
 }
 

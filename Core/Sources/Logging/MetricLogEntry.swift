@@ -78,6 +78,8 @@ public extension OwnID.CoreSDK {
             self.action = action
             self.category = category
         }
+        
+        override func isMetric() -> Bool { true }
     }
 }
 
