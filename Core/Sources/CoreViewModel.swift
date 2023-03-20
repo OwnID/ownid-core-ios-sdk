@@ -218,8 +218,7 @@ extension OwnID.CoreSDK {
             guard let context = response.context else { return errorEffect(.coreLog(entry: .errorEntry(Self.self), error: .contextIsMissing)) }
             if #available(iOS 16, *),
                let config = state.configuration,
-               let domain = config.fidoSettings?.rpID,
-               config.passkeysAutofillEnabled {
+               let domain = config.fidoSettings?.rpID {
                 let authManager = OwnID.CoreSDK.AccountManager(store: state.authManagerStore,
                                                                domain: domain,
                                                                challenge: state.session.context,
