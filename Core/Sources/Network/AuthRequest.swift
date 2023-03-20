@@ -49,7 +49,6 @@ extension OwnID.CoreSDK.Auth {
         let sessionVerifier: OwnID.CoreSDK.SessionVerifier
         var fido2LoginPayload: Encodable
         let supportedLanguages: OwnID.CoreSDK.Languages
-        let shouldIgnoreResponseBody: Bool
         
         internal init(type: OwnID.CoreSDK.RequestType,
                       url: OwnID.CoreSDK.ServerURL,
@@ -58,7 +57,6 @@ extension OwnID.CoreSDK.Auth {
                       sessionVerifier: OwnID.CoreSDK.SessionVerifier,
                       fido2LoginPayload: Encodable,
                       supportedLanguages: OwnID.CoreSDK.Languages,
-                      shouldIgnoreResponseBody: Bool,
                       provider: APIProvider = URLSession.shared) {
             self.type = type
             self.url = url
@@ -68,7 +66,6 @@ extension OwnID.CoreSDK.Auth {
             self.nonce = nonce
             self.sessionVerifier = sessionVerifier
             self.fido2LoginPayload = fido2LoginPayload
-            self.shouldIgnoreResponseBody = shouldIgnoreResponseBody
         }
         
         func perform() -> AnyPublisher<OwnID.CoreSDK.Payload, OwnID.CoreSDK.CoreErrorLogWrapper> {
@@ -96,7 +93,7 @@ extension OwnID.CoreSDK.Auth {
                                                                              nonce: nonce,
                                                                              requestLanguage: supportedLanguages.rawValue.first,
                                                                              provider: provider,
-                                                                             shouldIgnoreResponseBody: shouldIgnoreResponseBody,
+                                                                             shouldIgnoreResponseBody: true,
                                                                              emptyResponseError: { .authRequestResponseIsEmpty },
                                                                              typeMissingError: { .authRequestTypeIsMissing },
                                                                              contextMismatchError: { .authRequestResponseContextMismatch },

@@ -111,14 +111,13 @@ extension OwnID.CoreSDK {
                             .addToStateConfig,
                             .addToStateShouldStartInitRequest,
                             .authManager,
-                            .browserVM:
+                            .browserVM,
+                            .authRequestLoaded:
                         internalStatesChange.append(action.debugDescription)
                         
-                    case let .authRequestLoaded(payload, shouldPerformStatusRequest):
-                        finishIfNeeded(shouldPerformStatusRequest: shouldPerformStatusRequest, payload: payload, action: action)
-                        
                     case let .statusRequestLoaded(payload):
-                        finishIfNeeded(shouldPerformStatusRequest: false, payload: payload, action: action)
+                        internalStatesChange.append(String(describing: action))
+                        finishIfNeeded(payload: payload)
                         
                     case .error(let error):
                         internalStatesChange.append(String(describing: action))
@@ -137,13 +136,9 @@ extension OwnID.CoreSDK {
                 .store(in: &bag)
         }
         
-        private func finishIfNeeded(shouldPerformStatusRequest: Bool, payload: Payload, action: OwnID.CoreSDK.ViewModelAction) {
-                internalStatesChange.append(String(describing: action))
-                if shouldPerformStatusRequest {
-                    return
-                }
-                flowsFinished()
-                resultPublisher.send(.success(payload))
+        private func finishIfNeeded(payload: Payload) {
+            flowsFinished()
+            resultPublisher.send(.success(payload))
         }
         
         private func flowsFinished() {
@@ -170,7 +165,7 @@ extension OwnID.CoreSDK {
         case browserCancelled
         case cancelled
         case authManagerCancelled
-        case authRequestLoaded(response: OwnID.CoreSDK.Payload, shouldPerformStatusRequest: Bool)
+        case authRequestLoaded
         case statusRequestLoaded(response: OwnID.CoreSDK.Payload)
         case browserVM(BrowserOpenerViewModel.Action)
         case authManager(AccountManager.Action)
@@ -263,12 +258,8 @@ extension OwnID.CoreSDK {
             state.authManager = .none
             return []
             
-        case let .authRequestLoaded(_ , shouldPerformStatusRequest):
-            if shouldPerformStatusRequest {
-                return [sendStatusRequest(session: state.session)]
-            } else {
-                return []
-            }
+        case .authRequestLoaded:
+            return [sendStatusRequest(session: state.session)]
             
         case .statusRequestLoaded:
             return []
@@ -357,7 +348,6 @@ extension OwnID.CoreSDK {
                                            _ browserBaseURL: String) -> [Effect<OwnID.CoreSDK.ViewModelAction>] {
         [sendAuthRequest(session: state.session,
                          fido2Payload: fido2RegisterPayload,
-                         shouldPerformStatusRequest: true,
                          browserBaseURL: browserBaseURL)]
     }
     
@@ -400,11 +390,10 @@ extension OwnID.CoreSDK {
     
     static func sendAuthRequest(session: APISessionProtocol,
                                 fido2Payload: Encodable,
-                                shouldPerformStatusRequest: Bool,
                                 browserBaseURL: String) -> Effect<ViewModelAction> {
-        session.performAuthRequest(fido2Payload: fido2Payload, shouldIgnoreResponseBody: shouldPerformStatusRequest)
+        session.performAuthRequest(fido2Payload: fido2Payload)
             .receive(on: DispatchQueue.main)
-            .map { ViewModelAction.authRequestLoaded(response: $0, shouldPerformStatusRequest: shouldPerformStatusRequest) }
+            .map { _ in ViewModelAction.authRequestLoaded }
             .catch { Just(ViewModelAction.authManagerRequestFail(error: $0, browserBaseURL: browserBaseURL)) }
             .eraseToEffect()
     }

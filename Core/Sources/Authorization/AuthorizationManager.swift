@@ -90,7 +90,10 @@ extension OwnID.CoreSDK {
         
         @available(iOS 16.0, *)
         func beginAutoFillAssistedPasskeySignIn() {
-            fatalError("For now autofill is not supported right here, we need some other way to enable this as we need new challenge for this")
+            if true {
+                print("For now autofill is not supported right here, we need some other way to enable this as we need new challenge for this")
+                return
+            }
             currentAuthController?.cancel()
             
             let publicKeyCredentialProvider = ASAuthorizationPlatformPublicKeyCredentialProvider(relyingPartyIdentifier: domain)

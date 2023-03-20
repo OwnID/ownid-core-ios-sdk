@@ -7,7 +7,7 @@ public protocol APISessionProtocol {
     
     func performInitRequest(requestData: OwnID.CoreSDK.Init.RequestData) -> AnyPublisher<OwnID.CoreSDK.Init.Response, OwnID.CoreSDK.CoreErrorLogWrapper>
     func performFinalStatusRequest() -> AnyPublisher<OwnID.CoreSDK.Payload, OwnID.CoreSDK.CoreErrorLogWrapper>
-    func performAuthRequest(fido2Payload: Encodable, shouldIgnoreResponseBody: Bool) -> AnyPublisher<OwnID.CoreSDK.Payload, OwnID.CoreSDK.CoreErrorLogWrapper>
+    func performAuthRequest(fido2Payload: Encodable) -> AnyPublisher<OwnID.CoreSDK.Payload, OwnID.CoreSDK.CoreErrorLogWrapper>
 }
 
 public extension OwnID.CoreSDK {
@@ -58,15 +58,14 @@ extension OwnID.CoreSDK.APISession {
         .eraseToAnyPublisher()
     }
     
-    public func performAuthRequest(fido2Payload: Encodable, shouldIgnoreResponseBody: Bool) -> AnyPublisher<OwnID.CoreSDK.Payload, OwnID.CoreSDK.CoreErrorLogWrapper> {
+    public func performAuthRequest(fido2Payload: Encodable) -> AnyPublisher<OwnID.CoreSDK.Payload, OwnID.CoreSDK.CoreErrorLogWrapper> {
         OwnID.CoreSDK.Auth.Request(type: type,
                                    url: authURL,
                                    context: context,
                                    nonce: nonce,
                                    sessionVerifier: sessionVerifier,
                                    fido2LoginPayload: fido2Payload,
-                                   supportedLanguages: supportedLanguages,
-                                   shouldIgnoreResponseBody: shouldIgnoreResponseBody)
+                                   supportedLanguages: supportedLanguages)
         .perform()
         .eraseToAnyPublisher()
     }
