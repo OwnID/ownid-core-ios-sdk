@@ -79,7 +79,11 @@ extension OwnID.CoreSDK {
         }
         
         var metricsURL: ServerURL {
-            URL(string: "https://\(appID).server.ownid.com/events")!
+            var url = URL(string: "https://\(appID).server.ownid.com/events")!
+            if let environment {
+                url = URL(string: "https://\(appID).server.\(environment).ownid.com/events")!
+            }
+            return url
         }
         
         private static let mobileSuffix = "mobile"
