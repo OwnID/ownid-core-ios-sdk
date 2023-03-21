@@ -12,9 +12,6 @@ public extension OwnID.CoreSDK.Auth {
             try container.encode(type, forKey: .type)
             try container.encode(context, forKey: .context)
             try container.encode(nonce, forKey: .nonce)
-            if type == .register {
-                try container.encode(sessionVerifier, forKey: .sessionVerifier)
-            }
             if let fido2Payload = fido2Payload as? OwnID.CoreSDK.Fido2LoginPayload {
                 try container.encode(fido2Payload, forKey: .fido2Payload)
             }
@@ -26,7 +23,6 @@ public extension OwnID.CoreSDK.Auth {
         let type: OwnID.CoreSDK.RequestType
         let context: OwnID.CoreSDK.Context
         let nonce: OwnID.CoreSDK.Nonce
-        let sessionVerifier: OwnID.CoreSDK.SessionVerifier
         let fido2Payload: Encodable
         
         enum CodingKeys: CodingKey {
@@ -46,39 +42,29 @@ extension OwnID.CoreSDK.Auth {
         let provider: APIProvider
         let context: OwnID.CoreSDK.Context
         let nonce: OwnID.CoreSDK.Nonce
-        let sessionVerifier: OwnID.CoreSDK.SessionVerifier
         var fido2LoginPayload: Encodable
-        let webLanguages: OwnID.CoreSDK.Languages
-        let origin: String
-        let shouldIgnoreResponseBody: Bool
+        let supportedLanguages: OwnID.CoreSDK.Languages
         
         internal init(type: OwnID.CoreSDK.RequestType,
                       url: OwnID.CoreSDK.ServerURL,
                       context: OwnID.CoreSDK.Context,
                       nonce: OwnID.CoreSDK.Nonce,
-                      origin: String,
-                      sessionVerifier: OwnID.CoreSDK.SessionVerifier,
                       fido2LoginPayload: Encodable,
-                      webLanguages: OwnID.CoreSDK.Languages,
-                      shouldIgnoreResponseBody: Bool,
+                      supportedLanguages: OwnID.CoreSDK.Languages,
                       provider: APIProvider = URLSession.shared) {
             self.type = type
             self.url = url
             self.provider = provider
-            self.webLanguages = webLanguages
+            self.supportedLanguages = supportedLanguages
             self.context = context
             self.nonce = nonce
-            self.sessionVerifier = sessionVerifier
             self.fido2LoginPayload = fido2LoginPayload
-            self.origin = origin
-            self.shouldIgnoreResponseBody = shouldIgnoreResponseBody
         }
         
         func perform() -> AnyPublisher<OwnID.CoreSDK.Payload, OwnID.CoreSDK.CoreErrorLogWrapper> {
             let inputPublisher = Just(RequestBody(type: type,
                              context: context,
                              nonce: nonce,
-                             sessionVerifier: sessionVerifier,
                              fido2Payload: fido2LoginPayload))
                 .setFailureType(to: Error.self)
                 .eraseToAnyPublisher()
@@ -90,17 +76,16 @@ extension OwnID.CoreSDK.Auth {
                     request.httpBody = body
                     request.addUserAgent()
                     request.addAPIVersion()
-                    request.add(origin: origin)
-                    request.add(webLanguages: webLanguages)
+                    request.add(supportedLanguages: supportedLanguages)
                     return request
                 }
                 .eraseToAnyPublisher()
             let dataParsingPublisher = OwnID.CoreSDK.EndOfFlowHandler.handle(inputPublisher: inputPublisher.eraseToAnyPublisher(),
                                                                              context: context,
                                                                              nonce: nonce,
-                                                                             requestLanguage: webLanguages.rawValue.first,
+                                                                             requestLanguage: supportedLanguages.rawValue.first,
                                                                              provider: provider,
-                                                                             shouldIgnoreResponseBody: shouldIgnoreResponseBody,
+                                                                             shouldIgnoreResponseBody: true,
                                                                              emptyResponseError: { .authRequestResponseIsEmpty },
                                                                              typeMissingError: { .authRequestTypeIsMissing },
                                                                              contextMismatchError: { .authRequestResponseContextMismatch },

@@ -4,6 +4,7 @@ public protocol LoggerProtocol {
     func add(_ logger: ExtensionLoggerProtocol)
     func remove(_ logger: ExtensionLoggerProtocol)
     func log(_ entry: OwnID.CoreSDK.StandardMetricLogEntry)
+    func sdkConfigured()
 }
 
 public extension String {
@@ -30,6 +31,7 @@ extension OwnID.CoreSDK {
         static let shared = Logger()
         private init() { }
         private var sessionRequestSequenceNumber = 0
+        private var sdkNotConfiguredLogs = [OwnID.CoreSDK.StandardMetricLogEntry]()
         var logLevel: LogLevel = .error
         
         private var extendedLoggers = [ExtensionLoggerProtocol]()
@@ -44,15 +46,29 @@ extension OwnID.CoreSDK {
             }
         }
         
+        func sdkConfigured() {
+            sdkNotConfiguredLogs.filter{ $0.shouldLog(for: self.logLevel.priority) }.forEach { sendToLoggers($0) }
+            sdkNotConfiguredLogs.removeAll()
+        }
+        
         func log(_ entry: StandardMetricLogEntry) {
-            if let level = entry.level, logLevel.rawValue > level.rawValue {
-                return
-            }
             entry.metadata[LoggerValues.correlationIDKey] = LoggerValues.instanceID.uuidString
-            entry.metadata[LoggerValues.sequenceNumber] = String(sessionRequestSequenceNumber)
             entry.version = UserAgentManager.shared.userFacingSDKVersion
             entry.userAgent = UserAgentManager.shared.SDKUserAgent
+            entry.metadata[LoggerValues.sequenceNumber] = String(sessionRequestSequenceNumber)
             sessionRequestSequenceNumber += 1
+            
+            if !entry.isMetric(), entry.shouldLog(for: logLevel.priority) {
+                if !OwnID.CoreSDK.shared.isSDKConfigured {
+                    sdkNotConfiguredLogs.append(entry)
+                }
+                return
+            }
+            
+            sendToLoggers(entry)
+        }
+        
+        private func sendToLoggers(_ entry: OwnID.CoreSDK.StandardMetricLogEntry) {
             extendedLoggers.forEach { logger in
                 logger.log(entry)
             }

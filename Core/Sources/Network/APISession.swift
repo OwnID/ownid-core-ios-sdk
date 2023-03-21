@@ -5,12 +5,9 @@ import Combine
 public protocol APISessionProtocol {
     var context: OwnID.CoreSDK.Context! { get }
     
-    func performInitRequest(type: OwnID.CoreSDK.RequestType,
-                            token: OwnID.CoreSDK.JWTToken?,
-                            origin: String?) -> AnyPublisher<OwnID.CoreSDK.Init.Response, OwnID.CoreSDK.CoreErrorLogWrapper>
-    func performStatusRequest(origin: String?) -> AnyPublisher<OwnID.CoreSDK.Payload, OwnID.CoreSDK.CoreErrorLogWrapper>
-    func performSettingsRequest(loginID: String, origin: String) -> AnyPublisher<OwnID.CoreSDK.Setting.Response, OwnID.CoreSDK.CoreErrorLogWrapper>
-    func performAuthRequest(origin: String, fido2Payload: Encodable, shouldIgnoreResponseBody: Bool) -> AnyPublisher<OwnID.CoreSDK.Payload, OwnID.CoreSDK.CoreErrorLogWrapper>
+    func performInitRequest(requestData: OwnID.CoreSDK.Init.RequestData) -> AnyPublisher<OwnID.CoreSDK.Init.Response, OwnID.CoreSDK.CoreErrorLogWrapper>
+    func performFinalStatusRequest() -> AnyPublisher<OwnID.CoreSDK.Payload, OwnID.CoreSDK.CoreErrorLogWrapper>
+    func performAuthRequest(fido2Payload: Encodable) -> AnyPublisher<OwnID.CoreSDK.Payload, OwnID.CoreSDK.CoreErrorLogWrapper>
 }
 
 public extension OwnID.CoreSDK {
@@ -20,22 +17,22 @@ public extension OwnID.CoreSDK {
         private var nonce: Nonce!
         public var context: Context!
         private var type: OwnID.CoreSDK.RequestType!
-        private let serverURL: ServerURL
+        private let initURL: ServerURL
         private let statusURL: ServerURL
-        private let settingsURL: ServerURL
+        private let finalStatusURL: ServerURL
         private let authURL: ServerURL
-        private let webLanguages: OwnID.CoreSDK.Languages
+        private let supportedLanguages: OwnID.CoreSDK.Languages
         
-        public init(serverURL: ServerURL,
+        public init(initURL: ServerURL,
                     statusURL: ServerURL,
-                    settingsURL: ServerURL,
+                    finalStatusURL: ServerURL,
                     authURL: ServerURL,
-                    webLanguages: OwnID.CoreSDK.Languages) {
-            self.serverURL = serverURL
+                    supportedLanguages: OwnID.CoreSDK.Languages) {
+            self.initURL = initURL
             self.statusURL = statusURL
-            self.settingsURL = settingsURL
+            self.finalStatusURL = finalStatusURL
             self.authURL = authURL
-            self.webLanguages = webLanguages
+            self.supportedLanguages = supportedLanguages
             let sessionVerifierData = Self.random()
             sessionVerifier = sessionVerifierData.toBase64URL()
             let sessionChallengeData = SHA256.hash(data: sessionVerifierData).data
@@ -45,64 +42,45 @@ public extension OwnID.CoreSDK {
 }
 
 extension OwnID.CoreSDK.APISession {
-    public func performInitRequest(type: OwnID.CoreSDK.RequestType,
-                                   token: OwnID.CoreSDK.JWTToken?,
-                                   origin: String?) -> AnyPublisher<OwnID.CoreSDK.Init.Response, OwnID.CoreSDK.CoreErrorLogWrapper> {
-        OwnID.CoreSDK.Init.Request(type: type,
-                                   url: serverURL,
+    public func performInitRequest(requestData: OwnID.CoreSDK.Init.RequestData) -> AnyPublisher<OwnID.CoreSDK.Init.Response, OwnID.CoreSDK.CoreErrorLogWrapper> {
+        OwnID.CoreSDK.Init.Request(requestData: requestData,
+                                   url: initURL,
                                    sessionChallenge: sessionChallenge,
-                                   token: token,
-                                   origin: origin,
-                                   webLanguages: webLanguages)
-            .perform()
-            .map { [unowned self] response in
-                nonce = response.nonce
-                context = response.context
-                self.type = type
-                OwnID.CoreSDK.logger.logCore(.entry(context: context, message: "\(OwnID.CoreSDK.Init.Request.self): Finished", Self.self))
-                return response
-            }
-            .eraseToAnyPublisher()
-    }
-    
-    public func performSettingsRequest(loginID: String, origin: String) -> AnyPublisher<OwnID.CoreSDK.Setting.Response, OwnID.CoreSDK.CoreErrorLogWrapper> {
-        OwnID.CoreSDK.Setting.Request(url: settingsURL,
-                                      loginID: loginID,
-                                      origin: origin,
-                                      context: context,
-                                      nonce: nonce,
-                                      webLanguages: webLanguages)
+                                   supportedLanguages: supportedLanguages)
         .perform()
+        .map { [unowned self] response in
+            nonce = response.nonce
+            context = response.context
+            self.type = requestData.type
+            OwnID.CoreSDK.logger.logCore(.entry(context: context, message: "\(OwnID.CoreSDK.Init.Request.self): Finished", Self.self))
+            return response
+        }
         .eraseToAnyPublisher()
     }
     
-    public func performAuthRequest(origin: String, fido2Payload: Encodable, shouldIgnoreResponseBody: Bool) -> AnyPublisher<OwnID.CoreSDK.Payload, OwnID.CoreSDK.CoreErrorLogWrapper> {
+    public func performAuthRequest(fido2Payload: Encodable) -> AnyPublisher<OwnID.CoreSDK.Payload, OwnID.CoreSDK.CoreErrorLogWrapper> {
         OwnID.CoreSDK.Auth.Request(type: type,
                                    url: authURL,
                                    context: context,
                                    nonce: nonce,
-                                   origin: origin,
-                                   sessionVerifier: sessionVerifier,
                                    fido2LoginPayload: fido2Payload,
-                                   webLanguages: webLanguages,
-                                   shouldIgnoreResponseBody: shouldIgnoreResponseBody)
+                                   supportedLanguages: supportedLanguages)
         .perform()
         .eraseToAnyPublisher()
     }
     
-    public func performStatusRequest(origin: String?) -> AnyPublisher<OwnID.CoreSDK.Payload, OwnID.CoreSDK.CoreErrorLogWrapper> {
-        OwnID.CoreSDK.Status.Request(url: statusURL,
+    public func performFinalStatusRequest() -> AnyPublisher<OwnID.CoreSDK.Payload, OwnID.CoreSDK.CoreErrorLogWrapper> {
+        OwnID.CoreSDK.Status.Request(url: finalStatusURL,
                                      context: context,
                                      nonce: nonce,
                                      sessionVerifier: sessionVerifier,
                                      type: type,
-                                     origin: origin,
-                                     webLanguages: webLanguages)
-            .perform()
-            .handleEvents(receiveOutput: { payload in
-                OwnID.CoreSDK.logger.logCore(.entry(context: payload.context, message: "\(OwnID.CoreSDK.Status.Request.self): Finished", Self.self))
-            })
-            .eraseToAnyPublisher()
+                                     supportedLanguages: supportedLanguages)
+        .perform()
+        .handleEvents(receiveOutput: { payload in
+            OwnID.CoreSDK.logger.logCore(.entry(context: payload.context, message: "\(OwnID.CoreSDK.Status.Request.self): Finished", Self.self))
+        })
+        .eraseToAnyPublisher()
     }
 }
 

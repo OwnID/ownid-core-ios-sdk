@@ -7,18 +7,14 @@ public extension OwnID.FlowsSDK {
         }
         
         private let id = UUID()
-        @Binding private var usersEmail: String
         public var visualConfig: OwnID.UISDK.VisualLookConfig
         
         @ObservedObject public var viewModel: ViewModel
         
         public init(viewModel: ViewModel,
-                    usersEmail: Binding<String>,
                     visualConfig: OwnID.UISDK.VisualLookConfig) {
             self.viewModel = viewModel
-            self._usersEmail = usersEmail
             self.visualConfig = visualConfig
-            self.viewModel.getEmail = { usersEmail.wrappedValue }
             self.viewModel.currentMetadata = visualConfig.convertToCurrentMetric()
         }
         

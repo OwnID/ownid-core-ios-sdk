@@ -45,12 +45,12 @@ extension OwnID.UISDK {
                 let textY = bounds.minY
                 textSubview.place(at: .init(x: textX, y: textY), proposal: .unspecified)
                 
-            case .left:
+            case .leading:
                 let textX = bounds.minX - textSize.width
                 let textY = bounds.origin.y
                 textSubview.place(at: .init(x: textX, y: textY), proposal: .unspecified)
                 
-            case .right:
+            case .trailing:
                 let textX = bounds.origin.x
                 let textY = bounds.origin.y
                 textSubview.place(at: .init(x: textX, y: textY), proposal: .unspecified)
@@ -62,21 +62,21 @@ extension OwnID.UISDK {
             switch tooltipVisualLookConfig.tooltipPosition {
             case .top:
                 let x = bounds.minX - (beakSize.width / 2) // puts beak top pin directly in the center of the start point
-                let y = bounds.maxY - (BeakView.bottomlineWidth / 2)
+                let y = bounds.maxY
                 beakSubview.place(at: .init(x: x, y: y), proposal: .unspecified)
                 
             case .bottom:
                 let x = bounds.minX - (beakSize.width / 2) // puts beak top pin directly in the center of the start point
-                let y = bounds.minY - beakSize.height + (BeakView.bottomlineWidth / 1.15)
+                let y = bounds.minY - beakSize.height
                 beakSubview.place(at: .init(x: x, y: y), proposal: .unspecified)
                 
-            case .left:
-                let x = bounds.minX - (BeakView.bottomlineWidth * 3)
+            case .leading:
+                let x = bounds.minX - (BeakView.bottomlineWidth * 2.2)
                 let y = bounds.midY - (beakSize.height / 2)
                 beakSubview.place(at: .init(x: x, y: y), proposal: .unspecified)
                 
-            case .right:
-                let x = bounds.minX - beakSize.width + (BeakView.bottomlineWidth * 3)
+            case .trailing:
+                let x = bounds.minX - beakSize.width + (BeakView.bottomlineWidth * 2.2)
                 let y = bounds.midY - (beakSize.height / 2)
                 beakSubview.place(at: .init(x: x, y: y), proposal: .unspecified)
             }

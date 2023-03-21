@@ -47,7 +47,10 @@ public extension OwnID.FlowsSDK.RegisterView {
         @Published private(set) var state = State.initial
         @Published public var shouldShowTooltip = false
         
-        /// Checks email if it is valid for tooltip display
+        /// Checks email if it is valid for tooltip display. On each change of email,
+        /// this closure determines if tooltop should be shown. To change this behaviour,
+        /// provide your closure. To disable, provide empty closure:
+        /// `{ _ in false }`
         public var shouldShowTooltipEmailProcessingClosure: ((String?) -> Bool) = { emailString in
             guard let emailString else { return false }
             let emailObject = OwnID.CoreSDK.Email(rawValue: emailString)
@@ -60,12 +63,11 @@ public extension OwnID.FlowsSDK.RegisterView {
         private let registrationPerformer: RegistrationPerformer
         private var registrationData = RegistrationData()
         private let loginPerformer: LoginPerformer
+        private var email = ""
         var coreViewModel: OwnID.CoreSDK.CoreViewModel!
         var currentMetadata: OwnID.CoreSDK.MetricLogEntry.CurrentMetricInformation?
         
         let sdkConfigurationName: String
-        let webLanguages: OwnID.CoreSDK.Languages
-        public var getEmail: (() -> String)?
         
         public var eventPublisher: OwnID.RegistrationPublisher {
             resultPublisher.eraseToAnyPublisher()
@@ -74,11 +76,18 @@ public extension OwnID.FlowsSDK.RegisterView {
         public init(registrationPerformer: RegistrationPerformer,
                     loginPerformer: LoginPerformer,
                     sdkConfigurationName: String,
-                    webLanguages: OwnID.CoreSDK.Languages) {
+                    emailPublisher: OwnID.CoreSDK.EmailPublisher) {
             self.sdkConfigurationName = sdkConfigurationName
             self.registrationPerformer = registrationPerformer
             self.loginPerformer = loginPerformer
-            self.webLanguages = webLanguages
+            emailPublisher.assign(to: \.email, on: self).store(in: &bag)
+            emailPublisher
+                .removeDuplicates()
+                .debounce(for: .seconds(0.77), scheduler: DispatchQueue.main)
+                .sink { [unowned self] userEmail in
+                shouldShowTooltip = shouldShowTooltipEmailProcessingClosure(userEmail)
+            }
+            .store(in: &bag)
             Task {
                 // Delay the task by 1 second
                 try? await Task.sleep(nanoseconds: 1_000_000_000)
@@ -93,8 +102,7 @@ public extension OwnID.FlowsSDK.RegisterView {
             OwnID.CoreSDK.logger.logAnalytic(.registerTrackMetric(action: .loaded, context: registrationData.payload?.context))
         }
         
-        public func register(with email: String,
-                             registerParameters: RegisterParameters = EmptyRegisterParameters()) {
+        public func register(registerParameters: RegisterParameters = EmptyRegisterParameters()) {
             if email.isEmpty {
                 handle(.coreLog(entry: .errorEntry(context: registrationData.payload?.context, Self.self), error: .plugin(underlying: OwnID.FlowsSDK.RegisterError.emailIsMissing)))
                 return
@@ -131,7 +139,7 @@ public extension OwnID.FlowsSDK.RegisterView {
             if isResettingToInitialState {
                 state = .initial
             }
-            coreViewModel.cancel()
+            coreViewModel?.cancel()
             coreViewModelBag.forEach { $0.cancel() }
             coreViewModelBag.removeAll()
             coreViewModel = .none
@@ -154,9 +162,7 @@ public extension OwnID.FlowsSDK.RegisterView {
                 return
             }
             let email = OwnID.CoreSDK.Email(rawValue: usersEmail)
-            let coreViewModel = OwnID.CoreSDK.shared.createCoreViewModelForRegister(email: email,
-                                                                                sdkConfigurationName: sdkConfigurationName,
-                                                                                webLanguages: webLanguages)
+            let coreViewModel = OwnID.CoreSDK.shared.createCoreViewModelForRegister(email: email, sdkConfigurationName: sdkConfigurationName)
             self.coreViewModel = coreViewModel
             subscribe(to: coreViewModel.eventPublisher, persistingEmail: email)
             state = .coreVM
@@ -211,8 +217,8 @@ public extension OwnID.FlowsSDK.RegisterView {
             buttonEventPublisher
                 .sink { _ in
                 } receiveValue: { [unowned self] _ in
-                    OwnID.CoreSDK.logger.logAnalytic(.registerClickMetric(action: .click, context: registrationData.payload?.context))
-                        skipPasswordTapped(usersEmail: obtainEmail())
+                    OwnID.CoreSDK.logger.logAnalytic(.registerClickMetric(action: .click, context: registrationData.payload?.context, hasLoginId: !email.isEmpty))
+                    skipPasswordTapped(usersEmail: email)
                 }
                 .store(in: &bag)
         }
@@ -220,13 +226,9 @@ public extension OwnID.FlowsSDK.RegisterView {
 }
 
 private extension OwnID.FlowsSDK.RegisterView.ViewModel {
-    func obtainEmail() -> String {
-        let email = getEmail?() ?? ""
-        return email
-    }
     
     func processLogin(payload: OwnID.CoreSDK.Payload) {
-        let loginPerformerPublisher = loginPerformer.login(payload: payload, email: obtainEmail())
+        let loginPerformerPublisher = loginPerformer.login(payload: payload, email: email)
         loginPerformerPublisher
             .sink { [unowned self] completion in
                 if case .failure(let error) = completion {

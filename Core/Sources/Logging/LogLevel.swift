@@ -1,28 +1,37 @@
 import Foundation
 
-extension OwnID.CoreSDK {
-    public enum LogLevel: Int, Encodable {
-        /// Logs that contain the most detailed messages. These messages may contain sensitive application data.
-        /// These messages are disabled by default and should never be enabled in a production environment.
-        case trace = 0
-        
+public extension OwnID.CoreSDK {
+    enum LogLevel: String, Codable {
         /// Logs that are used for interactive investigation during development.  These logs should primarily contain
         /// information useful for debugging and have no long-term value.
-        case debug = 1
+        case debug = "Debug"
         
         /// Logs that track the general flow of the application. These logs should have long-term value.
-        case information = 2
+        case information = "Information"
         
         /// Logs that highlight an abnormal or unexpected event in the application flow, but do not otherwise cause the
         /// application execution to stop.
-        case warning = 3
+        case warning = "Warning"
         
         /// Logs that highlight when the current flow of execution is stopped due to a failure. These should indicate a
         /// failure in the current activity, not an application-wide failure.
-        case error = 4
+        case error = "Error"
         
-        /// Logs that describe an unrecoverable application or system crash, or a catastrophic failure that requires
-        /// immediate attention.
-        case critical = 5
+        var priority: Int {
+            switch self {
+            case .debug:
+                return 0
+            case .information:
+                return 1
+            case .warning:
+                return 2
+            case .error:
+                return 3
+            }
+        }
+        
+        func shouldLog(for priority: Int) -> Bool {
+            priority < self.priority
+        }
     }
 }

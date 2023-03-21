@@ -34,8 +34,8 @@ extension OwnID.UISDK {
         init(viewState: Binding<ButtonState>,
              buttonViewConfig: ButtonViewConfig,
              action: @escaping () -> Void,
-             content: @escaping () -> any View) {
-            let localizationClosure = { "skipPassword".ownIDLocalized() }
+             content: @autoclosure @escaping () -> any View) {
+            let localizationClosure = { OwnID.CoreSDK.TranslationsSDK.TranslationKey.skipPassword.localized() }
             self._viewState = viewState
             self.buttonViewConfig = buttonViewConfig
             self.action = action
@@ -44,11 +44,8 @@ extension OwnID.UISDK {
             self.translationText = localizationClosure()
         }
         
-#warning("disabled translations")
         var body: some View {
-            Button(action: {
-                action()
-            }, label: {
+            Button(action: action, label: {
                 EmptyView()
             })
             .buttonStyle(buttonStyle())
@@ -63,10 +60,6 @@ extension OwnID.UISDK {
             view
                 .background(backgroundRectangle(color: buttonViewConfig.backgroundColor))
                 .border(color: buttonViewConfig.borderColor)
-                .shadow(color: shouldDisplayHighlighted ? buttonViewConfig.shadowColor : .clear,
-                        radius: cornerRadiusValue,
-                        x: 0,
-                        y: cornerRadiusValue / 2)
         }
         
         @ViewBuilder

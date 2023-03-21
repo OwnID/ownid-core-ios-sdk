@@ -31,25 +31,22 @@ extension OwnID.CoreSDK.Status {
         let provider: APIProvider
         let sessionVerifier: OwnID.CoreSDK.SessionVerifier
         let type: OwnID.CoreSDK.RequestType
-        let webLanguages: OwnID.CoreSDK.Languages
-        let origin: String?
+        let supportedLanguages: OwnID.CoreSDK.Languages
         
         internal init(url: OwnID.CoreSDK.ServerURL,
                       context: OwnID.CoreSDK.Context,
                       nonce: OwnID.CoreSDK.Nonce,
                       sessionVerifier: OwnID.CoreSDK.SessionVerifier,
                       type: OwnID.CoreSDK.RequestType,
-                      origin: String?,
-                      webLanguages: OwnID.CoreSDK.Languages,
+                      supportedLanguages: OwnID.CoreSDK.Languages,
                       provider: APIProvider = URLSession.shared) {
             self.context = context
             self.nonce = nonce
             self.url = url
-            self.origin = origin
             self.sessionVerifier = sessionVerifier
             self.provider = provider
             self.type = type
-            self.webLanguages = webLanguages
+            self.supportedLanguages = supportedLanguages
         }
         
         func perform() -> AnyPublisher<OwnID.CoreSDK.Payload, OwnID.CoreSDK.CoreErrorLogWrapper> {
@@ -64,16 +61,14 @@ extension OwnID.CoreSDK.Status {
                     request.httpBody = body
                     request.addUserAgent()
                     request.addAPIVersion()
-                    if let origin {
-                        request.add(origin: origin)
-                    }
+                    request.add(supportedLanguages: supportedLanguages)
                     return request
                 }
                 .eraseToAnyPublisher()
             let dataParsingPublisher = OwnID.CoreSDK.EndOfFlowHandler.handle(inputPublisher: input.eraseToAnyPublisher(),
                                                                              context: context,
                                                                              nonce: nonce,
-                                                                             requestLanguage: webLanguages.rawValue.first,
+                                                                             requestLanguage: supportedLanguages.rawValue.first,
                                                                              provider: provider,
                                                                              shouldIgnoreResponseBody: false,
                                                                              emptyResponseError: { .statusRequestResponseIsEmpty },

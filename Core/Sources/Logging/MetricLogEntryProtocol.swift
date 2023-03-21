@@ -19,7 +19,7 @@ public protocol MetricLogEntryProtocol: Encodable {
     
     var sourceTimestamp: String { get set }
     
-    var metadata: [String: String?] { get set }
+    var metadata: [String: String] { get set }
 }
 
 extension OwnID.CoreSDK {
@@ -31,7 +31,7 @@ extension OwnID.CoreSDK {
                     codeInitiator: String,
                     sdkName: String,
                     version: String,
-                    metadata: [String : String?] = [String : String]()) {
+                    metadata: [String : String] = [String : String]()) {
             self.context = context
             self.requestPath = requestPath
             self.level = level
@@ -40,7 +40,7 @@ extension OwnID.CoreSDK {
             self.metadata = metadata
         }
         
-        public var appURL: String? = OwnID.CoreSDK.shared.serverURL(for: OwnID.CoreSDK.shared.configurationName).deletingLastPathComponent().host
+        public var appURL: String? = OwnID.CoreSDK.shared.serverConfigurationURL?.absoluteString
         
         public var context: String
         
@@ -60,12 +60,36 @@ extension OwnID.CoreSDK {
         
         public var sourceTimestamp = String(Int((Date().timeIntervalSince1970 * 1000.0).rounded()))
         
-        public var metadata = [String : String?]()
+        public var metadata = [String : String]()
         
         public var type: EventType?
         
         public var action: String?
         
         public var category: EventCategory?
+        
+        func isMetric() -> Bool { false }
+        
+        func shouldLog(for priority: Int) -> Bool {
+            if isMetric() { return true }
+            let shouldLog = level?.shouldLog(for: priority) ?? false
+            return shouldLog
+        }
+    }
+}
+
+extension OwnID.CoreSDK.StandardMetricLogEntry: CustomDebugStringConvertible {
+    public var debugDescription: String {
+        """
+        appURL: \(appURL ?? "")
+        context: \(context)
+        message: \(message)
+        codeInitiator: \(codeInitiator)
+        userAgent: \(userAgent)
+        version: \(version)
+        metadata: \(metadata)
+        type: \(type ?? .click)
+        action: \(action ?? "")
+    """
     }
 }

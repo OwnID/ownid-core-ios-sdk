@@ -2,63 +2,94 @@ import SwiftUI
 
 public extension OwnID.UISDK {
     struct LoaderViewConfig: Equatable {
-        public init(spinnerColor: Color = OwnID.Colors.spinnerColor,
-                    spinnerBackgroundColor: Color = OwnID.Colors.spinnerBackgroundColor,
-                    isSpinnerEnabled: Bool = true) {
-            self.spinnerColor = spinnerColor
-            self.spinnerBackgroundColor = spinnerBackgroundColor
-            self.isSpinnerEnabled = isSpinnerEnabled
+        public init(color: Color = OwnID.Colors.spinnerColor,
+                    backgroundColor: Color = OwnID.Colors.spinnerBackgroundColor,
+                    isEnabled: Bool = true) {
+            self.color = color
+            self.backgroundColor = backgroundColor
+            self.isEnabled = isEnabled
         }
         
-        public var spinnerColor: Color
-        public var spinnerBackgroundColor: Color
-        public var isSpinnerEnabled: Bool
+        public var color: Color
+        public var backgroundColor: Color
+        public var isEnabled: Bool
     }
     
-    enum ButtonVariant: String {
+    enum IconButtonVariant: String {
         case fingerprint = "touchidImage"
         case faceId = "faceidImage"
     }
     
+    enum ButtonVariant: Equatable {
+        case iconButton(IconButtonVariant)
+        case authButton
+    }
+    
+    struct AuthButtonViewConfig: Equatable {
+        public init(textSize: CGFloat = 14.0,
+                    height: CGFloat = 26.0,
+                    imageHeight: CGFloat = 24.0,
+                    lineHeight: CGFloat = 24.0,
+                    textColor: Color = .white,
+                    iconColor: Color = .white,
+                    backgroundColor: Color = OwnID.Colors.blue) {
+            self.textSize = textSize
+            self.lineHeight = lineHeight
+            self.textColor = textColor
+            self.iconColor = iconColor
+            self.backgroundColor = backgroundColor
+            self.height = height
+            self.imageHeight = imageHeight
+        }
+        
+        public var iconColor: Color
+        public var textSize: CGFloat
+        public var height: CGFloat
+        public var imageHeight: CGFloat
+        public var lineHeight: CGFloat
+        public var textColor: Color
+        public var backgroundColor: Color
+    }
+    
     enum WidgetPosition: String {
-        case start
-        case end
+        case leading
+        case trailing
     }
     
     struct OrViewConfig: Equatable {
-        public init(isOrViewEnabled: Bool = true,
-                    orTextSize: CGFloat = 16.0,
-                    orLineHeight: CGFloat = 24.0,
-                    orTextColor: Color = OwnID.Colors.textGrey) {
-            self.isOrViewEnabled = isOrViewEnabled
-            self.orTextSize = orTextSize
-            self.orLineHeight = orLineHeight
-            self.orTextColor = orTextColor
+        public init(isEnabled: Bool = true,
+                    textSize: CGFloat = 16.0,
+                    lineHeight: CGFloat = 24.0,
+                    textColor: Color = OwnID.Colors.textGrey) {
+            self.isEnabled = isEnabled
+            self.textSize = textSize
+            self.lineHeight = lineHeight
+            self.textColor = textColor
         }
         
-        public var isOrViewEnabled: Bool
-        public var orTextSize: CGFloat
-        public var orLineHeight: CGFloat
-        public var orTextColor: Color
+        public var isEnabled: Bool
+        public var textSize: CGFloat
+        public var lineHeight: CGFloat
+        public var textColor: Color
     }
     
     struct ButtonViewConfig: Equatable {
         public init(iconColor: Color = OwnID.Colors.biometricsButtonImageColor,
+                    iconHeight: CGFloat = 28.0,
                     backgroundColor: Color = OwnID.Colors.biometricsButtonBackground,
                     borderColor: Color = OwnID.Colors.biometricsButtonBorder,
-                    shadowColor: Color = OwnID.Colors.biometricsButtonBorder.opacity(0.7),
-                    variant: ButtonVariant = .fingerprint) {
+                    variant: ButtonVariant = .iconButton(.faceId)) {
             self.iconColor = iconColor
+            self.iconHeight = iconHeight
             self.backgroundColor = backgroundColor
             self.borderColor = borderColor
-            self.shadowColor = shadowColor
             self.variant = variant
         }
         
         public var iconColor: Color
+        public var iconHeight: CGFloat
         public var backgroundColor: Color
         public var borderColor: Color
-        public var shadowColor: Color
         public var variant: ButtonVariant
     }
     
@@ -66,9 +97,11 @@ public extension OwnID.UISDK {
         public init(buttonViewConfig: ButtonViewConfig = ButtonViewConfig(),
                     orViewConfig: OrViewConfig = OrViewConfig(),
                     tooltipVisualLookConfig: TooltipVisualLookConfig = TooltipVisualLookConfig(),
-                    widgetPosition: WidgetPosition = .start,
-                    loaderViewConfig: LoaderViewConfig = LoaderViewConfig()) {
+                    widgetPosition: WidgetPosition = .leading,
+                    loaderViewConfig: LoaderViewConfig = LoaderViewConfig(),
+                    authButtonConfig: AuthButtonViewConfig = AuthButtonViewConfig()) {
             self.buttonViewConfig = buttonViewConfig
+            self.authButtonConfig = authButtonConfig
             self.orViewConfig = orViewConfig
             self.tooltipVisualLookConfig = tooltipVisualLookConfig
             self.widgetPosition = widgetPosition
@@ -76,6 +109,7 @@ public extension OwnID.UISDK {
         }
         
         public var buttonViewConfig: ButtonViewConfig
+        public var authButtonConfig: AuthButtonViewConfig
         public var orViewConfig: OrViewConfig
         public var tooltipVisualLookConfig: TooltipVisualLookConfig
         public var widgetPosition: WidgetPosition
@@ -87,18 +121,25 @@ extension OwnID.UISDK.VisualLookConfig {
     func convertToCurrentMetric() -> OwnID.CoreSDK.MetricLogEntry.CurrentMetricInformation {
         var current = OwnID.CoreSDK.MetricLogEntry.CurrentMetricInformation()
         switch self.widgetPosition {
-        case .start:
+        case .leading:
             current.widgetPositionTypeMetric = .start
             
-        case .end:
+        case .trailing:
             current.widgetPositionTypeMetric = .end
         }
+        
         switch self.buttonViewConfig.variant {
-        case .fingerprint:
-            current.widgetTypeMetric = .fingerprint
+        case .iconButton(let iconType):
+            switch iconType {
+            case .fingerprint:
+                current.widgetTypeMetric = .fingerprint
+                
+            case .faceId:
+                current.widgetTypeMetric = .faceid
+            }
             
-        case .faceId:
-            current.widgetTypeMetric = .faceid
+        case .authButton:
+            current.widgetTypeMetric = .auth
         }
         return current
     }

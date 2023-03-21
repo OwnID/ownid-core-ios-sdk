@@ -6,11 +6,23 @@ public extension OwnID.CoreSDK {
 }
 
 public extension OwnID.CoreSDK.Init {
+    
+    struct RequestData {
+        let loginId: String?
+        let type: OwnID.CoreSDK.RequestType
+        let supportsFido2: Bool
+    }
+    
     struct RequestBody: Encodable {
         let sessionChallenge: OwnID.CoreSDK.SessionChallenge
         let type: OwnID.CoreSDK.RequestType
-        let data: String?
-        let originUrl: String?
+        let loginId: String?
+        let supportsFido2: Bool
+        let deviceInfo = ["os": "ios", "osVersion": OwnID.CoreSDK.UserAgentManager.shared.systemVersion]
+        
+        static func create(sessionChallenge: OwnID.CoreSDK.SessionChallenge, data: RequestData) -> Self {
+            Self(sessionChallenge: sessionChallenge, type: data.type, loginId: data.loginId, supportsFido2: data.supportsFido2)
+        }
     }
 }
 
@@ -24,34 +36,25 @@ public extension OwnID.CoreSDK.Init {
 
 extension OwnID.CoreSDK.Init {
     class Request {
-        let type: OwnID.CoreSDK.RequestType
+        let requestData: RequestData
         let url: OwnID.CoreSDK.ServerURL
         let provider: APIProvider
         let sessionChallenge: OwnID.CoreSDK.SessionChallenge
-        let token: OwnID.CoreSDK.JWTToken?
-        let webLanguages: OwnID.CoreSDK.Languages
-        let origin: String?
+        let supportedLanguages: OwnID.CoreSDK.Languages
         
-        internal init(type: OwnID.CoreSDK.RequestType,
+        internal init(requestData: RequestData,
                       url: OwnID.CoreSDK.ServerURL,
                       sessionChallenge: OwnID.CoreSDK.SessionChallenge,
-                      token: OwnID.CoreSDK.JWTToken?,
-                      origin: String?,
-                      webLanguages: OwnID.CoreSDK.Languages,
+                      supportedLanguages: OwnID.CoreSDK.Languages,
                       provider: APIProvider = URLSession.shared) {
-            self.type = type
+            self.requestData = requestData
             self.url = url
             self.sessionChallenge = sessionChallenge
-            self.origin = origin
             self.provider = provider
-            self.token = token
-            self.webLanguages = webLanguages
+            self.supportedLanguages = supportedLanguages
         }
         func perform() -> AnyPublisher<Response, OwnID.CoreSDK.CoreErrorLogWrapper> {
-            Just(RequestBody(sessionChallenge: sessionChallenge,
-                             type: type,
-                             data: token?.jwtString,
-                             originUrl: origin?.extendHttpsIfNeeded()))
+            Just(RequestBody.create(sessionChallenge: sessionChallenge, data: requestData))
                 .setFailureType(to: Error.self)
                 .eraseToAnyPublisher()
                 .encode(encoder: JSONEncoder())
@@ -62,10 +65,7 @@ extension OwnID.CoreSDK.Init {
                     request.httpBody = body
                     request.addUserAgent()
                     request.addAPIVersion()
-                    if let origin {
-                        request.add(origin: origin)
-                    }
-                    request.add(webLanguages: webLanguages)
+                    request.add(supportedLanguages: supportedLanguages)
                     return request
                 }
                 .eraseToAnyPublisher()

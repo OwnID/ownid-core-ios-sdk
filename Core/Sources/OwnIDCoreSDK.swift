@@ -3,25 +3,31 @@ import Combine
 
 public extension OwnID.CoreSDK {
     static let sdkName = String(describing: OwnID.CoreSDK.self)
-    static let version = "2.1.1"
+    static let version = "2.2.0"
     static let APIVersion = "1"
 }
 
-/// OwnID class represents core part of SDK. It performs initialization and creates views. It reads OwnIDConfiguration from disc, parses it and loads to memory for later usage. It is a singleton so the URL returned from browser can be linked to corresponding view.
+extension OwnID.CoreSDK {
+    enum ConfigurationLoadingEvent {
+        case loaded(LocalConfiguration)
+        case error
+    }
+}
+
+/// OwnID class represents core part of SDK. It performs initialization and creates views. It reads OwnIDConfiguration from disk, parses it and loads to memory for later usage. It is a singleton, so the URL returned from outside can be linked to corresponding flow.
 public extension OwnID {
     
-    static func startDebugConsoleLogger() {
-        OwnID.CoreSDK.logger.add(OwnID.CoreSDK.ConsoleLogger())
-        OwnID.CoreSDK.shared.enableLogging()
+    /// Turns on logs to console app & console
+    static func startDebugConsoleLogger(logLevel: OwnID.CoreSDK.LogLevel = .error) {
+        OwnID.CoreSDK.logger.add(OwnID.CoreSDK.OSLogger())
+        OwnID.CoreSDK.shared.enableLogging(logLevel: logLevel)
     }
     
     final class CoreSDK {
-        public var serverURL: ServerURL {
-            getConfiguration(for: configurationName).ownIDServerURL
-        }
+        public var serverConfigurationURL: ServerURL? { store.value.firstConfiguration?.ownIDServerConfigurationURL }
         
-        func enableLogging() {
-            store.send(.startDebugLogger)
+        func enableLogging(logLevel: OwnID.CoreSDK.LogLevel) {
+            store.send(.startDebugLogger(logLevel: logLevel))
         }
         
         public static let shared = CoreSDK()
@@ -32,11 +38,11 @@ public extension OwnID {
         @ObservedObject var store: Store<SDKState, SDKAction>
         
         private let urlPublisher = PassthroughSubject<Void, OwnID.CoreSDK.CoreErrorLogWrapper>()
-        private let configurationLoadedPublisher = PassthroughSubject<ClientConfiguration, Never>()
+        private let configurationLoadingEventPublisher = PassthroughSubject<ConfigurationLoadingEvent, Never>()
         
         private init() {
             let store = Store(
-                initialValue: SDKState(configurationLoadedPublisher: configurationLoadedPublisher),
+                initialValue: SDKState(configurationLoadingEventPublisher: configurationLoadingEventPublisher),
                 reducer: with(
                     OwnID.CoreSDK.coreReducer,
                     logging
@@ -47,93 +53,73 @@ public extension OwnID {
         
         public var isSDKConfigured: Bool { !store.value.configurations.isEmpty }
         
-        var configurationName: String { store.value.configurationName }
-        
         public static var logger: LoggerProtocol { Logger.shared }
         
-        public func configureForTests() {
-            store.send(.configureForTests)
-        }
+        public func configureForTests() { store.send(.configureForTests) }
         
-        public func configure(userFacingSDK: SDKInformation, underlyingSDKs: [SDKInformation]) {
-            store.send(.configureFromDefaultConfiguration(userFacingSDK: userFacingSDK, underlyingSDKs: underlyingSDKs))
+        public func requestConfiguration() { store.send(.fetchServerConfiguration) }
+        
+        public func configure(userFacingSDK: SDKInformation,
+                              underlyingSDKs: [SDKInformation],
+                              supportedLanguages: OwnID.CoreSDK.Languages) {
+            store.send(.configureFromDefaultConfiguration(userFacingSDK: userFacingSDK,
+                                                          underlyingSDKs: underlyingSDKs,
+                                                          supportedLanguages: supportedLanguages))
         }
         
         func subscribeForURL(coreViewModel: CoreViewModel) {
             coreViewModel.subscribeToURL(publisher: urlPublisher.eraseToAnyPublisher())
         }
         
-        public func configure(appID: String,
-                              redirectionURL: String,
+        public func configure(appID: OwnID.CoreSDK.AppID,
+                              redirectionURL: RedirectionURLString,
                               userFacingSDK: SDKInformation,
                               underlyingSDKs: [SDKInformation],
-                              environment: String? = .none) {
+                              environment: String? = .none,
+                              supportedLanguages: OwnID.CoreSDK.Languages) {
             store.send(.configure(appID: appID,
                                   redirectionURL: redirectionURL,
                                   userFacingSDK: userFacingSDK,
                                   underlyingSDKs: underlyingSDKs,
                                   isTestingEnvironment: false,
-                                  environment: environment))
+                                  environment: environment,
+                                  supportedLanguages: supportedLanguages))
         }
         
-        public func configureFor(plistUrl: URL, userFacingSDK: SDKInformation, underlyingSDKs: [SDKInformation]) {
-            store.send(.configureFrom(plistUrl: plistUrl, userFacingSDK: userFacingSDK, underlyingSDKs: underlyingSDKs))
+        public func configureFor(plistUrl: URL,
+                                 userFacingSDK: SDKInformation,
+                                 underlyingSDKs: [SDKInformation],
+                                 supportedLanguages: OwnID.CoreSDK.Languages) {
+            store.send(.configureFrom(plistUrl: plistUrl,
+                                      userFacingSDK: userFacingSDK,
+                                      underlyingSDKs: underlyingSDKs,
+                                      supportedLanguages: supportedLanguages))
         }
         
-        func getConfiguration(for sdkConfigurationName: String) -> Configuration {
-            store.value.getConfiguration(for: sdkConfigurationName)
-        }
-        
-        /// Starts registration flow
-        /// - Parameters:
-        ///   - email: Used in plugin SDKs to find identity in web app FIDO2 storage and to display it for login
-        ///   - sdkConfigurationName: Name of current running SDK
-        ///   - webLanguages: Languages for web view. List of well-formed [IETF BCP 47 language tag](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Accept-Language) .
-        /// - Returns: View that is presented in sheet
         func createCoreViewModelForRegister(email: Email? = .none,
-                                                   sdkConfigurationName: String,
-                                                   webLanguages: OwnID.CoreSDK.Languages) -> CoreViewModel {
-            let session = apiSession(configurationName: sdkConfigurationName, webLanguages: webLanguages)
+                                            sdkConfigurationName: String) -> CoreViewModel {
             let viewModel = CoreViewModel(type: .register,
                                           email: email,
-                                          token: .none,
-                                          session: session,
+                                          supportedLanguages: store.value.supportedLanguages,
                                           sdkConfigurationName: sdkConfigurationName,
                                           isLoggingEnabled: store.value.isLoggingEnabled,
-                                          clientConfiguration: store.value.clientConfiguration)
+                                          clientConfiguration: store.value.getOptionalConfiguration(for: sdkConfigurationName))
             viewModel.subscribeToURL(publisher: urlPublisher.eraseToAnyPublisher())
-            viewModel.subscribeToConfiguration(publisher: configurationLoadedPublisher.eraseToAnyPublisher())
+            viewModel.subscribeToConfiguration(publisher: configurationLoadingEventPublisher.eraseToAnyPublisher())
             return viewModel
         }
         
-        /// Starts login flow
-        /// - Parameters:
-        ///   - email: Used in plugin SDKs to find identity in web app FIDO2 storage and to display it for login
-        ///   - sdkConfigurationName: Name of current running SDK
-        ///   - webLanguages: Languages for web view. List of well-formed [IETF BCP 47 language tag](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Accept-Language) .
-        /// - Returns: View that is presented in sheet
         func createCoreViewModelForLogIn(email: Email? = .none,
-                                                sdkConfigurationName: String,
-                                                webLanguages: OwnID.CoreSDK.Languages) -> CoreViewModel {
-            let session = apiSession(configurationName: sdkConfigurationName, webLanguages: webLanguages)
+                                         sdkConfigurationName: String) -> CoreViewModel {
             let viewModel = CoreViewModel(type: .login,
                                           email: email,
-                                          token: .none,
-                                          session: session,
+                                          supportedLanguages: store.value.supportedLanguages,
                                           sdkConfigurationName: sdkConfigurationName,
                                           isLoggingEnabled: store.value.isLoggingEnabled,
-                                          clientConfiguration: store.value.clientConfiguration)
+                                          clientConfiguration: store.value.getOptionalConfiguration(for: sdkConfigurationName))
             viewModel.subscribeToURL(publisher: urlPublisher.eraseToAnyPublisher())
-            viewModel.subscribeToConfiguration(publisher: configurationLoadedPublisher.eraseToAnyPublisher())
+            viewModel.subscribeToConfiguration(publisher: configurationLoadingEventPublisher.eraseToAnyPublisher())
             return viewModel
-        }
-        
-        func apiSession(configurationName: String, webLanguages: OwnID.CoreSDK.Languages) -> APISessionProtocol {
-            APISession(serverURL: serverURL(for: configurationName),
-                       statusURL: statusURL(for: configurationName),
-                       settingsURL: settingURL(for: configurationName),
-                       authURL: authURL(for: configurationName),
-                       webLanguages: webLanguages)
         }
         
         /// Used to handle the redirects from browser after webapp is finished
@@ -149,12 +135,8 @@ public extension OwnID {
                 return
             }
             
-            guard url
-                .absoluteString
-                .lowercased()
-                .starts(with: getConfiguration(for: sdkConfigurationName)
-                    .redirectionURL
-                    .lowercased())
+            guard let redirection = store.value.getOptionalConfiguration(for: sdkConfigurationName),
+                  url.absoluteString.lowercased().starts(with: redirection.redirectionURL.lowercased())
             else {
                 urlPublisher.send(completion: .failure(.coreLog(entry: .errorEntry(Self.self), error: .notValidRedirectionURLOrNotMatchingFromConfiguration)))
                 return
@@ -164,26 +146,16 @@ public extension OwnID {
     }
 }
 
-extension OwnID.CoreSDK {
-    func statusURL(for sdkConfigurationName: String) -> ServerURL {
-        getConfiguration(for: sdkConfigurationName).statusURL
-    }
-    
-    func settingURL(for sdkConfigurationName: String) -> ServerURL {
-        getConfiguration(for: sdkConfigurationName).settingURL
-    }
-    
-    func authURL(for sdkConfigurationName: String) -> ServerURL {
-        getConfiguration(for: sdkConfigurationName).authURL
-    }
-}
-
 public extension OwnID.CoreSDK {
     var environment: String? {
-        getConfiguration(for: configurationName).environment
+        store.value.firstConfiguration?.environment
     }
     
-    var metricsURL: ServerURL {
-        serverURL.deletingLastPathComponent().appendingPathComponent("events")
+    var metricsURL: ServerURL? {
+        store.value.firstConfiguration?.metricsURL
+    }
+    
+    var supportedLocales: [String]? {
+        store.value.firstConfiguration?.supportedLocales
     }
 }

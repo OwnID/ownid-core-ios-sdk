@@ -7,17 +7,13 @@ public extension OwnID.FlowsSDK {
         }
         private let id = UUID()
         
-        @Binding private var usersEmail: String
         public var visualConfig: OwnID.UISDK.VisualLookConfig
         @ObservedObject public var viewModel: ViewModel
         
         public init(viewModel: ViewModel,
-                    usersEmail: Binding<String>,
                     visualConfig: OwnID.UISDK.VisualLookConfig) {
             self.viewModel = viewModel
-            self._usersEmail = usersEmail
             self.visualConfig = visualConfig
-            self.viewModel.getEmail = { usersEmail.wrappedValue }
             self.viewModel.currentMetadata = visualConfig.convertToCurrentMetric()
         }
         
@@ -29,8 +25,16 @@ public extension OwnID.FlowsSDK {
 
 private extension OwnID.FlowsSDK.RegisterView {
     func skipPasswordView() -> some View {
+        var config = visualConfig
+        switch visualConfig.buttonViewConfig.variant {
+        case .authButton:
+            config.buttonViewConfig.variant = .iconButton(.faceId) // auth button is only available for login
+            
+        case .iconButton:
+            break
+        }
         let view = OwnID.UISDK.OwnIDView(viewState: .constant(viewModel.state.buttonState),
-                                         visualConfig: visualConfig,
+                                         visualConfig: config,
                                          shouldShowTooltip: $viewModel.shouldShowTooltip,
                                          isLoading: .constant(viewModel.state.isLoading))
         viewModel.subscribe(to: view.eventPublisher)

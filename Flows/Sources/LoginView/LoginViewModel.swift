@@ -41,12 +41,11 @@ public extension OwnID.FlowsSDK.LoginView {
         private let resultPublisher = PassthroughSubject<Result<OwnID.FlowsSDK.LoginEvent, OwnID.CoreSDK.Error>, Never>()
         private let loginPerformer: LoginPerformer
         private var payload: OwnID.CoreSDK.Payload?
+        private var email = ""
         var coreViewModel: OwnID.CoreSDK.CoreViewModel!
         var currentMetadata: OwnID.CoreSDK.MetricLogEntry.CurrentMetricInformation?
         
         let sdkConfigurationName: String
-        let webLanguages: OwnID.CoreSDK.Languages
-        public var getEmail: (() -> String)?
         
         public var eventPublisher: OwnID.LoginPublisher {
             resultPublisher.eraseToAnyPublisher()
@@ -54,10 +53,10 @@ public extension OwnID.FlowsSDK.LoginView {
         
         public init(loginPerformer: LoginPerformer,
                     sdkConfigurationName: String,
-                    webLanguages: OwnID.CoreSDK.Languages) {
+                    emailPublisher: OwnID.CoreSDK.EmailPublisher) {
             self.sdkConfigurationName = sdkConfigurationName
             self.loginPerformer = loginPerformer
-            self.webLanguages = webLanguages
+            emailPublisher.assign(to: \.email, on: self).store(in: &bag)
             Task {
                 // Delay the task by 1 second
                 try? await Task.sleep(nanoseconds: 1_000_000_000)
@@ -83,7 +82,7 @@ public extension OwnID.FlowsSDK.LoginView {
             if isResettingToInitialState {
                 state = .initial
             }
-            coreViewModel.cancel()
+            coreViewModel?.cancel()
             coreViewModelBag.forEach { $0.cancel() }
             coreViewModelBag.removeAll()
             coreViewModel = .none
@@ -94,9 +93,7 @@ public extension OwnID.FlowsSDK.LoginView {
             case .initial:
                 DispatchQueue.main.async { [self] in
                     let email = OwnID.CoreSDK.Email(rawValue: usersEmail)
-                    let coreViewModel = OwnID.CoreSDK.shared.createCoreViewModelForLogIn(email: email,
-                                                                                         sdkConfigurationName: sdkConfigurationName,
-                                                                                         webLanguages: webLanguages)
+                    let coreViewModel = OwnID.CoreSDK.shared.createCoreViewModelForLogIn(email: email, sdkConfigurationName: sdkConfigurationName)
                     self.coreViewModel = coreViewModel
                     subscribe(to: coreViewModel.eventPublisher)
                     state = .coreVM
@@ -147,9 +144,9 @@ public extension OwnID.FlowsSDK.LoginView {
                 .sink { _ in
                 } receiveValue: { [unowned self] event in
                     if state == .initial {
-                        OwnID.CoreSDK.logger.logAnalytic(.loginClickMetric(action: .click, context: payload?.context))
+                        OwnID.CoreSDK.logger.logAnalytic(.loginClickMetric(context: payload?.context, hasLoginId: !email.isEmpty))
                     }
-                    skipPasswordTapped(usersEmail: obtainEmail())
+                    skipPasswordTapped(usersEmail: email)
                 }
                 .store(in: &bag)
         }
@@ -157,14 +154,9 @@ public extension OwnID.FlowsSDK.LoginView {
 }
 
 private extension OwnID.FlowsSDK.LoginView.ViewModel {
-    func obtainEmail() -> String {
-        let email = getEmail?() ?? ""
-        return email
-    }
-    
     func process(payload: OwnID.CoreSDK.Payload) {
         self.payload = payload
-        let loginPerformerPublisher = loginPerformer.login(payload: payload, email: obtainEmail())
+        let loginPerformerPublisher = loginPerformer.login(payload: payload, email: email)
         loginPerformerPublisher
             .sink { [unowned self] completion in
                 if case .failure(let error) = completion {

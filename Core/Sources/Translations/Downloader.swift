@@ -15,13 +15,14 @@ extension OwnID.CoreSDK.TranslationsSDK {
         
         init() {
             let config = URLSessionConfiguration.default
-            config.requestCachePolicy = .useProtocolCachePolicy
+            config.requestCachePolicy = .returnCacheDataElseLoad
             session = URLSession(configuration: config)
         }
         
-        func downloadTranslations() -> DownloaderPublisher {
-            downloadSupportedTranslationsList()
-                .map { serverLanguages in LanguageMapper().matchSystemLanguage(to: serverLanguages) }
+        func downloadTranslations(supportedLanguages: OwnID.CoreSDK.Languages) -> DownloaderPublisher {
+            Just(OwnID.CoreSDK.shared.supportedLocales ?? []).setFailureType(to: OwnID.CoreSDK.CoreErrorLogWrapper.self)
+                .eraseToAnyPublisher()
+                .map { serverLanguages in LanguageMapper().matchSystemLanguage(to: serverLanguages, userDefinedLanguages: supportedLanguages.rawValue) }
                 .eraseToAnyPublisher()
                 .flatMap { currentUserLanguages -> DownloaderPublisher in
                     let message = "Mapped user language to the server languages. serverLanguage: \(currentUserLanguages.serverLanguage), systemLanguage: \(currentUserLanguages.systemLanguage)"
@@ -43,25 +44,8 @@ private extension OwnID.CoreSDK.TranslationsSDK.Downloader {
         return URL(string: "https://i18n.prod.ownid.com")!
     }
     
-    var langsURL: URL {
-        basei18nURL.appendingPathComponent("langs.json")
-    }
-    
     func valuesURL(currentLanguage: String) -> URL {
         basei18nURL.appendingPathComponent(currentLanguage).appendingPathComponent("mobile-sdk.json")
-    }
-    
-    func downloadSupportedTranslationsList() -> AnyPublisher<[String], OwnID.CoreSDK.CoreErrorLogWrapper> {
-        return session.dataTaskPublisher(for: langsURL)
-            .eraseToAnyPublisher()
-            .map { $0.data }
-            .eraseToAnyPublisher()
-            .decode(type: SupportedLanguages.self, decoder: JSONDecoder())
-            .map { $0.langs }
-            .mapError {
-                OwnID.CoreSDK.CoreErrorLogWrapper.coreLog(entry: .errorEntry(Self.self), error: .localizationDownloader(underlying: $0))
-            }
-            .eraseToAnyPublisher()
     }
     
     func downloadCurrentLocalizationFile(for currentBELanguage: String, correspondingSystemLanguage: String) -> DownloaderPublisher {

@@ -9,7 +9,9 @@ extension OwnID.CoreSDK {
                             userFacingSDK,
                             underlyingSDKs,
                             isTestingEnvironment,
-                            environment):
+                            environment,
+                            supportedLanguages):
+            state.supportedLanguages = supportedLanguages
             return [createConfiguration(appID: appID,
                                         redirectionURL: redirectionURL,
                                         userFacingSDK: userFacingSDK,
@@ -18,20 +20,25 @@ extension OwnID.CoreSDK {
                                         environment: environment)]
             
         case let .configurationCreated(configuration, userFacingSDK, underlyingSDKs, isTestingEnvironment):
-            state.configurations[userFacingSDK.name] = configuration
-            let numberOfConfigurations = state.configurations.count
+            state.configurationRequestData = OwnID.CoreSDK.SDKState.ConfigurationRequestData(config: configuration,
+                                                                                             userFacingSDK: userFacingSDK, isLoading: false)
             return [
-                fetchClientConfig(serverURL: configuration.ownIDServerURL,
-                                  numberOfConfigurations: numberOfConfigurations,
-                                  configurationLoadedPublisher: state.configurationLoadedPublisher),
-                startLoggerIfNeeded(numberOfConfigurations: numberOfConfigurations,
-                                    userFacingSDK: userFacingSDK,
+                Just(.fetchServerConfiguration).eraseToEffect(),
+                startLoggerIfNeeded(userFacingSDK: userFacingSDK,
                                     underlyingSDKs: underlyingSDKs,
                                     isTestingEnvironment: isTestingEnvironment),
-                startTranslationsDownloader()
+                translationsDownloaderSDKConfigured(with: state.supportedLanguages)
             ]
             
-        case .startDebugLogger:
+        case .fetchServerConfiguration:
+            guard let configurationRequestData = state.configurationRequestData else { return [] }
+            if configurationRequestData.isLoading { return [] }
+            state.configurationRequestData?.isLoading = true
+            return [fetchServerConfiguration(config: configurationRequestData.config,
+                                             userFacingSDK: configurationRequestData.userFacingSDK)]
+            
+        case .startDebugLogger(let level):
+            Logger.shared.logLevel = level
             state.isLoggingEnabled = true
             return []
             
@@ -39,19 +46,33 @@ extension OwnID.CoreSDK {
             OwnID.startDebugConsoleLogger()
             return [testConfiguration()]
             
-        case let .configureFromDefaultConfiguration(userFacingSDK, underlyingSDKs):
+        case let .configureFromDefaultConfiguration(userFacingSDK, underlyingSDKs, supportedLanguages):
             let url = Bundle.main.url(forResource: "OwnIDConfiguration", withExtension: "plist")!
-            return [Just(.configureFrom(plistUrl: url, userFacingSDK: userFacingSDK, underlyingSDKs: underlyingSDKs)).eraseToEffect()]
+            return [Just(.configureFrom(plistUrl: url, userFacingSDK: userFacingSDK, underlyingSDKs: underlyingSDKs, supportedLanguages: supportedLanguages)).eraseToEffect()]
             
-        case let .configureFrom(plistUrl, userFacingSDK, underlyingSDKs):
+        case let .configureFrom(plistUrl, userFacingSDK, underlyingSDKs, supportedLanguages):
+            state.supportedLanguages = supportedLanguages
             return [getDataFrom(plistUrl: plistUrl,
                                 userFacingSDK: userFacingSDK,
                                 underlyingSDKs: underlyingSDKs,
                                 isTestingEnvironment: false)]
             
-        case .save(clientCongfig: let clientCongfig):
-            state.clientConfiguration = clientCongfig
-            return []
+        case .save(let configurationLoadingEvent, let userFacingSDK):
+            switch configurationLoadingEvent {
+            case .loaded(let config):
+                state.configurationRequestData = .none
+                state.configurations[userFacingSDK.name] = config
+                state.configurationLoadingEventPublisher.send(configurationLoadingEvent)
+                return [
+                    translationsDownloaderSDKConfigured(with: state.supportedLanguages),
+                    sendLoggerSDKConfigured()
+                ]
+                
+            case .error:
+                state.configurationRequestData?.isLoading = false
+                state.configurationLoadingEventPublisher.send(configurationLoadingEvent)
+                return []
+            }
         }
     }
     
@@ -61,7 +82,7 @@ extension OwnID.CoreSDK {
                                     isTestingEnvironment: Bool) -> Effect<SDKAction> {
         let data = try! Data(contentsOf: plistUrl)
         let decoder = PropertyListDecoder()
-        let config = try! decoder.decode(OwnID.CoreSDK.Configuration.self, from: data)
+        let config = try! decoder.decode(OwnID.CoreSDK.LocalConfiguration.self, from: data)
         let action = SDKAction.configurationCreated(configuration: config,
                                                     userFacingSDK: userFacingSDK,
                                                     underlyingSDKs: underlyingSDKs,
@@ -75,17 +96,18 @@ extension OwnID.CoreSDK {
                                          userFacingSDK: (OwnID.CoreSDK.sdkName, OwnID.CoreSDK.version),
                                          underlyingSDKs: [],
                                          isTestingEnvironment: true,
-                                         environment: .none)
+                                         environment: .none,
+                                         supportedLanguages: .init(rawValue: Locale.preferredLanguages))
         return Just(action).eraseToEffect()
     }
     
-    private static func createConfiguration(appID: String,
-                                            redirectionURL: String,
+    private static func createConfiguration(appID: OwnID.CoreSDK.AppID,
+                                            redirectionURL: RedirectionURLString,
                                             userFacingSDK: SDKInformation,
                                             underlyingSDKs: [SDKInformation],
                                             isTestingEnvironment: Bool,
                                             environment: String?) -> Effect<SDKAction> {
-        let config = try! OwnID.CoreSDK.Configuration(appID: appID,
+        let config = try! OwnID.CoreSDK.LocalConfiguration(appID: appID,
                                                       redirectionURL: redirectionURL,
                                                       environment: environment)
         return Just(.configurationCreated(configuration: config,
@@ -95,46 +117,56 @@ extension OwnID.CoreSDK {
         .eraseToEffect()
     }
     
-    private static func startLoggerIfNeeded(numberOfConfigurations: Int,
-                                            userFacingSDK: SDKInformation,
+    private static func startLoggerIfNeeded(userFacingSDK: SDKInformation,
                                             underlyingSDKs: [SDKInformation],
                                             isTestingEnvironment: Bool) -> Effect<SDKAction> {
         return .fireAndForget {
-            if numberOfConfigurations == 1 {
-                OwnID.CoreSDK.UserAgentManager.shared.registerUserFacingSDKName(userFacingSDK, underlyingSDKs: underlyingSDKs)
-                if !isTestingEnvironment {
-                    OwnID.CoreSDK.logger.add(OwnID.CoreSDK.MetricsLogger())
-                }
+            OwnID.CoreSDK.UserAgentManager.shared.registerUserFacingSDKName(userFacingSDK, underlyingSDKs: underlyingSDKs)
+            if !isTestingEnvironment {
+                OwnID.CoreSDK.logger.add(OwnID.CoreSDK.MetricsLogger())
             }
             OwnID.CoreSDK.logger.logCore(.entry(OwnID.CoreSDK.self))
         }
     }
     
-    private static func fetchClientConfig(serverURL: ServerURL,
-                                          numberOfConfigurations: Int,
-                                          configurationLoadedPublisher: PassthroughSubject<OwnID.CoreSDK.ClientConfiguration, Never>) -> Effect<SDKAction> {
-        guard numberOfConfigurations == 1 else { return .fireAndForget { } }
-        let url = serverURL.appendingPathComponent("client-config")
-        let effect = Deferred { URLSession.shared.dataTaskPublisher(for: url)
+    private static func fetchServerConfiguration(config: LocalConfiguration,
+                                                 userFacingSDK: OwnID.CoreSDK.SDKInformation) -> Effect<SDKAction> {
+        let effect = Deferred { URLSession.shared.dataTaskPublisher(for: config.ownIDServerConfigurationURL)
+                .retry(2)
                 .map { data, _ in return data }
                 .eraseToAnyPublisher()
-                .decode(type: ClientConfiguration.self, decoder: JSONDecoder())
+                .decode(type: ServerConfiguration.self, decoder: JSONDecoder())
                 .eraseToAnyPublisher()
-                .replaceError(with: ClientConfiguration(logLevel: 4, passkeys: false, rpId: .none, passkeysAutofill: false))
-                .flatMap { clientConfiguration -> AnyPublisher<SDKAction, Never> in
-                    Logger.shared.logLevel = LogLevel(rawValue: clientConfiguration.logLevel) ?? .error
-                    configurationLoadedPublisher.send(clientConfiguration)
-                    return Just(.save(clientCongfig: clientConfiguration)).eraseToAnyPublisher()
+                .replaceError(with: ServerConfiguration(isFailed: true, supportedLocales: [], logLevel: .error, fidoSettings: .none, passkeysAutofillEnabled: false, serverURL: URL(string: "https://ownid.com")!, redirectURLString: .none, platformSettings: .none))
+                .eraseToAnyPublisher()
+                .flatMap { serverConfiguration -> AnyPublisher<SDKAction, Never> in
+                    if serverConfiguration.isFailed {
+                        return Just(.save(configurationLoadingEvent: .error, userFacingSDK: userFacingSDK)).eraseToAnyPublisher()
+                    }
+                    Logger.shared.logLevel = serverConfiguration.logLevel
+                    var local = config
+                    local.serverURL = serverConfiguration.serverURL
+                    local.redirectionURL = (serverConfiguration.platformSettings?.redirectUrlOverride ?? serverConfiguration.redirectURLString) ?? local.redirectionURL
+                    local.fidoSettings = serverConfiguration.fidoSettings
+                    local.passkeysAutofillEnabled = serverConfiguration.passkeysAutofillEnabled
+                    local.supportedLocales = serverConfiguration.supportedLocales
+                    return Just(.save(configurationLoadingEvent: .loaded(local), userFacingSDK: userFacingSDK)).eraseToAnyPublisher()
                 }
                 .eraseToAnyPublisher()
         }
         return effect.eraseToEffect()
     }
     
-    private static func startTranslationsDownloader() -> Effect<SDKAction> {
+    private static func translationsDownloaderSDKConfigured(with supportedLanguages: OwnID.CoreSDK.Languages) -> Effect<SDKAction> {
         .fireAndForget {
-            OwnID.CoreSDK.shared.translationsModule.SDKConfigured()
+            OwnID.CoreSDK.shared.translationsModule.SDKConfigured(supportedLanguages: supportedLanguages)
             OwnID.CoreSDK.logger.logCore(.entry(OwnID.CoreSDK.self))
+        }
+    }
+    
+    private static func sendLoggerSDKConfigured() -> Effect<SDKAction> {
+        .fireAndForget {
+            OwnID.CoreSDK.logger.sdkConfigured()
         }
     }
 }
