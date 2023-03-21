@@ -20,14 +20,22 @@ extension OwnID.CoreSDK {
                                         environment: environment)]
             
         case let .configurationCreated(configuration, userFacingSDK, underlyingSDKs, isTestingEnvironment):
+            state.configurationRequestData = OwnID.CoreSDK.SDKState.ConfigurationRequestData(config: configuration,
+                                                                                             userFacingSDK: userFacingSDK, isLoading: false)
             return [
-                fetchServerConfiguration(config: configuration,
-                                         userFacingSDK: userFacingSDK),
+                Just(.fetchServerConfiguration).eraseToEffect(),
                 startLoggerIfNeeded(userFacingSDK: userFacingSDK,
                                     underlyingSDKs: underlyingSDKs,
                                     isTestingEnvironment: isTestingEnvironment),
                 translationsDownloaderSDKConfigured(with: state.supportedLanguages)
             ]
+            
+        case .fetchServerConfiguration:
+            guard let configurationRequestData = state.configurationRequestData else { return [] }
+            if configurationRequestData.isLoading { return [] }
+            state.configurationRequestData?.isLoading = true
+            return [fetchServerConfiguration(config: configurationRequestData.config,
+                                             userFacingSDK: configurationRequestData.userFacingSDK)]
             
         case .startDebugLogger(let level):
             Logger.shared.logLevel = level
@@ -52,10 +60,11 @@ extension OwnID.CoreSDK {
         case .save(let configurationLoadingEvent, let userFacingSDK):
             switch configurationLoadingEvent {
             case .loaded(let config):
+                state.configurationRequestData = .none
                 state.configurations[userFacingSDK.name] = config
                 
             case .error:
-                break
+                state.configurationRequestData?.isLoading = false
             }
             state.configurationLoadingEventPublisher.send(configurationLoadingEvent)
             return [

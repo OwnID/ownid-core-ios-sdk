@@ -55,9 +55,9 @@ public extension OwnID {
         
         public static var logger: LoggerProtocol { Logger.shared }
         
-        public func configureForTests() {
-            store.send(.configureForTests)
-        }
+        public func configureForTests() { store.send(.configureForTests) }
+        
+        public func requestConfiguration() { store.send(.fetchServerConfiguration) }
         
         public func configure(userFacingSDK: SDKInformation,
                               underlyingSDKs: [SDKInformation],

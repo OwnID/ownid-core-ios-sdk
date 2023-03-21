@@ -41,6 +41,7 @@ extension OwnID.CoreSDK {
             if (store.value.configuration != nil) {
                 store.send(.sendInitialRequest)
             } else {
+                OwnID.CoreSDK.shared.requestConfiguration()
                 store.send(.addToStateShouldStartInitRequest(value: true))
                 resultPublisher.send(.loading)
             }

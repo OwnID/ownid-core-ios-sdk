@@ -23,5 +23,6 @@ extension OwnID.CoreSDK {
         case startDebugLogger(logLevel: OwnID.CoreSDK.LogLevel)
         case configureForTests
         case save(configurationLoadingEvent: OwnID.CoreSDK.ConfigurationLoadingEvent, userFacingSDK: OwnID.CoreSDK.SDKInformation)
+        case fetchServerConfiguration
     }
 }

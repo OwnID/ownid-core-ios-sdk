@@ -7,6 +7,15 @@ extension OwnID.CoreSDK {
         var configurations = [String: OwnID.CoreSDK.LocalConfiguration]()
         let configurationLoadingEventPublisher: PassthroughSubject<ConfigurationLoadingEvent, Never>
         var supportedLanguages: OwnID.CoreSDK.Languages = .init(rawValue: ["en"])
+        var configurationRequestData: ConfigurationRequestData?
+    }
+}
+
+extension OwnID.CoreSDK.SDKState {
+    struct ConfigurationRequestData {
+        let config:OwnID.CoreSDK.LocalConfiguration
+        let userFacingSDK: OwnID.CoreSDK.SDKInformation
+        var isLoading: Bool
     }
 }
 
