@@ -10,9 +10,9 @@ public extension OwnID.CoreSDK {
         case redirectParameterFromURLCancelledOpeningSDK
         case notValidRedirectionURLOrNotMatchingFromConfiguration
         case emailIsInvalid
+        case localConfigIsNotPresent
         case tokenDataIsMissing
         case contextIsMissing
-        case loadJWTTokenFailed(underlying: Swift.Error)
         case flowCancelled
         case payloadMissing(underlying: String?)
         
@@ -59,6 +59,9 @@ public extension OwnID.CoreSDK {
 extension OwnID.CoreSDK.Error: LocalizedError {
     public var errorDescription: String? {
         switch self {
+        case .localConfigIsNotPresent:
+            return "Local config is missing"
+            
         case .unsecuredHttpPassed:
             return "Link uses HTTP. Only HTTPS supported"
             
@@ -99,9 +102,6 @@ extension OwnID.CoreSDK.Error: LocalizedError {
         case .plugin(let error):
             return error.localizedDescription
             
-        case .loadJWTTokenFailed(let underlying):
-            return underlying.localizedDescription
-            
         case .serverError(let underlying):
             return underlying.error
             
@@ -134,6 +134,7 @@ extension OwnID.CoreSDK.Error: CustomDebugStringConvertible {
     public var debugDescription: String {
         switch self {
         case .unsecuredHttpPassed,
+                .localConfigIsNotPresent,
                 .notValidRedirectionURLOrNotMatchingFromConfiguration,
                 .emailIsInvalid,
                 .authorizationManagerAuthError,
@@ -147,7 +148,6 @@ extension OwnID.CoreSDK.Error: CustomDebugStringConvertible {
                 .statusRequestNetworkFailed,
                 .authRequestNetworkFailed,
                 .plugin,
-                .loadJWTTokenFailed,
                 .serverError,
                 .payloadMissing:
             return errorDescription ?? ""

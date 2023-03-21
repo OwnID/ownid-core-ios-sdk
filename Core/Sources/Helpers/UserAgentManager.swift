@@ -22,6 +22,7 @@ public extension OwnID.CoreSDK {
         }
         
         var userFacingSDKVersion: String { version }
+        var systemVersion: String { UIDevice.current.systemVersion }
         
         public lazy var underlyingSDKs = [OwnID.CoreSDK.sdkName]
         public lazy var SDKUserAgent = userAgent(for: (OwnID.CoreSDK.sdkName, OwnID.CoreSDK.version), underlyingSDKs: [])
@@ -29,7 +30,7 @@ public extension OwnID.CoreSDK {
         private func userAgent(for userFacingSDK: SDKInformation, underlyingSDKs: [SDKInformation]) -> String {
             let underlyingSDKsNames = underlyingSDKNames(underlyingSDKs: underlyingSDKs)
             let userFacingSDKName = sdkAgentName(sdkName: userFacingSDK.name, version: userFacingSDK.verison)
-            return "\(userFacingSDKName) (iOS; iOS \(UIDevice.current.systemVersion); \(modelName)) \(underlyingSDKsNames) \(Bundle.main.bundleIdentifier!)"
+            return "\(userFacingSDKName) (iOS; iOS \(systemVersion); \(modelName)) \(underlyingSDKsNames) \(Bundle.main.bundleIdentifier!)"
         }
         
         private func sdkAgentName(sdkName: String, version: String) -> String {

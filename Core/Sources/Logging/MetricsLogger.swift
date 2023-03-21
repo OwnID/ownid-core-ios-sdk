@@ -36,8 +36,9 @@ private extension OwnID.CoreSDK.MetricsLogger {
                 }
                 .eraseToAnyPublisher()
                 .encode(encoder: JSONEncoder())
-                .map { body -> URLRequest in
-                    var request = URLRequest(url: OwnID.CoreSDK.shared.metricsURL)
+                .tryMap { body -> URLRequest in
+                    guard let url = OwnID.CoreSDK.shared.metricsURL else { throw OwnID.CoreSDK.Error.localConfigIsNotPresent }
+                    var request = URLRequest(url: url)
                     request.httpMethod = "POST"
                     request.httpBody = body
                     request.addValue("application/json", forHTTPHeaderField: "Content-Type")

@@ -32,20 +32,17 @@ extension OwnID.CoreSDK.Status {
         let sessionVerifier: OwnID.CoreSDK.SessionVerifier
         let type: OwnID.CoreSDK.RequestType
         let supportedLanguages: OwnID.CoreSDK.Languages
-        let origin: String?
         
         internal init(url: OwnID.CoreSDK.ServerURL,
                       context: OwnID.CoreSDK.Context,
                       nonce: OwnID.CoreSDK.Nonce,
                       sessionVerifier: OwnID.CoreSDK.SessionVerifier,
                       type: OwnID.CoreSDK.RequestType,
-                      origin: String?,
                       supportedLanguages: OwnID.CoreSDK.Languages,
                       provider: APIProvider = URLSession.shared) {
             self.context = context
             self.nonce = nonce
             self.url = url
-            self.origin = origin
             self.sessionVerifier = sessionVerifier
             self.provider = provider
             self.type = type
@@ -64,9 +61,6 @@ extension OwnID.CoreSDK.Status {
                     request.httpBody = body
                     request.addUserAgent()
                     request.addAPIVersion()
-                    if let origin {
-                        request.add(origin: origin)
-                    }
                     request.add(supportedLanguages: supportedLanguages)
                     return request
                 }

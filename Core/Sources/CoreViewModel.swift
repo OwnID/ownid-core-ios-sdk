@@ -12,18 +12,16 @@ extension OwnID.CoreSDK {
         
         init(type: OwnID.CoreSDK.RequestType,
              email: OwnID.CoreSDK.Email?,
-             token: OwnID.CoreSDK.JWTToken?,
-             session: APISessionProtocol,
+             supportedLanguages: OwnID.CoreSDK.Languages,
              sdkConfigurationName: String,
              isLoggingEnabled: Bool,
-             clientConfiguration: ClientConfiguration?) {
+             clientConfiguration: LocalConfiguration?) {
             let initialState = OwnID.CoreSDK.ViewModelState(isLoggingEnabled: isLoggingEnabled,
-                                                            clientConfiguration: clientConfiguration,
+                                                            configuration: clientConfiguration,
                                                             sdkConfigurationName: sdkConfigurationName,
-                                                            session: session,
                                                             email: email,
-                                                            token: token,
-                                                            type: type)
+                                                            type: type,
+                                                            supportedLanguages: supportedLanguages)
             let store = Store(
                 initialValue: initialState,
                 reducer: with(
@@ -40,9 +38,10 @@ extension OwnID.CoreSDK {
         }
         
         public func start() {
-            if (store.value.clientConfiguration != nil) {
+            if (store.value.configuration != nil) {
                 store.send(.sendInitialRequest)
             } else {
+                OwnID.CoreSDK.shared.requestConfiguration()
                 store.send(.addToStateShouldStartInitRequest(value: true))
                 resultPublisher.send(.loading)
             }
@@ -69,10 +68,17 @@ extension OwnID.CoreSDK {
                 .store(in: &bag)
         }
         
-        func subscribeToConfiguration(publisher: AnyPublisher<ClientConfiguration, Never>) {
+        func subscribeToConfiguration(publisher: AnyPublisher<ConfigurationLoadingEvent, Never>) {
             publisher
-                .sink { [unowned self] clientConfiguration in
-                    self.store.send(.addToStateConfig(clientConfig: clientConfiguration))
+                .sink { [unowned self] event in
+                    switch event {
+                        
+                    case .loaded(let configuration):
+                        store.send(.addToStateConfig(config: configuration))
+                        
+                    case .error:
+                        store.send(.error(.coreLog(entry: .errorEntry(Self.self), error: .localConfigIsNotPresent)))
+                    }
                 }
                 .store(in: &bag)
         }
@@ -80,7 +86,8 @@ extension OwnID.CoreSDK {
         private var internalStatesChange = [String]()
         
         private func logInternalStates() {
-            OwnID.CoreSDK.logger.logCore(.entry(message: internalStatesLog(states: internalStatesChange), Self.self))
+            let states = internalStatesLog(states: internalStatesChange)
+            OwnID.CoreSDK.logger.logCore(.entry(message: states, Self.self))
             internalStatesChange.removeAll()
         }
         
@@ -103,17 +110,15 @@ extension OwnID.CoreSDK {
                             .authManagerRequestFail,
                             .addToState,
                             .addToStateConfig,
-                            .settingsRequestLoaded,
                             .addToStateShouldStartInitRequest,
                             .authManager,
-                            .browserVM:
+                            .browserVM,
+                            .authRequestLoaded:
                         internalStatesChange.append(action.debugDescription)
                         
-                    case let .authRequestLoaded(payload, shouldPerformStatusRequest):
-                        finishIfNeeded(shouldPerformStatusRequest: shouldPerformStatusRequest, payload: payload, action: action)
-                        
                     case let .statusRequestLoaded(payload):
-                        finishIfNeeded(shouldPerformStatusRequest: false, payload: payload, action: action)
+                        internalStatesChange.append(String(describing: action))
+                        finishIfNeeded(payload: payload)
                         
                     case .error(let error):
                         internalStatesChange.append(String(describing: action))
@@ -132,13 +137,9 @@ extension OwnID.CoreSDK {
                 .store(in: &bag)
         }
         
-        private func finishIfNeeded(shouldPerformStatusRequest: Bool, payload: Payload, action: OwnID.CoreSDK.ViewModelAction) {
-                internalStatesChange.append(String(describing: action))
-                if shouldPerformStatusRequest {
-                    return
-                }
-                flowsFinished()
-                resultPublisher.send(.success(payload))
+        private func finishIfNeeded(payload: Payload) {
+            flowsFinished()
+            resultPublisher.send(.success(payload))
         }
         
         private func flowsFinished() {
@@ -155,18 +156,17 @@ extension OwnID.CoreSDK {
     enum ViewModelAction {
         case addToState(browserViewModelStore: Store<BrowserOpenerViewModel.State, BrowserOpenerViewModel.Action>,
                         authStore: Store<AccountManager.State, AccountManager.Action>)
-        case addToStateConfig(clientConfig: ClientConfiguration)
+        case addToStateConfig(config: LocalConfiguration)
         case addToStateShouldStartInitRequest(value: Bool)
         case sendInitialRequest
         case initialRequestLoaded(response: OwnID.CoreSDK.Init.Response)
-        case settingsRequestLoaded(response: OwnID.CoreSDK.Setting.Response, origin: String, fido2Payload: Encodable, browserBaseURL: String)
         case authManagerRequestFail(error: OwnID.CoreSDK.CoreErrorLogWrapper, browserBaseURL: String)
         case error(OwnID.CoreSDK.CoreErrorLogWrapper)
         case sendStatusRequest
         case browserCancelled
         case cancelled
         case authManagerCancelled
-        case authRequestLoaded(response: OwnID.CoreSDK.Payload, shouldPerformStatusRequest: Bool)
+        case authRequestLoaded
         case statusRequestLoaded(response: OwnID.CoreSDK.Payload)
         case browserVM(BrowserOpenerViewModel.Action)
         case authManager(AccountManager.Action)
@@ -175,13 +175,13 @@ extension OwnID.CoreSDK {
     
     struct ViewModelState: LoggingEnabled {
         let isLoggingEnabled: Bool
-        var clientConfiguration: ClientConfiguration?
+        var configuration: LocalConfiguration?
         
         let sdkConfigurationName: String
-        let session: APISessionProtocol
+        var session: APISessionProtocol!
         let email: OwnID.CoreSDK.Email?
-        let token: OwnID.CoreSDK.JWTToken?
         let type: OwnID.CoreSDK.RequestType
+        let supportedLanguages: OwnID.CoreSDK.Languages
         
         var browserViewModelStore: Store<BrowserOpenerViewModel.State, BrowserOpenerViewModel.Action>!
         var browserViewModel: BrowserOpener?
@@ -198,17 +198,23 @@ extension OwnID.CoreSDK {
             if let email = state.email, !email.rawValue.isEmpty, !email.isValid {
                 return errorEffect(.coreLog(entry: .errorEntry(Self.self), error: .emailIsInvalid))
             }
-            return [sendInitialRequest(type: state.type,
-                                       token: state.token,
-                                       session: state.session,
-                                       origin: state.clientConfiguration?.rpId)]
+            guard let configuration = state.configuration else { return errorEffect(.coreLog(entry: .errorEntry(Self.self), error: .localConfigIsNotPresent)) }
+            let session = APISession(initURL: configuration.initURL,
+                                     statusURL: configuration.statusURL,
+                                     finalStatusURL: configuration.finalStatusURL,
+                                     authURL: configuration.authURL,
+                                     supportedLanguages: state.supportedLanguages)
+            state.session = session
+            return [sendInitialRequest(requestData: OwnID.CoreSDK.Init.RequestData(loginId: state.email?.rawValue,
+                                                                                   type: state.type,
+                                                                                   supportsFido2: isPasskeysSupported),
+                                       session: session)]
             
         case let .initialRequestLoaded(response):
             guard let context = response.context else { return errorEffect(.coreLog(entry: .errorEntry(Self.self), error: .contextIsMissing)) }
             if #available(iOS 16, *),
-               let config = state.clientConfiguration,
-               let domain = config.rpId,
-               config.passkeys {
+               let config = state.configuration,
+               let domain = config.fidoSettings?.rpID {
                 let authManager = OwnID.CoreSDK.AccountManager(store: state.authManagerStore,
                                                                domain: domain,
                                                                challenge: state.session.context,
@@ -227,27 +233,18 @@ extension OwnID.CoreSDK {
                                          browserURL: response.url,
                                          email: state.email,
                                          sdkConfigurationName: state.sdkConfigurationName,
-                                         store: state.browserViewModelStore)
+                                         store: state.browserViewModelStore,
+                                         redirectionURLString: state.configuration?.redirectionURL)
                 state.browserViewModel = vm
                 return []
             }
-            
-        case let .settingsRequestLoaded(response, origin, fido2RegisterPayload, browserBaseURL):
-            if let challengeType = response.challengeType, challengeType != .register {
-                return errorEffect(.coreLog(entry: .errorEntry(Self.self), error: .settingRequestResponseNotCompliantResponse))
-            }
-            return [sendAuthRequest(session: state.session,
-                                    origin: origin,
-                                    fido2Payload: fido2RegisterPayload,
-                                    shouldPerformStatusRequest: false,
-                                    browserBaseURL: browserBaseURL)]
             
         case .error:
             return []
             
         case .sendStatusRequest:
             state.browserViewModel = .none
-            return [sendStatusRequest(session: state.session, origin: state.clientConfiguration?.rpId)]
+            return [sendStatusRequest(session: state.session)]
             
         case .browserCancelled:
             state.browserViewModel = .none
@@ -262,12 +259,8 @@ extension OwnID.CoreSDK {
             state.authManager = .none
             return []
             
-        case let .authRequestLoaded(_ , shouldPerformStatusRequest):
-            if shouldPerformStatusRequest {
-                return [sendStatusRequest(session: state.session, origin: state.clientConfiguration?.rpId)]
-            } else {
-                return []
-            }
+        case .authRequestLoaded:
+            return [sendStatusRequest(session: state.session)]
             
         case .statusRequestLoaded:
             return []
@@ -277,7 +270,8 @@ extension OwnID.CoreSDK {
                                      browserURL: browserBaseURL,
                                      email: state.email,
                                      sdkConfigurationName: state.sdkConfigurationName,
-                                     store: state.browserViewModelStore)
+                                     store: state.browserViewModelStore,
+                                     redirectionURLString: state.configuration?.redirectionURL)
             state.browserViewModel = vm
             return [Just(.addErrorToInternalStates(error.error)).eraseToEffect()]
             
@@ -293,7 +287,7 @@ extension OwnID.CoreSDK {
             }
             
         case let .addToStateConfig(clientConfig):
-            state.clientConfiguration = clientConfig
+            state.configuration = clientConfig
             let initialEffect = [Just(OwnID.CoreSDK.ViewModelAction.sendInitialRequest).eraseToEffect()]
             let effect = state.shouldStartFlowOnConfigurationReceive ? initialEffect : []
             return effect + [Just(.addToStateShouldStartInitRequest(value: false)).eraseToEffect()]
@@ -308,48 +302,63 @@ extension OwnID.CoreSDK {
         // MARK: AuthManager
         case let .authManager(authManagerAction):
             switch authManagerAction {
-            case .didFinishRegistration(let origin, let fido2RegisterPayload, let browserBaseURL):
-                guard let email = state.email else {
-                    return errorEffect(.coreLog(entry: .errorEntry(Self.self), error: .emailIsInvalid))
-                }
-                return [sendSettingsRequest(session: state.session,
-                                            loginID: email.rawValue,
-                                            origin: origin,
-                                            fido2Payload: fido2RegisterPayload,
-                                            browserBaseURL: browserBaseURL)]
+            case .didFinishRegistration(let fido2RegisterPayload, let browserBaseURL):
+                return didFinishAuthManagerAction(state, fido2RegisterPayload, browserBaseURL)
                 
-            case .didFinishLogin(let origin, let fido2LoginPayload, let browserBaseURL):
-                return [sendAuthRequest(session: state.session,
-                                        origin: origin,
-                                        fido2Payload: fido2LoginPayload,
-                                        shouldPerformStatusRequest: true,
-                                        browserBaseURL: browserBaseURL)]
+            case .didFinishLogin(let fido2LoginPayload, let browserBaseURL):
+                return didFinishAuthManagerAction(state, fido2LoginPayload, browserBaseURL)
                 
             case let .error(error, context, browserBaseURL):
                 let vm = createBrowserVM(for: context,
                                          browserURL: browserBaseURL,
                                          email: state.email,
                                          sdkConfigurationName: state.sdkConfigurationName,
-                                         store: state.browserViewModelStore)
+                                         store: state.browserViewModelStore,
+                                         redirectionURLString: state.configuration?.redirectionURL)
                 state.browserViewModel = vm
                 return [Just(.addErrorToInternalStates(error)).eraseToEffect()]
             }
         }
     }
-    
 }
 
 // MARK: Action Functions
 
 extension OwnID.CoreSDK {
+    static var isPasskeysSupported: Bool {
+        let isLeastPasskeysSupportediOS = ProcessInfo().isOperatingSystemAtLeast(OperatingSystemVersion(majorVersion: 16, minorVersion: 0, patchVersion: 0))
+        var isBiometricsAvailable = false
+        let authContext = LAContext()
+        let _ = authContext.canEvaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, error: nil)
+        switch authContext.biometryType {
+        case .none:
+            break
+        case .touchID:
+            isBiometricsAvailable = true
+        case .faceID:
+            isBiometricsAvailable = true
+        @unknown default:
+            print("please update biometrics types")
+        }
+        let isPasscodeAvailable = LAContext().canEvaluatePolicy(.deviceOwnerAuthentication, error: nil)
+        let isPasskeysSupported = isLeastPasskeysSupportediOS && (isBiometricsAvailable || isPasscodeAvailable)
+        return isPasskeysSupported
+    }
+    static func didFinishAuthManagerAction(_ state: OwnID.CoreSDK.ViewModelState,
+                                           _ fido2RegisterPayload: Encodable,
+                                           _ browserBaseURL: String) -> [Effect<OwnID.CoreSDK.ViewModelAction>] {
+        [sendAuthRequest(session: state.session,
+                         fido2Payload: fido2RegisterPayload,
+                         browserBaseURL: browserBaseURL)]
+    }
+    
     static func createBrowserVM(for context: String,
                                 browserURL: String,
                                 email: Email?,
                                 sdkConfigurationName: String,
-                                store: Store<BrowserOpenerViewModel.State, BrowserOpenerViewModel.Action>) -> BrowserOpenerViewModel {
-        let redirectionEncoded = OwnID.CoreSDK.shared.getConfiguration(for: sdkConfigurationName)
-            .redirectionURL
-            .addingPercentEncoding(withAllowedCharacters: .urlHostAllowed)
+                                store: Store<BrowserOpenerViewModel.State, BrowserOpenerViewModel.Action>,
+                                redirectionURLString: RedirectionURLString?) -> BrowserOpenerViewModel {
+        let redirectionEncoded = (redirectionURLString ?? "").addingPercentEncoding(withAllowedCharacters: .urlHostAllowed)
         let redirect = redirectionEncoded! + "?context=" + context
         let redirectParameter = "&redirectURI=" + redirect
         var urlString = browserURL
@@ -363,7 +372,7 @@ extension OwnID.CoreSDK {
         }
         urlString.append(redirectParameter)
         let url = URL(string: urlString)!
-        let vm = BrowserOpenerViewModel(store: store, url: url)
+        let vm = BrowserOpenerViewModel(store: store, url: url, redirectionURL: redirectionURLString ?? "")
         return vm
     }
     
@@ -371,43 +380,27 @@ extension OwnID.CoreSDK {
         [Just(.error(error)).eraseToEffect()]
     }
     
-    static func sendInitialRequest(type: OwnID.CoreSDK.RequestType,
-                                   token: OwnID.CoreSDK.JWTToken?,
-                                   session: APISessionProtocol,
-                                   origin: String?) -> Effect<ViewModelAction> {
-        session.performInitRequest(type: type, token: token, origin: origin)
+    static func sendInitialRequest(requestData: OwnID.CoreSDK.Init.RequestData,
+                                   session: APISessionProtocol) -> Effect<ViewModelAction> {
+        session.performInitRequest(requestData: requestData)
             .receive(on: DispatchQueue.main)
             .map { ViewModelAction.initialRequestLoaded(response: $0) }
             .catch { Just(ViewModelAction.error($0)) }
             .eraseToEffect()
     }
     
-    static func sendSettingsRequest(session: APISessionProtocol,
-                                    loginID: String,
-                                    origin: String,
-                                    fido2Payload: Encodable,
-                                    browserBaseURL: String) -> Effect<ViewModelAction> {
-        session.performSettingsRequest(loginID: loginID, origin: origin)
-            .receive(on: DispatchQueue.main)
-            .map { ViewModelAction.settingsRequestLoaded(response: $0, origin: origin, fido2Payload: fido2Payload, browserBaseURL: browserBaseURL) }
-            .catch { Just(ViewModelAction.authManagerRequestFail(error: $0, browserBaseURL: browserBaseURL)) }
-            .eraseToEffect()
-    }
-    
     static func sendAuthRequest(session: APISessionProtocol,
-                                origin: String,
                                 fido2Payload: Encodable,
-                                shouldPerformStatusRequest: Bool,
                                 browserBaseURL: String) -> Effect<ViewModelAction> {
-        session.performAuthRequest(origin: origin, fido2Payload: fido2Payload, shouldIgnoreResponseBody: shouldPerformStatusRequest)
+        session.performAuthRequest(fido2Payload: fido2Payload)
             .receive(on: DispatchQueue.main)
-            .map { ViewModelAction.authRequestLoaded(response: $0, shouldPerformStatusRequest: shouldPerformStatusRequest) }
+            .map { _ in ViewModelAction.authRequestLoaded }
             .catch { Just(ViewModelAction.authManagerRequestFail(error: $0, browserBaseURL: browserBaseURL)) }
             .eraseToEffect()
     }
     
-    static func sendStatusRequest(session: APISessionProtocol, origin: String?) -> Effect<ViewModelAction> {
-        session.performStatusRequest(origin: origin)
+    static func sendStatusRequest(session: APISessionProtocol) -> Effect<ViewModelAction> {
+        session.performFinalStatusRequest()
             .map { ViewModelAction.statusRequestLoaded(response: $0) }
             .catch { Just(ViewModelAction.error($0)) }
             .eraseToEffect()

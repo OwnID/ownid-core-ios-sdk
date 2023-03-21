@@ -26,8 +26,8 @@ extension OwnID.CoreSDK.AccountManager {
     }
     
     enum Action {
-        case didFinishRegistration(origin: String, fido2RegisterPayload: OwnID.CoreSDK.Fido2RegisterPayload, browserBaseURL: String)
-        case didFinishLogin(origin: String, fido2LoginPayload: OwnID.CoreSDK.Fido2LoginPayload, browserBaseURL: String)
+        case didFinishRegistration(fido2RegisterPayload: OwnID.CoreSDK.Fido2RegisterPayload, browserBaseURL: String)
+        case didFinishLogin(fido2LoginPayload: OwnID.CoreSDK.Fido2LoginPayload, browserBaseURL: String)
         case error(error: OwnID.CoreSDK.Error, context: OwnID.CoreSDK.Context, browserBaseURL: String)
     }
 }
@@ -90,7 +90,10 @@ extension OwnID.CoreSDK {
         
         @available(iOS 16.0, *)
         func beginAutoFillAssistedPasskeySignIn() {
-            fatalError("For now autofill is not supported right here, we need some other way to enable this as we need new challenge for this")
+            if true {
+                print("For now autofill is not supported right here, we need some other way to enable this as we need new challenge for this")
+                return
+            }
             currentAuthController?.cancel()
             
             let publicKeyCredentialProvider = ASAuthorizationPlatformPublicKeyCredentialProvider(relyingPartyIdentifier: domain)
@@ -143,7 +146,7 @@ extension OwnID.CoreSDK {
                 let payload = OwnID.CoreSDK.Fido2RegisterPayload(credentialId: credentialID,
                                                                  clientDataJSON: clientDataJSON,
                                                                  attestationObject: attestationObject)
-                store.send(.didFinishRegistration(origin: domain, fido2RegisterPayload: payload, browserBaseURL: browserBaseURL))
+                store.send(.didFinishRegistration(fido2RegisterPayload: payload, browserBaseURL: browserBaseURL))
                 
             case let credentialAssertion as ASAuthorizationPlatformPublicKeyCredentialAssertion:
                 // Verify the below signature and clientDataJSON with your service for the given userID.
@@ -156,7 +159,7 @@ extension OwnID.CoreSDK {
                                                               clientDataJSON: clientDataJSON.base64urlEncodedString(),
                                                               authenticatorData: rawAuthenticatorData,
                                                               signature: signature)
-                store.send(.didFinishLogin(origin: domain, fido2LoginPayload: payload, browserBaseURL: browserBaseURL))
+                store.send(.didFinishLogin(fido2LoginPayload: payload, browserBaseURL: browserBaseURL))
                 
             default:
                 store.send(.error(error: .authorizationManagerUnknownAuthType, context: challenge, browserBaseURL: browserBaseURL))

@@ -71,13 +71,15 @@ public extension OwnID.CoreSDK {
                     type: EventType,
                     category: EventCategory,
                     context: String,
-                    metadata: [String : String?] = [String : String]()) {
+                    metadata: [String : String] = [String : String]()) {
             super.init(context: context, message: "", codeInitiator: "\(Self.self)", sdkName: OwnID.CoreSDK.sdkName, version: OwnID.CoreSDK.UserAgentManager.shared.userFacingSDKVersion,
                        metadata: metadata)
             self.type = type
             self.action = action
             self.category = category
         }
+        
+        override func isMetric() -> Bool { true }
     }
 }
 

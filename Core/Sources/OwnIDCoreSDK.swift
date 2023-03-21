@@ -7,6 +7,13 @@ public extension OwnID.CoreSDK {
     static let APIVersion = "1"
 }
 
+extension OwnID.CoreSDK {
+    enum ConfigurationLoadingEvent {
+        case loaded(LocalConfiguration)
+        case error
+    }
+}
+
 /// OwnID class represents core part of SDK. It performs initialization and creates views. It reads OwnIDConfiguration from disk, parses it and loads to memory for later usage. It is a singleton, so the URL returned from outside can be linked to corresponding flow.
 public extension OwnID {
     
@@ -17,9 +24,7 @@ public extension OwnID {
     }
     
     final class CoreSDK {
-        public var serverURL: ServerURL {
-            getConfiguration(for: configurationName).ownIDServerURL
-        }
+        public var serverConfigurationURL: ServerURL? { store.value.firstConfiguration?.ownIDServerConfigurationURL }
         
         func enableLogging(logLevel: OwnID.CoreSDK.LogLevel) {
             store.send(.startDebugLogger(logLevel: logLevel))
@@ -33,11 +38,11 @@ public extension OwnID {
         @ObservedObject var store: Store<SDKState, SDKAction>
         
         private let urlPublisher = PassthroughSubject<Void, OwnID.CoreSDK.CoreErrorLogWrapper>()
-        private let configurationLoadedPublisher = PassthroughSubject<ClientConfiguration, Never>()
+        private let configurationLoadingEventPublisher = PassthroughSubject<ConfigurationLoadingEvent, Never>()
         
         private init() {
             let store = Store(
-                initialValue: SDKState(configurationLoadedPublisher: configurationLoadedPublisher),
+                initialValue: SDKState(configurationLoadingEventPublisher: configurationLoadingEventPublisher),
                 reducer: with(
                     OwnID.CoreSDK.coreReducer,
                     logging
@@ -48,13 +53,11 @@ public extension OwnID {
         
         public var isSDKConfigured: Bool { !store.value.configurations.isEmpty }
         
-        var configurationName: String { store.value.configurationName }
-        
         public static var logger: LoggerProtocol { Logger.shared }
         
-        public func configureForTests() {
-            store.send(.configureForTests)
-        }
+        public func configureForTests() { store.send(.configureForTests) }
+        
+        public func requestConfiguration() { store.send(.fetchServerConfiguration) }
         
         public func configure(userFacingSDK: SDKInformation,
                               underlyingSDKs: [SDKInformation],
@@ -93,48 +96,30 @@ public extension OwnID {
                                       supportedLanguages: supportedLanguages))
         }
         
-        func getConfiguration(for sdkConfigurationName: String) -> Configuration {
-            store.value.getConfiguration(for: sdkConfigurationName)
-        }
-        
         func createCoreViewModelForRegister(email: Email? = .none,
                                             sdkConfigurationName: String) -> CoreViewModel {
-            let languages = store.value.supportedLanguages
-            let session = apiSession(configurationName: sdkConfigurationName, supportedLanguages: languages)
             let viewModel = CoreViewModel(type: .register,
                                           email: email,
-                                          token: .none,
-                                          session: session,
+                                          supportedLanguages: store.value.supportedLanguages,
                                           sdkConfigurationName: sdkConfigurationName,
                                           isLoggingEnabled: store.value.isLoggingEnabled,
-                                          clientConfiguration: store.value.clientConfiguration)
+                                          clientConfiguration: store.value.getOptionalConfiguration(for: sdkConfigurationName))
             viewModel.subscribeToURL(publisher: urlPublisher.eraseToAnyPublisher())
-            viewModel.subscribeToConfiguration(publisher: configurationLoadedPublisher.eraseToAnyPublisher())
+            viewModel.subscribeToConfiguration(publisher: configurationLoadingEventPublisher.eraseToAnyPublisher())
             return viewModel
         }
         
         func createCoreViewModelForLogIn(email: Email? = .none,
                                          sdkConfigurationName: String) -> CoreViewModel {
-            let languages = store.value.supportedLanguages
-            let session = apiSession(configurationName: sdkConfigurationName, supportedLanguages: languages)
             let viewModel = CoreViewModel(type: .login,
                                           email: email,
-                                          token: .none,
-                                          session: session,
+                                          supportedLanguages: store.value.supportedLanguages,
                                           sdkConfigurationName: sdkConfigurationName,
                                           isLoggingEnabled: store.value.isLoggingEnabled,
-                                          clientConfiguration: store.value.clientConfiguration)
+                                          clientConfiguration: store.value.getOptionalConfiguration(for: sdkConfigurationName))
             viewModel.subscribeToURL(publisher: urlPublisher.eraseToAnyPublisher())
-            viewModel.subscribeToConfiguration(publisher: configurationLoadedPublisher.eraseToAnyPublisher())
+            viewModel.subscribeToConfiguration(publisher: configurationLoadingEventPublisher.eraseToAnyPublisher())
             return viewModel
-        }
-        
-        func apiSession(configurationName: String, supportedLanguages: OwnID.CoreSDK.Languages) -> APISessionProtocol {
-            APISession(serverURL: serverURL(for: configurationName),
-                       statusURL: statusURL(for: configurationName),
-                       settingsURL: settingURL(for: configurationName),
-                       authURL: authURL(for: configurationName),
-                       supportedLanguages: supportedLanguages)
         }
         
         /// Used to handle the redirects from browser after webapp is finished
@@ -150,12 +135,8 @@ public extension OwnID {
                 return
             }
             
-            guard url
-                .absoluteString
-                .lowercased()
-                .starts(with: getConfiguration(for: sdkConfigurationName)
-                    .redirectionURL
-                    .lowercased())
+            guard let redirection = store.value.getOptionalConfiguration(for: sdkConfigurationName),
+                  url.absoluteString.lowercased().starts(with: redirection.redirectionURL.lowercased())
             else {
                 urlPublisher.send(completion: .failure(.coreLog(entry: .errorEntry(Self.self), error: .notValidRedirectionURLOrNotMatchingFromConfiguration)))
                 return
@@ -165,26 +146,16 @@ public extension OwnID {
     }
 }
 
-extension OwnID.CoreSDK {
-    func statusURL(for sdkConfigurationName: String) -> ServerURL {
-        getConfiguration(for: sdkConfigurationName).statusURL
-    }
-    
-    func settingURL(for sdkConfigurationName: String) -> ServerURL {
-        getConfiguration(for: sdkConfigurationName).settingURL
-    }
-    
-    func authURL(for sdkConfigurationName: String) -> ServerURL {
-        getConfiguration(for: sdkConfigurationName).authURL
-    }
-}
-
 public extension OwnID.CoreSDK {
     var environment: String? {
-        getConfiguration(for: configurationName).environment
+        store.value.firstConfiguration?.environment
     }
     
-    var metricsURL: ServerURL {
-        serverURL.deletingLastPathComponent().appendingPathComponent("events")
+    var metricsURL: ServerURL? {
+        store.value.firstConfiguration?.metricsURL
+    }
+    
+    var supportedLocales: [String]? {
+        store.value.firstConfiguration?.supportedLocales
     }
 }

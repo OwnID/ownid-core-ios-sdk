@@ -14,9 +14,6 @@ extension OwnID.CoreSDK {
 extension OwnID.CoreSDK.LogLevel {
     var osLogType: OSLogType {
         switch self {
-        case .trace:
-            return .debug
-            
         case .debug:
             return .debug
             
@@ -28,9 +25,6 @@ extension OwnID.CoreSDK.LogLevel {
             
         case .error:
             return .error
-            
-        case .critical:
-            return .fault
         }
     }
 }

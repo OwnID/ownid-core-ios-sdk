@@ -55,30 +55,6 @@ public extension OwnID.CoreSDK {
         public let error: String
     }
     
-    struct JWTToken: Identifiable {
-        public var id: String {
-            jwtString
-        }
-        
-        public let jwtString: String
-        
-        public init(for token: StringToken) {
-            jwtString = Self.encoded(token: token.rawValue)
-        }
-        
-        private init(plain: String) {
-            jwtString = Self.encoded(token: plain)
-        }
-        
-        private static func encoded(token: String) -> String {
-            "{\"jwt\":\"\(token)\"}"
-        }
-        
-        public static func initFromPlain(string: String) -> JWTToken {
-            JWTToken(plain: string)
-        }
-    }
-    
     struct Payload {
         /// Used for later processing and creating login\registration requests
         public let dataContainer: Any?

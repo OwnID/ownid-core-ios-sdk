@@ -4,7 +4,9 @@ import Combine
 import AuthenticationServices
 
 protocol BrowserOpener: AnyObject {
-    init(store: Store<OwnID.CoreSDK.BrowserOpenerViewModel.State, OwnID.CoreSDK.BrowserOpenerViewModel.Action>, url: URL)
+    init(store: Store<OwnID.CoreSDK.BrowserOpenerViewModel.State, OwnID.CoreSDK.BrowserOpenerViewModel.Action>,
+         url: URL,
+         redirectionURL: OwnID.CoreSDK.RedirectionURLString)
     func cancel()
 }
 
@@ -21,17 +23,17 @@ extension OwnID.CoreSDK {
         private let authSessionContext = ASWebAuthenticationPresentationContext()
         private var cancellableSession: ASWebAuthenticationSession?
         
-        init(store: Store<State, Action>, url: URL) {
+        init(store: Store<State, Action>, url: URL, redirectionURL: RedirectionURLString) {
             self.store = store
-            startAuthSession(url: url)
+            startAuthSession(url: url, redirectionURL: redirectionURL)
         }
         
         func cancel() {
             cancellableSession?.cancel()
         }
         
-        private func startAuthSession(url: URL) {
-            if let schemeURL = URL(string: OwnID.CoreSDK.shared.redirectionURL(for: store.value)) {
+        private func startAuthSession(url: URL, redirectionURL: RedirectionURLString) {
+            if let schemeURL = URL(string: redirectionURL) {
                 let configName = store.value
                 let session = ASWebAuthenticationSession(url: url, callbackURLScheme: .none)
                 { [weak self] _, error in

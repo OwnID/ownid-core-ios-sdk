@@ -20,6 +20,9 @@ extension OwnID.CoreSDK {
                 }
                 .eraseToAnyPublisher()
                 .tryMap { response -> [String: Any] in
+                    if shouldIgnoreResponseBody {
+                        return [:]
+                    }
                     guard !response.data.isEmpty else { throw emptyResponseError() }
                     guard let json = try JSONSerialization.jsonObject(with: response.data, options: []) as? [String: Any] else {
                         throw OwnID.CoreSDK.CoreErrorLogWrapper.coreLog(entry: .errorEntry(context: context, Self.self), error: emptyResponseError())
