@@ -166,6 +166,7 @@ private extension OwnID.FlowsSDK.LoginView.ViewModel {
                 OwnID.CoreSDK.logger.logAnalytic(.loginTrackMetric(action: .loggedIn,
                                                                    context: payload.context,
                                                                    authType: payload.authType))
+                OwnID.CoreSDK.DefaultsEmailSaver.save(email: email)
                 state = .loggedIn
                 resultPublisher.send(.success(.loggedIn(loginResult: loginResult.operationResult, authType: loginResult.authType)))
                 resetDataAndState(isResettingToInitialState: false)

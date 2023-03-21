@@ -122,6 +122,7 @@ public extension OwnID.FlowsSDK.RegisterView {
                     OwnID.CoreSDK.logger.logAnalytic(.registerTrackMetric(action: .registered,
                                                                           context: payload.context,
                                                                           authType: registrationResult.authType))
+                    OwnID.CoreSDK.DefaultsEmailSaver.save(email: email)
                     resultPublisher.send(.success(.userRegisteredAndLoggedIn(registrationResult: registrationResult.operationResult, authType: registrationResult.authType)))
                     resetDataAndState()
                 }
