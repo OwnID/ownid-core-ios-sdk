@@ -62,15 +62,17 @@ extension OwnID.CoreSDK {
             case .loaded(let config):
                 state.configurationRequestData = .none
                 state.configurations[userFacingSDK.name] = config
+                state.configurationLoadingEventPublisher.send(configurationLoadingEvent)
+                return [
+                    translationsDownloaderSDKConfigured(with: state.supportedLanguages),
+                    sendLoggerSDKConfigured()
+                ]
                 
             case .error:
                 state.configurationRequestData?.isLoading = false
+                state.configurationLoadingEventPublisher.send(configurationLoadingEvent)
+                return []
             }
-            state.configurationLoadingEventPublisher.send(configurationLoadingEvent)
-            return [
-                translationsDownloaderSDKConfigured(with: state.supportedLanguages),
-                sendLoggerSDKConfigured()
-            ]
         }
     }
     
