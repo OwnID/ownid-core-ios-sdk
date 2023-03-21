@@ -71,7 +71,9 @@ extension OwnID.CoreSDK {
         func isMetric() -> Bool { false }
         
         func shouldLog(for priority: Int) -> Bool {
-            level?.shouldLog(for: priority) ?? false
+            if isMetric() { return true }
+            let shouldLog = level?.shouldLog(for: priority) ?? false
+            return shouldLog
         }
     }
 }
