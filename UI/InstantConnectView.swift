@@ -7,7 +7,6 @@ public extension OwnID.UISDK {
             _email = Binding(get: { return "" }, set: { value, _ in
                 emailPublisher.send(value)
             })
-            convert publisher to binding
         }
         
         @Binding private var email: String
