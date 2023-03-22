@@ -14,6 +14,7 @@ public extension OwnID.CoreSDK {
         case tokenDataIsMissing
         case contextIsMissing
         case flowCancelled
+        case emailMismatch
         case payloadMissing(underlying: String?)
         
         case initRequestNetworkFailed(underlying: URLError)
@@ -126,6 +127,9 @@ extension OwnID.CoreSDK.Error: LocalizedError {
             
         case .localizationManager(underlying: let underlying):
             return underlying.localizedDescription
+            
+        case .emailMismatch:
+            return "Email address mismatch. Email address during OwnID flow differs from email address during registration"
         }
     }
 }
@@ -149,6 +153,7 @@ extension OwnID.CoreSDK.Error: CustomDebugStringConvertible {
                 .authRequestNetworkFailed,
                 .plugin,
                 .serverError,
+                .emailMismatch,
                 .payloadMissing:
             return errorDescription ?? ""
             
