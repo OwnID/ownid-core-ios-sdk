@@ -1,6 +1,6 @@
 import Foundation
 
-extension OwnID.CoreSDK.ViewModelAction: CustomDebugStringConvertible {
+extension OwnID.CoreSDK.CoreViewModel.Action: CustomDebugStringConvertible {
     var debugDescription: String {
         switch self {
         case .addToState:
