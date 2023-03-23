@@ -4,14 +4,13 @@ import Combine
 public extension OwnID.UISDK {
     struct InstantConnectView<Content: View>: View {
         private let content: () -> Content
+        private let emailPublisher: PassthroughSubject<String, Never>
         public init(emailPublisher: PassthroughSubject<String, Never>, @ViewBuilder content: @escaping () -> Content) {
             self.content = content
-            _email = Binding(get: { return "" }, set: { value, _ in
-                emailPublisher.send(value)
-            })
+            self.emailPublisher = emailPublisher
         }
         
-        @Binding private var email: String
+        @State private var email = ""
         
         private let resultPublisher = PassthroughSubject<Void, Never>()
         
@@ -22,11 +21,28 @@ public extension OwnID.UISDK {
         }
         
         public var body: some View {
-            ZStack {
-                content()
-                Group {
-                    TextField("", text: $email)
+            if #available(iOS 14.0, *) {
+                ZStack {
+                    content()
+                    VStack {
+                        TextField("", text: $email)
+                            .background(Rectangle().fill(.gray))
+                            .padding()
+                        Button("Continue") {
+                            resultPublisher.send(())
+                        }
+                        .padding()
+                    }
+                    .frame(height: 200)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .background(Rectangle().fill(.red))
+                    .padding()
                 }
+                .onChange(of: email) { newValue in
+                    emailPublisher.send(newValue)
+                }
+            } else {
+                content()
             }
         }
     }
