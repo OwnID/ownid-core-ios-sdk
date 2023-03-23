@@ -2,8 +2,10 @@ import SwiftUI
 import Combine
 
 public extension OwnID.UISDK {
-    struct InstantConnectView: View {
-        public init(emailPublisher: PassthroughSubject<String, Never>) {
+    struct InstantConnectView<Content: View>: View {
+        private let content: () -> Content
+        public init(emailPublisher: PassthroughSubject<String, Never>, @ViewBuilder content: @escaping () -> Content) {
+            self.content = content
             _email = Binding(get: { return "" }, set: { value, _ in
                 emailPublisher.send(value)
             })
@@ -20,7 +22,12 @@ public extension OwnID.UISDK {
         }
         
         public var body: some View {
-            TextField("", text: $email)
+            ZStack {
+                content()
+                Group {
+                    TextField("", text: $email)
+                }
+            }
         }
     }
 }
