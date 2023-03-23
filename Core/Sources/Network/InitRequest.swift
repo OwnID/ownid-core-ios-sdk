@@ -18,7 +18,6 @@ public extension OwnID.CoreSDK.Init {
         let type: OwnID.CoreSDK.RequestType
         let loginId: String?
         let supportsFido2: Bool
-        let deviceInfo = ["os": "ios", "osVersion": OwnID.CoreSDK.UserAgentManager.shared.systemVersion]
         
         static func create(sessionChallenge: OwnID.CoreSDK.SessionChallenge, data: RequestData) -> Self {
             Self(sessionChallenge: sessionChallenge, type: data.type, loginId: data.loginId, supportsFido2: data.supportsFido2)
