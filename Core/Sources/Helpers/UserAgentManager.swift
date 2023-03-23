@@ -22,7 +22,7 @@ public extension OwnID.CoreSDK {
         }
         
         var userFacingSDKVersion: String { version }
-        var systemVersion: String { UIDevice.current.systemVersion }
+        private var systemVersion: String { UIDevice.current.systemVersion }
         
         public lazy var underlyingSDKs = [OwnID.CoreSDK.sdkName]
         public lazy var SDKUserAgent = userAgent(for: (OwnID.CoreSDK.sdkName, OwnID.CoreSDK.version), underlyingSDKs: [])
