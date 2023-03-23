@@ -1,10 +1,10 @@
 import Combine
 
 extension OwnID.CoreSDK {
-    private static func getDataFrom(plistUrl: URL,
-                                    userFacingSDK: SDKInformation,
-                                    underlyingSDKs: [SDKInformation],
-                                    isTestingEnvironment: Bool) -> Effect<SDKAction> {
+    static func getDataFrom(plistUrl: URL,
+                            userFacingSDK: SDKInformation,
+                            underlyingSDKs: [SDKInformation],
+                            isTestingEnvironment: Bool) -> Effect<SDKAction> {
         let data = try! Data(contentsOf: plistUrl)
         let decoder = PropertyListDecoder()
         let config = try! decoder.decode(OwnID.CoreSDK.LocalConfiguration.self, from: data)
@@ -15,7 +15,7 @@ extension OwnID.CoreSDK {
         return Just(action).eraseToEffect()
     }
     
-    private static func testConfiguration() -> Effect<SDKAction> {
+    static func testConfiguration() -> Effect<SDKAction> {
         let action = SDKAction.configure(appID: "gephu5k2dnff2v",
                                          redirectionURL: "com.ownid.demo.gigya://ownid/redirect/",
                                          userFacingSDK: (OwnID.CoreSDK.sdkName, OwnID.CoreSDK.version),
@@ -26,12 +26,12 @@ extension OwnID.CoreSDK {
         return Just(action).eraseToEffect()
     }
     
-    private static func createConfiguration(appID: OwnID.CoreSDK.AppID,
-                                            redirectionURL: RedirectionURLString,
-                                            userFacingSDK: SDKInformation,
-                                            underlyingSDKs: [SDKInformation],
-                                            isTestingEnvironment: Bool,
-                                            environment: String?) -> Effect<SDKAction> {
+    static func createConfiguration(appID: OwnID.CoreSDK.AppID,
+                                    redirectionURL: RedirectionURLString,
+                                    userFacingSDK: SDKInformation,
+                                    underlyingSDKs: [SDKInformation],
+                                    isTestingEnvironment: Bool,
+                                    environment: String?) -> Effect<SDKAction> {
         let config = try! OwnID.CoreSDK.LocalConfiguration(appID: appID,
                                                            redirectionURL: redirectionURL,
                                                            environment: environment)
@@ -42,10 +42,10 @@ extension OwnID.CoreSDK {
         .eraseToEffect()
     }
     
-    private static func startLoggerIfNeeded(userFacingSDK: SDKInformation,
-                                            underlyingSDKs: [SDKInformation],
-                                            isTestingEnvironment: Bool) -> Effect<SDKAction> {
-        return .fireAndForget {
+    static func startLoggerIfNeeded(userFacingSDK: SDKInformation,
+                                    underlyingSDKs: [SDKInformation],
+                                    isTestingEnvironment: Bool) -> Effect<SDKAction> {
+        .fireAndForget {
             OwnID.CoreSDK.UserAgentManager.shared.registerUserFacingSDKName(userFacingSDK, underlyingSDKs: underlyingSDKs)
             if !isTestingEnvironment {
                 OwnID.CoreSDK.logger.add(OwnID.CoreSDK.MetricsLogger())
@@ -54,12 +54,13 @@ extension OwnID.CoreSDK {
         }
     }
     
-    private static func fetchServerConfiguration(config: LocalConfiguration,
-                                                 userFacingSDK: OwnID.CoreSDK.SDKInformation) -> Effect<SDKAction> {
+    static func fetchServerConfiguration(config: LocalConfiguration,
+                                         apiEndpoint: APIEndpoint,
+                                         userFacingSDK: OwnID.CoreSDK.SDKInformation) -> Effect<SDKAction> {
         let effect = Deferred {
-            
-            .replaceError(with: .mock(true))
-            .eraseToAnyPublisher()
+            apiEndpoint.serverConfiguration(config.ownIDServerConfigurationURL)
+                .replaceError(with: .mock(isFailed: true))
+                .eraseToAnyPublisher()
                 .flatMap { serverConfiguration -> AnyPublisher<SDKAction, Never> in
                     if serverConfiguration.isFailed {
                         return Just(.save(configurationLoadingEvent: .error, userFacingSDK: userFacingSDK)).eraseToAnyPublisher()
@@ -78,14 +79,14 @@ extension OwnID.CoreSDK {
         return effect.eraseToEffect()
     }
     
-    private static func translationsDownloaderSDKConfigured(with supportedLanguages: OwnID.CoreSDK.Languages) -> Effect<SDKAction> {
+    static func translationsDownloaderSDKConfigured(with supportedLanguages: OwnID.CoreSDK.Languages) -> Effect<SDKAction> {
         .fireAndForget {
             OwnID.CoreSDK.shared.translationsModule.SDKConfigured(supportedLanguages: supportedLanguages)
             OwnID.CoreSDK.logger.logCore(.entry(OwnID.CoreSDK.self))
         }
     }
     
-    private static func sendLoggerSDKConfigured() -> Effect<SDKAction> {
+    static func sendLoggerSDKConfigured() -> Effect<SDKAction> {
         .fireAndForget {
             OwnID.CoreSDK.logger.sdkConfigured()
         }

@@ -8,7 +8,7 @@ extension OwnID.CoreSDK {
         let configurationLoadingEventPublisher: PassthroughSubject<ConfigurationLoadingEvent, Never>
         var supportedLanguages: OwnID.CoreSDK.Languages = .init(rawValue: ["en"])
         var configurationRequestData: ConfigurationRequestData?
-        var urlSession: URLSession = URLSession.shared
+        var apiEndpoint: APIEndpoint = .live
     }
 }
 

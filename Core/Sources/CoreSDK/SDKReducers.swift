@@ -35,6 +35,7 @@ extension OwnID.CoreSDK {
             if configurationRequestData.isLoading { return [] }
             state.configurationRequestData?.isLoading = true
             return [fetchServerConfiguration(config: configurationRequestData.config,
+                                             apiEndpoint: state.apiEndpoint,
                                              userFacingSDK: configurationRequestData.userFacingSDK)]
             
         case .startDebugLogger(let level):
@@ -43,6 +44,7 @@ extension OwnID.CoreSDK {
             return []
             
         case .configureForTests:
+            state.apiEndpoint = .testMock
             OwnID.startDebugConsoleLogger()
             return [testConfiguration()]
             
