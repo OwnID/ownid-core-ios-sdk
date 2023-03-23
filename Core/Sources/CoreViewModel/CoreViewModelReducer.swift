@@ -4,8 +4,12 @@ extension OwnID.CoreSDK.CoreViewModel {
     static func reducer(state: inout State, action: Action) -> [Effect<Action>] {
         switch action {
         case .sendInitialRequest:
+            let emailInvalidEffect = errorEffect(.coreLog(entry: .errorEntry(Self.self), error: .emailIsInvalid))
+            if state.email == nil {
+                return emailInvalidEffect
+            }
             if let email = state.email, !email.rawValue.isEmpty, !email.isValid {
-                return errorEffect(.coreLog(entry: .errorEntry(Self.self), error: .emailIsInvalid))
+                return emailInvalidEffect
             }
             guard let configuration = state.configuration else { return errorEffect(.coreLog(entry: .errorEntry(Self.self), error: .localConfigIsNotPresent)) }
             let session = OwnID.CoreSDK.APISession(initURL: configuration.initURL,
