@@ -12,14 +12,14 @@ public extension OwnID.UISDK {
         @Binding private var buttonState: ButtonState
         
         public init(emailPublisher: PassthroughSubject<String, Never>,
-                    viewState: Binding<ButtonState>,
+//                    viewState: Binding<ButtonState>,
                     visualConfig: VisualLookConfig,
-                    isLoading: Binding<Bool>,
+//                    isLoading: Binding<Bool>,
                     @ViewBuilder content: @escaping () -> Content) {
             self.content = content
             self.emailPublisher = emailPublisher
-            _isLoading = isLoading
-            _buttonState = viewState
+            _isLoading = .constant(false)
+            _buttonState = .constant(.enabled)
             self.visualConfig = visualConfig
         }
         
@@ -37,7 +37,7 @@ public extension OwnID.UISDK {
             if #available(iOS 14.0, *) {
                 ZStack {
                     content()
-                    Text("X")
+                    Image("closeImage", bundle: .resourceBundle)
                     Text("Sign In")
                     VStack {
                         Text("Enter your email")
