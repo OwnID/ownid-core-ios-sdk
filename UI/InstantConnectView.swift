@@ -12,9 +12,9 @@ public extension OwnID.UISDK {
         @Binding private var buttonState: ButtonState
         
         public init(emailPublisher: PassthroughSubject<String, Never>,
-//                    viewState: Binding<ButtonState>,
+                    //                    viewState: Binding<ButtonState>,
                     visualConfig: VisualLookConfig,
-//                    isLoading: Binding<Bool>,
+                    //                    isLoading: Binding<Bool>,
                     @ViewBuilder content: @escaping () -> Content) {
             self.content = content
             self.emailPublisher = emailPublisher
@@ -37,23 +37,29 @@ public extension OwnID.UISDK {
             if #available(iOS 14.0, *) {
                 ZStack {
                     content()
-                    Image("closeImage", bundle: .resourceBundle)
-                    Text("Sign In")
-                    VStack {
-                        Text("Enter your email")
-                        TextField("", text: $email)
-                            .background(Rectangle().fill(.gray))
-                            .padding()
-                        AuthButton(visualConfig: visualConfig,
-                                   actionHandler: { resultPublisher.send(()) },
-                                   isLoading: $isLoading,
-                                   buttonState: $buttonState)
-                        .padding()
+                    GeometryReader { geometry in
+                        VStack {
+                            HStack {
+                                Text("Sign In")
+                                Spacer()
+                                Image("closeImage", bundle: .resourceBundle)
+                            }
+                            VStack {
+                                Text("Enter your email")
+                                TextField("", text: $email)
+                                    .background(Rectangle().fill(.white))
+                                    .padding()
+                                AuthButton(visualConfig: visualConfig,
+                                           actionHandler: { resultPublisher.send(()) },
+                                           isLoading: $isLoading,
+                                           buttonState: $buttonState)
+                                .padding()
+                            }
+                        }
+                        .background(Rectangle().fill(.gray))
+                        .offset(x: -geometry.frame(in: .global).origin.x, y: -geometry.frame(in: .global).origin.y)
+                        .frame(width: UIScreen.main.bounds.width, height: UIScreen.main.bounds.height)
                     }
-                    .frame(height: 200)
-                    .fixedSize(horizontal: false, vertical: true)
-                    .background(Rectangle().fill(.red))
-                    .padding()
                 }
                 .onChange(of: email) { newValue in
                     emailPublisher.send(newValue)
