@@ -34,36 +34,36 @@ public extension OwnID.UISDK {
         }
         
         public var body: some View {
-            if #available(iOS 14.0, *) {
-                ZStack {
-                    content()
-                    GeometryReader { geometry in
-                        VStack {
-                            HStack {
-                                Text("Sign In")
-                                Spacer()
-                                Image("closeImage", bundle: .resourceBundle)
-                            }
+            if #available(iOS 15.0, *) {
+                content()
+                    .overlay(alignment: .bottom, content: {
+                        GeometryReader { geometry in
                             VStack {
-                                Text("Enter your email")
-                                TextField("", text: $email)
-                                    .background(Rectangle().fill(.white))
+                                HStack {
+                                    Text("Sign In")
+                                    Spacer()
+                                    Image("closeImage", bundle: .resourceBundle)
+                                }
+                                VStack {
+                                    Text("Enter your email")
+                                    TextField("", text: $email)
+                                        .background(Rectangle().fill(.white))
+                                        .padding()
+                                    AuthButton(visualConfig: visualConfig,
+                                               actionHandler: { resultPublisher.send(()) },
+                                               isLoading: $isLoading,
+                                               buttonState: $buttonState)
                                     .padding()
-                                AuthButton(visualConfig: visualConfig,
-                                           actionHandler: { resultPublisher.send(()) },
-                                           isLoading: $isLoading,
-                                           buttonState: $buttonState)
-                                .padding()
+                                }
                             }
+                            .background(Rectangle().fill(.gray))
+                            .offset(x: -geometry.frame(in: .global).origin.x, y: -geometry.frame(in: .global).origin.y)
+                            .frame(width: UIScreen.main.bounds.width, height: UIScreen.main.bounds.height)
                         }
-                        .background(Rectangle().fill(.gray))
-                        .offset(x: -geometry.frame(in: .global).origin.x, y: -geometry.frame(in: .global).origin.y)
-                        .frame(width: UIScreen.main.bounds.width, height: UIScreen.main.bounds.height)
+                    })
+                    .onChange(of: email) { newValue in
+                        emailPublisher.send(newValue)
                     }
-                }
-                .onChange(of: email) { newValue in
-                    emailPublisher.send(newValue)
-                }
             } else {
                 content()
             }
