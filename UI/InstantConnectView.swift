@@ -5,9 +5,22 @@ public extension OwnID.UISDK {
     struct InstantConnectView<Content: View>: View {
         private let content: () -> Content
         private let emailPublisher: PassthroughSubject<String, Never>
-        public init(emailPublisher: PassthroughSubject<String, Never>, @ViewBuilder content: @escaping () -> Content) {
+        
+        private let visualConfig: VisualLookConfig
+        
+        @Binding private var isLoading: Bool
+        @Binding private var buttonState: ButtonState
+        
+        public init(emailPublisher: PassthroughSubject<String, Never>,
+                    viewState: Binding<ButtonState>,
+                    visualConfig: VisualLookConfig,
+                    isLoading: Binding<Bool>,
+                    @ViewBuilder content: @escaping () -> Content) {
             self.content = content
             self.emailPublisher = emailPublisher
+            _isLoading = isLoading
+            _buttonState = viewState
+            self.visualConfig = visualConfig
         }
         
         @State private var email = ""
@@ -24,13 +37,17 @@ public extension OwnID.UISDK {
             if #available(iOS 14.0, *) {
                 ZStack {
                     content()
+                    Text("X")
+                    Text("Sign In")
                     VStack {
+                        Text("Enter your email")
                         TextField("", text: $email)
                             .background(Rectangle().fill(.gray))
                             .padding()
-                        Button("Continue") {
-                            resultPublisher.send(())
-                        }
+                        AuthButton(visualConfig: visualConfig,
+                                   actionHandler: { resultPublisher.send(()) },
+                                   isLoading: $isLoading,
+                                   buttonState: $buttonState)
                         .padding()
                     }
                     .frame(height: 200)
