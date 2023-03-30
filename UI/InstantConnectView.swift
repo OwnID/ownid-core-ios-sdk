@@ -6,20 +6,27 @@ public extension OwnID.UISDK.InstantConnectView {
     static func displayInstantConnectView(emailPublisher: PassthroughSubject<String, Never>,
                                           viewModel: OwnID.FlowsSDK.LoginView.ViewModel,
                                           visualConfig: OwnID.UISDK.VisualLookConfig) -> Self {
+        var hostingVC: UIHostingController<OwnID.UISDK.InstantConnectView>?
+        let containerView = UIView()
+        let closeClosure: () -> Void = {
+            hostingVC?.willMove(toParent: .none)
+            hostingVC?.view.removeFromSuperview()
+            hostingVC?.removeFromParent()
+            containerView.removeFromSuperview()
+        }
         let instantConnectView = OwnID.UISDK.InstantConnectView(emailPublisher: emailPublisher,
                                                                 viewModel: viewModel,
-                                                                visualConfig: visualConfig)
-        
-        guard let topmostVC = topMostController else { return instantConnectView }
-        let containerView = UIView(frame: topmostVC.view.frame)
-        containerView.backgroundColor = .red
+                                                                visualConfig: visualConfig,
+                                                                closeClosure: closeClosure)
+        hostingVC = UIHostingController(rootView: instantConnectView)
+        guard let hostingVC, let topmostVC = topMostController else { return instantConnectView }
+        containerView.frame = topmostVC.view.frame
         containerView.layer.zPosition = CGFloat(Float.greatestFiniteMagnitude)
         
         topmostVC.view.addSubview(containerView)
         topmostVC.view.bringSubviewToFront(containerView)
         
-        let hostingVC = UIHostingController(rootView: instantConnectView)
-        hostingVC.willMove(toParent: topmostVC)
+        topmostVC.addChild(hostingVC)
         containerView.addSubview(hostingVC.view)
         hostingVC.view.frame = containerView.frame
         containerView.bringSubviewToFront(hostingVC.view)
@@ -47,16 +54,18 @@ public extension OwnID.UISDK {
         private let emailPublisher: PassthroughSubject<String, Never>
         
         private let visualConfig: VisualLookConfig
+        private let closeClosure: () -> Void
         
         @ObservedObject private var viewModel: OwnID.FlowsSDK.LoginView.ViewModel
         
         public init(emailPublisher: PassthroughSubject<String, Never>,
                     viewModel: OwnID.FlowsSDK.LoginView.ViewModel,
-                    visualConfig: VisualLookConfig
-        ) {
+                    visualConfig: VisualLookConfig,
+                    closeClosure: @escaping () -> Void) {
             self.emailPublisher = emailPublisher
             self.viewModel = viewModel
             self.visualConfig = visualConfig
+            self.closeClosure = closeClosure
         }
         
         @State private var email = ""
@@ -84,7 +93,12 @@ public extension OwnID.UISDK {
                 HStack {
                     Text("Sign In")
                     Spacer()
-                    Image("closeImage", bundle: .resourceBundle)
+                    Button {
+                        closeClosure()
+                    } label: {
+                        Image("closeImage", bundle: .resourceBundle)
+                    }
+
                 }
                 VStack {
                     Text("Enter your email")
