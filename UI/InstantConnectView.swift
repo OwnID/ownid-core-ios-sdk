@@ -4,25 +4,25 @@ import Combine
 
 public extension OwnID.UISDK.InstantConnectView {
     static func displayInstantConnectView(emailPublisher: PassthroughSubject<String, Never>,
-                                          visualConfig: OwnID.UISDK.VisualLookConfig) {
+                                          visualConfig: OwnID.UISDK.VisualLookConfig) -> Self {
         func topMostController() -> UIViewController? {
             guard let window = UIApplication.shared.keyWindow, let rootViewController = window.rootViewController else {
                 return nil
             }
-
+            
             var topController = rootViewController
-
+            
             while let newTopController = topController.presentedViewController {
                 topController = newTopController
             }
-
+            
             return topController
         }
         
         let vc = topMostController()!
         let v = UIView(frame: vc.view.frame)
-            v.backgroundColor = .red
-            v.layer.zPosition = CGFloat(Float.greatestFiniteMagnitude)
+        v.backgroundColor = .red
+        v.layer.zPosition = CGFloat(Float.greatestFiniteMagnitude)
         
         vc.view.addSubview(v)
         vc.view.bringSubviewToFront(v)
@@ -35,6 +35,7 @@ public extension OwnID.UISDK.InstantConnectView {
         hosting.view.frame = v.frame
         v.bringSubviewToFront(hosting.view)
         hosting.didMove(toParent: vc)
+        return sv
     }
 }
 
