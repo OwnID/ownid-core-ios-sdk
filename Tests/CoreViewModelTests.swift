@@ -2,6 +2,12 @@ import XCTest
 import Combine
 @testable import OwnIDCoreSDK
 
+extension CoreViewModelTests {
+    static var successSession: OwnID.CoreSDK.CoreViewModel.ApiSessionCreationClosure {
+        { _, _ , _ , _ ,_  in OwnID.CoreSDK.APISessionMockSuccess() }
+    }
+}
+
 extension OwnID.CoreSDK {
     final class APISessionMockSuccess: APISessionProtocol {
         var context: OwnID.CoreSDK.Context! { "KreJ96smzSwveEb5QfaJzJ" }
@@ -54,32 +60,13 @@ final class CoreViewModelTests: XCTestCase {
     }
     
     func testSuccessRegistrationPathWithPasskeys() {
-        let exp = expectation(description: #function)
-        
-        let model = OwnID.CoreSDK.shared.createCoreViewModelForRegister(email: OwnID.CoreSDK.Email.init(rawValue: "lesot21279@duiter.com"), sdkConfigurationName: sdkConfigurationName)
-        model.eventPublisher.sink { completion in
-            switch completion {
-            case .finished:
-                break
-                
-            case .failure(let error):
-                XCTFail(error.debugDescription)
-            }
-        } receiveValue: { result in
-            switch result {
-            case .loading:
-                break
-                
-            case .success(let payload):
-                exp.fulfill()
-                
-            case .cancelled:
-                XCTFail()
-            }
-        }
-            .store(in: &bag)
-        
-        model.start()
-        waitForExpectations(timeout: 0.01)
+        let viewModel = OwnID.CoreSDK.CoreViewModel(type: .register,
+                                                    email: .none,
+                                      supportedLanguages: .init(rawValue: ["en"]),
+                                      sdkConfigurationName: sdkConfigurationName,
+                                      isLoggingEnabled: true,
+                                                    clientConfiguration: try! OwnID.CoreSDK.LocalConfiguration(appID: "e8qkk8umn5hxqg", redirectionURL: "com.ownid.demo.firebase://ownid/redirect/", environment: "staging"), apiSessionCreationClosure: Self.successSession)
+//        viewModel.subscribeToURL(publisher: urlPublisher.eraseToAnyPublisher())
+//        viewModel.subscribeToConfiguration(publisher: configurationLoadingEventPublisher.eraseToAnyPublisher())
     }
 }

@@ -12,11 +12,11 @@ extension OwnID.CoreSDK.CoreViewModel {
                 return emailInvalidEffect
             }
             guard let configuration = state.configuration else { return errorEffect(.coreLog(entry: .errorEntry(Self.self), error: .localConfigIsNotPresent)) }
-            let session = OwnID.CoreSDK.APISession(initURL: configuration.initURL,
-                                                   statusURL: configuration.statusURL,
-                                                   finalStatusURL: configuration.finalStatusURL,
-                                                   authURL: configuration.authURL,
-                                                   supportedLanguages: state.supportedLanguages)
+            let session = state.apiSessionCreationClosure(configuration.initURL,
+                                                          configuration.statusURL,
+                                                          configuration.finalStatusURL,
+                                                          configuration.authURL,
+                                                          state.supportedLanguages)
             state.session = session
             return [sendInitialRequest(requestData: OwnID.CoreSDK.Init.RequestData(loginId: state.email?.rawValue,
                                                                                    type: state.type,

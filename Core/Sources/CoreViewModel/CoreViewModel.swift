@@ -14,9 +14,11 @@ extension OwnID.CoreSDK {
              supportedLanguages: OwnID.CoreSDK.Languages,
              sdkConfigurationName: String,
              isLoggingEnabled: Bool,
-             clientConfiguration: LocalConfiguration?) {
+             clientConfiguration: LocalConfiguration?,
+             apiSessionCreationClosure: @escaping ApiSessionCreationClosure = OwnID.CoreSDK.CoreViewModel.defaultAPISession) {
             let initialState = State(isLoggingEnabled: isLoggingEnabled,
                                      configuration: clientConfiguration,
+                                     apiSessionCreationClosure: apiSessionCreationClosure,
                                      sdkConfigurationName: sdkConfigurationName,
                                      email: email,
                                      type: type,
