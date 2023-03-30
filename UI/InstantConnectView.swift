@@ -7,12 +7,10 @@ public extension OwnID.UISDK.InstantConnectView {
                                           viewModel: OwnID.FlowsSDK.LoginView.ViewModel,
                                           visualConfig: OwnID.UISDK.VisualLookConfig) -> Self {
         var hostingVC: UIHostingController<OwnID.UISDK.InstantConnectView>?
-        let containerView = UIView()
         let closeClosure: () -> Void = {
             hostingVC?.willMove(toParent: .none)
             hostingVC?.view.removeFromSuperview()
             hostingVC?.removeFromParent()
-            containerView.removeFromSuperview()
         }
         let instantConnectView = OwnID.UISDK.InstantConnectView(emailPublisher: emailPublisher,
                                                                 viewModel: viewModel,
@@ -20,16 +18,12 @@ public extension OwnID.UISDK.InstantConnectView {
                                                                 closeClosure: closeClosure)
         hostingVC = UIHostingController(rootView: instantConnectView)
         guard let hostingVC, let topmostVC = topMostController else { return instantConnectView }
-        containerView.frame = topmostVC.view.frame
-        containerView.layer.zPosition = CGFloat(Float.greatestFiniteMagnitude)
-        
-        topmostVC.view.addSubview(containerView)
-        topmostVC.view.bringSubviewToFront(containerView)
         
         topmostVC.addChild(hostingVC)
-        containerView.addSubview(hostingVC.view)
-        hostingVC.view.frame = containerView.frame
-        containerView.bringSubviewToFront(hostingVC.view)
+        topmostVC.view.addSubview(hostingVC.view)
+        hostingVC.view.frame = topmostVC.view.frame
+        hostingVC.view.layer.zPosition = CGFloat(Float.greatestFiniteMagnitude)
+        topmostVC.view.bringSubviewToFront(hostingVC.view)
         hostingVC.didMove(toParent: topmostVC)
         
         hostingVC.view.backgroundColor = .clear
