@@ -19,23 +19,24 @@ public extension OwnID.UISDK.InstantConnectView {
             return topController
         }
         
-        let vc = topMostController()!
-        let v = UIView(frame: vc.view.frame)
-        v.backgroundColor = .red
-        v.layer.zPosition = CGFloat(Float.greatestFiniteMagnitude)
-        
-        vc.view.addSubview(v)
-        vc.view.bringSubviewToFront(v)
-        
-        let sv = OwnID.UISDK.InstantConnectView(emailPublisher: emailPublisher,
+        let instantConnectView = OwnID.UISDK.InstantConnectView(emailPublisher: emailPublisher,
                                                 visualConfig: visualConfig)
-        let hosting = UIHostingController(rootView: sv)
-        hosting.willMove(toParent: vc)
-        v.addSubview(hosting.view)
-        hosting.view.frame = v.frame
-        v.bringSubviewToFront(hosting.view)
-        hosting.didMove(toParent: vc)
-        return sv
+        
+        guard let topmostVC = topMostController() else { return instantConnectView }
+        let containerView = UIView(frame: topmostVC.view.frame)
+        containerView.backgroundColor = .red
+        containerView.layer.zPosition = CGFloat(Float.greatestFiniteMagnitude)
+        
+        topmostVC.view.addSubview(containerView)
+        topmostVC.view.bringSubviewToFront(containerView)
+        
+        let hostingVC = UIHostingController(rootView: instantConnectView)
+        hostingVC.willMove(toParent: topmostVC)
+        containerView.addSubview(hostingVC.view)
+        hostingVC.view.frame = containerView.frame
+        containerView.bringSubviewToFront(hostingVC.view)
+        hostingVC.didMove(toParent: topmostVC)
+        return instantConnectView
     }
 }
 
