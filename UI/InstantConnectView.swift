@@ -31,6 +31,9 @@ public extension OwnID.UISDK.InstantConnectView {
         hostingVC.view.frame = containerView.frame
         containerView.bringSubviewToFront(hostingVC.view)
         hostingVC.didMove(toParent: topmostVC)
+        
+        hostingVC.view.backgroundColor = .clear
+        
         return instantConnectView
     }
     
@@ -55,6 +58,7 @@ public extension OwnID.UISDK {
         
         private let visualConfig: VisualLookConfig
         private let closeClosure: () -> Void
+        private let cornerRadius = 10.0
         
         @ObservedObject private var viewModel: OwnID.FlowsSDK.LoginView.ViewModel
         
@@ -104,15 +108,17 @@ public extension OwnID.UISDK {
                     Text("Enter your email")
                     TextField("", text: $email)
                         .background(Rectangle().fill(.white))
-                        .padding()
+                        .border(OwnID.Colors.instantConnectViewEmailFiendBorderColor, width: 1.5)
+                        .cornerRadius(cornerRadius)
                     AuthButton(visualConfig: visualConfig,
                                actionHandler: { resultPublisher.send(()) },
                                isLoading: viewModel.state.isLoadingBinding,
                                buttonState: viewModel.state.buttonStateBinding)
-                    .padding()
                 }
             }
-            .background(Rectangle().fill(.gray))
+            .padding()
+            .background(Rectangle().fill(OwnID.Colors.instantConnectViewBackgroundColor))
+            .cornerRadius(cornerRadius)
         }
     }
 }

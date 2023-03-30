@@ -42,5 +42,13 @@ public extension OwnID {
         public static var spinnerBackgroundColor: Color {
             Color("spinnerBackgroundStrokeColor", bundle: .resourceBundle)
         }
+        
+        public static var instantConnectViewBackgroundColor: Color {
+            Color("\(OwnID.UISDK.InstantConnectView.self)BackgroundColor", bundle: .resourceBundle)
+        }
+        
+        public static var instantConnectViewEmailFiendBorderColor: Color {
+            Color("\(OwnID.UISDK.InstantConnectView.self)EmailFiendBorderColor", bundle: .resourceBundle)
+        }
     }
 }
