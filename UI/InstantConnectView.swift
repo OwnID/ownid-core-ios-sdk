@@ -50,16 +50,16 @@ public extension OwnID.UISDK {
                                         .background(Rectangle().fill(.white))
                                         .padding()
                                     AuthButton(visualConfig: visualConfig,
-                                               actionHandler: { resultPublisher.send(()) },
+                                               actionHandler: { print(geometry.frame(in: .local).height) },
                                                isLoading: $isLoading,
                                                buttonState: $buttonState)
                                     .padding()
                                 }
                             }
                             .background(Rectangle().fill(.gray))
-                            .offset(x: -geometry.frame(in: .global).origin.x, y: -geometry.frame(in: .global).origin.y)
-                            .frame(width: UIScreen.main.bounds.width, height: UIScreen.main.bounds.height)
+                            .offset(x: -geometry.frame(in: .global).origin.x, y: -geometry.frame(in: .global).origin.y - (UIScreen.main.bounds.height - geometry.frame(in: .local).height))
                         }
+                        .frame(width: UIScreen.main.bounds.width, height: UIScreen.main.bounds.height)
                     })
                     .onChange(of: email) { newValue in
                         emailPublisher.send(newValue)
