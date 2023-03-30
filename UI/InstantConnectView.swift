@@ -4,25 +4,13 @@ import Combine
 
 public extension OwnID.UISDK.InstantConnectView {
     static func displayInstantConnectView(emailPublisher: PassthroughSubject<String, Never>,
+                                          viewModel: OwnID.FlowsSDK.LoginView.ViewModel,
                                           visualConfig: OwnID.UISDK.VisualLookConfig) -> Self {
-        func topMostController() -> UIViewController? {
-            guard let window = UIApplication.shared.keyWindow, let rootViewController = window.rootViewController else {
-                return nil
-            }
-            
-            var topController = rootViewController
-            
-            while let newTopController = topController.presentedViewController {
-                topController = newTopController
-            }
-            
-            return topController
-        }
-        
         let instantConnectView = OwnID.UISDK.InstantConnectView(emailPublisher: emailPublisher,
-                                                visualConfig: visualConfig)
+                                                                viewModel: viewModel,
+                                                                visualConfig: visualConfig)
         
-        guard let topmostVC = topMostController() else { return instantConnectView }
+        guard let topmostVC = topMostController else { return instantConnectView }
         let containerView = UIView(frame: topmostVC.view.frame)
         containerView.backgroundColor = .red
         containerView.layer.zPosition = CGFloat(Float.greatestFiniteMagnitude)
@@ -38,6 +26,20 @@ public extension OwnID.UISDK.InstantConnectView {
         hostingVC.didMove(toParent: topmostVC)
         return instantConnectView
     }
+    
+    private static var topMostController: UIViewController? {
+        guard let window = UIApplication.shared.keyWindow, let rootViewController = window.rootViewController else {
+            return nil
+        }
+        
+        var topController = rootViewController
+        
+        while let newTopController = topController.presentedViewController {
+            topController = newTopController
+        }
+        
+        return topController
+    }
 }
 
 public extension OwnID.UISDK {
@@ -46,17 +48,14 @@ public extension OwnID.UISDK {
         
         private let visualConfig: VisualLookConfig
         
-        @Binding private var isLoading: Bool
-        @Binding private var buttonState: ButtonState
+        @ObservedObject private var viewModel: OwnID.FlowsSDK.LoginView.ViewModel
         
         public init(emailPublisher: PassthroughSubject<String, Never>,
-                    //                    viewState: Binding<ButtonState>,
-                    //                    isLoading: Binding<Bool>,
+                    viewModel: OwnID.FlowsSDK.LoginView.ViewModel,
                     visualConfig: VisualLookConfig
         ) {
             self.emailPublisher = emailPublisher
-            _isLoading = .constant(false)
-            _buttonState = .constant(.enabled)
+            self.viewModel = viewModel
             self.visualConfig = visualConfig
         }
         
@@ -94,8 +93,8 @@ public extension OwnID.UISDK {
                         .padding()
                     AuthButton(visualConfig: visualConfig,
                                actionHandler: { resultPublisher.send(()) },
-                               isLoading: $isLoading,
-                               buttonState: $buttonState)
+                               isLoading: viewModel.state.isLoadingBinding,
+                               buttonState: viewModel.state.buttonStateBinding)
                     .padding()
                 }
             }
