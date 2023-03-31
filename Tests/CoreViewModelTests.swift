@@ -60,13 +60,42 @@ final class CoreViewModelTests: XCTestCase {
     }
     
     func testSuccessRegistrationPathWithPasskeys() {
+        let exp = expectation(description: #function)
+        var config = try! OwnID.CoreSDK.LocalConfiguration(appID: "e8qkk8umn5hxqg", redirectionURL: "com.ownid.demo.firebase://ownid/redirect/", environment: "staging")
+        let domain = "https://ownid.com"
+        config.serverURL = URL(string: domain)!
+        let settings = OwnID.CoreSDK.FidoSettings(rpID: domain, rpName: domain)
+        config.fidoSettings = settings
         let viewModel = OwnID.CoreSDK.CoreViewModel(type: .register,
-                                                    email: .none,
-                                      supportedLanguages: .init(rawValue: ["en"]),
-                                      sdkConfigurationName: sdkConfigurationName,
-                                      isLoggingEnabled: true,
-                                                    clientConfiguration: try! OwnID.CoreSDK.LocalConfiguration(appID: "e8qkk8umn5hxqg", redirectionURL: "com.ownid.demo.firebase://ownid/redirect/", environment: "staging"), apiSessionCreationClosure: Self.successSession)
-//        viewModel.subscribeToURL(publisher: urlPublisher.eraseToAnyPublisher())
-//        viewModel.subscribeToConfiguration(publisher: configurationLoadingEventPublisher.eraseToAnyPublisher())
+                                                    email: .init(rawValue: "lesot21279@duiter.com"),
+                                                    supportedLanguages: .init(rawValue: ["en"]),
+                                                    sdkConfigurationName: sdkConfigurationName,
+                                                    isLoggingEnabled: true,
+                                                    clientConfiguration: config,
+                                                    apiSessionCreationClosure: Self.successSession)
+        
+        viewModel.eventPublisher.sink { completion in
+            switch completion {
+            case .finished:
+                break
+                
+            case .failure(let error):
+                XCTFail(error.localizedDescription)
+            }
+        } receiveValue: { event in
+            switch event {
+            case .loading:
+                break
+            case .success(_):
+                exp.fulfill()
+            case .cancelled:
+                XCTFail()
+            }
+        }
+        .store(in: &bag)
+        
+        
+        viewModel.start()
+        waitForExpectations(timeout: 0.01)
     }
 }
