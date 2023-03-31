@@ -7,12 +7,10 @@ public extension OwnID.UISDK.InstantConnectView {
                                           viewModel: OwnID.FlowsSDK.LoginView.ViewModel,
                                           visualConfig: OwnID.UISDK.VisualLookConfig) -> Self {
         var hostingVC: UIHostingController<OwnID.UISDK.InstantConnectView>?
-        let touchBlockerView = UIView()
         let closeClosure: () -> Void = {
             hostingVC?.willMove(toParent: .none)
             hostingVC?.view.removeFromSuperview()
             hostingVC?.removeFromParent()
-            touchBlockerView.removeFromSuperview()
         }
         let instantConnectView = OwnID.UISDK.InstantConnectView(emailPublisher: emailPublisher,
                                                                 viewModel: viewModel,
@@ -23,12 +21,8 @@ public extension OwnID.UISDK.InstantConnectView {
         
         topmostVC.addChild(hostingVC)
         topmostVC.view.addSubview(hostingVC.view)
-        topmostVC.view.addSubview(touchBlockerView)
         hostingVC.view.frame = topmostVC.view.frame
-        touchBlockerView.frame = topmostVC.view.frame
-        touchBlockerView.layer.zPosition = CGFloat(Float.greatestFiniteMagnitude - 1)
         hostingVC.view.layer.zPosition = CGFloat(Float.greatestFiniteMagnitude)
-        topmostVC.view.bringSubviewToFront(touchBlockerView)
         topmostVC.view.bringSubviewToFront(hostingVC.view)
         hostingVC.didMove(toParent: topmostVC)
         
