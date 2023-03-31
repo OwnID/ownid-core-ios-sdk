@@ -2,9 +2,30 @@ import XCTest
 import Combine
 @testable import OwnIDCoreSDK
 
-extension CoreViewModelTests {
-    static var successSession: OwnID.CoreSDK.CoreViewModel.ApiSessionCreationClosure {
-        { _, _ , _ , _ ,_  in OwnID.CoreSDK.APISessionMockSuccess() }
+extension OwnID.CoreSDK.AccountManager {
+    static var mockAccountManager: CreationClosure {
+        { store, domain, challenge, browserBaseURL in
+            let credentialID = "jdfhdj323"
+            let clientDataJSON = "{\"key\":\"value\"}".data(using: .utf8)!
+            let rawAuthenticatorData = "rawAuthenticatorData"
+            let signature = "signature"
+            let attestationObject = "attestationObject"
+            let current = Self {
+                let payload = OwnID.CoreSDK.Fido2LoginPayload(credentialId: credentialID,
+                                                              clientDataJSON: clientDataJSON.base64urlEncodedString(),
+                                                              authenticatorData: rawAuthenticatorData,
+                                                              signature: signature)
+                store.send(.didFinishLogin(fido2LoginPayload: payload, browserBaseURL: browserBaseURL))
+            } cancelClosure: {
+                
+            } signUpClosure: { userName in
+                let payload = OwnID.CoreSDK.Fido2RegisterPayload(credentialId: credentialID,
+                                                                 clientDataJSON: clientDataJSON.base64urlEncodedString(),
+                                                                 attestationObject: attestationObject)
+                store.send(.didFinishRegistration(fido2RegisterPayload: payload, browserBaseURL: browserBaseURL))
+            }
+            return current
+        }
     }
 }
 
@@ -24,6 +45,10 @@ extension OwnID.CoreSDK {
         func performAuthRequest(fido2Payload: Encodable) -> AnyPublisher<OwnID.CoreSDK.Payload, OwnID.CoreSDK.CoreErrorLogWrapper> {
             Just(OwnID.CoreSDK.Payload(dataContainer: [:], metadata: .none, context: context, nonce: nonce, loginId: .none, responseType: .registrationInfo, authType: "biometrics", requestLanguage: "uk-US")).setFailureType(to: OwnID.CoreSDK.CoreErrorLogWrapper.self).eraseToAnyPublisher()
         }
+    }
+    
+    static var successSession: APISessionProtocol.CreationClosure {
+        { _, _ , _ , _ ,_  in OwnID.CoreSDK.APISessionMockSuccess() }
     }
 }
 
@@ -72,7 +97,8 @@ final class CoreViewModelTests: XCTestCase {
                                                     sdkConfigurationName: sdkConfigurationName,
                                                     isLoggingEnabled: true,
                                                     clientConfiguration: config,
-                                                    apiSessionCreationClosure: Self.successSession)
+                                                    apiSessionCreationClosure: OwnID.CoreSDK.successSession,
+                                                    createAccountManagerClosure: OwnID.CoreSDK.AccountManager.mockAccountManager)
         
         viewModel.eventPublisher.sink { completion in
             switch completion {
@@ -96,6 +122,6 @@ final class CoreViewModelTests: XCTestCase {
         
         
         viewModel.start()
-        waitForExpectations(timeout: 0.01)
+        waitForExpectations(timeout: 0.1)
     }
 }
