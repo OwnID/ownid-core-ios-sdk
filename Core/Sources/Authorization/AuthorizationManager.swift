@@ -2,34 +2,48 @@ import AuthenticationServices
 import os
 
 extension OwnID.CoreSDK.AccountManager {
-    typealias CreateAccountManagerClosure = (_ store: Store<State, Action>, _ domain: String, _ challenge: String, _ browserBaseURL: String) -> Self
-    static func current(store: Store<State, Action>, domain: String, challenge: String, browserBaseURL: String) -> CreateAccountManagerClosure {
-        let manager = OwnID.CoreSDK.CurrentAccountManager(store: store, domain: domain, challenge: challenge, browserBaseURL: browserBaseURL)
-        let current = Self {
-            if #available(iOS 16.0, *) {
-                manager.signInWith()
+    typealias CreationClosure = (_ store: Store<State, Action>, _ domain: String, _ challenge: String, _ browserBaseURL: String) -> Self
+    static var defaultAccountManager: CreationClosure {
+        { store, domain, challenge, browserBaseURL in
+            let manager = OwnID.CoreSDK.CurrentAccountManager(store: store, domain: domain, challenge: challenge, browserBaseURL: browserBaseURL)
+            let current = Self {
+                if #available(iOS 16.0, *) {
+                    manager.signInWith()
+                }
+            } cancelClosure: {
+                if #available(iOS 16.0, *) {
+                    manager.cancel()
+                }
+            } signUpClosure: { userName in
+                if #available(iOS 16.0, *) {
+                    manager.signUpWith(userName: userName)
+                }
             }
-        } signUpClosure: { userName in
-            if #available(iOS 16.0, *) {
-                manager.signUpWith(userName: userName)
-            }
+            return current
         }
-        return current
     }
 }
 
 extension OwnID.CoreSDK {
     struct AccountManager {
-        internal init(signInClosure: @escaping () -> Void, signUpClosure: @escaping (String) -> Void) {
+        internal init(signInClosure: @escaping () -> Void,
+                      cancelClosure: @escaping () -> Void,
+                      signUpClosure: @escaping (String) -> Void) {
             self.signInClosure = signInClosure
             self.signUpClosure = signUpClosure
+            self.cancelClosure = cancelClosure
         }
         
         private var signInClosure: () -> Void
+        private var cancelClosure: () -> Void
         private var signUpClosure: (_ userName: String) -> Void
         
         func signInWith() {
             signInClosure()
+        }
+        
+        func cancel() {
+            cancelClosure()
         }
         
         func signUpWith(userName: String) {

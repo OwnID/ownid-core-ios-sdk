@@ -15,10 +15,12 @@ extension OwnID.CoreSDK {
              sdkConfigurationName: String,
              isLoggingEnabled: Bool,
              clientConfiguration: LocalConfiguration?,
-             apiSessionCreationClosure: @escaping ApiSessionCreationClosure = OwnID.CoreSDK.CoreViewModel.defaultAPISession) {
+             apiSessionCreationClosure: @escaping APISessionProtocol.CreationClosure = OwnID.CoreSDK.APISession.defaultAPISession,
+             createAccountManagerClosure: @escaping AccountManager.CreationClosure = OwnID.CoreSDK.AccountManager.defaultAccountManager) {
             let initialState = State(isLoggingEnabled: isLoggingEnabled,
                                      configuration: clientConfiguration,
                                      apiSessionCreationClosure: apiSessionCreationClosure,
+                                     createAccountManagerClosure: createAccountManagerClosure,
                                      sdkConfigurationName: sdkConfigurationName,
                                      email: email,
                                      type: type,

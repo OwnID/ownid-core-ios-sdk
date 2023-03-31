@@ -28,10 +28,7 @@ extension OwnID.CoreSDK.CoreViewModel {
             if #available(iOS 16, *),
                let config = state.configuration,
                let domain = config.fidoSettings?.rpID {
-                let authManager = OwnID.CoreSDK.AccountManager(store: state.authManagerStore,
-                                                               domain: domain,
-                                                               challenge: state.session.context,
-                                                               browserBaseURL: response.url)
+                 let authManager = state.createAccountManagerClosure(state.authManagerStore, domain, state.session.context, response.url)
                 switch state.type {
                 case .register:
                     authManager.signUpWith(userName: state.email?.rawValue ?? "")

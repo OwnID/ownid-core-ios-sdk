@@ -1,29 +1,10 @@
 extension OwnID.CoreSDK.CoreViewModel {
-    
-    typealias ApiSessionCreationClosure = (_ initURL: OwnID.CoreSDK.ServerURL,
-                                           _ statusURL: OwnID.CoreSDK.ServerURL,
-                                           _ finalStatusURL: OwnID.CoreSDK.ServerURL,
-                                           _ authURL: OwnID.CoreSDK.ServerURL,
-                                           _ supportedLanguages: OwnID.CoreSDK.Languages) -> APISessionProtocol
-    
-    static var defaultAPISession: ApiSessionCreationClosure {
-        { initURL,
-            statusURL,
-            finalStatusURL,
-            authURL,
-            supportedLanguages in
-            OwnID.CoreSDK.APISession(initURL: initURL,
-                                     statusURL: statusURL,
-                                     finalStatusURL: finalStatusURL,
-                                     authURL: authURL,
-                                     supportedLanguages: supportedLanguages)
-        }
-    }
-    
     struct State: LoggingEnabled {
         let isLoggingEnabled: Bool
         var configuration: OwnID.CoreSDK.LocalConfiguration?
-        let apiSessionCreationClosure: ApiSessionCreationClosure
+        
+        let apiSessionCreationClosure: APISessionProtocol.CreationClosure
+        let createAccountManagerClosure: OwnID.CoreSDK.AccountManager.CreationClosure
         
         let sdkConfigurationName: String
         var session: APISessionProtocol!
