@@ -109,7 +109,6 @@ public extension OwnID.UISDK {
                     } label: {
                         Image("closeImage", bundle: .resourceBundle)
                     }
-
                 }
                 VStack {
                     Text("Enter your email")
