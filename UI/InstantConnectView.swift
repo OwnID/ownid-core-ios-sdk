@@ -62,6 +62,7 @@ public extension OwnID.UISDK {
         private var visualConfig: VisualLookConfig
         private let closeClosure: () -> Void
         private let cornerRadius = 10.0
+        private let borderWidth = 10.0
         
         @ObservedObject private var viewModel: OwnID.FlowsSDK.LoginView.ViewModel
         
@@ -118,8 +119,11 @@ public extension OwnID.UISDK {
                         .keyboardType(.emailAddress)
                         .padding(11)
                         .background(Rectangle().fill(.white))
-                        .border(OwnID.Colors.instantConnectViewEmailFiendBorderColor, width: 1.5)
                         .cornerRadius(cornerRadius)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: cornerRadius)
+                                .stroke(OwnID.Colors.instantConnectViewEmailFiendBorderColor, lineWidth: 1.5)
+                        )
                         .padding(.bottom, 6)
                     AuthButton(visualConfig: visualConfig,
                                actionHandler: { resultPublisher.send(()) },
