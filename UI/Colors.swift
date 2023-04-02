@@ -50,5 +50,9 @@ public extension OwnID {
         public static var instantConnectViewEmailFiendBorderColor: Color {
             Color("\(OwnID.UISDK.InstantConnectView.self)EmailFiendBorderColor", bundle: .resourceBundle)
         }
+        
+        public static var instantConnectViewAuthButtonColor: Color {
+            Color("\(OwnID.UISDK.InstantConnectView.self)AuthButtonColor", bundle: .resourceBundle)
+        }
     }
 }

@@ -59,7 +59,7 @@ public extension OwnID.UISDK {
     struct InstantConnectView: View {
         private let emailPublisher: PassthroughSubject<String, Never>
         
-        private let visualConfig: VisualLookConfig
+        private var visualConfig: VisualLookConfig
         private let closeClosure: () -> Void
         private let cornerRadius = 10.0
         
@@ -73,6 +73,8 @@ public extension OwnID.UISDK {
             self.viewModel = viewModel
             self.visualConfig = visualConfig
             self.closeClosure = closeClosure
+            
+            self.visualConfig.authButtonConfig.backgroundColor = OwnID.Colors.instantConnectViewAuthButtonColor
         }
         
         @State private var email = ""
@@ -86,7 +88,7 @@ public extension OwnID.UISDK {
         }
         
         public var body: some View {
-            if #available(iOS 14.0, *) {
+            if #available(iOS 15.0, *) {
                 viewContent()
                     .onChange(of: email) { newValue in emailPublisher.send(newValue) }
             } else {
@@ -99,6 +101,8 @@ public extension OwnID.UISDK {
             VStack {
                 HStack {
                     Text("Sign In")
+                        .font(.system(size: 20))
+                        .bold()
                     Spacer()
                     Button {
                         closeClosure()
@@ -109,10 +113,15 @@ public extension OwnID.UISDK {
                 }
                 VStack {
                     Text("Enter your email")
+                        .font(.system(size: 18))
                     TextField("", text: $email)
+                        .font(.system(size: 17))
+                        .keyboardType(.emailAddress)
+                        .padding(11)
                         .background(Rectangle().fill(.white))
                         .border(OwnID.Colors.instantConnectViewEmailFiendBorderColor, width: 1.5)
                         .cornerRadius(cornerRadius)
+                        .padding(.bottom, 6)
                     AuthButton(visualConfig: visualConfig,
                                actionHandler: { resultPublisher.send(()) },
                                isLoading: viewModel.state.isLoadingBinding,
