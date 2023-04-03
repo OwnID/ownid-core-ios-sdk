@@ -2,6 +2,17 @@ import XCTest
 import Combine
 @testable import OwnIDCoreSDK
 
+extension OwnID.CoreSDK.BrowserOpener {
+    static var instantOpener: CreationClosure {
+        { store, url, redirectionURL in
+            let schemeURL = URL(string: redirectionURL)!
+            let configName = store.value
+            OwnID.CoreSDK.shared.handle(url: schemeURL, sdkConfigurationName: configName)
+            return Self { }
+        }
+    }
+}
+
 extension OwnID.CoreSDK.AccountManager {
     static var mockAccountManager: CreationClosure {
         { store, domain, challenge, browserBaseURL in
@@ -152,7 +163,7 @@ final class CoreViewModelTests: XCTestCase {
                                                     isLoggingEnabled: true,
                                                     clientConfiguration: config,
                                                     apiSessionCreationClosure: OwnID.CoreSDK.successSession,
-                                                    createAccountManagerClosure: OwnID.CoreSDK.AccountManager.mockErrorAccountManager)
+                                                    createAccountManagerClosure: OwnID.CoreSDK.AccountManager.mockErrorAccountManager, createBrowserOpenerClosure: OwnID.CoreSDK.BrowserOpener.instantOpener)
         
         viewModel.eventPublisher.sink { completion in
             switch completion {
@@ -168,7 +179,18 @@ final class CoreViewModelTests: XCTestCase {
                     break
                 }
             }
-        } receiveValue: { _ in }
+        } receiveValue: { event in
+            switch event {
+            case .loading:
+                viewModel.subscribeToURL(publisher: Just(()).setFailureType(to: OwnID.CoreSDK.CoreErrorLogWrapper.self).eraseToAnyPublisher())
+                
+            case .success(_):
+                exp.fulfill()
+                
+            case .cancelled:
+                XCTFail()
+            }
+        }
         .store(in: &bag)
         
         viewModel.start()
