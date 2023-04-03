@@ -27,6 +27,19 @@ extension OwnID.CoreSDK.AccountManager {
             return current
         }
     }
+    
+    static var mockErrorAccountManager: CreationClosure {
+        { store, domain, challenge, browserBaseURL in
+            let current = Self {
+                store.send(.error(error: .authorizationManagerAuthError(userInfo: [:]), context: "frogkolvjt", browserBaseURL: browserBaseURL))
+            } cancelClosure: {
+                
+            } signUpClosure: { userName in
+                store.send(.error(error: .authorizationManagerAuthError(userInfo: [:]), context: "frogkolvjt", browserBaseURL: browserBaseURL))
+            }
+            return current
+        }
+    }
 }
 
 extension OwnID.CoreSDK {
@@ -120,6 +133,43 @@ final class CoreViewModelTests: XCTestCase {
         }
         .store(in: &bag)
         
+        
+        viewModel.start()
+        waitForExpectations(timeout: 0.1)
+    }
+    
+    func testAuthManagerError() {
+        let exp = expectation(description: #function)
+        var config = try! OwnID.CoreSDK.LocalConfiguration(appID: "e8qkk8umn5hxqg", redirectionURL: "com.ownid.demo.firebase://ownid/redirect/", environment: "staging")
+        let domain = "https://ownid.com"
+        config.serverURL = URL(string: domain)!
+        let settings = OwnID.CoreSDK.FidoSettings(rpID: domain, rpName: domain)
+        config.fidoSettings = settings
+        let viewModel = OwnID.CoreSDK.CoreViewModel(type: .register,
+                                                    email: .init(rawValue: "lesot21279@duiter.com"),
+                                                    supportedLanguages: .init(rawValue: ["en"]),
+                                                    sdkConfigurationName: sdkConfigurationName,
+                                                    isLoggingEnabled: true,
+                                                    clientConfiguration: config,
+                                                    apiSessionCreationClosure: OwnID.CoreSDK.successSession,
+                                                    createAccountManagerClosure: OwnID.CoreSDK.AccountManager.mockErrorAccountManager)
+        
+        viewModel.eventPublisher.sink { completion in
+            switch completion {
+            case .finished:
+                exp.fulfill()
+                
+            case .failure(let error):
+                switch error.error {
+                case .authorizationManagerAuthError(_):
+                    // intentionally need to fail, as we open browser after autohization fails, we should not see this error at all
+                    XCTFail()
+                default:
+                    break
+                }
+            }
+        } receiveValue: { _ in }
+        .store(in: &bag)
         
         viewModel.start()
         waitForExpectations(timeout: 0.1)

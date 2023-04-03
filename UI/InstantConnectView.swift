@@ -3,8 +3,7 @@ import UIKit
 import Combine
 
 public extension OwnID.UISDK.InstantConnectView {
-    static func displayInstantConnectView(emailPublisher: PassthroughSubject<String, Never>,
-                                          viewModel: OwnID.FlowsSDK.LoginView.ViewModel,
+    static func displayInstantConnectView(viewModel: OwnID.FlowsSDK.LoginView.ViewModel,
                                           visualConfig: OwnID.UISDK.VisualLookConfig) -> Self {
         var hostingVC: UIHostingController<OwnID.UISDK.InstantConnectView>?
         let closeClosure: () -> Void = {
@@ -12,8 +11,7 @@ public extension OwnID.UISDK.InstantConnectView {
             hostingVC?.view.removeFromSuperview()
             hostingVC?.removeFromParent()
         }
-        let instantConnectView = OwnID.UISDK.InstantConnectView(emailPublisher: emailPublisher,
-                                                                viewModel: viewModel,
+        let instantConnectView = OwnID.UISDK.InstantConnectView(viewModel: viewModel,
                                                                 visualConfig: visualConfig,
                                                                 closeClosure: closeClosure)
         hostingVC = UIHostingController(rootView: instantConnectView)
@@ -57,7 +55,7 @@ public extension OwnID.UISDK.InstantConnectView {
 
 public extension OwnID.UISDK {
     struct InstantConnectView: View {
-        private let emailPublisher: PassthroughSubject<String, Never>
+        private let emailPublisher = PassthroughSubject<String, Never>()
         
         private var visualConfig: VisualLookConfig
         private let closeClosure: () -> Void
@@ -65,24 +63,23 @@ public extension OwnID.UISDK {
         private let borderWidth = 10.0
         
         @ObservedObject private var viewModel: OwnID.FlowsSDK.LoginView.ViewModel
-        
-        public init(emailPublisher: PassthroughSubject<String, Never>,
-                    viewModel: OwnID.FlowsSDK.LoginView.ViewModel,
-                    visualConfig: VisualLookConfig,
-                    closeClosure: @escaping () -> Void) {
-            self.emailPublisher = emailPublisher
-            self.viewModel = viewModel
-            self.visualConfig = visualConfig
-            self.closeClosure = closeClosure
-            
-            self.visualConfig.authButtonConfig.backgroundColor = OwnID.Colors.instantConnectViewAuthButtonColor
-        }
-        
         @State private var email = ""
         
         private let resultPublisher = PassthroughSubject<Void, Never>()
         
-        public var eventPublisher: OwnID.UISDK.EventPubliser {
+        public init(viewModel: OwnID.FlowsSDK.LoginView.ViewModel,
+                    visualConfig: VisualLookConfig,
+                    closeClosure: @escaping () -> Void) {
+            self.viewModel = viewModel
+            self.visualConfig = visualConfig
+            self.closeClosure = closeClosure
+            self.visualConfig.authButtonConfig.backgroundColor = OwnID.Colors.instantConnectViewAuthButtonColor
+            
+            viewModel.updateEmailPublisher(emailPublisher.eraseToAnyPublisher())
+            viewModel.subscribe(to: eventPublisher)
+        }
+        
+        var eventPublisher: OwnID.UISDK.EventPubliser {
             resultPublisher
                 .debounce(for: .milliseconds(500), scheduler: DispatchQueue.main)
                 .eraseToAnyPublisher()
