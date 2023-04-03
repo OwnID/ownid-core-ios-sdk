@@ -44,7 +44,8 @@ extension OwnID.CoreSDK.CoreViewModel {
                                          email: state.email,
                                          sdkConfigurationName: state.sdkConfigurationName,
                                          store: state.browserViewModelStore,
-                                         redirectionURLString: state.configuration?.redirectionURL)
+                                         redirectionURLString: state.configuration?.redirectionURL,
+                                         creationClosure: state.createBrowserOpenerClosure)
                 state.browserViewModel = vm
                 return []
             }
@@ -81,7 +82,8 @@ extension OwnID.CoreSDK.CoreViewModel {
                                      email: state.email,
                                      sdkConfigurationName: state.sdkConfigurationName,
                                      store: state.browserViewModelStore,
-                                     redirectionURLString: state.configuration?.redirectionURL)
+                                     redirectionURLString: state.configuration?.redirectionURL,
+                                     creationClosure: state.createBrowserOpenerClosure)
             state.browserViewModel = vm
             return [Just(.addErrorToInternalStates(error.error)).eraseToEffect()]
             
@@ -124,7 +126,8 @@ extension OwnID.CoreSDK.CoreViewModel {
                                          email: state.email,
                                          sdkConfigurationName: state.sdkConfigurationName,
                                          store: state.browserViewModelStore,
-                                         redirectionURLString: state.configuration?.redirectionURL)
+                                         redirectionURLString: state.configuration?.redirectionURL,
+                                         creationClosure: state.createBrowserOpenerClosure)
                 state.browserViewModel = vm
                 return [Just(.addErrorToInternalStates(error)).eraseToEffect()]
             }
