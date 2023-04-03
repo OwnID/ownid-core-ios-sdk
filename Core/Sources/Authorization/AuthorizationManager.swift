@@ -26,17 +26,9 @@ extension OwnID.CoreSDK.AccountManager {
 
 extension OwnID.CoreSDK {
     struct AccountManager {
-        internal init(signInClosure: @escaping () -> Void,
-                      cancelClosure: @escaping () -> Void,
-                      signUpClosure: @escaping (String) -> Void) {
-            self.signInClosure = signInClosure
-            self.signUpClosure = signUpClosure
-            self.cancelClosure = cancelClosure
-        }
-        
-        private var signInClosure: () -> Void
-        private var cancelClosure: () -> Void
-        private var signUpClosure: (_ userName: String) -> Void
+        var signInClosure: () -> Void
+        var cancelClosure: () -> Void
+        var signUpClosure: (_ userName: String) -> Void
         
         func signInWith() {
             signInClosure()

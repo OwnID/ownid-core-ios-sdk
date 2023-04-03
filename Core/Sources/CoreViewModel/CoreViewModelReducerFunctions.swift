@@ -34,7 +34,8 @@ extension OwnID.CoreSDK.CoreViewModel {
                                 email: OwnID.CoreSDK.Email?,
                                 sdkConfigurationName: String,
                                 store: Store<OwnID.CoreSDK.BrowserOpenerViewModel.State, OwnID.CoreSDK.BrowserOpenerViewModel.Action>,
-                                redirectionURLString: OwnID.CoreSDK.RedirectionURLString?) -> OwnID.CoreSDK.BrowserOpenerViewModel {
+                                redirectionURLString: OwnID.CoreSDK.RedirectionURLString?,
+                                creationClosure: OwnID.CoreSDK.BrowserOpener.CreationClosure) -> OwnID.CoreSDK.BrowserOpener {
         let redirectionEncoded = (redirectionURLString ?? "").addingPercentEncoding(withAllowedCharacters: .urlHostAllowed)
         let redirect = redirectionEncoded! + "?context=" + context
         let redirectParameter = "&redirectURI=" + redirect
@@ -49,7 +50,7 @@ extension OwnID.CoreSDK.CoreViewModel {
         }
         urlString.append(redirectParameter)
         let url = URL(string: urlString)!
-        let vm = OwnID.CoreSDK.BrowserOpenerViewModel(store: store, url: url, redirectionURL: redirectionURLString ?? "")
+        let vm = creationClosure(store, url, redirectionURLString ?? "")
         return vm
     }
     

@@ -5,6 +5,7 @@ extension OwnID.CoreSDK.CoreViewModel {
         
         let apiSessionCreationClosure: APISessionProtocol.CreationClosure
         let createAccountManagerClosure: OwnID.CoreSDK.AccountManager.CreationClosure
+        let createBrowserOpenerClosure: OwnID.CoreSDK.BrowserOpener.CreationClosure
         
         let sdkConfigurationName: String
         var session: APISessionProtocol!
@@ -13,7 +14,7 @@ extension OwnID.CoreSDK.CoreViewModel {
         let supportedLanguages: OwnID.CoreSDK.Languages
         
         var browserViewModelStore: Store<OwnID.CoreSDK.BrowserOpenerViewModel.State, OwnID.CoreSDK.BrowserOpenerViewModel.Action>!
-        var browserViewModel: BrowserOpener?
+        var browserViewModel: OwnID.CoreSDK.BrowserOpener?
         
         var authManagerStore: Store<OwnID.CoreSDK.AccountManager.State, OwnID.CoreSDK.AccountManager.Action>!
         var authManager: OwnID.CoreSDK.AccountManager?
