@@ -28,6 +28,8 @@ public extension OwnID.UISDK {
             self.closeClosure = closeClosure
             self.visualConfig.authButtonConfig.backgroundColor = OwnID.Colors.instantConnectViewAuthButtonColor
             
+            email = OwnID.CoreSDK.DefaultsEmailSaver.getEmail() ?? ""
+            
             viewModel.updateEmailPublisher(emailPublisher.eraseToAnyPublisher())
             viewModel.subscribe(to: eventPublisher)
         }
