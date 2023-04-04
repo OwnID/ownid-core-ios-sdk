@@ -2,59 +2,126 @@ import SwiftUI
 import UIKit
 import Combine
 
-public extension OwnID.UISDK.InstantConnectView {
-    static func displayInstantConnectView(viewModel: OwnID.FlowsSDK.LoginView.ViewModel,
-                                          visualConfig: OwnID.UISDK.VisualLookConfig) -> Self {
-        var hostingVC: UIHostingController<OwnID.UISDK.InstantConnectView>?
-        let closeClosure: () -> Void = {
-            hostingVC?.willMove(toParent: .none)
-            hostingVC?.view.removeFromSuperview()
-            hostingVC?.removeFromParent()
-        }
-        let instantConnectView = OwnID.UISDK.InstantConnectView(viewModel: viewModel,
-                                                                visualConfig: visualConfig,
-                                                                closeClosure: closeClosure)
-        hostingVC = UIHostingController(rootView: instantConnectView)
-        guard let hostingVC, let topmostVC = topMostController else { return instantConnectView }
-        
-        topmostVC.addChild(hostingVC)
-        topmostVC.view.addSubview(hostingVC.view)
-        hostingVC.view.frame = topmostVC.view.frame
-        hostingVC.view.layer.zPosition = CGFloat(Float.greatestFiniteMagnitude)
-        topmostVC.view.bringSubviewToFront(hostingVC.view)
-        hostingVC.didMove(toParent: topmostVC)
-        
-        if #available(iOS 14.0, *) {
-            hostingVC.view.backgroundColor = UIColor(OwnID.Colors.instantConnectViewBackgroundColor)
-            let cornerRadius = 10.0
-            hostingVC.view.layer.cornerRadius = cornerRadius
-        }
-        
-        hostingVC.view.translatesAutoresizingMaskIntoConstraints = false
-        hostingVC.view.bottomAnchor.constraint(equalTo: topmostVC.view.bottomAnchor, constant: 0).isActive = true
-        hostingVC.view.leadingAnchor.constraint(equalTo: topmostVC.view.leadingAnchor, constant: 0).isActive = true
-        hostingVC.view.trailingAnchor.constraint(equalTo: topmostVC.view.trailingAnchor, constant: 0).isActive = true
-        
-        return instantConnectView
+@available(iOS 15.0, *)
+public extension View {
+    func addInstantOverlayView() -> some View {
+        overlay(PopupView())
     }
+}
+
+@available(iOS 15.0, *)
+extension UIScreen {
+    static let width: CGFloat = main.bounds.size.width
+    static let height: CGFloat = main.bounds.size.height
+    static let safeArea: UIEdgeInsets = {
+        UIApplication.shared.connectedScenes
+            .filter({$0.activationState == .foregroundActive})
+            .map({$0 as? UIWindowScene})
+            .compactMap({$0})
+            .first?.windows
+            .filter({$0.isKeyWindow})
+            .first?
+            .safeAreaInsets ?? .zero
+    }()
+}
+
+@available(iOS 15.0, *)
+extension View {
+    func alignToBottom(_ value: CGFloat = 0) -> some View {
+        VStack(spacing: 0) {
+            Spacer()
+            self
+            Spacer.height(value)
+        }
+    }
+}
+
+@available(iOS 15.0, *)
+extension Spacer {
+    @ViewBuilder static func height(_ value: CGFloat?) -> some View {
+        switch value {
+            case .some(let value): Spacer().frame(height: max(value, 0))
+            case nil: Spacer()
+        }
+    }
+}
+
+@available(iOS 15.0, *)
+struct PopupTopStackView: View {
+    let popupContent: OwnID.UISDK.InstantConnectView
+    var body: some View {
+        ZStack(alignment: .bottom) {
+            popupContent
+                .background(.white)
+                .transition(.move(edge: .top))
+        }
+        .ignoresSafeArea()
+        .alignToBottom()
+        .animation(.spring(response: 0.32, dampingFraction: 1, blendDuration: 0.32), value: popupContent)
+    }
+}
+
+//public protocol Popup: View, Identifiable, Hashable, Equatable {
+//    associatedtype V: View
+//
+//    var id: String { get }
+//
+//    func createContent() -> V
+//}
+
+@available(iOS 15.0, *)
+public class PopupManager: ObservableObject {
+    @Published var views = [OwnID.UISDK.InstantConnectView]()
+
+    public static let shared: PopupManager = .init()
+    private init() {}
+}
+
+@available(iOS 15.0, *)
+extension PopupManager {
+    public static func present(_ popup: OwnID.UISDK.InstantConnectView) { DispatchQueue.main.async { withAnimation(nil) {
+        shared.views.append(popup)
+    }}}
     
-    private static var topMostController: UIViewController? {
-        guard let window = UIApplication.shared.keyWindow, let rootViewController = window.rootViewController else {
-            return nil
+    public static func dismiss() { shared.views.removeAll() }
+}
+
+@available(iOS 15.0, *)
+struct PopupView: View {
+    @StateObject private var stack: PopupManager = .shared
+    
+    var body: some View {
+        if let view = stack.views.first {
+            PopupTopStackView(popupContent: view)
+                .frame(width: UIScreen.width, height: UIScreen.height)
+                .background(createOverlay())
+        } else {
+            EmptyView()
         }
-        
-        var topController = rootViewController
-        
-        while let newTopController = topController.presentedViewController {
-            topController = newTopController
-        }
-        
-        return topController
+    }
+}
+
+@available(iOS 15.0, *)
+private extension PopupView {
+    var overlayColour: Color { .black.opacity(0.44) }
+    var overlayAnimation: Animation { .easeInOut }
+}
+
+@available(iOS 15.0, *)
+private extension PopupView {
+    func createOverlay() -> some View {
+        overlayColour
+            .ignoresSafeArea()
+            .animation(overlayAnimation, value: true)
     }
 }
 
 public extension OwnID.UISDK {
-    struct InstantConnectView: View {
+    struct InstantConnectView: View, Equatable {
+        public static func == (lhs: OwnID.UISDK.InstantConnectView, rhs: OwnID.UISDK.InstantConnectView) -> Bool {
+            lhs.uuid == rhs.uuid
+        }
+        private let uuid = UUID().uuidString
         private let emailPublisher = PassthroughSubject<String, Never>()
         
         private var visualConfig: VisualLookConfig
