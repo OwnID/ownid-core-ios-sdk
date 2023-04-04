@@ -5,7 +5,7 @@ import Combine
 @available(iOS 15.0, *)
 public extension View {
     func addInstantOverlayView() -> some View {
-        overlay(PopupView())
+        overlay(OwnID.UISDK.PopupView())
     }
 }
 
@@ -46,39 +46,35 @@ extension Spacer {
     }
 }
 
-@available(iOS 15.0, *)
-struct PopupTopStackView: View {
-    let popupContent: OwnID.UISDK.InstantConnectView
-    var body: some View {
-        ZStack(alignment: .bottom) {
-            popupContent
-                .background(.white)
-                .transition(.move(edge: .top))
+extension OwnID.UISDK {
+    @available(iOS 15.0, *)
+    struct PopupStackView: View {
+        let popupContent: OwnID.UISDK.InstantConnectView
+        var body: some View {
+            ZStack(alignment: .bottom) {
+                popupContent
+                    .background(.white)
+                    .transition(.move(edge: .top))
+            }
+            .ignoresSafeArea()
+            .alignToBottom()
+            .animation(.spring(response: 0.32, dampingFraction: 1, blendDuration: 0.32), value: popupContent)
         }
-        .ignoresSafeArea()
-        .alignToBottom()
-        .animation(.spring(response: 0.32, dampingFraction: 1, blendDuration: 0.32), value: popupContent)
     }
 }
 
-//public protocol Popup: View, Identifiable, Hashable, Equatable {
-//    associatedtype V: View
-//
-//    var id: String { get }
-//
-//    func createContent() -> V
-//}
-
-@available(iOS 15.0, *)
-public class PopupManager: ObservableObject {
-    @Published var views = [OwnID.UISDK.InstantConnectView]()
-
-    public static let shared: PopupManager = .init()
-    private init() {}
+public extension OwnID.UISDK {
+    @available(iOS 15.0, *)
+    class PopupManager: ObservableObject {
+        @Published var views = [OwnID.UISDK.InstantConnectView]()
+        
+        public static let shared: PopupManager = .init()
+        private init() {}
+    }
 }
 
 @available(iOS 15.0, *)
-extension PopupManager {
+extension OwnID.UISDK.PopupManager {
     public static func present(_ popup: OwnID.UISDK.InstantConnectView) { DispatchQueue.main.async { withAnimation(nil) {
         shared.views.append(popup)
     }}}
@@ -86,29 +82,31 @@ extension PopupManager {
     public static func dismiss() { shared.views.removeAll() }
 }
 
-@available(iOS 15.0, *)
-struct PopupView: View {
-    @StateObject private var stack: PopupManager = .shared
-    
-    var body: some View {
-        if let view = stack.views.first {
-            PopupTopStackView(popupContent: view)
-                .frame(width: UIScreen.width, height: UIScreen.height)
-                .background(createOverlay())
-        } else {
-            EmptyView()
+extension OwnID.UISDK {
+    @available(iOS 15.0, *)
+    struct PopupView: View {
+        @StateObject private var stack: PopupManager = .shared
+        
+        var body: some View {
+            if let view = stack.views.first {
+                PopupStackView(popupContent: view)
+                    .frame(width: UIScreen.width, height: UIScreen.height)
+                    .background(createOverlay())
+            } else {
+                EmptyView()
+            }
         }
     }
 }
 
 @available(iOS 15.0, *)
-private extension PopupView {
+private extension OwnID.UISDK.PopupView {
     var overlayColour: Color { .black.opacity(0.44) }
     var overlayAnimation: Animation { .easeInOut }
 }
 
 @available(iOS 15.0, *)
-private extension PopupView {
+private extension OwnID.UISDK.PopupView {
     func createOverlay() -> some View {
         overlayColour
             .ignoresSafeArea()
