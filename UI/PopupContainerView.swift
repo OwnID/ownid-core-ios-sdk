@@ -17,9 +17,9 @@ extension UIScreen {
         UIApplication.shared.connectedScenes
             .filter({ $0.activationState == .foregroundActive })
             .map({ $0 as? UIWindowScene })
-            .compactMap({$0})
+            .compactMap({ $0 })
             .first?.windows
-            .filter({$0.isKeyWindow})
+            .filter({ $0.isKeyWindow })
             .first?
             .safeAreaInsets ?? .zero
     }()
@@ -74,13 +74,17 @@ extension OwnID.UISDK.PopupManager {
 extension OwnID.UISDK {
     @available(iOS 15.0, *)
     struct PopupView: View {
+        @State private var orientation = UIDeviceOrientation.portrait
         @StateObject private var stack: PopupManager = .shared
         
         var body: some View {
             if let view = stack.views.first {
                 PopupStackView(popupContent: view)
-                    .frame(width: UIScreen.width, height: UIScreen.height)
+                    .frame(width: orientation.isPortrait ? UIScreen.width : UIScreen.height, height: orientation.isPortrait ?  UIScreen.height : UIScreen.width)
                     .background(createOverlay())
+                    .onRotate { newOrientation in
+                        orientation = newOrientation
+                    }
             } else {
                 EmptyView()
             }
@@ -100,5 +104,24 @@ private extension OwnID.UISDK.PopupView {
         overlayColour
             .ignoresSafeArea()
             .animation(overlayAnimation, value: true)
+    }
+}
+private extension OwnID.UISDK {
+    struct DeviceRotationViewModifier: ViewModifier {
+        let action: (UIDeviceOrientation) -> Void
+        
+        func body(content: Content) -> some View {
+            content
+                .onAppear()
+                .onReceive(NotificationCenter.default.publisher(for: UIDevice.orientationDidChangeNotification)) { _ in
+                    action(UIDevice.current.orientation)
+                }
+        }
+    }
+}
+
+extension View {
+    func onRotate(perform action: @escaping (UIDeviceOrientation) -> Void) -> some View {
+        self.modifier(OwnID.UISDK.DeviceRotationViewModifier(action: action))
     }
 }
