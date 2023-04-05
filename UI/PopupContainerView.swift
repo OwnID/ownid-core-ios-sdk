@@ -74,7 +74,7 @@ extension OwnID.UISDK.PopupManager {
 extension OwnID.UISDK {
     @available(iOS 15.0, *)
     struct PopupView: View {
-        @State private var orientation = UIDevice.current.orientation
+        @State private var orientation = UIDeviceOrientation.portrait
         @StateObject private var stack: PopupManager = .shared
         
         var body: some View {
