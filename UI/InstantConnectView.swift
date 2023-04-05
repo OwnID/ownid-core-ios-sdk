@@ -17,8 +17,10 @@ public extension OwnID.UISDK {
         
         @ObservedObject private var viewModel: OwnID.FlowsSDK.LoginView.ViewModel
         @State private var email = ""
+        @State private var error = ""
         
         private let resultPublisher = PassthroughSubject<Void, Never>()
+        private var bag = Set<AnyCancellable>()
         
         public init(viewModel: OwnID.FlowsSDK.LoginView.ViewModel,
                     visualConfig: VisualLookConfig,
@@ -32,6 +34,17 @@ public extension OwnID.UISDK {
             
             viewModel.updateEmailPublisher(emailPublisher.eraseToAnyPublisher())
             viewModel.subscribe(to: eventPublisher)
+            
+            viewModel.eventPublisher.sink { [self] event in
+                switch event {
+                case .success(_):
+                    break
+                    
+                case .failure(let error):
+                    self.error = error.localizedDescription
+                }
+            }
+            .store(in: &bag)
         }
         
         var eventPublisher: OwnID.UISDK.EventPubliser {
@@ -78,6 +91,15 @@ public extension OwnID.UISDK {
                                 .stroke(OwnID.Colors.instantConnectViewEmailFiendBorderColor, lineWidth: 1.5)
                         )
                         .padding(.bottom, 6)
+                    if !error.isEmpty {
+                        HStack {
+                            Text(error)
+                                .multilineTextAlignment(.leading)
+                                .foregroundColor(.red)
+                                .padding(.bottom, 6)
+                            Spacer()
+                        }
+                    }
                     AuthButton(visualConfig: visualConfig,
                                actionHandler: { resultPublisher.send(()) },
                                isLoading: viewModel.state.isLoadingBinding,
