@@ -47,6 +47,7 @@ extension OwnID.UISDK {
                         .background(.white)
                         .transition(.move(edge: .top))
                 }
+                .keyboardAware
             }
             .ignoresSafeArea()
             .animation(.spring(response: 0.32, dampingFraction: 1, blendDuration: 0.32), value: popupContent)

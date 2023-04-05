@@ -90,7 +90,6 @@ public extension OwnID.UISDK {
                 }
             }
             .padding()
-            .keyboardAware
         }
     }
 }
