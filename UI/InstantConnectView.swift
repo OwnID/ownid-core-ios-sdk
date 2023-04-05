@@ -45,10 +45,11 @@ public extension OwnID.UISDK {
                 viewContent()
                     .onChange(of: email) { newValue in emailPublisher.send(newValue) }
             } else {
-                viewContent()
+                EmptyView()
             }
         }
         
+        @available(iOS 15.0, *)
         @ViewBuilder
         private func viewContent() -> some View {
             VStack {

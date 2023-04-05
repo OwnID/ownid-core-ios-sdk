@@ -40,13 +40,15 @@ extension OwnID.UISDK {
     struct PopupStackView: View {
         let popupContent: OwnID.UISDK.InstantConnectView
         var body: some View {
-            ZStack(alignment: .bottom) {
-                popupContent
-                    .background(.white)
-                    .transition(.move(edge: .top))
+            VStack(spacing: 0) {
+                Spacer()
+                ZStack(alignment: .bottom) {
+                    popupContent
+                        .background(.white)
+                        .transition(.move(edge: .top))
+                }
             }
             .ignoresSafeArea()
-            .alignToBottom()
             .animation(.spring(response: 0.32, dampingFraction: 1, blendDuration: 0.32), value: popupContent)
         }
     }
