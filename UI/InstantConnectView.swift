@@ -118,7 +118,7 @@ struct AdaptsToSoftwareKeyboard: ViewModifier {
       name: UIResponder.keyboardWillShowNotification
     )
     .compactMap { notification in notification.userInfo?["UIKeyboardFrameEndUserInfoKey"] as? CGRect }
-    .map { rect in rect.height / 4 }
+    .map { rect in rect.height }
           .subscribe(Subscribers.Assign(object: self, keyPath: \.currentHeight))
 
     NotificationCenter.Publisher(
