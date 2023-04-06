@@ -3,6 +3,7 @@ import UIKit
 import Combine
 
 public extension OwnID.UISDK {
+    @available(iOS 15.0, *)
     struct InstantConnectView: View, Equatable {
         public static func == (lhs: OwnID.UISDK.InstantConnectView, rhs: OwnID.UISDK.InstantConnectView) -> Bool {
             lhs.uuid == rhs.uuid
@@ -16,6 +17,7 @@ public extension OwnID.UISDK {
         private let borderWidth = 10.0
         
         @ObservedObject private var viewModel: OwnID.FlowsSDK.LoginView.ViewModel
+        @FocusState private var isEmailFocused: Bool
         @State private var email = ""
         @State private var error = ""
         
@@ -54,35 +56,49 @@ public extension OwnID.UISDK {
         }
         
         public var body: some View {
-            if #available(iOS 15.0, *) {
-                viewContent()
-                    .onChange(of: email) { newValue in emailPublisher.send(newValue) }
-            } else {
-                EmptyView()
+            viewContent()
+                .onChange(of: email) { newValue in emailPublisher.send(newValue) }
+        }
+        
+        @ViewBuilder
+        private func topSection() -> some View {
+            HStack {
+                Text("Sign In")
+                    .font(.system(size: 20))
+                    .bold()
+                Spacer()
+                Button {
+                    closeClosure()
+                } label: {
+                    Image("closeImage", bundle: .resourceBundle)
+                }
             }
         }
         
-        @available(iOS 15.0, *)
+        @ViewBuilder
+        private func errorView() -> some View {
+            if !error.isEmpty {
+                HStack {
+                    Text(error)
+                        .multilineTextAlignment(.leading)
+                        .foregroundColor(.red)
+                        .padding(.bottom, 6)
+                    Spacer()
+                }
+            }
+        }
+        
         @ViewBuilder
         private func viewContent() -> some View {
             VStack {
-                HStack {
-                    Text("Sign In")
-                        .font(.system(size: 20))
-                        .bold()
-                    Spacer()
-                    Button {
-                        closeClosure()
-                    } label: {
-                        Image("closeImage", bundle: .resourceBundle)
-                    }
-                }
+                topSection()
                 VStack {
                     Text("Enter your email")
                         .font(.system(size: 18))
                     TextField("", text: $email)
                         .font(.system(size: 17))
                         .keyboardType(.emailAddress)
+                        .focused($isEmailFocused)
                         .padding(11)
                         .background(Rectangle().fill(.white))
                         .cornerRadius(cornerRadius)
@@ -91,15 +107,7 @@ public extension OwnID.UISDK {
                                 .stroke(OwnID.Colors.instantConnectViewEmailFiendBorderColor, lineWidth: 1.5)
                         )
                         .padding(.bottom, 6)
-                    if !error.isEmpty {
-                        HStack {
-                            Text(error)
-                                .multilineTextAlignment(.leading)
-                                .foregroundColor(.red)
-                                .padding(.bottom, 6)
-                            Spacer()
-                        }
-                    }
+                    errorView()
                     AuthButton(visualConfig: visualConfig,
                                actionHandler: { resultPublisher.send(()) },
                                isLoading: viewModel.state.isLoadingBinding,
@@ -107,6 +115,9 @@ public extension OwnID.UISDK {
                 }
             }
             .padding()
+            .onAppear() {
+                isEmailFocused = true
+            }
         }
     }
 }

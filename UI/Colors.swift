@@ -43,14 +43,17 @@ public extension OwnID {
             Color("spinnerBackgroundStrokeColor", bundle: .resourceBundle)
         }
         
+        @available(iOS 15.0, *)
         public static var instantConnectViewBackgroundColor: Color {
             Color("\(OwnID.UISDK.InstantConnectView.self)BackgroundColor", bundle: .resourceBundle)
         }
         
+        @available(iOS 15.0, *)
         public static var instantConnectViewEmailFiendBorderColor: Color {
             Color("\(OwnID.UISDK.InstantConnectView.self)EmailFiendBorderColor", bundle: .resourceBundle)
         }
         
+        @available(iOS 15.0, *)
         public static var instantConnectViewAuthButtonColor: Color {
             Color("\(OwnID.UISDK.InstantConnectView.self)AuthButtonColor", bundle: .resourceBundle)
         }
