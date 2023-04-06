@@ -27,7 +27,7 @@ public extension OwnID.UISDK {
         private var visualConfig: VisualLookConfig
         private let closeClosure: () -> Void
         private let cornerRadius = 10.0
-        private let borderWidth = 10.0
+        private let borderWidth = 1.5
         
         @ObservedObject private var viewModel: OwnID.FlowsSDK.LoginView.ViewModel
         @FocusState private var isEmailFocused: Bool
@@ -117,7 +117,7 @@ public extension OwnID.UISDK {
                         .cornerRadius(cornerRadius)
                         .overlay(
                             RoundedRectangle(cornerRadius: cornerRadius)
-                                .stroke(OwnID.Colors.instantConnectViewEmailFiendBorderColor, lineWidth: 1.5)
+                                .stroke(OwnID.Colors.instantConnectViewEmailFiendBorderColor, lineWidth: borderWidth)
                         )
                         .padding(.bottom, 6)
                     errorView()
