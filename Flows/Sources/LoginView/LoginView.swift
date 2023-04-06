@@ -1,5 +1,11 @@
 import SwiftUI
 
+extension OwnID.FlowsSDK.LoginView.ViewModel.State {
+    var buttonStateBinding: Binding<OwnID.UISDK.ButtonState> { .constant(buttonState) }
+    
+    var isLoadingBinding: Binding<Bool> { .constant(isLoading) }
+}
+
 public extension OwnID.FlowsSDK {
     struct LoginView: View, Equatable {
         public static func == (lhs: OwnID.FlowsSDK.LoginView, rhs: OwnID.FlowsSDK.LoginView) -> Bool {
@@ -26,10 +32,10 @@ public extension OwnID.FlowsSDK {
 
 private extension OwnID.FlowsSDK.LoginView {
     func skipPasswordView() -> some View {
-        let view = OwnID.UISDK.OwnIDView(viewState: .constant(viewModel.state.buttonState),
+        let view = OwnID.UISDK.OwnIDView(viewState: viewModel.state.buttonStateBinding,
                                          visualConfig: visualConfig,
                                          shouldShowTooltip: $viewModel.shouldShowTooltip,
-                                         isLoading: .constant(viewModel.state.isLoading))
+                                         isLoading: viewModel.state.isLoadingBinding)
         viewModel.subscribe(to: view.eventPublisher)
         return view.eraseToAnyView()
     }

@@ -1,17 +1,45 @@
 import AuthenticationServices
 import os
 
-extension OwnID.CoreSDK.AccountManager.Action: CustomDebugStringConvertible {
-    var debugDescription: String {
-        switch self {
-        case .didFinishRegistration:
-            return "didFinishRegistration"
-            
-        case .didFinishLogin:
-            return "didFinishLogin"
-            
-        case .error:
-            return "generalError"
+extension OwnID.CoreSDK.AccountManager {
+    typealias CreationClosure = (_ store: Store<State, Action>, _ domain: String, _ challenge: String, _ browserBaseURL: String) -> Self
+    static var defaultAccountManager: CreationClosure {
+        { store, domain, challenge, browserBaseURL in
+            let manager = OwnID.CoreSDK.CurrentAccountManager(store: store, domain: domain, challenge: challenge, browserBaseURL: browserBaseURL)
+            let current = Self {
+                if #available(iOS 16.0, *) {
+                    manager.signInWith()
+                }
+            } cancelClosure: {
+                if #available(iOS 16.0, *) {
+                    manager.cancel()
+                }
+            } signUpClosure: { userName in
+                if #available(iOS 16.0, *) {
+                    manager.signUpWith(userName: userName)
+                }
+            }
+            return current
+        }
+    }
+}
+
+extension OwnID.CoreSDK {
+    struct AccountManager {
+        var signInClosure: () -> Void
+        var cancelClosure: () -> Void
+        var signUpClosure: (_ userName: String) -> Void
+        
+        func signInWith() {
+            signInClosure()
+        }
+        
+        func cancel() {
+            cancelClosure()
+        }
+        
+        func signUpWith(userName: String) {
+            signUpClosure(userName)
         }
     }
 }
@@ -33,13 +61,13 @@ extension OwnID.CoreSDK.AccountManager {
 }
 
 @available(iOS 16.0, *)
-extension OwnID.CoreSDK.AccountManager: ASAuthorizationControllerDelegate { }
+extension OwnID.CoreSDK.CurrentAccountManager: ASAuthorizationControllerDelegate { }
     
 extension OwnID.CoreSDK {
-    final class AccountManager: NSObject {
+    final class CurrentAccountManager: NSObject {
         let authenticationAnchor = ASPresentationAnchor()
         
-        private let store: Store<State, Action>
+        private let store: Store<OwnID.CoreSDK.AccountManager.State, OwnID.CoreSDK.AccountManager.Action>
         private let domain: String
         private let challenge: String
         private let browserBaseURL: String
@@ -51,7 +79,7 @@ extension OwnID.CoreSDK {
         private var currentAuthController: ASAuthorizationController?
         private var isPerformingModalReqest = false
         
-        init(store: Store<State, Action>, domain: String, challenge: String, browserBaseURL: String) {
+        init(store: Store<OwnID.CoreSDK.AccountManager.State, OwnID.CoreSDK.AccountManager.Action>, domain: String, challenge: String, browserBaseURL: String) {
             self.store = store
             self.domain = domain
             self.challenge = challenge
@@ -202,8 +230,8 @@ extension OwnID.CoreSDK {
     }
 }
 
-extension OwnID.CoreSDK.AccountManager {
-    static func viewModelReducer(state: inout State, action: Action) -> [Effect<Action>] {
+extension OwnID.CoreSDK.CurrentAccountManager {
+    static func viewModelReducer(state: inout OwnID.CoreSDK.AccountManager.State, action: OwnID.CoreSDK.AccountManager.Action) -> [Effect<OwnID.CoreSDK.AccountManager.Action>] {
         switch action {
         case .didFinishRegistration:
             return []
@@ -213,6 +241,21 @@ extension OwnID.CoreSDK.AccountManager {
             
         case .error:
             return []
+        }
+    }
+}
+
+extension OwnID.CoreSDK.AccountManager.Action: CustomDebugStringConvertible {
+    var debugDescription: String {
+        switch self {
+        case .didFinishRegistration:
+            return "didFinishRegistration"
+            
+        case .didFinishLogin:
+            return "didFinishLogin"
+            
+        case .error:
+            return "generalError"
         }
     }
 }

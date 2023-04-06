@@ -3,11 +3,29 @@ import UIKit
 import Combine
 import AuthenticationServices
 
-protocol BrowserOpener: AnyObject {
-    init(store: Store<OwnID.CoreSDK.BrowserOpenerViewModel.State, OwnID.CoreSDK.BrowserOpenerViewModel.Action>,
-         url: URL,
-         redirectionURL: OwnID.CoreSDK.RedirectionURLString)
-    func cancel()
+extension OwnID.CoreSDK {
+    struct BrowserOpener {
+        let cancelClosure: () -> Void
+        
+        func cancel() {
+            cancelClosure()
+        }
+    }
+}
+
+extension OwnID.CoreSDK.BrowserOpener {
+    typealias CreationClosure = (_ store: Store<OwnID.CoreSDK.BrowserOpenerViewModel.State, OwnID.CoreSDK.BrowserOpenerViewModel.Action>,
+                                 _ url: URL,
+                                 _ redirectionURL: OwnID.CoreSDK.RedirectionURLString) -> Self
+    
+    static var defaultOpener: CreationClosure {
+        { store, url, redirectionURL in
+            let vm = OwnID.CoreSDK.BrowserOpenerViewModel(store: store, url: url, redirectionURL: redirectionURL)
+            return Self {
+                vm.cancel()
+            }
+        }
+    }
 }
 
 extension OwnID.CoreSDK.BrowserOpenerViewModel {
@@ -18,7 +36,7 @@ extension OwnID.CoreSDK.BrowserOpenerViewModel {
 }
 
 extension OwnID.CoreSDK {
-    final class BrowserOpenerViewModel: ObservableObject, BrowserOpener {
+    final class BrowserOpenerViewModel: ObservableObject {
         private var store: Store<State, Action>
         private let authSessionContext = ASWebAuthenticationPresentationContext()
         private var cancellableSession: ASWebAuthenticationSession?

@@ -35,3 +35,9 @@ extension OwnID.CoreSDK {
         let redirectUrlOverride: RedirectionURLString?
     }
 }
+
+extension OwnID.CoreSDK.ServerConfiguration {
+    static func mock(isFailed: Bool = false) -> Self {
+        Self(isFailed: isFailed, supportedLocales: [], logLevel: .error, fidoSettings: .none, passkeysAutofillEnabled: false, serverURL: URL(string: "https://ownid.com")!, redirectURLString: .none, platformSettings: .none)
+    }
+}

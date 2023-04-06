@@ -10,6 +10,29 @@ public protocol APISessionProtocol {
     func performAuthRequest(fido2Payload: Encodable) -> AnyPublisher<OwnID.CoreSDK.Payload, OwnID.CoreSDK.CoreErrorLogWrapper>
 }
 
+
+extension APISessionProtocol {
+    typealias CreationClosure = (_ initURL: OwnID.CoreSDK.ServerURL,
+                                 _ statusURL: OwnID.CoreSDK.ServerURL,
+                                 _ finalStatusURL: OwnID.CoreSDK.ServerURL,
+                                 _ authURL: OwnID.CoreSDK.ServerURL,
+                                 _ supportedLanguages: OwnID.CoreSDK.Languages) -> APISessionProtocol
+    
+    static var defaultAPISession: CreationClosure {
+        { initURL,
+            statusURL,
+            finalStatusURL,
+            authURL,
+            supportedLanguages in
+            OwnID.CoreSDK.APISession(initURL: initURL,
+                                     statusURL: statusURL,
+                                     finalStatusURL: finalStatusURL,
+                                     authURL: authURL,
+                                     supportedLanguages: supportedLanguages)
+        }
+    }
+}
+
 public extension OwnID.CoreSDK {
     final class APISession: APISessionProtocol {
         private let sessionVerifier: SessionVerifier

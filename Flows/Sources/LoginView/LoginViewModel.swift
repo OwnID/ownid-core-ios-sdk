@@ -56,7 +56,7 @@ public extension OwnID.FlowsSDK.LoginView {
                     emailPublisher: OwnID.CoreSDK.EmailPublisher) {
             self.sdkConfigurationName = sdkConfigurationName
             self.loginPerformer = loginPerformer
-            emailPublisher.assign(to: \.email, on: self).store(in: &bag)
+            updateEmailPublisher(emailPublisher)
             Task {
                 // Delay the task by 1 second
                 try? await Task.sleep(nanoseconds: 1_000_000_000)
@@ -69,6 +69,10 @@ public extension OwnID.FlowsSDK.LoginView {
                 OwnID.CoreSDK.shared.currentMetricInformation = currentMetadata
             }
             OwnID.CoreSDK.logger.logAnalytic(.loginTrackMetric(action: .loaded, context: payload?.context))
+        }
+        
+        public func updateEmailPublisher(_ emailPublisher: OwnID.CoreSDK.EmailPublisher) {
+            emailPublisher.assign(to: \.email, on: self).store(in: &bag)
         }
         
         /// Reset visual state and any possible data from web flow
@@ -166,6 +170,7 @@ private extension OwnID.FlowsSDK.LoginView.ViewModel {
                 OwnID.CoreSDK.logger.logAnalytic(.loginTrackMetric(action: .loggedIn,
                                                                    context: payload.context,
                                                                    authType: payload.authType))
+                OwnID.CoreSDK.DefaultsEmailSaver.save(email: email)
                 state = .loggedIn
                 resultPublisher.send(.success(.loggedIn(loginResult: loginResult.operationResult, authType: loginResult.authType)))
                 resetDataAndState(isResettingToInitialState: false)

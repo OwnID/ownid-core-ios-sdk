@@ -18,4 +18,8 @@ Pod::Spec.new do |s|
 
   s.source_files = 'Core/**/*', 'Flows/**/*', 'UI/**/*'
   s.resource_bundles = { 'OwnIDCoreSDK' => ['Resources/**/*'] }
+
+  s.test_spec 'Tests' do |test_spec|
+    test_spec.source_files = 'Tests/**/*'
+  end 
 end

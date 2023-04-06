@@ -1,19 +1,6 @@
 import SwiftUI
 import Combine
 
-public extension OwnID.CoreSDK {
-    static let sdkName = String(describing: OwnID.CoreSDK.self)
-    static let version = "2.2.0"
-    static let APIVersion = "1"
-}
-
-extension OwnID.CoreSDK {
-    enum ConfigurationLoadingEvent {
-        case loaded(LocalConfiguration)
-        case error
-    }
-}
-
 /// OwnID class represents core part of SDK. It performs initialization and creates views. It reads OwnIDConfiguration from disk, parses it and loads to memory for later usage. It is a singleton, so the URL returned from outside can be linked to corresponding flow.
 public extension OwnID {
     
@@ -143,19 +130,5 @@ public extension OwnID {
             }
             urlPublisher.send(())
         }
-    }
-}
-
-public extension OwnID.CoreSDK {
-    var environment: String? {
-        store.value.firstConfiguration?.environment
-    }
-    
-    var metricsURL: ServerURL? {
-        store.value.firstConfiguration?.metricsURL
-    }
-    
-    var supportedLocales: [String]? {
-        store.value.firstConfiguration?.supportedLocales
     }
 }
