@@ -44,15 +44,20 @@ public extension OwnID.UISDK {
             self.visualConfig = visualConfig
             self.closeClosure = closeClosure
             
-            email = OwnID.CoreSDK.DefaultsEmailSaver.getEmail() ?? ""
             
             viewModel.updateEmailPublisher(emailPublisher.eraseToAnyPublisher())
             viewModel.subscribe(to: eventPublisher)
             
             viewModel.eventPublisher.sink { [self] event in
                 switch event {
-                case .success(_):
-                    break
+                case .success(let event):
+                    switch event {
+                    case .loading:
+                        break
+                        
+                    case .loggedIn:
+                        closeClosure()
+                    }
                     
                 case .failure(let error):
                     self.error = error.localizedDescription
@@ -128,6 +133,9 @@ public extension OwnID.UISDK {
             }
             .padding()
             .onAppear() {
+                let emailValue = OwnID.CoreSDK.DefaultsEmailSaver.getEmail() ?? ""
+                email = emailValue
+                emailPublisher.send(emailValue)
                 isEmailFocused = true
             }
         }
