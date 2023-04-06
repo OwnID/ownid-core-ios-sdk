@@ -3,6 +3,19 @@ import UIKit
 import Combine
 
 public extension OwnID.UISDK {
+    static func showInstantConnectView(viewModel: OwnID.FlowsSDK.LoginView.ViewModel,
+                                              sdkConfigurationName: String,
+                                              visualConfig: OwnID.UISDK.VisualLookConfig) {
+        if #available(iOS 15.0, *) {
+            let view = OwnID.UISDK.InstantConnectView(viewModel: viewModel, visualConfig: visualConfig, closeClosure: {
+                OwnID.UISDK.PopupManager.dismiss()
+            })
+            OwnID.UISDK.PopupManager.present(view)
+        }
+    }
+}
+
+public extension OwnID.UISDK {
     @available(iOS 15.0, *)
     struct InstantConnectView: View, Equatable {
         public static func == (lhs: OwnID.UISDK.InstantConnectView, rhs: OwnID.UISDK.InstantConnectView) -> Bool {
