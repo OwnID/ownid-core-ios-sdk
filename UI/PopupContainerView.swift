@@ -2,6 +2,47 @@ import SwiftUI
 import UIKit
 import Combine
 
+extension OwnID.UISDK {
+    @available(iOS 15.0, *)
+    struct PopupView: View {
+        @State private var orientation = UIDeviceOrientation.portrait
+        @StateObject private var stack: PopupManager = .shared
+        
+        var body: some View {
+            if let view = stack.views.first {
+                PopupStackView(popupContent: view)
+                    .frame(width: orientation.isPortrait ? UIScreen.width : UIScreen.height, height: orientation.isPortrait ?  UIScreen.height : UIScreen.width)
+                    .background(createOverlay())
+                    .onRotate { newOrientation in
+                        orientation = newOrientation
+                    }
+            } else {
+                EmptyView()
+            }
+        }
+    }
+}
+
+extension OwnID.UISDK {
+    @available(iOS 15.0, *)
+    struct PopupStackView: View {
+        let popupContent: OwnID.UISDK.InstantConnectView
+        var body: some View {
+            VStack(spacing: 0) {
+                Spacer()
+                ZStack(alignment: .bottom) {
+                    popupContent
+                        .background(.white)
+                        .transition(.move(edge: .top))
+                }
+                .keyboardAware
+            }
+            .ignoresSafeArea()
+            .animation(.spring(response: 0.32, dampingFraction: 1, blendDuration: 0.32), value: popupContent)
+        }
+    }
+}
+
 @available(iOS 15.0, *)
 public extension View {
     func addInstantOverlayView() -> some View {
@@ -35,26 +76,6 @@ extension View {
     }
 }
 
-extension OwnID.UISDK {
-    @available(iOS 15.0, *)
-    struct PopupStackView: View {
-        let popupContent: OwnID.UISDK.InstantConnectView
-        var body: some View {
-            VStack(spacing: 0) {
-                Spacer()
-                ZStack(alignment: .bottom) {
-                    popupContent
-                        .background(.white)
-                        .transition(.move(edge: .top))
-                }
-                .keyboardAware
-            }
-            .ignoresSafeArea()
-            .animation(.spring(response: 0.32, dampingFraction: 1, blendDuration: 0.32), value: popupContent)
-        }
-    }
-}
-
 public extension OwnID.UISDK {
     @available(iOS 15.0, *)
     class PopupManager: ObservableObject {
@@ -72,27 +93,6 @@ extension OwnID.UISDK.PopupManager {
     }}}
     
     public static func dismiss() { shared.views.removeAll() }
-}
-
-extension OwnID.UISDK {
-    @available(iOS 15.0, *)
-    struct PopupView: View {
-        @State private var orientation = UIDeviceOrientation.portrait
-        @StateObject private var stack: PopupManager = .shared
-        
-        var body: some View {
-            if let view = stack.views.first {
-                PopupStackView(popupContent: view)
-                    .frame(width: orientation.isPortrait ? UIScreen.width : UIScreen.height, height: orientation.isPortrait ?  UIScreen.height : UIScreen.width)
-                    .background(createOverlay())
-                    .onRotate { newOrientation in
-                        orientation = newOrientation
-                    }
-            } else {
-                EmptyView()
-            }
-        }
-    }
 }
 
 @available(iOS 15.0, *)
