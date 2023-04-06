@@ -66,16 +66,6 @@ extension UIScreen {
     }()
 }
 
-@available(iOS 15.0, *)
-extension View {
-    func alignToBottom() -> some View {
-        VStack(spacing: 0) {
-            Spacer()
-            self
-        }
-    }
-}
-
 public extension OwnID.UISDK {
     @available(iOS 15.0, *)
     class PopupManager: ObservableObject {
