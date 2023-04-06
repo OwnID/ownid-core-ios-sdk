@@ -11,7 +11,7 @@ extension OwnID.UISDK {
         var body: some View {
             if let view = stack.views.first {
                 PopupStackView(popupContent: view)
-                    .frame(width: orientation.isPortrait ? UIScreen.width : UIScreen.height, height: orientation.isPortrait ?  UIScreen.height : UIScreen.width)
+//                    .frame(width: orientation.isPortrait ? UIScreen.width : UIScreen.height, height: orientation.isPortrait ?  UIScreen.height : UIScreen.width)
                     .background(createOverlay())
                     .onRotate { newOrientation in
                         orientation = newOrientation
@@ -35,9 +35,9 @@ extension OwnID.UISDK {
                         .background(.white)
                         .transition(.move(edge: .top))
                 }
-                .keyboardAware
+//                .keyboardAware
             }
-            .ignoresSafeArea()
+//            .ignoresSafeArea()
             .animation(.spring(response: 0.32, dampingFraction: 1, blendDuration: 0.32), value: popupContent)
         }
     }

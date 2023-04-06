@@ -104,11 +104,6 @@ public extension OwnID.UISDK {
                                actionHandler: { resultPublisher.send(()) },
                                isLoading: viewModel.state.isLoadingBinding,
                                buttonState: viewModel.state.buttonStateBinding)
-                    
-                    Text("")
-                    Text("")
-                    Text("")
-                    Text("")
                 }
             }
             .padding()
