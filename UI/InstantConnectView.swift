@@ -43,7 +43,6 @@ public extension OwnID.UISDK {
             self.viewModel = viewModel
             self.visualConfig = visualConfig
             self.closeClosure = closeClosure
-            self.visualConfig.authButtonConfig.backgroundColor = OwnID.Colors.instantConnectViewAuthButtonColor
             
             email = OwnID.CoreSDK.DefaultsEmailSaver.getEmail() ?? ""
             
