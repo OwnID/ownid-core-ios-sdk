@@ -4,8 +4,8 @@ import Combine
 
 public extension OwnID.UISDK {
     static func showInstantConnectView(viewModel: OwnID.FlowsSDK.LoginView.ViewModel,
-                                              sdkConfigurationName: String,
-                                              visualConfig: OwnID.UISDK.VisualLookConfig) {
+                                       sdkConfigurationName: String,
+                                       visualConfig: OwnID.UISDK.VisualLookConfig) {
         if #available(iOS 15.0, *) {
             let view = OwnID.UISDK.InstantConnectView(viewModel: viewModel, visualConfig: visualConfig, closeClosure: {
                 OwnID.UISDK.PopupManager.dismiss()
@@ -43,7 +43,6 @@ public extension OwnID.UISDK {
             self.viewModel = viewModel
             self.visualConfig = visualConfig
             self.closeClosure = closeClosure
-            
             
             viewModel.updateEmailPublisher(emailPublisher.eraseToAnyPublisher())
             viewModel.subscribe(to: eventPublisher)
