@@ -54,12 +54,21 @@ extension OwnID.CoreSDK.AccountManager {
 }
 
 extension OwnID.CoreSDK {
-    final class APISessionMockSuccess: APISessionProtocol {
+    final class APISessionMock: APISessionProtocol {
+        init(isInitSuccessful: Bool) {
+            self.isInitSuccessful = isInitSuccessful
+        }
+        
+        var isInitSuccessful = true
         var context: OwnID.CoreSDK.Context! { "KreJ96smzSwveEb5QfaJzJ" }
         var nonce: OwnID.CoreSDK.Nonce { "acfc66ed-8c1a-4956-b114-e9fa0e189cd7" }
         
         func performInitRequest(requestData: OwnID.CoreSDK.Init.RequestData) -> AnyPublisher<OwnID.CoreSDK.Init.Response, OwnID.CoreSDK.CoreErrorLogWrapper> {
-            Just(OwnID.CoreSDK.Init.Response(url: "https://www.apple.com", context: context, nonce: nonce)).setFailureType(to: OwnID.CoreSDK.CoreErrorLogWrapper.self).eraseToAnyPublisher()
+            if isInitSuccessful {
+                return Just(OwnID.CoreSDK.Init.Response(url: "https://www.apple.com", context: context, nonce: nonce)).setFailureType(to: OwnID.CoreSDK.CoreErrorLogWrapper.self).eraseToAnyPublisher()
+            } else {
+                return Fail(outputType: OwnID.CoreSDK.Init.Response.self, failure: OwnID.CoreSDK.CoreErrorLogWrapper(entry: .init(context: context, message: "", codeInitiator: #function, sdkName: OwnID.CoreSDK.sdkName, version: OwnID.CoreSDK.version), error: .initRequestResponseIsEmpty)).eraseToAnyPublisher()
+            }
         }
         
         func performFinalStatusRequest() -> AnyPublisher<OwnID.CoreSDK.Payload, OwnID.CoreSDK.CoreErrorLogWrapper> {
@@ -67,12 +76,12 @@ extension OwnID.CoreSDK {
         }
         
         func performAuthRequest(fido2Payload: Encodable) -> AnyPublisher<OwnID.CoreSDK.Payload, OwnID.CoreSDK.CoreErrorLogWrapper> {
-            Just(OwnID.CoreSDK.Payload(dataContainer: [:], metadata: .none, context: context, nonce: nonce, loginId: .none, responseType: .registrationInfo, authType: "biometrics", requestLanguage: "uk-US")).setFailureType(to: OwnID.CoreSDK.CoreErrorLogWrapper.self).eraseToAnyPublisher()
+            Just(OwnID.CoreSDK.Payload(dataContainer: [String: String](), metadata: .none, context: context, nonce: nonce, loginId: .none, responseType: .registrationInfo, authType: "biometrics", requestLanguage: "uk-US")).setFailureType(to: OwnID.CoreSDK.CoreErrorLogWrapper.self).eraseToAnyPublisher()
         }
     }
     
-    static var successSession: APISessionProtocol.CreationClosure {
-        { _, _ , _ , _ ,_  in OwnID.CoreSDK.APISessionMockSuccess() }
+    static func session(isInitSuccessful: Bool = true) -> APISessionProtocol.CreationClosure {
+        { _, _ , _ , _ ,_  in OwnID.CoreSDK.APISessionMock(isInitSuccessful: isInitSuccessful) }
     }
 }
 
@@ -110,18 +119,13 @@ final class CoreViewModelTests: XCTestCase {
     
     func testSuccessRegistrationPathWithPasskeys() {
         let exp = expectation(description: #function)
-        var config = try! OwnID.CoreSDK.LocalConfiguration(appID: "e8qkk8umn5hxqg", redirectionURL: "com.ownid.demo.firebase://ownid/redirect/", environment: "staging")
-        let domain = "https://ownid.com"
-        config.serverURL = URL(string: domain)!
-        let settings = OwnID.CoreSDK.FidoSettings(rpID: domain, rpName: domain)
-        config.fidoSettings = settings
         let viewModel = OwnID.CoreSDK.CoreViewModel(type: .register,
                                                     email: .init(rawValue: "lesot21279@duiter.com"),
                                                     supportedLanguages: .init(rawValue: ["en"]),
                                                     sdkConfigurationName: sdkConfigurationName,
                                                     isLoggingEnabled: true,
-                                                    clientConfiguration: config,
-                                                    apiSessionCreationClosure: OwnID.CoreSDK.successSession,
+                                                    clientConfiguration: localConfig,
+                                                    apiSessionCreationClosure: OwnID.CoreSDK.session(),
                                                     createAccountManagerClosure: OwnID.CoreSDK.AccountManager.mockAccountManager)
         
         viewModel.eventPublisher.sink { completion in
@@ -151,24 +155,19 @@ final class CoreViewModelTests: XCTestCase {
     
     func testAuthManagerError() {
         let exp = expectation(description: #function)
-        var config = try! OwnID.CoreSDK.LocalConfiguration(appID: "e8qkk8umn5hxqg", redirectionURL: "com.ownid.demo.firebase://ownid/redirect/", environment: "staging")
-        let domain = "https://ownid.com"
-        config.serverURL = URL(string: domain)!
-        let settings = OwnID.CoreSDK.FidoSettings(rpID: domain, rpName: domain)
-        config.fidoSettings = settings
         let viewModel = OwnID.CoreSDK.CoreViewModel(type: .register,
                                                     email: .init(rawValue: "lesot21279@duiter.com"),
                                                     supportedLanguages: .init(rawValue: ["en"]),
                                                     sdkConfigurationName: sdkConfigurationName,
                                                     isLoggingEnabled: true,
-                                                    clientConfiguration: config,
-                                                    apiSessionCreationClosure: OwnID.CoreSDK.successSession,
+                                                    clientConfiguration: localConfig,
+                                                    apiSessionCreationClosure: OwnID.CoreSDK.session(),
                                                     createAccountManagerClosure: OwnID.CoreSDK.AccountManager.mockErrorAccountManager, createBrowserOpenerClosure: OwnID.CoreSDK.BrowserOpener.instantOpener)
         
         viewModel.eventPublisher.sink { completion in
             switch completion {
             case .finished:
-                exp.fulfill()
+                break
                 
             case .failure(let error):
                 switch error.error {
@@ -191,6 +190,46 @@ final class CoreViewModelTests: XCTestCase {
                 XCTFail()
             }
         }
+        .store(in: &bag)
+        
+        viewModel.start()
+        waitForExpectations(timeout: 0.1)
+    }
+    
+    var localConfig: OwnID.CoreSDK.LocalConfiguration {
+        var config = try! OwnID.CoreSDK.LocalConfiguration(appID: "e8qkk8umn5hxqg", redirectionURL: "com.ownid.demo.firebase://ownid/redirect/", environment: "staging")
+        let domain = "https://ownid.com"
+        config.serverURL = URL(string: domain)!
+        let settings = OwnID.CoreSDK.FidoSettings(rpID: domain, rpName: domain)
+        config.fidoSettings = settings
+        return config
+    }
+    
+    func testInitResponseError() {
+        let exp = expectation(description: #function)
+        let viewModel = OwnID.CoreSDK.CoreViewModel(type: .register,
+                                                    email: .init(rawValue: "lesot21279@duiter.com"),
+                                                    supportedLanguages: .init(rawValue: ["en"]),
+                                                    sdkConfigurationName: sdkConfigurationName,
+                                                    isLoggingEnabled: true,
+                                                    clientConfiguration: localConfig,
+                                                    apiSessionCreationClosure: OwnID.CoreSDK.session(isInitSuccessful: false),
+                                                    createAccountManagerClosure: OwnID.CoreSDK.AccountManager.mockErrorAccountManager, createBrowserOpenerClosure: OwnID.CoreSDK.BrowserOpener.instantOpener)
+        
+        viewModel.eventPublisher.sink { completion in
+            switch completion {
+            case .finished:
+                break
+                
+            case .failure(let error):
+                switch error.error {
+                case .initRequestResponseIsEmpty:
+                    exp.fulfill()
+                default:
+                    break
+                }
+            }
+        } receiveValue: { _ in }
         .store(in: &bag)
         
         viewModel.start()

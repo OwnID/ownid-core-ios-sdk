@@ -3,6 +3,7 @@ import Combine
 
 public extension OwnID.CoreSDK {
     typealias LoginID = String
+    #warning("Nonce is deprecated. Please remove it soon")
     typealias Nonce = String
     typealias Context = String
     typealias SessionChallenge = String
