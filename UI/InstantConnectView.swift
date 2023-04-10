@@ -10,14 +10,14 @@ public extension OwnID.UISDK {
             let view = OwnID.UISDK.InstantConnectView(viewModel: viewModel, visualConfig: visualConfig, closeClosure: {
                 OwnID.UISDK.PopupManager.dismiss()
             })
-            OwnID.UISDK.PopupManager.present(view)
+            view.presentAsPopup()
         }
     }
 }
 
 public extension OwnID.UISDK {
     @available(iOS 15.0, *)
-    struct InstantConnectView: View, Equatable {
+    struct InstantConnectView: Popup {
         public static func == (lhs: OwnID.UISDK.InstantConnectView, rhs: OwnID.UISDK.InstantConnectView) -> Bool {
             lhs.uuid == rhs.uuid
         }
@@ -71,7 +71,7 @@ public extension OwnID.UISDK {
                 .eraseToAnyPublisher()
         }
         
-        public var body: some View {
+        public func createContent() -> some View {
             viewContent()
                 .onChange(of: email) { newValue in emailPublisher.send(newValue) }
         }
