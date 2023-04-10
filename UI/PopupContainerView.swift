@@ -21,12 +21,12 @@ extension OwnID.UISDK {
 extension OwnID.UISDK {
     @available(iOS 15.0, *)
     struct PopupStackView: View {
-        let popupContent: OwnID.UISDK.InstantConnectView
+        let popupContent: AnyPopup
         var body: some View {
             VStack(spacing: 0) {
                 Spacer()
                 ZStack(alignment: .bottom) {
-                    popupContent
+                    popupContent.createContent()
                         .background(.white)
                         .transition(.move(edge: .top))
                 }
@@ -62,7 +62,7 @@ extension UIScreen {
 public extension OwnID.UISDK {
     @available(iOS 15.0, *)
     class PopupManager: ObservableObject {
-        @Published var views = [OwnID.UISDK.InstantConnectView]()
+        @Published var views = [OwnID.UISDK.AnyPopup]()
         
         public static let shared: PopupManager = .init()
         private init() {}
@@ -70,10 +70,54 @@ public extension OwnID.UISDK {
 }
 
 @available(iOS 15.0, *)
+public protocol Popup: View, Hashable, Equatable {
+    associatedtype V: View
+
+    var id: String { get }
+
+    func createContent() -> V
+}
+
+@available(iOS 15.0, *)
+public extension Popup {
+    func presentAsPopup() { OwnID.UISDK.PopupManager.present(OwnID.UISDK.AnyPopup(self)) }
+    func dismiss() { OwnID.UISDK.PopupManager.dismiss() }
+
+    static func ==(lhs: Self, rhs: Self) -> Bool { lhs.id == rhs.id }
+    func hash(into hasher: inout Hasher) { hasher.combine(id) }
+
+    var body: V { createContent() }
+    var id: String { String(describing: type(of: self)) }
+}
+
+@available(iOS 15.0, *)
+extension OwnID.UISDK {
+    struct AnyPopup: Popup {
+        let id: String
+        
+        private let _body: AnyView
+        
+        init(_ popup: some Popup) {
+            self.id = popup.id
+            self._body = AnyView(popup)
+        }
+    }
+}
+
+@available(iOS 15.0, *)
+extension OwnID.UISDK.AnyPopup {
+    func createContent() -> some View { _body }
+}
+
+@available(iOS 15.0, *)
 extension OwnID.UISDK.PopupManager {
-    public static func present(_ popup: OwnID.UISDK.InstantConnectView) { DispatchQueue.main.async { withAnimation(nil) {
-        shared.views.append(popup)
-    }}}
+    static func present(_ popup: OwnID.UISDK.AnyPopup) {
+        DispatchQueue.main.async {
+            withAnimation(nil) {
+                shared.views.append(popup)
+            }
+        }
+    }
     
     public static func dismiss() { shared.views.removeAll() }
 }
