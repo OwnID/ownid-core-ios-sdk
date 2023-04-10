@@ -3,6 +3,8 @@ import Foundation
 extension OwnID.CoreSDK.CoreViewModel.Action: CustomDebugStringConvertible {
     var debugDescription: String {
         switch self {
+        case .oneTimePassword:
+            return "oneTimePassword"
         case .addToState:
             return "addToState"
         case .sendInitialRequest:

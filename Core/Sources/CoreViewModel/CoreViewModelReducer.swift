@@ -66,6 +66,9 @@ extension OwnID.CoreSDK.CoreViewModel {
             state.authManager = .none
             return []
             
+        case .oneTimePassword:
+            return []
+            
         case .authManagerCancelled:
             state.authManager = .none
             return []

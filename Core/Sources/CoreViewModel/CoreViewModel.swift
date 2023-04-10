@@ -117,6 +117,7 @@ extension OwnID.CoreSDK {
                             .addToStateConfig,
                             .addToStateShouldStartInitRequest,
                             .authManager,
+                            .oneTimePassword,
                             .browserVM,
                             .authRequestLoaded:
                         internalStatesChange.append(action.debugDescription)

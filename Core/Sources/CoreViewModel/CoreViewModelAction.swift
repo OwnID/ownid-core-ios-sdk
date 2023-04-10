@@ -13,6 +13,7 @@ extension OwnID.CoreSDK.CoreViewModel {
         case cancelled
         case authManagerCancelled
         case authRequestLoaded
+        case oneTimePassword
         case statusRequestLoaded(response: OwnID.CoreSDK.Payload)
         case browserVM(OwnID.CoreSDK.BrowserOpenerViewModel.Action)
         case authManager(OwnID.CoreSDK.AccountManager.Action)
