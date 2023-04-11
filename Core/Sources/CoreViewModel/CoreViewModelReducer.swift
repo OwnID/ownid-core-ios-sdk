@@ -67,6 +67,7 @@ extension OwnID.CoreSDK.CoreViewModel {
             return []
             
         case .oneTimePassword:
+            OwnID.UISDK.showOTPView(store: state.oneTimePasswordStore)
             return []
             
         case .authManagerCancelled:
