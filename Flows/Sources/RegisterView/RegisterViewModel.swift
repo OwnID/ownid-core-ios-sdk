@@ -175,7 +175,7 @@ public extension OwnID.FlowsSDK.RegisterView {
             }
         }
         
-        func subscribe(to eventsPublisher: OwnID.CoreSDK.EventPublisher, persistingEmail: OwnID.CoreSDK.Email) {
+        func subscribe(to eventsPublisher: OwnID.CoreSDK.CoreViewModel.EventPublisher, persistingEmail: OwnID.CoreSDK.Email) {
             registrationData.persistedEmail = persistingEmail
             coreViewModelBag.forEach { $0.cancel() }
             coreViewModelBag.removeAll()

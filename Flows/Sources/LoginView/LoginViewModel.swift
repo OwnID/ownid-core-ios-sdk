@@ -117,7 +117,7 @@ public extension OwnID.FlowsSDK.LoginView {
             }
         }
         
-        func subscribe(to eventsPublisher: OwnID.CoreSDK.EventPublisher) {
+        func subscribe(to eventsPublisher: OwnID.CoreSDK.CoreViewModel.EventPublisher) {
             coreViewModelBag.forEach { $0.cancel() }
             coreViewModelBag.removeAll()
             eventsPublisher
