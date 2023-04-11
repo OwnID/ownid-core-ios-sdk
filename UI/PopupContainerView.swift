@@ -60,7 +60,6 @@ extension UIScreen {
 }
 
 public extension OwnID.UISDK {
-    @available(iOS 15.0, *)
     class PopupManager: ObservableObject {
         @Published var views = [OwnID.UISDK.AnyPopup]()
         
@@ -69,7 +68,6 @@ public extension OwnID.UISDK {
     }
 }
 
-@available(iOS 15.0, *)
 public protocol Popup: View, Hashable, Equatable {
     associatedtype V: View
 
@@ -78,7 +76,6 @@ public protocol Popup: View, Hashable, Equatable {
     func createContent() -> V
 }
 
-@available(iOS 15.0, *)
 public extension Popup {
     func presentAsPopup() { OwnID.UISDK.PopupManager.present(OwnID.UISDK.AnyPopup(self)) }
     func dismiss() { OwnID.UISDK.PopupManager.dismiss() }
@@ -90,7 +87,6 @@ public extension Popup {
     var id: String { String(describing: type(of: self)) }
 }
 
-@available(iOS 15.0, *)
 extension OwnID.UISDK {
     struct AnyPopup: Popup {
         let id: String
@@ -104,12 +100,10 @@ extension OwnID.UISDK {
     }
 }
 
-@available(iOS 15.0, *)
 extension OwnID.UISDK.AnyPopup {
     func createContent() -> some View { _body }
 }
 
-@available(iOS 15.0, *)
 extension OwnID.UISDK.PopupManager {
     static func present(_ popup: OwnID.UISDK.AnyPopup) {
         DispatchQueue.main.async {
