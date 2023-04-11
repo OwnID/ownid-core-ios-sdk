@@ -90,9 +90,10 @@ extension OwnID.CoreSDK.CoreViewModel {
             state.browserViewModel = vm
             return [Just(.addErrorToInternalStates(error.error)).eraseToEffect()]
             
-        case let .addToState(browserViewModelStore, authStore):
+        case let .addToState(browserViewModelStore, authStore, oneTimePasswordStore):
             state.browserViewModelStore = browserViewModelStore
             state.authManagerStore = authStore
+            state.oneTimePasswordStore = oneTimePasswordStore
             return []
             
         case let .browserVM(browserVMAction):
@@ -134,6 +135,22 @@ extension OwnID.CoreSDK.CoreViewModel {
                 state.browserViewModel = vm
                 return [Just(.addErrorToInternalStates(error)).eraseToEffect()]
             }
+            
+        case .oneTimePasswordView(let action):
+            switch action {
+            case .codeEntered(let code):
+                break
+                
+            case .cancel:
+                return [Just(.oneTimePasswordCancelled).eraseToEffect()]
+                
+            case .emailIsNotRecieved:
+                break
+            }
+            return []
+            
+        case .oneTimePasswordCancelled:
+            return []
         }
     }
 }

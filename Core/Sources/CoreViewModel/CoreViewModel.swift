@@ -4,10 +4,10 @@ import Combine
 extension OwnID.CoreSDK {
     final class CoreViewModel: ObservableObject {
         @Published var store: Store<State, Action>
-        private let resultPublisher = PassthroughSubject<OwnID.CoreSDK.Event, OwnID.CoreSDK.CoreErrorLogWrapper>()
+        private let resultPublisher = PassthroughSubject<Event, OwnID.CoreSDK.CoreErrorLogWrapper>()
         private var bag = Set<AnyCancellable>()
         
-        var eventPublisher: OwnID.CoreSDK.EventPublisher { resultPublisher.receive(on: DispatchQueue.main).eraseToAnyPublisher() }
+        var eventPublisher: EventPublisher { resultPublisher.receive(on: DispatchQueue.main).eraseToAnyPublisher() }
         
         init(type: OwnID.CoreSDK.RequestType,
              email: OwnID.CoreSDK.Email?,
@@ -35,10 +35,14 @@ extension OwnID.CoreSDK {
                 )
             )
             self.store = store
+            let oneTimePasswordViewStore = self.store.view(
+                value: { OwnID.UISDK.OneTimePasswordView.ViewState(isLoggingEnabled: $0.isLoggingEnabled) },
+                action: { .oneTimePasswordView($0) }
+            )
             let browserStore = self.store.view(value: { $0.sdkConfigurationName } , action: { .browserVM($0) })
             let authManagerStore = self.store.view(value: { AccountManager.State(isLoggingEnabled: $0.isLoggingEnabled) },
                                                    action: { .authManager($0) })
-            self.store.send(.addToState(browserViewModelStore: browserStore, authStore: authManagerStore))
+            self.store.send(.addToState(browserViewModelStore: browserStore, authStore: authManagerStore, oneTimePasswordStore: oneTimePasswordViewStore))
             setupEventPublisher()
         }
         
@@ -117,6 +121,7 @@ extension OwnID.CoreSDK {
                             .addToStateConfig,
                             .addToStateShouldStartInitRequest,
                             .authManager,
+                            .oneTimePasswordView,
                             .oneTimePassword,
                             .browserVM,
                             .authRequestLoaded:
@@ -134,6 +139,7 @@ extension OwnID.CoreSDK {
                         
                     case .browserCancelled,
                             .authManagerCancelled,
+                            .oneTimePasswordCancelled,
                             .cancelled:
                         internalStatesChange.append(String(describing: action))
                         flowsFinished()

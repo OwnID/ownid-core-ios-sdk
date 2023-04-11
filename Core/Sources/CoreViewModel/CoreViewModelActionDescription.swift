@@ -38,6 +38,10 @@ extension OwnID.CoreSDK.CoreViewModel.Action: CustomDebugStringConvertible {
             return message
         case .authManagerRequestFail(let error, _):
             return "authManagerRequestFail \(error.error.localizedDescription)"
+        case .oneTimePasswordCancelled:
+            return "oneTimePasswordCancelled"
+        case .oneTimePasswordView:
+            return "oneTimePasswordView"
         }
     }
 }
