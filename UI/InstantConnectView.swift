@@ -4,7 +4,6 @@ import Combine
 
 public extension OwnID.UISDK {
     static func showInstantConnectView(viewModel: OwnID.FlowsSDK.LoginView.ViewModel,
-                                       sdkConfigurationName: String,
                                        visualConfig: OwnID.UISDK.VisualLookConfig) {
         if #available(iOS 15.0, *) {
             let view = OwnID.UISDK.InstantConnectView(viewModel: viewModel, visualConfig: visualConfig, closeClosure: {
