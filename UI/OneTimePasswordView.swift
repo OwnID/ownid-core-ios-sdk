@@ -2,79 +2,57 @@ import SwiftUI
 import UIKit
 import Combine
 
-public extension OwnID.UISDK {
-    static func showOTPView(viewModel: OwnID.FlowsSDK.LoginView.ViewModel,
-                            sdkConfigurationName: String,
-                            visualConfig: OwnID.UISDK.VisualLookConfig) {
+extension OwnID.UISDK.OneTimePasswordView {
+    struct ViewState: LoggingEnabled {
+        let isLoggingEnabled: Bool
+    }
+    
+    enum Action {
+        case codeEntered(String)
+        case cancel
+        case emailIsNotRecieved
+    }
+}
+
+extension OwnID.UISDK {
+    static func showOTPView(store: Store<OwnID.UISDK.OneTimePasswordView.ViewState, OwnID.UISDK.OneTimePasswordView.Action>,
+                            visualConfig: OwnID.UISDK.VisualLookConfig = .init()) {
+        let view = OwnID.UISDK.OneTimePasswordView(store: store, visualConfig: visualConfig)
         if #available(iOS 15.0, *) {
-            let view = OwnID.UISDK.OneTimePasswordView(viewModel: viewModel, visualConfig: visualConfig, closeClosure: {
-                OwnID.UISDK.PopupManager.dismiss()
-            })
             view.presentAsPopup()
         }
     }
 }
 
-public extension OwnID.UISDK {
-    @available(iOS 15.0, *)
+#warning("need to pass error & loading events to this view when they occur")
+#warning("pass visual config")
+extension OwnID.UISDK {
     struct OneTimePasswordView: Popup {
         
-        public static func == (lhs: OwnID.UISDK.OneTimePasswordView, rhs: OwnID.UISDK.OneTimePasswordView) -> Bool {
+        static func == (lhs: OwnID.UISDK.OneTimePasswordView, rhs: OwnID.UISDK.OneTimePasswordView) -> Bool {
             lhs.uuid == rhs.uuid
         }
         private let uuid = UUID().uuidString
-        private let emailPublisher = PassthroughSubject<String, Never>()
         
         private var visualConfig: VisualLookConfig
-        private let closeClosure: () -> Void
-        private let cornerRadius = 10.0
-        private let borderWidth = 1.5
-        
-        @ObservedObject private var viewModel: OwnID.FlowsSDK.LoginView.ViewModel
-        @FocusState private var isEmailFocused: Bool
-        @State private var email = ""
         @State private var error = ""
+        private let store: Store<ViewState, Action>
         
-        private let resultPublisher = PassthroughSubject<Void, Never>()
-        private var bag = Set<AnyCancellable>()
-        
-        public init(viewModel: OwnID.FlowsSDK.LoginView.ViewModel,
-                    visualConfig: VisualLookConfig,
-                    closeClosure: @escaping () -> Void) {
-            self.viewModel = viewModel
+        init(store: Store<ViewState, Action>,
+             visualConfig: VisualLookConfig) {
             self.visualConfig = visualConfig
-            self.closeClosure = closeClosure
-            
-            viewModel.updateEmailPublisher(emailPublisher.eraseToAnyPublisher())
-            viewModel.subscribe(to: eventPublisher)
-            
-            viewModel.eventPublisher.sink { [self] event in
-                switch event {
-                case .success(let event):
-                    switch event {
-                    case .loading:
-                        break
-                        
-                    case .loggedIn:
-                        closeClosure()
-                    }
-                    
-                case .failure(let error):
-                    self.error = error.localizedDescription
-                }
+            self.store = store
+        }
+        
+        func createContent() -> some View {
+            VStack {
+                topSection()
+                errorView()
+                AuthButton(visualConfig: visualConfig,
+                           actionHandler: { store.send(.codeEntered("1111")) },
+                           isLoading: .constant(false),
+                           buttonState: .constant(.enabled))
             }
-            .store(in: &bag)
-        }
-        
-        var eventPublisher: OwnID.UISDK.EventPubliser {
-            resultPublisher
-                .debounce(for: .milliseconds(500), scheduler: DispatchQueue.main)
-                .eraseToAnyPublisher()
-        }
-        
-        public func createContent() -> some View {
-            viewContent()
-                .onChange(of: email) { newValue in emailPublisher.send(newValue) }
         }
         
         @ViewBuilder
@@ -85,7 +63,9 @@ public extension OwnID.UISDK {
                     .bold()
                 Spacer()
                 Button {
-                    closeClosure()
+                    if #available(iOS 15.0, *) {
+                        OwnID.UISDK.PopupManager.dismiss()
+                    }
                 } label: {
                     Image("closeImage", bundle: .resourceBundle)
                 }
@@ -104,41 +84,33 @@ public extension OwnID.UISDK {
                 }
             }
         }
-        
-        @ViewBuilder
-        private func viewContent() -> some View {
-            VStack {
-                topSection()
-                VStack {
-                    Text("Enter your email")
-                        .font(.system(size: 18))
-                    TextField("", text: $email)
-                        .font(.system(size: 17))
-                        .keyboardType(.emailAddress)
-                        .focused($isEmailFocused)
-                        .padding(11)
-                        .background(Rectangle().fill(.white))
-                        .cornerRadius(cornerRadius)
-                        .overlay(
-                            RoundedRectangle(cornerRadius: cornerRadius)
-                                .stroke(OwnID.Colors.instantConnectViewEmailFiendBorderColor, lineWidth: borderWidth)
-                        )
-                        .padding(.bottom, 6)
-                    errorView()
-                    AuthButton(visualConfig: visualConfig,
-                               actionHandler: { resultPublisher.send(()) },
-                               isLoading: viewModel.state.isLoadingBinding,
-                               buttonState: viewModel.state.buttonStateBinding)
-                }
-            }
-            .padding()
-            .onAppear() {
-                let emailValue = OwnID.CoreSDK.DefaultsEmailSaver.getEmail() ?? ""
-                email = emailValue
-                emailPublisher.send(emailValue)
-                isEmailFocused = true
-            }
+    }
+}
+
+@available(iOS 15.0, *)
+extension OwnID.UISDK.OneTimePasswordView {
+    static func viewModelReducer(state: inout OwnID.UISDK.OneTimePasswordView.ViewState, action: OwnID.UISDK.OneTimePasswordView.Action) -> [Effect<OwnID.UISDK.OneTimePasswordView.Action>] {
+        switch action {
+        case .codeEntered(_):
+            return []
+        case .cancel:
+            return []
+        case .emailIsNotRecieved:
+            return []
         }
     }
 }
 
+@available(iOS 15.0, *)
+extension OwnID.UISDK.OneTimePasswordView.Action: CustomDebugStringConvertible {
+    var debugDescription: String {
+        switch self {
+        case .codeEntered(_):
+            return "codeEntered"
+        case .cancel:
+            return "cancel"
+        case .emailIsNotRecieved:
+            return "emailIsNotRecieved"
+        }
+    }
+}
