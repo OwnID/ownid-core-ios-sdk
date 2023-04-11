@@ -17,7 +17,6 @@ public extension OwnID.CoreSDK {
     typealias AppID = String
     typealias AuthType = String
     
-    typealias EventPublisher = AnyPublisher<Event, CoreErrorLogWrapper>
     /// Logs into or creates account for this user ID, passed by symbol
     typealias EmailPublisher = AnyPublisher<String, Never>
 }
