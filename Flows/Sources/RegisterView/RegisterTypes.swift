@@ -5,8 +5,8 @@ extension OwnID.FlowsSDK.RegisterError: LocalizedError {
     public var errorDescription: String? {
         switch self {
             
-        case .emailIsMissing:
-            return "No email provided"
+        case .emailMismatch:
+            return "Email changed before registration"
         }
     }
 }
@@ -29,7 +29,7 @@ public extension OwnID {
 public extension OwnID.FlowsSDK {
     
     enum RegisterError: PluginError {
-        case emailIsMissing
+        case emailMismatch
     }
     
     enum RegistrationEvent {

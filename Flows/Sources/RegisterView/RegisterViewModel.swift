@@ -103,8 +103,8 @@ public extension OwnID.FlowsSDK.RegisterView {
         }
         
         public func register(registerParameters: RegisterParameters = EmptyRegisterParameters()) {
-            if email.isEmpty {
-                handle(.coreLog(entry: .errorEntry(context: registrationData.payload?.context, Self.self), error: .plugin(underlying: OwnID.FlowsSDK.RegisterError.emailIsMissing)))
+            if !email.isEmpty, !registrationData.persistedEmail.rawValue.isEmpty, email != registrationData.persistedEmail.rawValue {
+                handle(.coreLog(entry: .errorEntry(context: registrationData.payload?.context, Self.self), error: .plugin(underlying: OwnID.FlowsSDK.RegisterError.emailMismatch)))
                 return
             }
             guard let payload = registrationData.payload else {
