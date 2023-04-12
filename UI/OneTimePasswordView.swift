@@ -66,13 +66,26 @@ extension OwnID.UISDK {
         }
         
         func createContent() -> some View {
-            VStack {
-                topSection()
-                errorView()
-                AuthButton(visualConfig: visualConfig,
-                           actionHandler: { store.send(.codeEntered("1111")) },
-                           isLoading: .constant(false),
-                           buttonState: .constant(.enabled))
+            if #available(iOS 15.0, *) {
+                return VStack {
+                    topSection()
+                    errorView()
+                    AuthButton(visualConfig: visualConfig,
+                               actionHandler: { store.send(.codeEntered("1111")) },
+                               isLoading: .constant(false),
+                               buttonState: .constant(.enabled))
+                }
+                .overlay(alignment: .topTrailing) {
+                    Button {
+                        OwnID.UISDK.PopupManager.dismiss()
+                        store.send(.cancel)
+                    } label: {
+                        Image("closeImageOTP", bundle: .resourceBundle)
+                    }
+                }
+                .padding()
+            } else {
+                return EmptyView()
             }
         }
         
@@ -82,16 +95,8 @@ extension OwnID.UISDK {
                 Text(titleState.titleText)
                     .font(.system(size: 20))
                     .bold()
-                Spacer()
-                Button {
-                    if #available(iOS 15.0, *) {
-                        OwnID.UISDK.PopupManager.dismiss()
-                        store.send(.cancel)
-                    }
-                } label: {
-                    Image("closeImage", bundle: .resourceBundle)
-                }
             }
+            .padding()
         }
         
         @ViewBuilder
