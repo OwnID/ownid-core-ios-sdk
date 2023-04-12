@@ -24,10 +24,30 @@ extension OwnID.UISDK {
     }
 }
 
-#warning("need to pass error & loading events to this view when they occur")
+#warning("need to pass error & loading events from core vm to this view when they occur")
 #warning("pass visual config")
 extension OwnID.UISDK {
     struct OneTimePasswordView: Popup {
+        
+        enum CodeSize: Int {
+            case six = 6
+            case four = 4
+        }
+        
+        enum TitleState {
+            case emailVerification
+            case oneTimePasswordSignIn
+            
+            var titleText: String {
+                switch self {
+                case .emailVerification:
+                    return "Verify Your Email"
+                    
+                case .oneTimePasswordSignIn:
+                    return "Sign In With a One-time Code"
+                }
+            }
+        }
         
         static func == (lhs: OwnID.UISDK.OneTimePasswordView, rhs: OwnID.UISDK.OneTimePasswordView) -> Bool {
             lhs.uuid == rhs.uuid
@@ -37,6 +57,7 @@ extension OwnID.UISDK {
         private var visualConfig: VisualLookConfig
         @State private var error = ""
         private let store: Store<ViewState, Action>
+        private let titleState = TitleState.emailVerification
         
         init(store: Store<ViewState, Action>,
              visualConfig: VisualLookConfig) {
@@ -58,13 +79,14 @@ extension OwnID.UISDK {
         @ViewBuilder
         private func topSection() -> some View {
             HStack {
-                Text("Sign In With a One-time Code")
+                Text(titleState.titleText)
                     .font(.system(size: 20))
                     .bold()
                 Spacer()
                 Button {
                     if #available(iOS 15.0, *) {
                         OwnID.UISDK.PopupManager.dismiss()
+                        store.send(.cancel)
                     }
                 } label: {
                     Image("closeImage", bundle: .resourceBundle)
