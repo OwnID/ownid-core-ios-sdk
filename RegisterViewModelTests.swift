@@ -61,7 +61,7 @@ final class RegisterViewModelTests: XCTestCase {
         vm.subscribe(to: coreVMPublisher.eraseToAnyPublisher(), persistingEmail: OwnID.CoreSDK.Email(rawValue: email1))
         emailPublisher.send(email1)
         eventPublisher.send(())
-        sleep(10)
+        sleep(1)
         emailPublisher.send(email2)
         vm.register()
         waitForExpectations(timeout: 0.1)
