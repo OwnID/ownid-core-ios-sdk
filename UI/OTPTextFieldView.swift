@@ -44,10 +44,8 @@ extension OwnID.UISDK {
                 .keyboardType(.numberPad)
                 .onReceive(Just(viewModel.verificationCode)) { _ in viewModel.limitText(codeLength) }
                 .focused($focusedField, equals: .field)
-                .task {
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                        focusedField = .field
-                    }
+                .onAppear() {
+                    focusedField = .field
                 }
                 .padding()
         }
