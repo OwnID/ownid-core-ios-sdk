@@ -188,14 +188,14 @@ public struct OTPTextFieldView: View {
             backgroundTextField
             HStack(spacing: spaceBetweenBoxes) {
                 ForEach(0..<codeLength) { index in
-                    Text(viewModel.getPin(at: index))
-                        .font(Font.system(size: 27))
-                        .fontWeight(.semibold)
-                        .foregroundColor(.red)
-                        .background {
-                            Rectangle()
-                                .foregroundColor(.green)
-                        }
+                    ZStack {
+                        Rectangle()
+                            .foregroundColor(.green)
+                        Text(viewModel.getPin(at: index))
+                            .font(Font.system(size: 27))
+                            .fontWeight(.semibold)
+                            .foregroundColor(.red)
+                    }
                         .frame(width: boxSideSize, height: boxSideSize)
                 }
             }
@@ -204,19 +204,12 @@ public struct OTPTextFieldView: View {
 }
 
 class OTPViewModel: ObservableObject {
-    var codeStorage = [
-        0: "",
-        1: "",
-        2: "",
-        3: "",
-        4: "",
-        5: ""
-    ]
+    
     @Published var verificationCode = ""
     
     func getPin(at index: Int) -> String {
         guard verificationCode.count > index else {
-            return " "
+            return ""
         }
         return String(Array(verificationCode)[index])
     }
