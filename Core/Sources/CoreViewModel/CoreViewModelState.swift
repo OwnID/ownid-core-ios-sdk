@@ -18,7 +18,9 @@ extension OwnID.CoreSDK.CoreViewModel {
         
         var authManagerStore: Store<OwnID.CoreSDK.AccountManager.State, OwnID.CoreSDK.AccountManager.Action>!
         var authManager: OwnID.CoreSDK.AccountManager?
+        
         var oneTimePasswordStore: Store<OwnID.UISDK.OneTimePasswordView.ViewState, OwnID.UISDK.OneTimePasswordView.Action>!
+        var oneTimePasswordError = ""
         
         var shouldStartFlowOnConfigurationReceive = true
     }

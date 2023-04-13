@@ -147,6 +147,12 @@ extension OwnID.CoreSDK.CoreViewModel {
                 
             case .emailIsNotRecieved:
                 break
+                
+            case .error(let message):
+                break
+                
+            case .loading:
+                break
             }
             return []
             

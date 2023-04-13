@@ -26,6 +26,7 @@ public final class Store<Value, Action>: ObservableObject {
     @Published public private(set) var value: Value
     public private(set) var actionsPublisher = PassthroughSubject<Action, Never>()
     private var viewCancellable: Cancellable?
+    private var globalActionCancellable: Cancellable?
     private var effectCancellables: Set<AnyCancellable> = []
     
     public init(initialValue: Value, reducer: @escaping Reducer<Value, Action>) {
@@ -34,13 +35,12 @@ public final class Store<Value, Action>: ObservableObject {
     }
     
     public func cancel() {
+        globalActionCancellable?.cancel()
         viewCancellable?.cancel()
         effectCancellables.forEach { $0.cancel() }
     }
     
-    public func send(_ action: Action) {
-        actionsPublisher.send(action)
-        let effects = self.reducer(&self.value, action)
+    private func processEffects(_ effects: [Effect<Action>]) {
         effects.forEach { effect in
             var effectCancellable: AnyCancellable?
             var didComplete = false
@@ -56,6 +56,39 @@ public final class Store<Value, Action>: ObservableObject {
                 self.effectCancellables.insert(effectCancellable)
             }
         }
+    }
+    
+    public func send(_ action: Action) {
+        actionsPublisher.send(action)
+        let effects = self.reducer(&self.value, action)
+        processEffects(effects)
+    }
+    
+    public func view<LocalValue, LocalAction>(
+        value toLocalValue: @escaping (Value) -> LocalValue,
+        action toGlobalAction: @escaping (LocalAction) -> Action,
+        action toLocalAction: @escaping (Action) -> LocalAction?,
+        reducer: @escaping Reducer<LocalValue, LocalAction>
+    ) -> Store<LocalValue, LocalAction> {
+        let localStore = Store<LocalValue, LocalAction>(
+            initialValue: toLocalValue(self.value),
+            reducer: { localValue, localAction in
+                let effects = reducer(&localValue, localAction)
+                self.send(toGlobalAction(localAction))
+//                localValue = toLocalValue(self.value)
+                return effects
+            }
+        )
+        localStore.globalActionCancellable = actionsPublisher.sink(receiveValue: { [weak localStore] globalAction in
+            if let localActionForGlobalAction = toLocalAction(globalAction), let localStore {
+                let effects = reducer(&localStore.value, localActionForGlobalAction)
+                localStore.processEffects(effects)
+            }
+        })
+//        localStore.viewCancellable = self.$value.sink { [weak localStore] newValue in
+//            localStore?.value = toLocalValue(newValue)
+//        }
+        return localStore
     }
     
     public func view<LocalValue, LocalAction>(

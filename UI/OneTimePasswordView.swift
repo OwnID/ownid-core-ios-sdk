@@ -5,12 +5,15 @@ import Combine
 extension OwnID.UISDK.OneTimePasswordView {
     struct ViewState: LoggingEnabled {
         let isLoggingEnabled: Bool
+        var error = ""
     }
     
     enum Action {
         case codeEntered(String)
         case cancel
         case emailIsNotRecieved
+        case loading
+        case error(String)
     }
 }
 
@@ -56,8 +59,7 @@ extension OwnID.UISDK {
         
         private let viewModel = OTPViewModel()
         private var visualConfig: VisualLookConfig
-        @State private var error = ""
-        private let store: Store<ViewState, Action>
+        @ObservedObject var store: Store<ViewState, Action>
         private let titleState = TitleState.emailVerification
         
         init(store: Store<ViewState, Action>,
@@ -74,7 +76,6 @@ extension OwnID.UISDK {
                     errorView()
                     TextButton(visualConfig: visualConfig,
                                actionHandler: {
-                        error = ""
                         store.send(.codeEntered(viewModel.verificationCode))
                     },
                                isLoading: .constant(false),
@@ -126,9 +127,9 @@ extension OwnID.UISDK {
         
         @ViewBuilder
         private func errorView() -> some View {
-            if !error.isEmpty {
+            if !store.value.error.isEmpty {
                 HStack {
-                    Text(error)
+                    Text(store.value.error)
                         .multilineTextAlignment(.leading)
                         .foregroundColor(.red)
                         .padding(.bottom, 6)
@@ -144,10 +145,16 @@ extension OwnID.UISDK.OneTimePasswordView {
     static func viewModelReducer(state: inout OwnID.UISDK.OneTimePasswordView.ViewState, action: OwnID.UISDK.OneTimePasswordView.Action) -> [Effect<OwnID.UISDK.OneTimePasswordView.Action>] {
         switch action {
         case .codeEntered(_):
+            state.error = ""
             return []
         case .cancel:
             return []
         case .emailIsNotRecieved:
+            return []
+        case .loading:
+            return []
+        case .error(let message):
+            state.error = message
             return []
         }
     }
@@ -163,6 +170,10 @@ extension OwnID.UISDK.OneTimePasswordView.Action: CustomDebugStringConvertible {
             return "cancel"
         case .emailIsNotRecieved:
             return "emailIsNotRecieved"
+        case .loading:
+            return "loading"
+        case .error(let message):
+            return message
         }
     }
 }
