@@ -70,10 +70,16 @@ extension OwnID.UISDK {
                 return VStack {
                     topSection()
                     errorView()
-                    AuthButton(visualConfig: visualConfig,
+                    TextButton(visualConfig: visualConfig,
                                actionHandler: { store.send(.codeEntered("1111")) },
                                isLoading: .constant(false),
                                buttonState: .constant(.enabled))
+                    Button {
+                        OwnID.UISDK.PopupManager.dismiss()
+                        store.send(.cancel)
+                    } label: {
+                        Text("I didn’t get the email")
+                    }
                 }
                 .overlay(alignment: .topTrailing) {
                     Button {
