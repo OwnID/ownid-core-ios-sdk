@@ -27,7 +27,7 @@ extension OwnID.UISDK {
         enum FocusField: Hashable {
             case field
         }
-        @ObservedObject var viewModel = OTPViewModel()
+        @ObservedObject var viewModel: OTPViewModel
         @FocusState private var focusedField: FocusField?
         private let codeLength = 6
         private let boxSideSize: CGFloat = 50

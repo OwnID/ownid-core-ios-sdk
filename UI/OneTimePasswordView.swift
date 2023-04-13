@@ -54,6 +54,7 @@ extension OwnID.UISDK {
         }
         private let uuid = UUID().uuidString
         
+        private let viewModel = OTPViewModel()
         private var visualConfig: VisualLookConfig
         @State private var error = ""
         private let store: Store<ViewState, Action>
@@ -69,10 +70,10 @@ extension OwnID.UISDK {
             if #available(iOS 15.0, *) {
                 return VStack {
                     topSection()
-                    OTPTextFieldView()
+                    OTPTextFieldView(viewModel: viewModel)
                     errorView()
                     TextButton(visualConfig: visualConfig,
-                               actionHandler: { store.send(.codeEntered("1111")) },
+                               actionHandler: { store.send(.codeEntered(viewModel.verificationCode)) },
                                isLoading: .constant(false),
                                buttonState: .constant(.enabled))
                     .padding(.top)
