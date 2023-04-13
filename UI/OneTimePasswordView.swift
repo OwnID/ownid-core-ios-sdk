@@ -75,9 +75,11 @@ extension OwnID.UISDK {
                                actionHandler: { store.send(.codeEntered("1111")) },
                                isLoading: .constant(false),
                                buttonState: .constant(.enabled))
+                    .padding(.top)
+                    .padding(.bottom)
                     Button {
                         OwnID.UISDK.PopupManager.dismiss()
-                        store.send(.cancel)
+                        store.send(.emailIsNotRecieved)
                     } label: {
                         Text("I didn’t get the email")
                     }
@@ -96,12 +98,24 @@ extension OwnID.UISDK {
             }
         }
         
+        @available(iOS 15.0, *)
         @ViewBuilder
         private func topSection() -> some View {
-            HStack {
+            VStack {
                 Text(titleState.titleText)
                     .font(.system(size: 20))
                     .bold()
+                    .padding(.bottom)
+                
+                Text(verbatim: "We have email you a 4-digit code to\njane_doe@email.com")
+                    .multilineTextAlignment(.center)
+                    .foregroundColor(OwnID.Colors.otpContentMessageColor)
+                    .font(.system(size: 16))
+                    .padding(.bottom)
+                
+                Text("Enter the verification code")
+                    .font(.system(size: 16))
+                    .fontWeight(.semibold)
             }
             .padding()
         }
@@ -164,6 +178,7 @@ public struct OTPTextFieldView: View {
     private let codeLength = 6
     private let boxSideSize: CGFloat = 50
     private let spaceBetweenBoxes: CGFloat = 8
+    private let cornerRadius = 6.0
     
     private var backgroundTextField: some View {
         return TextField("", text: $viewModel.verificationCode)
@@ -190,11 +205,16 @@ public struct OTPTextFieldView: View {
                 ForEach(0..<codeLength) { index in
                     ZStack {
                         Rectangle()
-                            .foregroundColor(.green)
+                            .foregroundColor(.white)
+                            .border(Color.gray.opacity(0.7))
+                            .cornerRadius(cornerRadius)
+                            .overlay(
+                                RoundedRectangle(cornerRadius: cornerRadius)
+                                    .stroke(Color.gray.opacity(0.7), lineWidth: 1)
+                            )
                         Text(viewModel.getPin(at: index))
-                            .font(Font.system(size: 27))
+                            .font(Font.system(size: 20))
                             .fontWeight(.semibold)
-                            .foregroundColor(.red)
                     }
                         .frame(width: boxSideSize, height: boxSideSize)
                 }

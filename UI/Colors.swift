@@ -57,5 +57,10 @@ public extension OwnID {
         public static var instantConnectViewAuthButtonColor: Color {
             Color("\(OwnID.UISDK.InstantConnectView.self)AuthButtonColor", bundle: .resourceBundle)
         }
+        
+        @available(iOS 15.0, *)
+        public static var otpContentMessageColor: Color {
+            Color("\(OwnID.UISDK.OneTimePasswordView.self)contentMessage", bundle: .resourceBundle)
+        }
     }
 }
