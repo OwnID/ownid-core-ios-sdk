@@ -2,3 +2,7 @@
 "or" = "or";
 "tooltip-ios" = "Login with Face ID";
 "continue" = "Continue";
+"verify" = "Verify";
+"verifyEmail" = "Verify Your Email";
+"signInWithOneTimeCode" = "Sign In With a One-time Code";
+"didNotGetEmail" = "I didn’t get the email";
