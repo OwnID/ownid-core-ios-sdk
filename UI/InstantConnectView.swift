@@ -17,6 +17,11 @@ public extension OwnID.UISDK {
 public extension OwnID.UISDK {
     @available(iOS 15.0, *)
     struct InstantConnectView: Popup {
+        
+        enum FocusField: Hashable {
+            case email
+        }
+        
         public static func == (lhs: OwnID.UISDK.InstantConnectView, rhs: OwnID.UISDK.InstantConnectView) -> Bool {
             lhs.uuid == rhs.uuid
         }
@@ -29,7 +34,7 @@ public extension OwnID.UISDK {
         private let borderWidth = 1.5
         
         @ObservedObject private var viewModel: OwnID.FlowsSDK.LoginView.ViewModel
-        @FocusState private var isEmailFocused: Bool
+        @FocusState private var focusedField: FocusField?
         @State private var email = ""
         @State private var error = ""
         
@@ -113,7 +118,7 @@ public extension OwnID.UISDK {
                     TextField("", text: $email)
                         .font(.system(size: 17))
                         .keyboardType(.emailAddress)
-                        .focused($isEmailFocused)
+                        .focused($focusedField, equals: .email)
                         .padding(11)
                         .background(Rectangle().fill(.white))
                         .cornerRadius(cornerRadius)
@@ -134,7 +139,7 @@ public extension OwnID.UISDK {
                 let emailValue = OwnID.CoreSDK.DefaultsEmailSaver.getEmail() ?? ""
                 email = emailValue
                 emailPublisher.send(emailValue)
-                isEmailFocused = true
+                focusedField = .email
             }
         }
     }

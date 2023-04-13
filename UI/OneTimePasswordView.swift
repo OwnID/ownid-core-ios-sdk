@@ -73,7 +73,10 @@ extension OwnID.UISDK {
                     OTPTextFieldView(viewModel: viewModel)
                     errorView()
                     TextButton(visualConfig: visualConfig,
-                               actionHandler: { store.send(.codeEntered(viewModel.verificationCode)) },
+                               actionHandler: {
+                        error = ""
+                        store.send(.codeEntered(viewModel.verificationCode))
+                    },
                                isLoading: .constant(false),
                                buttonState: .constant(.enabled))
                     .padding(.top)
