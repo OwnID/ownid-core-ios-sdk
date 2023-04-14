@@ -148,10 +148,10 @@ extension OwnID.CoreSDK.CoreViewModel {
             case .emailIsNotRecieved:
                 break
                 
-            case .error(let message):
+            case .error:
                 break
                 
-            case .loading:
+            case .cancelCodeOperation:
                 break
             }
             return []
