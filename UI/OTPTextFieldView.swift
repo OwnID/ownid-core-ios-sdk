@@ -29,7 +29,7 @@ extension OwnID.UISDK {
         }
         @ObservedObject var viewModel: OTPViewModel
         @FocusState private var focusedField: FocusField?
-        private let codeLength = 6
+        let codeLength: OneTimePasswordCodeLength
         private let boxSideSize: CGFloat = 50
         private let spaceBetweenBoxes: CGFloat = 8
         private let cornerRadius = 6.0
@@ -42,7 +42,7 @@ extension OwnID.UISDK {
                 .foregroundColor(.clear)
                 .multilineTextAlignment(.center)
                 .keyboardType(.numberPad)
-                .onReceive(Just(viewModel.verificationCode)) { _ in viewModel.limitText(codeLength) }
+                .onReceive(Just(viewModel.verificationCode)) { _ in viewModel.limitText(codeLength.rawValue) }
                 .focused($focusedField, equals: .field)
                 .onAppear() {
                     focusedField = .field
@@ -54,7 +54,7 @@ extension OwnID.UISDK {
             ZStack(alignment: .center) {
                 backgroundTextField
                 HStack(spacing: spaceBetweenBoxes) {
-                    ForEach(0..<codeLength, id: \.self) { index in
+                    ForEach(0..<codeLength.rawValue, id: \.self) { index in
                         ZStack {
                             Rectangle()
                                 .foregroundColor(.white)

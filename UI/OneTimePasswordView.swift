@@ -31,12 +31,13 @@ extension OwnID.UISDK {
 #warning("need to pass error & loading events from core vm to this view when they occur")
 #warning("pass visual config")
 extension OwnID.UISDK {
+    
+    enum OneTimePasswordCodeLength: Int {
+        case six = 6
+        case four = 4
+    }
+    
     struct OneTimePasswordView: Popup {
-        
-        enum CodeSize: Int {
-            case six = 6
-            case four = 4
-        }
         
         enum TitleState {
             case emailVerification
@@ -62,18 +63,21 @@ extension OwnID.UISDK {
         private var visualConfig: VisualLookConfig
         @ObservedObject var store: Store<ViewState, Action>
         private let titleState = TitleState.emailVerification
+        private let codeLength: OneTimePasswordCodeLength
         
         init(store: Store<ViewState, Action>,
-             visualConfig: VisualLookConfig) {
+             visualConfig: VisualLookConfig,
+             codeLength: OneTimePasswordCodeLength = .six) {
             self.visualConfig = visualConfig
             self.store = store
+            self.codeLength = codeLength
         }
         
         func createContent() -> some View {
             if #available(iOS 15.0, *) {
                 return VStack {
                     topSection()
-                    OTPTextFieldView(viewModel: viewModel)
+                    OTPTextFieldView(viewModel: viewModel, codeLength: codeLength)
                     errorView()
                     TextButton(visualConfig: visualConfig,
                                actionHandler: {
