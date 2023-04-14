@@ -30,8 +30,6 @@ extension OwnID.UISDK {
     }
 }
 
-#warning("need to pass error & loading events from core vm to this view when they occur")
-#warning("pass visual config")
 extension OwnID.UISDK {
     
     enum OneTimePasswordCodeLength: Int {
