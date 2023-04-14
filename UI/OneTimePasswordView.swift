@@ -7,6 +7,7 @@ extension OwnID.UISDK.OneTimePasswordView {
         let isLoggingEnabled: Bool
         var error = ""
         var isLoading = false
+        var isDisplayingDidNotGetCode = false
     }
     
     enum Action {
@@ -14,6 +15,7 @@ extension OwnID.UISDK.OneTimePasswordView {
         case cancel
         case cancelCodeOperation
         case emailIsNotRecieved
+        case displayDidNotGetCode
         case error(String)
     }
 }
@@ -73,6 +75,18 @@ extension OwnID.UISDK {
             self.codeLength = codeLength
         }
         
+        @ViewBuilder
+        private func didNotGetEmail() -> some View {
+            if store.value.isDisplayingDidNotGetCode {
+                Button {
+                    OwnID.UISDK.PopupManager.dismiss()
+                    store.send(.emailIsNotRecieved)
+                } label: {
+                    Text("I didn’t get the email")
+                }
+            }
+        }
+        
         func createContent() -> some View {
             if #available(iOS 15.0, *) {
                 return VStack {
@@ -91,12 +105,7 @@ extension OwnID.UISDK {
                                buttonState: .constant(.enabled))
                     .padding(.top)
                     .padding(.bottom)
-                    Button {
-                        OwnID.UISDK.PopupManager.dismiss()
-                        store.send(.emailIsNotRecieved)
-                    } label: {
-                        Text("I didn’t get the email")
-                    }
+                    didNotGetEmail()
                 }
                 .overlay(alignment: .topTrailing) {
                     Button {
@@ -161,7 +170,11 @@ extension OwnID.UISDK.OneTimePasswordView {
             }
             state.error = ""
             state.isLoading = true
-            return []
+            return [
+                Just(OwnID.UISDK.OneTimePasswordView.Action.displayDidNotGetCode)
+                    .delay(for: 10, scheduler: DispatchQueue.main)
+                    .eraseToEffect()
+            ]
         case .cancel:
             state.isLoading = false
             return []
@@ -172,6 +185,9 @@ extension OwnID.UISDK.OneTimePasswordView {
             return []
         case .error(let message):
             state.error = message
+            return []
+        case .displayDidNotGetCode:
+            state.isDisplayingDidNotGetCode = true
             return []
         }
     }
@@ -191,6 +207,8 @@ extension OwnID.UISDK.OneTimePasswordView.Action: CustomDebugStringConvertible {
             return message
         case .cancelCodeOperation:
             return "cancelCodeOperation"
+        case .displayDidNotGetCode:
+            return "displayDidNotGetCode"
         }
     }
 }
