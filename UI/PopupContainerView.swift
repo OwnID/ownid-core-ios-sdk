@@ -27,7 +27,7 @@ extension OwnID.UISDK {
                 Spacer()
                 ZStack(alignment: .bottom) {
                     popupContent.createContent()
-                        .background(.white)
+                        .background(OwnID.Colors.popupViewBackgroundColor)
                         .transition(.move(edge: .top))
                 }
             }

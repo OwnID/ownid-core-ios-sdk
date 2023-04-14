@@ -64,8 +64,8 @@ extension OwnID.UISDK {
                     ForEach(0..<codeLength.rawValue, id: \.self) { index in
                         ZStack {
                             Rectangle()
-                                .foregroundColor(.white)
-                                .border(Color.gray.opacity(0.7))
+                                .foregroundColor(OwnID.Colors.otpTileBackgroundColor)
+                                .border(OwnID.Colors.otpTileBorderColor)
                                 .cornerRadius(cornerRadius)
                                 .overlay(
                                     RoundedRectangle(cornerRadius: cornerRadius)
