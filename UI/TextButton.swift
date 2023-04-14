@@ -3,7 +3,7 @@ import SwiftUI
 
 extension OwnID.UISDK {
     struct TextButton: View {
-        let visualConfig: VisualLookConfig
+        let visualConfig: OTPViewConfig
         let actionHandler: (() -> Void)
         @Binding var isLoading: Bool
         
@@ -11,7 +11,7 @@ extension OwnID.UISDK {
         @State private var translationText: String
         @Binding private var buttonState: ButtonState
         
-        init(visualConfig: OwnID.UISDK.VisualLookConfig,
+        init(visualConfig: OwnID.UISDK.OTPViewConfig,
              actionHandler: @escaping (() -> Void),
              isLoading: Binding<Bool>,
              buttonState: Binding<ButtonState>) {

@@ -21,9 +21,8 @@ extension OwnID.UISDK.OneTimePasswordView {
 }
 
 extension OwnID.UISDK {
-    static func showOTPView(store: Store<OwnID.UISDK.OneTimePasswordView.ViewState, OwnID.UISDK.OneTimePasswordView.Action>,
-                            visualConfig: OwnID.UISDK.VisualLookConfig = .init()) {
-        let view = OwnID.UISDK.OneTimePasswordView(store: store, visualConfig: visualConfig)
+    static func showOTPView(store: Store<OwnID.UISDK.OneTimePasswordView.ViewState, OwnID.UISDK.OneTimePasswordView.Action>) {
+        let view = OwnID.UISDK.OneTimePasswordView(store: store, visualConfig: PopupManager.shared.visualLookConfig)
         if #available(iOS 15.0, *) {
             view.presentAsPopup()
         }
@@ -60,13 +59,13 @@ extension OwnID.UISDK {
         private let uuid = UUID().uuidString
         
         private let viewModel: OTPViewModel
-        private var visualConfig: VisualLookConfig
+        private var visualConfig: OTPViewConfig
         @ObservedObject var store: Store<ViewState, Action>
         private let titleState = TitleState.emailVerification
         private let codeLength: OneTimePasswordCodeLength
         
         init(store: Store<ViewState, Action>,
-             visualConfig: VisualLookConfig,
+             visualConfig: OTPViewConfig,
              codeLength: OneTimePasswordCodeLength = .six) {
             self.visualConfig = visualConfig
             self.store = store

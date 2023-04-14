@@ -60,9 +60,10 @@ extension UIScreen {
 }
 
 public extension OwnID.UISDK {
-    class PopupManager: ObservableObject {
+    final class PopupManager: ObservableObject {
         @Published var views = [OwnID.UISDK.AnyPopup]()
         
+        public var visualLookConfig = OTPViewConfig()
         public static let shared: PopupManager = .init()
         private init() {}
     }

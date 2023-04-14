@@ -1,6 +1,17 @@
 import SwiftUI
 
 public extension OwnID.UISDK {
+    struct OTPViewConfig: Equatable {
+        public init(authButtonConfig: OwnID.UISDK.AuthButtonViewConfig = .init(),
+                    loaderViewConfig: OwnID.UISDK.LoaderViewConfig = .init()) {
+            self.authButtonConfig = authButtonConfig
+            self.loaderViewConfig = loaderViewConfig
+        }
+        
+        public var authButtonConfig: AuthButtonViewConfig
+        public var loaderViewConfig: LoaderViewConfig
+    }
+    
     struct LoaderViewConfig: Equatable {
         public init(color: Color = OwnID.Colors.spinnerColor,
                     backgroundColor: Color = OwnID.Colors.spinnerBackgroundColor,
