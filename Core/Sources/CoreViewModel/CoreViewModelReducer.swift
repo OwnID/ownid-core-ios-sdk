@@ -153,6 +153,9 @@ extension OwnID.CoreSDK.CoreViewModel {
                 
             case .cancelCodeOperation:
                 break
+                
+            case .displayDidNotGetCode:
+                break
             }
             return []
             
