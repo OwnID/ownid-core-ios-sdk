@@ -59,7 +59,7 @@ extension OwnID.UISDK {
         }
         private let uuid = UUID().uuidString
         
-        private let viewModel = OTPViewModel()
+        private let viewModel: OTPViewModel
         private var visualConfig: VisualLookConfig
         @ObservedObject var store: Store<ViewState, Action>
         private let titleState = TitleState.emailVerification
@@ -71,6 +71,7 @@ extension OwnID.UISDK {
             self.visualConfig = visualConfig
             self.store = store
             self.codeLength = codeLength
+            self.viewModel = OTPViewModel(store: store)
         }
         
         @ViewBuilder

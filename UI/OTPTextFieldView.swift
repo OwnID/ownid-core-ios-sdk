@@ -3,8 +3,12 @@ import Combine
 
 extension OwnID.UISDK {
     final class OTPViewModel: ObservableObject {
+        init(store: Store<OwnID.UISDK.OneTimePasswordView.ViewState, OwnID.UISDK.OneTimePasswordView.Action>) {
+            self.store = store
+        }
         
         @Published var verificationCode = ""
+        let store: Store<OwnID.UISDK.OneTimePasswordView.ViewState, OwnID.UISDK.OneTimePasswordView.Action>
         
         func getPin(at index: Int) -> String {
             guard verificationCode.count > index else {
@@ -14,6 +18,9 @@ extension OwnID.UISDK {
         }
         
         func limitText(_ upper: Int) {
+            if verificationCode.count == upper {
+                store.send(.codeEntered(verificationCode))
+            }
             if verificationCode.count > upper {
                 verificationCode = String(verificationCode.prefix(upper))
             }
