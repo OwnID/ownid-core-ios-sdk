@@ -6,13 +6,14 @@ extension OwnID.UISDK.OneTimePasswordView {
     struct ViewState: LoggingEnabled {
         let isLoggingEnabled: Bool
         var error = ""
+        var isLoading = false
     }
     
     enum Action {
         case codeEntered(String)
         case cancel
+        case cancelCodeOperation
         case emailIsNotRecieved
-        case loading
         case error(String)
     }
 }
@@ -78,7 +79,7 @@ extension OwnID.UISDK {
                                actionHandler: {
                         store.send(.codeEntered(viewModel.verificationCode))
                     },
-                               isLoading: .constant(false),
+                               isLoading: .constant(store.value.isLoading),
                                buttonState: .constant(.enabled))
                     .padding(.top)
                     .padding(.bottom)
@@ -144,14 +145,21 @@ extension OwnID.UISDK {
 extension OwnID.UISDK.OneTimePasswordView {
     static func viewModelReducer(state: inout OwnID.UISDK.OneTimePasswordView.ViewState, action: OwnID.UISDK.OneTimePasswordView.Action) -> [Effect<OwnID.UISDK.OneTimePasswordView.Action>] {
         switch action {
-        case .codeEntered(_):
+        case .codeEntered:
+            if state.isLoading {
+                state.isLoading = false
+                return [Just(OwnID.UISDK.OneTimePasswordView.Action.cancelCodeOperation).eraseToEffect()]
+            }
             state.error = ""
+            state.isLoading = true
             return []
         case .cancel:
+            state.isLoading = false
             return []
         case .emailIsNotRecieved:
+            state.isLoading = false
             return []
-        case .loading:
+        case .cancelCodeOperation:
             return []
         case .error(let message):
             state.error = message
@@ -170,10 +178,10 @@ extension OwnID.UISDK.OneTimePasswordView.Action: CustomDebugStringConvertible {
             return "cancel"
         case .emailIsNotRecieved:
             return "emailIsNotRecieved"
-        case .loading:
-            return "loading"
         case .error(let message):
             return message
+        case .cancelCodeOperation:
+            return "cancelCodeOperation"
         }
     }
 }
