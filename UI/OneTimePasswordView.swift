@@ -77,8 +77,12 @@ extension OwnID.UISDK {
             if #available(iOS 15.0, *) {
                 return VStack {
                     topSection()
-                    OTPTextFieldView(viewModel: viewModel, codeLength: codeLength)
-                    errorView()
+                    VStack {
+                        OTPTextFieldView(viewModel: viewModel, codeLength: codeLength)
+                        errorView()
+                            .padding(.leading)
+                            .padding(.trailing)
+                    }
                     TextButton(visualConfig: visualConfig,
                                actionHandler: {
                         store.send(.codeEntered(viewModel.verificationCode))
@@ -136,7 +140,8 @@ extension OwnID.UISDK {
                 HStack {
                     Text(store.value.error)
                         .multilineTextAlignment(.leading)
-                        .foregroundColor(.red)
+                        .font(.system(size: 11))
+                        .foregroundColor(OwnID.Colors.otpContentErrorColor)
                         .padding(.bottom, 6)
                     Spacer()
                 }
