@@ -101,7 +101,6 @@ final class RegisterViewModelTests: XCTestCase {
         vm.subscribe(to: eventPublisher.eraseToAnyPublisher())
         vm.subscribe(to: coreVMPublisher.eraseToAnyPublisher(), persistingEmail: OwnID.CoreSDK.Email(rawValue: email1))
         emailPublisher.send(email1)
-//        eventPublisher.send(())
         coreVMPublisher.send(.success(OwnID.CoreSDK.Payload(dataContainer: EmptyContainer(), metadata: EmptyContainer(), context: "", nonce: "", loginId: email1, responseType: .registrationInfo, authType: .none, requestLanguage: "")))
         sleep(1)
         vm.register()
