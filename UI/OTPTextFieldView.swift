@@ -34,7 +34,18 @@ extension OwnID.UISDK {
     final class OTPViewModel: ObservableObject {
         init(store: Store<OwnID.UISDK.OneTimePasswordView.ViewState, OwnID.UISDK.OneTimePasswordView.Action>) {
             self.store = store
+            $code1.map { ($0, FieldType.one) }
+                .merge(with: $code2.map { ($0, FieldType.two) })
+                .merge(with: $code3.map { ($0, FieldType.three) })
+                .merge(with: $code4.map { ($0, FieldType.four) })
+                .merge(with: $code5.map { ($0, FieldType.five) })
+                .merge(with: $code6.map { ($0, FieldType.six) })
+                .sink { (fieldValue, fieldType) in
+                    self.onUpdateOf(field: fieldType, value: fieldValue)
+                }
+                .store(in: &bag)
         }
+        
         @Published var state: State = .six
         @Published var code1 = ""
         @Published var code2 = ""
@@ -42,22 +53,18 @@ extension OwnID.UISDK {
         @Published var code4 = ""
         @Published var code5 = ""
         @Published var code6 = ""
+        
         let store: Store<OwnID.UISDK.OneTimePasswordView.ViewState, OwnID.UISDK.OneTimePasswordView.Action>
         private var storage = [FieldType: String]()
+        private var bag = Set<AnyCancellable>()
         
-        func onUpdate(of field: FieldType, value: String) {
+        func onUpdateOf(field: FieldType, value: String) {
             storage[field] = value
         }
         
         func combineCode() -> String {
-            return ""
-        }
-        
-        func limitText(for field: FieldType, binding: Binding<String>) {
-            var binding = binding
-            if binding.wrappedValue.count > 1 {
-                binding.wrappedValue = String(binding.wrappedValue.prefix(1))
-            }
+            let code = storage.values.reduce("", +)
+            return code
         }
     }
 }
@@ -91,12 +98,6 @@ extension OwnID.UISDK {
                             .keyboardType(.numberPad)
                             .focused($focusedField, equals: field)
                             .padding(12)
-                            .onReceive(Just(viewModel.code1)) { _ in viewModel.limitText(for: field, binding: binding(for: field)) }
-                            .onReceive(Just(viewModel.code2)) { _ in viewModel.limitText(for: field, binding: binding(for: field)) }
-                            .onReceive(Just(viewModel.code3)) { _ in viewModel.limitText(for: field, binding: binding(for: field)) }
-                            .onReceive(Just(viewModel.code4)) { _ in viewModel.limitText(for: field, binding: binding(for: field)) }
-                            .onReceive(Just(viewModel.code5)) { _ in viewModel.limitText(for: field, binding: binding(for: field)) }
-                            .onReceive(Just(viewModel.code6)) { _ in viewModel.limitText(for: field, binding: binding(for: field)) }
                     }
                     .frame(width: boxSideSize, height: boxSideSize)
                 }
