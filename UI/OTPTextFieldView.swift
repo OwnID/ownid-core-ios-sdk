@@ -1,29 +1,61 @@
 import SwiftUI
 import Combine
+extension OwnID.UISDK.OTPViewModel {
+    struct FieldData: Identifiable, Hashable {
+        let id = UUID().uuidString
+        var value = ""
+    }
+    
+    enum FieldType: Identifiable, Hashable {
+        var id: Self {
+            return self
+        }
+        
+        case one
+        case two
+        case three
+        case four
+        case five
+        case six
+    }
+    
+    enum State {
+        case four
+        case six
+        
+        var fields: [FieldType] {
+            switch self {
+            case .four:
+                return [.one, .two, .three, .four]
+                
+            case .six:
+                return [.one, .two, .three, .four, .five, .six]
+            }
+        }
+    }
+}
 
 extension OwnID.UISDK {
     final class OTPViewModel: ObservableObject {
         init(store: Store<OwnID.UISDK.OneTimePasswordView.ViewState, OwnID.UISDK.OneTimePasswordView.Action>) {
             self.store = store
         }
-        
-        @Published var verificationCode = ""
+        @Published var state: State = .six
+        @Published var code1 = ""
+        @Published var code2 = ""
+        @Published var code3 = ""
+        @Published var code4 = ""
+        @Published var code5 = ""
+        @Published var code6 = ""
         let store: Store<OwnID.UISDK.OneTimePasswordView.ViewState, OwnID.UISDK.OneTimePasswordView.Action>
+        private var storage = [FieldType: String]()
         
-        func getPin(at index: Int) -> String {
-            guard verificationCode.count > index else {
-                return ""
-            }
-            return String(Array(verificationCode)[index])
+        func onUpdate(of field: FieldType, value: String) {
+            storage[field] = value
         }
         
-        func limitText(_ upper: Int) {
-            if verificationCode.count == upper {
-                store.send(.codeEntered(verificationCode))
-            }
-            if verificationCode.count > upper {
-                verificationCode = String(verificationCode.prefix(upper))
-            }
+        func combineCode() -> String {
+            return ""
         }
     }
 }
@@ -31,16 +63,8 @@ extension OwnID.UISDK {
 extension OwnID.UISDK {
     @available(iOS 15.0, *)
     public struct OTPTextFieldView: View {
-        enum FocusField: Hashable {
-            case one
-            case two
-            case three
-            case four
-            case five
-            case six
-        }
         @ObservedObject var viewModel: OTPViewModel
-        @FocusState private var focusedField: FocusField?
+//        @FocusState private var focusedField: FocusField?
         let codeLength: OneTimePasswordCodeLength
         private let boxSideSize: CGFloat = 50
         private let spaceBetweenBoxes: CGFloat = 8
@@ -48,7 +72,7 @@ extension OwnID.UISDK {
         
         public var body: some View {
             HStack(spacing: spaceBetweenBoxes) {
-                ForEach(0..<codeLength.rawValue, id: \.self) { index in
+                ForEach(viewModel.state.fields, id: \.self) { field in
                     ZStack {
                         Rectangle()
                             .foregroundColor(OwnID.Colors.otpTileBackgroundColor)
@@ -58,14 +82,32 @@ extension OwnID.UISDK {
                                 RoundedRectangle(cornerRadius: cornerRadius)
                                     .stroke(Color.gray.opacity(0.7), lineWidth: 1)
                             )
-                        TextField(viewModel.getPin(at: index), text: .constant(""))
+                        
+                        TextField("", text: binding(for: field))
                             .font(Font.system(size: 20))
                             .multilineTextAlignment(.center)
                             .keyboardType(.numberPad)
-//                            .fontWeight(.semibold)
+                            .padding(12)
                     }
                     .frame(width: boxSideSize, height: boxSideSize)
                 }
+            }
+        }
+        
+        func binding(for field: OwnID.UISDK.OTPViewModel.FieldType) -> Binding<String> {
+            switch field {
+            case .one:
+                return $viewModel.code1
+            case .two:
+                return $viewModel.code2
+            case .three:
+                return $viewModel.code3
+            case .four:
+                return $viewModel.code4
+            case .five:
+                return $viewModel.code5
+            case .six:
+                return $viewModel.code6
             }
         }
     }

@@ -97,7 +97,7 @@ extension OwnID.UISDK {
                     }
                     TextButton(visualConfig: visualConfig,
                                actionHandler: {
-                        store.send(.codeEntered(viewModel.verificationCode))
+                        store.send(.codeEntered(viewModel.combineCode()))
                     },
                                isLoading: .constant(store.value.isLoading),
                                buttonState: .constant(.enabled))
