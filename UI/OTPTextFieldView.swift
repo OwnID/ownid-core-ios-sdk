@@ -32,7 +32,12 @@ extension OwnID.UISDK {
     @available(iOS 15.0, *)
     public struct OTPTextFieldView: View {
         enum FocusField: Hashable {
-            case field
+            case one
+            case two
+            case three
+            case four
+            case five
+            case six
         }
         @ObservedObject var viewModel: OTPViewModel
         @FocusState private var focusedField: FocusField?
@@ -41,42 +46,25 @@ extension OwnID.UISDK {
         private let spaceBetweenBoxes: CGFloat = 8
         private let cornerRadius = 6.0
         
-        private var backgroundTextField: some View {
-            return TextField("", text: $viewModel.verificationCode)
-                .frame(width: 0, height: 0, alignment: .center)
-                .font(Font.system(size: 0))
-                .accentColor(.clear)
-                .foregroundColor(.clear)
-                .multilineTextAlignment(.center)
-                .keyboardType(.numberPad)
-                .onReceive(Just(viewModel.verificationCode)) { _ in viewModel.limitText(codeLength.rawValue) }
-                .focused($focusedField, equals: .field)
-                .onAppear() {
-                    focusedField = .field
-                }
-                .padding()
-        }
-        
         public var body: some View {
-            ZStack(alignment: .center) {
-                backgroundTextField
-                HStack(spacing: spaceBetweenBoxes) {
-                    ForEach(0..<codeLength.rawValue, id: \.self) { index in
-                        ZStack {
-                            Rectangle()
-                                .foregroundColor(OwnID.Colors.otpTileBackgroundColor)
-                                .border(OwnID.Colors.otpTileBorderColor)
-                                .cornerRadius(cornerRadius)
-                                .overlay(
-                                    RoundedRectangle(cornerRadius: cornerRadius)
-                                        .stroke(Color.gray.opacity(0.7), lineWidth: 1)
-                                )
-                            Text(viewModel.getPin(at: index))
-                                .font(Font.system(size: 20))
-                                .fontWeight(.semibold)
-                        }
-                        .frame(width: boxSideSize, height: boxSideSize)
+            HStack(spacing: spaceBetweenBoxes) {
+                ForEach(0..<codeLength.rawValue, id: \.self) { index in
+                    ZStack {
+                        Rectangle()
+                            .foregroundColor(OwnID.Colors.otpTileBackgroundColor)
+                            .border(OwnID.Colors.otpTileBorderColor)
+                            .cornerRadius(cornerRadius)
+                            .overlay(
+                                RoundedRectangle(cornerRadius: cornerRadius)
+                                    .stroke(Color.gray.opacity(0.7), lineWidth: 1)
+                            )
+                        TextField(viewModel.getPin(at: index), text: .constant(""))
+                            .font(Font.system(size: 20))
+                            .multilineTextAlignment(.center)
+                            .keyboardType(.numberPad)
+//                            .fontWeight(.semibold)
                     }
+                    .frame(width: boxSideSize, height: boxSideSize)
                 }
             }
         }
