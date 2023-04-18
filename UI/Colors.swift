@@ -73,5 +73,9 @@ public extension OwnID {
         public static var otpTileBorderColor: Color {
             Color("\(OwnID.UISDK.OneTimePasswordView.self)TileBorderColor", bundle: .resourceBundle)
         }
+        
+        public static var otpTileSelectedBorderColor: Color {
+            Color("\(OwnID.UISDK.OneTimePasswordView.self)TileSelectedBorderColor", bundle: .resourceBundle)
+        }
     }
 }

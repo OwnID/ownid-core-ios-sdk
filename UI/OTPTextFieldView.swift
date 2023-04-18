@@ -76,11 +76,11 @@ extension OwnID.UISDK {
                     ZStack {
                         Rectangle()
                             .foregroundColor(OwnID.Colors.otpTileBackgroundColor)
-                            .border(OwnID.Colors.otpTileBorderColor)
+                            .border(tileBorderColor(for: field))
                             .cornerRadius(cornerRadius)
                             .overlay(
                                 RoundedRectangle(cornerRadius: cornerRadius)
-                                    .stroke(Color.gray.opacity(0.7), lineWidth: 1)
+                                    .stroke(tileBorderColor(for: field), lineWidth: 1)
                             )
                         
                         TextField("", text: binding(for: field))
@@ -92,9 +92,14 @@ extension OwnID.UISDK {
                     }
                     .frame(width: boxSideSize, height: boxSideSize)
                 }
-            }.onAppear() {
+            }
+            .onAppear() {
                 focusedField = .one
             }
+        }
+        
+        func tileBorderColor(for field: OwnID.UISDK.OTPViewModel.FieldType) -> Color {
+            focusedField == field ? OwnID.Colors.otpTileSelectedBorderColor : OwnID.Colors.otpTileBorderColor
         }
         
         func binding(for field: OwnID.UISDK.OTPViewModel.FieldType) -> Binding<String> {
