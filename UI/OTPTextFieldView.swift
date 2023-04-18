@@ -47,16 +47,59 @@ extension OwnID.UISDK {
         }
         
         @Published var state: State = .six
-        @Published var code1 = ""
-        @Published var code2 = ""
-        @Published var code3 = ""
-        @Published var code4 = ""
-        @Published var code5 = ""
-        @Published var code6 = ""
+        @Published var code1 = "" {
+            didSet {
+                if code1.count > characterLimit && oldValue.count <= characterLimit {
+                    code1 = oldValue
+                }
+            }
+        }
+        
+        @Published var code2 = "" {
+            didSet {
+                if code2.count > characterLimit && oldValue.count <= characterLimit {
+                    code2 = oldValue
+                }
+            }
+        }
+        
+        @Published var code3 = "" {
+            didSet {
+                if code3.count > characterLimit && oldValue.count <= characterLimit {
+                    code3 = oldValue
+                }
+            }
+        }
+        
+        @Published var code4 = "" {
+            didSet {
+                if code4.count > characterLimit && oldValue.count <= characterLimit {
+                    code4 = oldValue
+                }
+            }
+        }
+        
+        @Published var code5 = "" {
+            didSet {
+                if code5.count > characterLimit && oldValue.count <= characterLimit {
+                    code5 = oldValue
+                }
+            }
+        }
+        
+        @Published var code6 = "" {
+            didSet {
+                if code6.count > characterLimit && oldValue.count <= characterLimit {
+                    code6 = oldValue
+                }
+            }
+        }
+        
         
         let store: Store<OwnID.UISDK.OneTimePasswordView.ViewState, OwnID.UISDK.OneTimePasswordView.Action>
         private var storage = [FieldType: String]()
         private var bag = Set<AnyCancellable>()
+        private let characterLimit = 1
         
         func onUpdateOf(field: FieldType, value: String) {
             storage[field] = value
