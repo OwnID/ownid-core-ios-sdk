@@ -92,6 +92,11 @@ extension OwnID.UISDK {
                             .focused($focusedField, equals: field)
                             .padding(12)
                             .onReceive(Just(viewModel.code1)) { _ in viewModel.limitText(for: field, binding: binding(for: field)) }
+                            .onReceive(Just(viewModel.code2)) { _ in viewModel.limitText(for: field, binding: binding(for: field)) }
+                            .onReceive(Just(viewModel.code3)) { _ in viewModel.limitText(for: field, binding: binding(for: field)) }
+                            .onReceive(Just(viewModel.code4)) { _ in viewModel.limitText(for: field, binding: binding(for: field)) }
+                            .onReceive(Just(viewModel.code5)) { _ in viewModel.limitText(for: field, binding: binding(for: field)) }
+                            .onReceive(Just(viewModel.code6)) { _ in viewModel.limitText(for: field, binding: binding(for: field)) }
                     }
                     .frame(width: boxSideSize, height: boxSideSize)
                 }
