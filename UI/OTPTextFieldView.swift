@@ -1,11 +1,6 @@
 import SwiftUI
 import Combine
 extension OwnID.UISDK.OTPViewModel {
-    struct FieldData: Identifiable, Hashable {
-        let id = UUID().uuidString
-        var value = ""
-    }
-    
     enum FieldType: Identifiable, Hashable {
         var id: Self {
             return self
@@ -57,6 +52,13 @@ extension OwnID.UISDK {
         func combineCode() -> String {
             return ""
         }
+        
+        func limitText(for field: FieldType, binding: Binding<String>) {
+            var binding = binding
+            if binding.wrappedValue.count > 1 {
+                binding.wrappedValue = String(binding.wrappedValue.prefix(1))
+            }
+        }
     }
 }
 
@@ -89,6 +91,7 @@ extension OwnID.UISDK {
                             .keyboardType(.numberPad)
                             .focused($focusedField, equals: field)
                             .padding(12)
+                            .onReceive(Just(viewModel.code1)) { _ in viewModel.limitText(for: field, binding: binding(for: field)) }
                     }
                     .frame(width: boxSideSize, height: boxSideSize)
                 }
