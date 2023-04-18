@@ -93,6 +93,8 @@ extension OwnID.UISDK {
                     .frame(width: boxSideSize, height: boxSideSize)
                 }
             }
+//            .onReceive(Just(code6)) { _ in  }
+//            .onReceive(Just(code4)) { _ in  }
             .onChange(of: code1, perform: { newValue in
                 if newValue.count > characterLimit {
                     code1 = String(newValue.prefix(characterLimit))
@@ -135,7 +137,7 @@ extension OwnID.UISDK {
         }
         
         func processTextChange(for field: OwnID.UISDK.OTPViewModel.FieldType, value: String) {
-            viewModel.onUpdateOf(field: .two, value: value)
+            viewModel.onUpdateOf(field: field, value: value)
             switch field {
             case .one:
                 if !code1.isEmpty {
@@ -160,7 +162,11 @@ extension OwnID.UISDK {
                 if code4.isEmpty {
                     focusedField = .three
                 } else {
-                    focusedField = .five
+                    if codeLength == .four {
+                        submitCode()
+                    } else {
+                        focusedField = .five
+                    }
                 }
                 
             case .five:
@@ -174,9 +180,13 @@ extension OwnID.UISDK {
                 if code6.isEmpty {
                     focusedField = .five
                 } else {
-                    viewModel.store.send(.codeEntered(viewModel.combineCode()))
+                    submitCode()
                 }
             }
+        }
+        
+        func submitCode() {
+            viewModel.store.send(.codeEntered(viewModel.combineCode()))
         }
         
         func tileBorderColor(for field: OwnID.UISDK.OTPViewModel.FieldType) -> Color {
