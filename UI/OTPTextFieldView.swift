@@ -64,7 +64,7 @@ extension OwnID.UISDK {
     @available(iOS 15.0, *)
     public struct OTPTextFieldView: View {
         @ObservedObject var viewModel: OTPViewModel
-//        @FocusState private var focusedField: FocusField?
+        @FocusState private var focusedField: OwnID.UISDK.OTPViewModel.FieldType?
         let codeLength: OneTimePasswordCodeLength
         private let boxSideSize: CGFloat = 50
         private let spaceBetweenBoxes: CGFloat = 8
@@ -87,10 +87,13 @@ extension OwnID.UISDK {
                             .font(Font.system(size: 20))
                             .multilineTextAlignment(.center)
                             .keyboardType(.numberPad)
+                            .focused($focusedField, equals: field)
                             .padding(12)
                     }
                     .frame(width: boxSideSize, height: boxSideSize)
                 }
+            }.onAppear() {
+                focusedField = .one
             }
         }
         
