@@ -34,72 +34,12 @@ extension OwnID.UISDK {
     final class OTPViewModel: ObservableObject {
         init(store: Store<OwnID.UISDK.OneTimePasswordView.ViewState, OwnID.UISDK.OneTimePasswordView.Action>) {
             self.store = store
-            $code1.map { ($0, FieldType.one) }
-                .merge(with: $code2.map { ($0, FieldType.two) })
-                .merge(with: $code3.map { ($0, FieldType.three) })
-                .merge(with: $code4.map { ($0, FieldType.four) })
-                .merge(with: $code5.map { ($0, FieldType.five) })
-                .merge(with: $code6.map { ($0, FieldType.six) })
-                .sink { (fieldValue, fieldType) in
-                    self.onUpdateOf(field: fieldType, value: fieldValue)
-                }
-                .store(in: &bag)
         }
         
         @Published var state: State = .six
-        @Published var code1 = "" {
-            didSet {
-                if code1.count > characterLimit && oldValue.count <= characterLimit {
-                    code1 = oldValue
-                }
-            }
-        }
-        
-        @Published var code2 = "" {
-            didSet {
-                if code2.count > characterLimit && oldValue.count <= characterLimit {
-                    code2 = oldValue
-                }
-            }
-        }
-        
-        @Published var code3 = "" {
-            didSet {
-                if code3.count > characterLimit && oldValue.count <= characterLimit {
-                    code3 = oldValue
-                }
-            }
-        }
-        
-        @Published var code4 = "" {
-            didSet {
-                if code4.count > characterLimit && oldValue.count <= characterLimit {
-                    code4 = oldValue
-                }
-            }
-        }
-        
-        @Published var code5 = "" {
-            didSet {
-                if code5.count > characterLimit && oldValue.count <= characterLimit {
-                    code5 = oldValue
-                }
-            }
-        }
-        
-        @Published var code6 = "" {
-            didSet {
-                if code6.count > characterLimit && oldValue.count <= characterLimit {
-                    code6 = oldValue
-                }
-            }
-        }
-        
         
         let store: Store<OwnID.UISDK.OneTimePasswordView.ViewState, OwnID.UISDK.OneTimePasswordView.Action>
         private var storage = [FieldType: String]()
-        private var bag = Set<AnyCancellable>()
-        private let characterLimit = 1
         
         func onUpdateOf(field: FieldType, value: String) {
             storage[field] = value
@@ -121,6 +61,14 @@ extension OwnID.UISDK {
         private let boxSideSize: CGFloat = 50
         private let spaceBetweenBoxes: CGFloat = 8
         private let cornerRadius = 6.0
+        private let characterLimit = 1
+        
+        @State var code1 = ""
+        @State var code2 = ""
+        @State var code3 = ""
+        @State var code4 = ""
+        @State var code5 = ""
+        @State var code6 = ""
         
         public var body: some View {
             HStack(spacing: spaceBetweenBoxes) {
@@ -145,31 +93,89 @@ extension OwnID.UISDK {
                     .frame(width: boxSideSize, height: boxSideSize)
                 }
             }
+            .onChange(of: code1, perform: { newValue in
+                if newValue.count > characterLimit {
+                    code1 = String(newValue.prefix(characterLimit))
+                }
+                processTextChange(for: .one, value: code1)
+            })
+            .onChange(of: code2, perform: { newValue in
+                if newValue.count > characterLimit {
+                    code2 = String(newValue.prefix(characterLimit))
+                }
+                processTextChange(for: .two, value: code2)
+            })
+            .onChange(of: code3, perform: { newValue in
+                if newValue.count > characterLimit {
+                    code3 = String(newValue.prefix(characterLimit))
+                }
+                processTextChange(for: .three, value: code3)
+            })
+            .onChange(of: code4, perform: { newValue in
+                if newValue.count > characterLimit {
+                    code4 = String(newValue.prefix(characterLimit))
+                }
+                processTextChange(for: .four, value: code4)
+            })
+            .onChange(of: code5, perform: { newValue in
+                if newValue.count > characterLimit {
+                    code5 = String(newValue.prefix(characterLimit))
+                }
+                processTextChange(for: .five, value: code5)
+            })
+            .onChange(of: code6, perform: { newValue in
+                if newValue.count > characterLimit {
+                    code6 = String(newValue.prefix(characterLimit))
+                }
+                processTextChange(for: .six, value: code6)
+            })
             .onAppear() {
                 focusedField = .one
             }
         }
         
-        func processTextChange(for field: OwnID.UISDK.OTPViewModel.FieldType) {
+        func processTextChange(for field: OwnID.UISDK.OTPViewModel.FieldType, value: String) {
+            viewModel.onUpdateOf(field: .two, value: value)
             switch field {
             case .one:
-                if !viewModel.code1.isEmpty {
+                if !code1.isEmpty {
                     focusedField = .two
                 }
+                
             case .two:
-                if viewModel.code2.isEmpty {
+                if code2.isEmpty {
                     focusedField = .one
                 } else {
                     focusedField = .three
                 }
+                
             case .three:
-                break
+                if code3.isEmpty {
+                    focusedField = .two
+                } else {
+                    focusedField = .four
+                }
+                
             case .four:
-                break
+                if code4.isEmpty {
+                    focusedField = .three
+                } else {
+                    focusedField = .five
+                }
+                
             case .five:
-                break
+                if code5.isEmpty {
+                    focusedField = .four
+                } else {
+                    focusedField = .six
+                }
+                
             case .six:
-                break
+                if code6.isEmpty {
+                    focusedField = .five
+                } else {
+                    viewModel.store.send(.codeEntered(viewModel.combineCode()))
+                }
             }
         }
         
@@ -180,17 +186,17 @@ extension OwnID.UISDK {
         func binding(for field: OwnID.UISDK.OTPViewModel.FieldType) -> Binding<String> {
             switch field {
             case .one:
-                return $viewModel.code1
+                return $code1
             case .two:
-                return $viewModel.code2
+                return $code2
             case .three:
-                return $viewModel.code3
+                return $code3
             case .four:
-                return $viewModel.code4
+                return $code4
             case .five:
-                return $viewModel.code5
+                return $code5
             case .six:
-                return $viewModel.code6
+                return $code6
             }
         }
     }
