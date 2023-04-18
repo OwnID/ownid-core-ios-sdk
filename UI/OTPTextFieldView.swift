@@ -150,6 +150,29 @@ extension OwnID.UISDK {
             }
         }
         
+        func processTextChange(for field: OwnID.UISDK.OTPViewModel.FieldType) {
+            switch field {
+            case .one:
+                if !viewModel.code1.isEmpty {
+                    focusedField = .two
+                }
+            case .two:
+                if viewModel.code2.isEmpty {
+                    focusedField = .one
+                } else {
+                    focusedField = .three
+                }
+            case .three:
+                break
+            case .four:
+                break
+            case .five:
+                break
+            case .six:
+                break
+            }
+        }
+        
         func tileBorderColor(for field: OwnID.UISDK.OTPViewModel.FieldType) -> Color {
             focusedField == field ? OwnID.Colors.otpTileSelectedBorderColor : OwnID.Colors.otpTileBorderColor
         }
