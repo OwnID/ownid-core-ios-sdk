@@ -3,6 +3,7 @@ import Combine
 
 public extension OwnID.CoreSDK {
     typealias LoginID = String
+    #warning("Nonce is deprecated. Please remove it soon")
     typealias Nonce = String
     typealias Context = String
     typealias SessionChallenge = String
@@ -16,7 +17,6 @@ public extension OwnID.CoreSDK {
     typealias AppID = String
     typealias AuthType = String
     
-    typealias EventPublisher = AnyPublisher<Event, CoreErrorLogWrapper>
     /// Logs into or creates account for this user ID, passed by symbol
     typealias EmailPublisher = AnyPublisher<String, Never>
 }

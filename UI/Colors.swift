@@ -44,8 +44,8 @@ public extension OwnID {
         }
         
         @available(iOS 15.0, *)
-        public static var instantConnectViewBackgroundColor: Color {
-            Color("\(OwnID.UISDK.InstantConnectView.self)BackgroundColor", bundle: .resourceBundle)
+        public static var popupViewBackgroundColor: Color {
+            Color("\(OwnID.UISDK.PopupView.self)BackgroundColor", bundle: .resourceBundle)
         }
         
         @available(iOS 15.0, *)
@@ -56,6 +56,26 @@ public extension OwnID {
         @available(iOS 15.0, *)
         public static var instantConnectViewAuthButtonColor: Color {
             Color("\(OwnID.UISDK.InstantConnectView.self)AuthButtonColor", bundle: .resourceBundle)
+        }
+        
+        public static var otpContentMessageColor: Color {
+            Color("\(OwnID.UISDK.OneTimePasswordView.self)contentMessage", bundle: .resourceBundle)
+        }
+        
+        public static var otpContentErrorColor: Color {
+            Color("\(OwnID.UISDK.OneTimePasswordView.self)ErrorColor", bundle: .resourceBundle)
+        }
+        
+        public static var otpTileBackgroundColor: Color {
+            Color("\(OwnID.UISDK.OneTimePasswordView.self)TileBackgroundColor", bundle: .resourceBundle)
+        }
+        
+        public static var otpTileBorderColor: Color {
+            Color("\(OwnID.UISDK.OneTimePasswordView.self)TileBorderColor", bundle: .resourceBundle)
+        }
+        
+        public static var otpTileSelectedBorderColor: Color {
+            Color("\(OwnID.UISDK.OneTimePasswordView.self)TileSelectedBorderColor", bundle: .resourceBundle)
         }
     }
 }

@@ -66,6 +66,10 @@ extension OwnID.CoreSDK.CoreViewModel {
             state.authManager = .none
             return []
             
+        case .oneTimePassword:
+            OwnID.UISDK.showOTPView(store: state.oneTimePasswordStore)
+            return []
+            
         case .authManagerCancelled:
             state.authManager = .none
             return []
@@ -87,9 +91,10 @@ extension OwnID.CoreSDK.CoreViewModel {
             state.browserViewModel = vm
             return [Just(.addErrorToInternalStates(error.error)).eraseToEffect()]
             
-        case let .addToState(browserViewModelStore, authStore):
+        case let .addToState(browserViewModelStore, authStore, oneTimePasswordStore):
             state.browserViewModelStore = browserViewModelStore
             state.authManagerStore = authStore
+            state.oneTimePasswordStore = oneTimePasswordStore
             return []
             
         case let .browserVM(browserVMAction):
@@ -131,6 +136,31 @@ extension OwnID.CoreSDK.CoreViewModel {
                 state.browserViewModel = vm
                 return [Just(.addErrorToInternalStates(error)).eraseToEffect()]
             }
+            
+        case .oneTimePasswordView(let action):
+            switch action {
+            case .codeEntered(let code):
+                break
+                
+            case .cancel:
+                return [Just(.oneTimePasswordCancelled).eraseToEffect()]
+                
+            case .emailIsNotRecieved:
+                break
+                
+            case .error:
+                break
+                
+            case .cancelCodeOperation:
+                break
+                
+            case .displayDidNotGetCode:
+                break
+            }
+            return []
+            
+        case .oneTimePasswordCancelled:
+            return []
         }
     }
 }

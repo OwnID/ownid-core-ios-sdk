@@ -3,6 +3,8 @@ import Foundation
 extension OwnID.CoreSDK.CoreViewModel.Action: CustomDebugStringConvertible {
     var debugDescription: String {
         switch self {
+        case .oneTimePassword:
+            return "oneTimePassword"
         case .addToState:
             return "addToState"
         case .sendInitialRequest:
@@ -36,6 +38,10 @@ extension OwnID.CoreSDK.CoreViewModel.Action: CustomDebugStringConvertible {
             return message
         case .authManagerRequestFail(let error, _):
             return "authManagerRequestFail \(error.error.localizedDescription)"
+        case .oneTimePasswordCancelled:
+            return "oneTimePasswordCancelled"
+        case .oneTimePasswordView:
+            return "oneTimePasswordView"
         }
     }
 }

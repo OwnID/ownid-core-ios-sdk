@@ -46,10 +46,6 @@ extension OwnID.CoreSDK {
 
 extension OwnID.CoreSDK.AccountManager {
     struct State: LoggingEnabled {
-        init(isLoggingEnabled: Bool) {
-            self.isLoggingEnabled = isLoggingEnabled
-        }
-        
         let isLoggingEnabled: Bool
     }
     

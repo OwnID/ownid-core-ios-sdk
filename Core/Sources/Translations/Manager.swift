@@ -7,6 +7,10 @@ extension OwnID.CoreSDK.TranslationsSDK {
         case tooltip = "tooltip-ios"
         case or
         case `continue`
+        case verify
+        case verifyEmail
+        case signInWithOneTimeCode
+        case didNotGetEmail
         
         public func localized() -> String {
             if let bundle = OwnID.CoreSDK.shared.translationsModule.localizationBundle {

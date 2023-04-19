@@ -66,12 +66,6 @@ public extension OwnID.CoreSDK {
         public let authType: AuthType?
         public let requestLanguage: String?
     }
-    
-    enum Event {
-        case loading
-        case success(Payload)
-        case cancelled
-    }
 }
 
 public extension OwnID.CoreSDK {
