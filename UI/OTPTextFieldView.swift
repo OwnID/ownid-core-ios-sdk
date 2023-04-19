@@ -13,11 +13,41 @@ extension OwnID.UISDK.OneTimePasswordCodeLength {
     }
 }
 
+extension String {
+    var isNumber: Bool {
+        let digitsCharacters = CharacterSet(charactersIn: "0123456789")
+        return CharacterSet(charactersIn: self).isSubset(of: digitsCharacters)
+    }
+}
+
 extension OwnID.UISDK.OTPViewModel {
     enum FieldType: Identifiable, Hashable {
-        var id: Self {
-            return self
+        static func typeForNumber(_ number: Int) -> Self? {
+            switch number {
+            case 1:
+                return .one
+                
+            case 2:
+                return .two
+                
+            case 3:
+                return .three
+                
+            case 4:
+                return .four
+                
+            case 5:
+                return .five
+                
+            case 6:
+                return .six
+                
+            default:
+                return .none
+            }
         }
+        
+        var id: Self { return self }
         
         var rawValue: Int {
             switch self {
@@ -74,7 +104,10 @@ extension OwnID.UISDK {
         }
         
         func submitCode() {
-            store.send(.codeEntered(combineCode()))
+            let code = combineCode()
+            if code.count == codeLength.rawValue {
+                store.send(.codeEntered(code))
+            }
         }
     }
 }
@@ -89,12 +122,13 @@ extension OwnID.UISDK {
         private let cornerRadius = 6.0
         private let characterLimit = 1
         
-        @State var code1 = ""
-        @State var code2 = ""
-        @State var code3 = ""
-        @State var code4 = ""
-        @State var code5 = ""
-        @State var code6 = ""
+        @State private var code1 = ""
+        @State private var code2 = ""
+        @State private var code3 = ""
+        @State private var code4 = ""
+        @State private var code5 = ""
+        @State private var code6 = ""
+        @State private var isUpdatingCodeFromPaste = false
         
         public var body: some View {
             HStack(spacing: spaceBetweenBoxes) {
@@ -119,51 +153,73 @@ extension OwnID.UISDK {
                     .frame(width: boxSideSize, height: boxSideSize)
                 }
             }
-//            .onReceive(Just(code6)) { _ in  }
-//            .onReceive(Just(code4)) { _ in  }
+            //            .onReceive(Just(code6)) { _ in  }
+            //            .onReceive(Just(code4)) { _ in  }
             .onChange(of: code1, perform: { newValue in
-                if newValue.count > characterLimit {
-                    code1 = String(newValue.prefix(characterLimit))
-                }
-                processTextChange(for: .one, value: code1)
+                processTextChange(for: .one, binding: $code1)
             })
             .onChange(of: code2, perform: { newValue in
-                if newValue.count > characterLimit {
-                    code2 = String(newValue.prefix(characterLimit))
-                }
-                processTextChange(for: .two, value: code2)
+                processTextChange(for: .two, binding: $code2)
             })
             .onChange(of: code3, perform: { newValue in
-                if newValue.count > characterLimit {
-                    code3 = String(newValue.prefix(characterLimit))
-                }
-                processTextChange(for: .three, value: code3)
+                processTextChange(for: .three, binding: $code3)
             })
             .onChange(of: code4, perform: { newValue in
-                if newValue.count > characterLimit {
-                    code4 = String(newValue.prefix(characterLimit))
-                }
-                processTextChange(for: .four, value: code4)
+                processTextChange(for: .four, binding: $code4)
             })
             .onChange(of: code5, perform: { newValue in
-                if newValue.count > characterLimit {
-                    code5 = String(newValue.prefix(characterLimit))
-                }
-                processTextChange(for: .five, value: code5)
+                processTextChange(for: .five, binding: $code5)
             })
             .onChange(of: code6, perform: { newValue in
-                if newValue.count > characterLimit {
-                    code6 = String(newValue.prefix(characterLimit))
-                }
-                processTextChange(for: .six, value: code6)
+                processTextChange(for: .six, binding: $code6)
             })
             .onAppear() {
                 focusedField = .one
             }
         }
         
-        func processTextChange(for field: OwnID.UISDK.OTPViewModel.FieldType, value: String) {
-            viewModel.onUpdateOf(field: field, value: value)
+        func processTextChange(for field: OwnID.UISDK.OTPViewModel.FieldType, binding: Binding<String>) {
+            if !binding.wrappedValue.isNumber {
+                binding.wrappedValue = ""
+            }
+            if isUpdatingCodeFromPaste {
+                return
+            }
+            if binding.wrappedValue.count == viewModel.codeLength.rawValue { // paste event of code
+                isUpdatingCodeFromPaste = true
+                let fieldValue = binding.wrappedValue
+                for index in 0...viewModel.codeLength.rawValue - 1 {
+                    if let type = OwnID.UISDK.OTPViewModel.FieldType.typeForNumber(index + 1) {
+                        let character = fieldValue.prefix(index + 1).suffix(1)
+                        let codeNumber = String(character)
+                        switch type {
+                        case .one:
+                            code1 = codeNumber
+                        case .two:
+                            code2 = codeNumber
+                        case .three:
+                            code3 = codeNumber
+                        case .four:
+                            code4 = codeNumber
+                        case .five:
+                            code5 = codeNumber
+                        case .six:
+                            code6 = codeNumber
+                        }
+                        
+                        viewModel.onUpdateOf(field: type, value: codeNumber)
+                    }
+                }
+                viewModel.submitCode()
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                    isUpdatingCodeFromPaste = false
+                }
+                return
+            }
+            if binding.wrappedValue.count > characterLimit {
+                binding.wrappedValue = String(binding.wrappedValue.prefix(characterLimit))
+            }
+            viewModel.onUpdateOf(field: field, value: binding.wrappedValue)
             switch field {
             case .one:
                 if !code1.isEmpty {
