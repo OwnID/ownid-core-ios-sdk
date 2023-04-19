@@ -70,7 +70,7 @@ extension OwnID.UISDK {
             self.visualConfig = visualConfig
             self.store = store
             self.codeLength = codeLength
-            self.viewModel = OTPViewModel(store: store)
+            self.viewModel = OTPViewModel(codeLength: codeLength, store: store)
         }
         
         @ViewBuilder
@@ -90,7 +90,7 @@ extension OwnID.UISDK {
                 return VStack {
                     topSection()
                     VStack {
-                        OTPTextFieldView(viewModel: viewModel, codeLength: codeLength)
+                        OTPTextFieldView(viewModel: viewModel)
                         errorView()
                             .padding(.leading)
                             .padding(.trailing)

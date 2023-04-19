@@ -1,9 +1,44 @@
 import SwiftUI
 import Combine
+
+extension OwnID.UISDK.OneTimePasswordCodeLength {
+    var fields: [OwnID.UISDK.OTPViewModel.FieldType] {
+        switch self {
+        case .four:
+            return [.one, .two, .three, .four]
+            
+        case .six:
+            return [.one, .two, .three, .four, .five, .six]
+        }
+    }
+}
+
 extension OwnID.UISDK.OTPViewModel {
     enum FieldType: Identifiable, Hashable {
         var id: Self {
             return self
+        }
+        
+        var rawValue: Int {
+            switch self {
+            case .one:
+                return 1
+                
+            case .two:
+                return 2
+                
+            case .three:
+                return 3
+                
+            case .four:
+                return 4
+                
+            case .five:
+                return 5
+                
+            case .six:
+                return 6
+            }
         }
         
         case one
@@ -13,40 +48,28 @@ extension OwnID.UISDK.OTPViewModel {
         case five
         case six
     }
-    
-    enum State {
-        case four
-        case six
-        
-        var fields: [FieldType] {
-            switch self {
-            case .four:
-                return [.one, .two, .three, .four]
-                
-            case .six:
-                return [.one, .two, .three, .four, .five, .six]
-            }
-        }
-    }
 }
 
 extension OwnID.UISDK {
     final class OTPViewModel: ObservableObject {
-        init(store: Store<OwnID.UISDK.OneTimePasswordView.ViewState, OwnID.UISDK.OneTimePasswordView.Action>) {
+        init(codeLength: OwnID.UISDK.OneTimePasswordCodeLength,
+             store: Store<OwnID.UISDK.OneTimePasswordView.ViewState, OwnID.UISDK.OneTimePasswordView.Action>) {
+            self.codeLength = codeLength
             self.store = store
+            storage = Array(repeating: "", count: codeLength.rawValue + 1)
         }
         
-        @Published var state: State = .six
+        let codeLength: OneTimePasswordCodeLength
         
         let store: Store<OwnID.UISDK.OneTimePasswordView.ViewState, OwnID.UISDK.OneTimePasswordView.Action>
-        private var storage = [FieldType: String]()
+        private var storage: [String]
         
         func onUpdateOf(field: FieldType, value: String) {
-            storage[field] = value
+            storage[field.rawValue] = value
         }
         
         func combineCode() -> String {
-            let code = storage.values.reduce("", +)
+            let code = storage.reduce("", +)
             return code
         }
     }
@@ -57,7 +80,6 @@ extension OwnID.UISDK {
     public struct OTPTextFieldView: View {
         @ObservedObject var viewModel: OTPViewModel
         @FocusState private var focusedField: OwnID.UISDK.OTPViewModel.FieldType?
-        let codeLength: OneTimePasswordCodeLength
         private let boxSideSize: CGFloat = 50
         private let spaceBetweenBoxes: CGFloat = 8
         private let cornerRadius = 6.0
@@ -72,7 +94,7 @@ extension OwnID.UISDK {
         
         public var body: some View {
             HStack(spacing: spaceBetweenBoxes) {
-                ForEach(viewModel.state.fields, id: \.self) { field in
+                ForEach(viewModel.codeLength.fields, id: \.self) { field in
                     ZStack {
                         Rectangle()
                             .foregroundColor(OwnID.Colors.otpTileBackgroundColor)
@@ -162,7 +184,7 @@ extension OwnID.UISDK {
                 if code4.isEmpty {
                     focusedField = .three
                 } else {
-                    if codeLength == .four {
+                    if viewModel.codeLength == .four {
                         submitCode()
                     } else {
                         focusedField = .five
