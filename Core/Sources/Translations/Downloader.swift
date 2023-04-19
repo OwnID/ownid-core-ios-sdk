@@ -52,11 +52,41 @@ private extension OwnID.CoreSDK.TranslationsSDK.Downloader {
         return session.dataTaskPublisher(for: valuesURL(currentLanguage: currentBELanguage))
             .eraseToAnyPublisher()
             .map { $0.data }
-            .compactMap { try? JSONSerialization.jsonObject(with: $0, options: []) as? [String: String] }
+            .compactMap {
+                let result = try? JSONSerialization.jsonObject(with: $0, options: []) as? [String: Any]
+                return result
+            }
+            .map { translationsObject -> [String: String] in
+                var flatTranslationDict = [String: String]()
+                self.flattenOutObject(translationsObject, &flatTranslationDict)
+                return flatTranslationDict
+            }
             .map { (correspondingSystemLanguage, $0) }
             .mapError {
                 OwnID.CoreSDK.CoreErrorLogWrapper.coreLog(entry: .errorEntry(Self.self), error: .localizationDownloader(underlying: $0))
             }
             .eraseToAnyPublisher()
+    }
+    
+    func flattenOutObject(_ translationsObject: [String : Any], _ flatTranslationDict: inout [String : String]) {
+        for topKey in translationsObject.keys {
+            if let flatTranslation = translationsObject[topKey] as? String {
+                flatTranslationDict[topKey] = flatTranslation
+            }
+            if var translationObject = translationsObject[topKey] as? [String: Any] {
+                for (key, _) in translationObject {
+                    translationObject.switchKey(fromKey: key, toKey: "\(topKey).\(key)")
+                }
+                flattenOutObject(translationObject, &flatTranslationDict)
+            }
+        }
+    }
+}
+
+private extension Dictionary {
+    mutating func switchKey(fromKey: Key, toKey: Key) {
+        if let entry = removeValue(forKey: fromKey) {
+            self[toKey] = entry
+        }
     }
 }

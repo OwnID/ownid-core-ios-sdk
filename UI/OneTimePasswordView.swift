@@ -38,17 +38,17 @@ extension OwnID.UISDK {
     
     struct OneTimePasswordView: Popup {
         
-        enum TitleState {
+        enum TitleType {
             case emailVerification
             case oneTimePasswordSignIn
             
-            var titleText: String {
+            var localizationKey: OwnID.CoreSDK.TranslationsSDK.TranslationKey {
                 switch self {
                 case .emailVerification:
-                    return "Verify Your Email"
+                    return .verifyEmail
                     
                 case .oneTimePasswordSignIn:
-                    return "Sign In With a One-time Code"
+                    return .signInWithOneTimeCode
                 }
             }
         }
@@ -61,16 +61,31 @@ extension OwnID.UISDK {
         private let viewModel: OTPViewModel
         private var visualConfig: OTPViewConfig
         @ObservedObject var store: Store<ViewState, Action>
-        private let titleState = TitleState.emailVerification
+        private let titleState = TitleType.emailVerification
         private let codeLength: OneTimePasswordCodeLength
+        
+        @State private var noEmailText: String
+        private let noEmailTextChangedClosure: (() -> String)
+        
+        @State private var titleText: String
+        private let titleTextChangedClosure: (() -> String)
         
         init(store: Store<ViewState, Action>,
              visualConfig: OTPViewConfig,
+             titleType: TitleType = .oneTimePasswordSignIn,
              codeLength: OneTimePasswordCodeLength = .six) {
             self.visualConfig = visualConfig
             self.store = store
             self.codeLength = codeLength
             self.viewModel = OTPViewModel(codeLength: codeLength, store: store)
+            
+            let noEmailTextChangedClosure = { OwnID.CoreSDK.TranslationsSDK.TranslationKey.didNotGetEmail.localized() }
+            self.noEmailTextChangedClosure = noEmailTextChangedClosure
+            _noEmailText = State(initialValue: noEmailTextChangedClosure())
+            
+            let titleTextChangedClosure = { titleType.localizationKey.localized() }
+            self.titleTextChangedClosure = titleTextChangedClosure
+            _titleText = State(initialValue: titleTextChangedClosure())
         }
         
         @ViewBuilder
@@ -80,7 +95,7 @@ extension OwnID.UISDK {
                     OwnID.UISDK.PopupManager.dismiss()
                     store.send(.emailIsNotRecieved)
                 } label: {
-                    Text("I didn’t get the email")
+                    Text("steps.otp.no-email")
                 }
             }
         }
@@ -114,6 +129,10 @@ extension OwnID.UISDK {
                     }
                 }
                 .padding()
+                .onReceive(OwnID.CoreSDK.shared.translationsModule.translationsChangePublisher) {
+                    noEmailText = noEmailTextChangedClosure()
+                    titleText = titleTextChangedClosure()
+                }
             } else {
                 return EmptyView()
             }
@@ -123,18 +142,18 @@ extension OwnID.UISDK {
         @ViewBuilder
         private func topSection() -> some View {
             VStack {
-                Text(titleState.titleText)
+                Text(titleText)
                     .font(.system(size: 20))
                     .bold()
                     .padding(.bottom)
                 
-                Text(verbatim: "We have email you a 4-digit code to\njane_doe@email.com")
+                Text(verbatim: noEmailText)
                     .multilineTextAlignment(.center)
                     .foregroundColor(OwnID.Colors.otpContentMessageColor)
                     .font(.system(size: 16))
                     .padding(.bottom)
                 
-                Text("Enter the verification code")
+                Text("steps.otp.description")
                     .font(.system(size: 16))
                     .fontWeight(.semibold)
             }

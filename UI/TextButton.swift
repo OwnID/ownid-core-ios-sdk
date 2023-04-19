@@ -18,6 +18,7 @@ extension OwnID.UISDK {
             let localizationChangedClosure = { OwnID.CoreSDK.TranslationsSDK.TranslationKey.verify.localized() }
             self.localizationChangedClosure = localizationChangedClosure
             _translationText = State(initialValue: localizationChangedClosure())
+            
             self.visualConfig = visualConfig
             self.actionHandler = actionHandler
             self._isLoading = isLoading
