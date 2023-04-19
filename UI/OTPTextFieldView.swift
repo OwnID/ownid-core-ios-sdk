@@ -61,16 +61,20 @@ extension OwnID.UISDK {
         
         let codeLength: OneTimePasswordCodeLength
         
-        let store: Store<OwnID.UISDK.OneTimePasswordView.ViewState, OwnID.UISDK.OneTimePasswordView.Action>
+        private let store: Store<OwnID.UISDK.OneTimePasswordView.ViewState, OwnID.UISDK.OneTimePasswordView.Action>
         private var storage: [String]
         
         func onUpdateOf(field: FieldType, value: String) {
             storage[field.rawValue] = value
         }
         
-        func combineCode() -> String {
+        private func combineCode() -> String {
             let code = storage.reduce("", +)
             return code
+        }
+        
+        func submitCode() {
+            store.send(.codeEntered(combineCode()))
         }
     }
 }
@@ -185,7 +189,7 @@ extension OwnID.UISDK {
                     focusedField = .three
                 } else {
                     if viewModel.codeLength == .four {
-                        submitCode()
+                        viewModel.submitCode()
                     } else {
                         focusedField = .five
                     }
@@ -202,13 +206,9 @@ extension OwnID.UISDK {
                 if code6.isEmpty {
                     focusedField = .five
                 } else {
-                    submitCode()
+                    viewModel.submitCode()
                 }
             }
-        }
-        
-        func submitCode() {
-            viewModel.store.send(.codeEntered(viewModel.combineCode()))
         }
         
         func tileBorderColor(for field: OwnID.UISDK.OTPViewModel.FieldType) -> Color {
