@@ -79,7 +79,8 @@ extension OwnID.UISDK {
         init(store: Store<ViewState, Action>,
              visualConfig: OTPViewConfig,
              titleType: TitleType = .oneTimePasswordSignIn,
-             codeLength: OneTimePasswordCodeLength = .six) {
+             codeLength: OneTimePasswordCodeLength = .six,
+             email: String = "fecemi9888@snowlash.com") {
             self.visualConfig = visualConfig
             self.store = store
             self.codeLength = codeLength
@@ -99,6 +100,10 @@ extension OwnID.UISDK {
             
             let emailSentTextChangedClosure = {
                 var text = OwnID.CoreSDK.TranslationsSDK.TranslationKey.otpSentEmail.localized()
+                let codeLengthReplacement = "%CODE_LENGTH%"
+                let emailReplacement = "%LOGIN_ID%"
+                text = text.replacingOccurrences(of: codeLengthReplacement, with: String(codeLength.rawValue))
+                text = text.replacingOccurrences(of: emailReplacement, with: email)
                 return text
             }
             self.emailSentTextChangedClosure = emailSentTextChangedClosure
