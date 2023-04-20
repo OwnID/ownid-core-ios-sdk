@@ -63,18 +63,11 @@ extension OwnID.UISDK {
         @ObservedObject var store: Store<ViewState, Action>
         private let titleState = TitleType.emailVerification
         private let codeLength: OneTimePasswordCodeLength
-        
-        @State private var noEmailText: String
-        private let noEmailTextChangedClosure: (() -> String)
-        
-        @State private var titleText: String
-        private let titleTextChangedClosure: (() -> String)
-        
-        @State private var descriptionText: String
-        private let descriptionTextChangedClosure: (() -> String)
+        private let titleType: TitleType
         
         @State private var emailSentText: String
         private let emailSentTextChangedClosure: (() -> String)
+        @State private var isTranslationChanged = false
         
         init(store: Store<ViewState, Action>,
              visualConfig: OTPViewConfig,
@@ -86,18 +79,7 @@ extension OwnID.UISDK {
             self.codeLength = codeLength
             self.viewModel = OTPViewModel(codeLength: codeLength, store: store)
             
-            let noEmailTextChangedClosure = { OwnID.CoreSDK.TranslationsSDK.TranslationKey.didNotGetEmail.localized() }
-            self.noEmailTextChangedClosure = noEmailTextChangedClosure
-            _noEmailText = State(initialValue: noEmailTextChangedClosure())
-            
-            let titleTextChangedClosure = { titleType.localizationKey.localized() }
-            self.titleTextChangedClosure = titleTextChangedClosure
-            _titleText = State(initialValue: titleTextChangedClosure())
-            
-            let descriptionTextChangedClosure = { OwnID.CoreSDK.TranslationsSDK.TranslationKey.otpDescription.localized() }
-            self.descriptionTextChangedClosure = descriptionTextChangedClosure
-            _descriptionText = State(initialValue: descriptionTextChangedClosure())
-            
+            self.titleType = titleType
             let emailSentTextChangedClosure = {
                 var text = OwnID.CoreSDK.TranslationsSDK.TranslationKey.otpSentEmail.localized()
                 let codeLengthReplacement = "%CODE_LENGTH%"
@@ -117,7 +99,7 @@ extension OwnID.UISDK {
                     OwnID.UISDK.PopupManager.dismiss()
                     store.send(.emailIsNotRecieved)
                 } label: {
-                    Text(noEmailText)
+                    Text(localizedKey: .didNotGetEmail)
                 }
             }
         }
@@ -152,10 +134,8 @@ extension OwnID.UISDK {
                 }
                 .padding()
                 .onReceive(OwnID.CoreSDK.shared.translationsModule.translationsChangePublisher) {
-                    noEmailText = noEmailTextChangedClosure()
-                    titleText = titleTextChangedClosure()
-                    descriptionText = descriptionTextChangedClosure()
                     emailSentText = emailSentTextChangedClosure()
+                    isTranslationChanged.toggle()
                 }
             } else {
                 return EmptyView()
@@ -166,7 +146,7 @@ extension OwnID.UISDK {
         @ViewBuilder
         private func topSection() -> some View {
             VStack {
-                Text(titleText)
+                Text(localizedKey: .signInWithOneTimeCode)
                     .font(.system(size: 20))
                     .bold()
                     .padding(.bottom)
@@ -177,11 +157,16 @@ extension OwnID.UISDK {
                     .font(.system(size: 16))
                     .padding(.bottom)
                 
-                Text(descriptionText)
+                Text(localizedKey: .otpDescription)
                     .font(.system(size: 16))
                     .fontWeight(.semibold)
             }
             .padding()
+            .overlay {
+                if isTranslationChanged {
+                    EmptyView()
+                }
+            }
         }
         
         @ViewBuilder
