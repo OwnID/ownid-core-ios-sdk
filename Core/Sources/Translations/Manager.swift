@@ -11,6 +11,9 @@ extension OwnID.CoreSDK.TranslationsSDK {
         case verifyEmail = "steps.otp.title-verify"
         case signInWithOneTimeCode = "steps.otp.title-sign"
         case didNotGetEmail = "steps.otp.no-email"
+        case emailCollectTitle = "steps.email-collect.title-ios"
+        case emailCollectMessage = "steps.email-collect.message"
+        case stepsContinue = "steps.continue"
         
         public func localized() -> String {
             if let bundle = OwnID.CoreSDK.shared.translationsModule.localizationBundle {

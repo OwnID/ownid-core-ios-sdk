@@ -14,8 +14,9 @@ extension OwnID.UISDK {
         init(visualConfig: OwnID.UISDK.VisualLookConfig,
              actionHandler: @escaping (() -> Void),
              isLoading: Binding<Bool>,
-             buttonState: Binding<ButtonState>) {
-            let localizationChangedClosure = { OwnID.CoreSDK.TranslationsSDK.TranslationKey.continue.localized() }
+             buttonState: Binding<ButtonState>,
+             translationKey: OwnID.CoreSDK.TranslationsSDK.TranslationKey = .continue) {
+            let localizationChangedClosure = { translationKey.localized() }
             self.localizationChangedClosure = localizationChangedClosure
             _translationText = State(initialValue: localizationChangedClosure())
             self.visualConfig = visualConfig
