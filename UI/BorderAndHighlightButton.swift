@@ -20,8 +20,6 @@ extension OwnID.UISDK {
     struct BorderAndHighlightButton: View {
         
         var buttonViewConfig: ButtonViewConfig
-        private let localizationClosure: (() -> String)
-        @State private var translationText = ""
         
         private let highlightedSpace = EdgeInsets(top: 6, leading: 7, bottom: 6, trailing: 7)
         private let defaultSpace = EdgeInsets(top: 7, leading: 8, bottom: 7, trailing: 8)
@@ -35,13 +33,10 @@ extension OwnID.UISDK {
              buttonViewConfig: ButtonViewConfig,
              action: @escaping () -> Void,
              content: @autoclosure @escaping () -> any View) {
-            let localizationClosure = { OwnID.CoreSDK.TranslationsSDK.TranslationKey.skipPassword.localized() }
             self._viewState = viewState
             self.buttonViewConfig = buttonViewConfig
             self.action = action
             self.content = content
-            self.localizationClosure = localizationClosure
-            self.translationText = localizationClosure()
         }
         
         var body: some View {
@@ -49,10 +44,6 @@ extension OwnID.UISDK {
                 EmptyView()
             })
             .buttonStyle(buttonStyle())
-//            .accessibilityLabel(Text(translationText))
-            .onReceive(OwnID.CoreSDK.shared.translationsModule.translationsChangePublisher) {
-                translationText = localizationClosure()
-            }
         }
         
         @ViewBuilder
