@@ -41,11 +41,7 @@ public extension OwnID.UISDK {
         private let resultPublisher = PassthroughSubject<Void, Never>()
         private var bag = Set<AnyCancellable>()
         
-        @State private var emailText: String
-        private let emailTextChangedClosure: (() -> String)
-        
-        @State private var titleText: String
-        private let titleTextChangedClosure: (() -> String)
+        @State private var isTranslationChanged = false
         
         public init(viewModel: OwnID.FlowsSDK.LoginView.ViewModel,
                     visualConfig: VisualLookConfig,
@@ -53,14 +49,6 @@ public extension OwnID.UISDK {
             self.viewModel = viewModel
             self.visualConfig = visualConfig
             self.closeClosure = closeClosure
-            
-            let emailTextChangedClosure = { OwnID.CoreSDK.TranslationsSDK.TranslationKey.emailCollectMessage.localized() }
-            self.emailTextChangedClosure = emailTextChangedClosure
-            _emailText = State(initialValue: emailTextChangedClosure())
-            
-            let titleTextChangedClosure = { OwnID.CoreSDK.TranslationsSDK.TranslationKey.emailCollectTitle.localized() }
-            self.titleTextChangedClosure = titleTextChangedClosure
-            _titleText = State(initialValue: titleTextChangedClosure())
             
             viewModel.updateEmailPublisher(emailPublisher.eraseToAnyPublisher())
             viewModel.subscribe(to: eventPublisher)
@@ -93,15 +81,19 @@ public extension OwnID.UISDK {
             viewContent()
                 .onChange(of: email) { newValue in emailPublisher.send(newValue) }
                 .onReceive(OwnID.CoreSDK.shared.translationsModule.translationsChangePublisher) {
-                    emailText = emailTextChangedClosure()
-                    titleText = titleTextChangedClosure()
+                    isTranslationChanged.toggle()
+                }
+                .overlay {
+                    if isTranslationChanged {
+                        EmptyView()
+                    }
                 }
         }
         
         @ViewBuilder
         private func topSection() -> some View {
             HStack {
-                Text(titleText)
+                Text(localizedKey: .emailCollectTitle)
                     .font(.system(size: 20))
                     .bold()
                 Spacer()
@@ -131,7 +123,7 @@ public extension OwnID.UISDK {
             VStack {
                 topSection()
                 VStack {
-                    Text(emailText)
+                    Text(localizedKey: .emailCollectMessage)
                         .font(.system(size: 18))
                     TextField("", text: $email)
                         .font(.system(size: 17))
