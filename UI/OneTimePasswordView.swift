@@ -70,6 +70,12 @@ extension OwnID.UISDK {
         @State private var titleText: String
         private let titleTextChangedClosure: (() -> String)
         
+        @State private var descriptionText: String
+        private let descriptionTextChangedClosure: (() -> String)
+        
+        @State private var emailSentText: String
+        private let emailSentTextChangedClosure: (() -> String)
+        
         init(store: Store<ViewState, Action>,
              visualConfig: OTPViewConfig,
              titleType: TitleType = .oneTimePasswordSignIn,
@@ -86,6 +92,17 @@ extension OwnID.UISDK {
             let titleTextChangedClosure = { titleType.localizationKey.localized() }
             self.titleTextChangedClosure = titleTextChangedClosure
             _titleText = State(initialValue: titleTextChangedClosure())
+            
+            let descriptionTextChangedClosure = { OwnID.CoreSDK.TranslationsSDK.TranslationKey.otpDescription.localized() }
+            self.descriptionTextChangedClosure = descriptionTextChangedClosure
+            _descriptionText = State(initialValue: descriptionTextChangedClosure())
+            
+            let emailSentTextChangedClosure = {
+                var text = OwnID.CoreSDK.TranslationsSDK.TranslationKey.otpSentEmail.localized()
+                return text
+            }
+            self.emailSentTextChangedClosure = emailSentTextChangedClosure
+            _emailSentText = State(initialValue: emailSentTextChangedClosure())
         }
         
         @ViewBuilder
@@ -95,7 +112,7 @@ extension OwnID.UISDK {
                     OwnID.UISDK.PopupManager.dismiss()
                     store.send(.emailIsNotRecieved)
                 } label: {
-                    Text("steps.otp.no-email")
+                    Text(noEmailText)
                 }
             }
         }
@@ -132,6 +149,8 @@ extension OwnID.UISDK {
                 .onReceive(OwnID.CoreSDK.shared.translationsModule.translationsChangePublisher) {
                     noEmailText = noEmailTextChangedClosure()
                     titleText = titleTextChangedClosure()
+                    descriptionText = descriptionTextChangedClosure()
+                    emailSentText = emailSentTextChangedClosure()
                 }
             } else {
                 return EmptyView()
@@ -147,13 +166,13 @@ extension OwnID.UISDK {
                     .bold()
                     .padding(.bottom)
                 
-                Text(verbatim: noEmailText)
+                Text(verbatim: emailSentText)
                     .multilineTextAlignment(.center)
                     .foregroundColor(OwnID.Colors.otpContentMessageColor)
                     .font(.system(size: 16))
                     .padding(.bottom)
                 
-                Text("steps.otp.description")
+                Text(descriptionText)
                     .font(.system(size: 16))
                     .fontWeight(.semibold)
             }
