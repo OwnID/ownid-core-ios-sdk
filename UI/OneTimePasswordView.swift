@@ -80,6 +80,7 @@ extension OwnID.UISDK {
             self.viewModel = OTPViewModel(codeLength: codeLength, store: store)
             
             self.titleType = titleType
+            
             let emailSentTextChangedClosure = {
                 var text = OwnID.CoreSDK.TranslationsSDK.TranslationKey.otpSentEmail.localized()
                 let codeLengthReplacement = "%CODE_LENGTH%"
