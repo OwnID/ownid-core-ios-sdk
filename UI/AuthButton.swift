@@ -7,21 +7,20 @@ extension OwnID.UISDK {
         let actionHandler: (() -> Void)
         @Binding var isLoading: Bool
         
-        private let localizationChangedClosure: (() -> String)
-        @State private var translationText: String
+        @State private var isTranslationChanged = false
         @Binding private var buttonState: ButtonState
+        private let translationKey: OwnID.CoreSDK.TranslationsSDK.TranslationKey
         
         init(visualConfig: OwnID.UISDK.VisualLookConfig,
              actionHandler: @escaping (() -> Void),
              isLoading: Binding<Bool>,
-             buttonState: Binding<ButtonState>) {
-            let localizationChangedClosure = { OwnID.CoreSDK.TranslationsSDK.TranslationKey.continue.localized() }
-            self.localizationChangedClosure = localizationChangedClosure
-            _translationText = State(initialValue: localizationChangedClosure())
+             buttonState: Binding<ButtonState>,
+             translationKey: OwnID.CoreSDK.TranslationsSDK.TranslationKey = .continue) {
             self.visualConfig = visualConfig
             self.actionHandler = actionHandler
             self._isLoading = isLoading
             self._buttonState = buttonState
+            self.translationKey = translationKey
         }
         
         var body: some View {
@@ -34,8 +33,9 @@ extension OwnID.UISDK {
             .background(backgroundRectangle(color: visualConfig.authButtonConfig.backgroundColor))
             .cornerRadius(cornerRadiusValue)
             .onReceive(OwnID.CoreSDK.shared.translationsModule.translationsChangePublisher) {
-                translationText = localizationChangedClosure()
+                isTranslationChanged.toggle()
             }
+            .overlay(Text("\(String(isTranslationChanged))").foregroundColor(.clear), alignment: .bottom)
         }
     }
 }
@@ -58,7 +58,7 @@ private extension OwnID.UISDK.AuthButton {
     func contents() -> some View {
         HStack(alignment: .center, spacing: 15) {
             imageWithLoader()
-            Text(translationText)
+            Text(localizedKey: translationKey)
                 .fontWithLineHeight(font: .systemFont(ofSize: visualConfig.authButtonConfig.textSize, weight: .bold), lineHeight: visualConfig.authButtonConfig.lineHeight)
                 .foregroundColor(visualConfig.authButtonConfig.textColor)
         }

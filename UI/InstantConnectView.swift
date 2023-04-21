@@ -41,6 +41,8 @@ public extension OwnID.UISDK {
         private let resultPublisher = PassthroughSubject<Void, Never>()
         private var bag = Set<AnyCancellable>()
         
+        @State private var isTranslationChanged = false
+        
         public init(viewModel: OwnID.FlowsSDK.LoginView.ViewModel,
                     visualConfig: VisualLookConfig,
                     closeClosure: @escaping () -> Void) {
@@ -78,12 +80,20 @@ public extension OwnID.UISDK {
         public func createContent() -> some View {
             viewContent()
                 .onChange(of: email) { newValue in emailPublisher.send(newValue) }
+                .onReceive(OwnID.CoreSDK.shared.translationsModule.translationsChangePublisher) {
+                    isTranslationChanged.toggle()
+                }
+                .overlay {
+                    if isTranslationChanged {
+                        EmptyView()
+                    }
+                }
         }
         
         @ViewBuilder
         private func topSection() -> some View {
             HStack {
-                Text("Sign In")
+                Text(localizedKey: .emailCollectTitle)
                     .font(.system(size: 20))
                     .bold()
                 Spacer()
@@ -113,7 +123,7 @@ public extension OwnID.UISDK {
             VStack {
                 topSection()
                 VStack {
-                    Text("Enter your email")
+                    Text(localizedKey: .emailCollectMessage)
                         .font(.system(size: 18))
                     TextField("", text: $email)
                         .font(.system(size: 17))
@@ -131,7 +141,8 @@ public extension OwnID.UISDK {
                     AuthButton(visualConfig: visualConfig,
                                actionHandler: { resultPublisher.send(()) },
                                isLoading: viewModel.state.isLoadingBinding,
-                               buttonState: viewModel.state.buttonStateBinding)
+                               buttonState: viewModel.state.buttonStateBinding,
+                               translationKey: .stepsContinue)
                 }
             }
             .padding()

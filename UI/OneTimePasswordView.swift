@@ -38,17 +38,17 @@ extension OwnID.UISDK {
     
     struct OneTimePasswordView: Popup {
         
-        enum TitleState {
+        enum TitleType {
             case emailVerification
             case oneTimePasswordSignIn
             
-            var titleText: String {
+            var localizationKey: OwnID.CoreSDK.TranslationsSDK.TranslationKey {
                 switch self {
                 case .emailVerification:
-                    return "Verify Your Email"
+                    return .verifyEmail
                     
                 case .oneTimePasswordSignIn:
-                    return "Sign In With a One-time Code"
+                    return .signInWithOneTimeCode
                 }
             }
         }
@@ -61,16 +61,36 @@ extension OwnID.UISDK {
         private let viewModel: OTPViewModel
         private var visualConfig: OTPViewConfig
         @ObservedObject var store: Store<ViewState, Action>
-        private let titleState = TitleState.emailVerification
+        private let titleState = TitleType.emailVerification
         private let codeLength: OneTimePasswordCodeLength
+        private let titleType: TitleType
+        
+        @State private var emailSentText: String
+        private let emailSentTextChangedClosure: (() -> String)
+        @State private var isTranslationChanged = false
         
         init(store: Store<ViewState, Action>,
              visualConfig: OTPViewConfig,
-             codeLength: OneTimePasswordCodeLength = .six) {
+             titleType: TitleType = .oneTimePasswordSignIn,
+             codeLength: OneTimePasswordCodeLength = .six,
+             email: String = "fecemi9888@snowlash.com") {
             self.visualConfig = visualConfig
             self.store = store
             self.codeLength = codeLength
             self.viewModel = OTPViewModel(codeLength: codeLength, store: store)
+            
+            self.titleType = titleType
+            
+            let emailSentTextChangedClosure = {
+                var text = OwnID.CoreSDK.TranslationsSDK.TranslationKey.otpSentEmail.localized()
+                let codeLengthReplacement = "%CODE_LENGTH%"
+                let emailReplacement = "%LOGIN_ID%"
+                text = text.replacingOccurrences(of: codeLengthReplacement, with: String(codeLength.rawValue))
+                text = text.replacingOccurrences(of: emailReplacement, with: email)
+                return text
+            }
+            self.emailSentTextChangedClosure = emailSentTextChangedClosure
+            _emailSentText = State(initialValue: emailSentTextChangedClosure())
         }
         
         @ViewBuilder
@@ -80,7 +100,7 @@ extension OwnID.UISDK {
                     OwnID.UISDK.PopupManager.dismiss()
                     store.send(.emailIsNotRecieved)
                 } label: {
-                    Text("I didn’t get the email")
+                    Text(localizedKey: .didNotGetEmail)
                 }
             }
         }
@@ -114,6 +134,10 @@ extension OwnID.UISDK {
                     }
                 }
                 .padding()
+                .onReceive(OwnID.CoreSDK.shared.translationsModule.translationsChangePublisher) {
+                    emailSentText = emailSentTextChangedClosure()
+                    isTranslationChanged.toggle()
+                }
             } else {
                 return EmptyView()
             }
@@ -123,22 +147,27 @@ extension OwnID.UISDK {
         @ViewBuilder
         private func topSection() -> some View {
             VStack {
-                Text(titleState.titleText)
+                Text(localizedKey: .signInWithOneTimeCode)
                     .font(.system(size: 20))
                     .bold()
                     .padding(.bottom)
                 
-                Text(verbatim: "We have email you a 4-digit code to\njane_doe@email.com")
+                Text(verbatim: emailSentText)
                     .multilineTextAlignment(.center)
                     .foregroundColor(OwnID.Colors.otpContentMessageColor)
                     .font(.system(size: 16))
                     .padding(.bottom)
                 
-                Text("Enter the verification code")
+                Text(localizedKey: .otpDescription)
                     .font(.system(size: 16))
                     .fontWeight(.semibold)
             }
             .padding()
+            .overlay {
+                if isTranslationChanged {
+                    EmptyView()
+                }
+            }
         }
         
         @ViewBuilder
