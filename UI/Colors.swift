@@ -53,17 +53,12 @@ public extension OwnID {
             Color("\(OwnID.UISDK.InstantConnectView.self)EmailFiendBorderColor", bundle: .resourceBundle)
         }
         
-        @available(iOS 15.0, *)
-        public static var instantConnectViewAuthButtonColor: Color {
-            Color("\(OwnID.UISDK.InstantConnectView.self)AuthButtonColor", bundle: .resourceBundle)
-        }
-        
         public static var otpContentMessageColor: Color {
             Color("\(OwnID.UISDK.OneTimePasswordView.self)contentMessage", bundle: .resourceBundle)
         }
         
-        public static var otpContentErrorColor: Color {
-            Color("\(OwnID.UISDK.OneTimePasswordView.self)ErrorColor", bundle: .resourceBundle)
+        public static var errorColor: Color {
+            Color("errorColor", bundle: .resourceBundle)
         }
         
         public static var otpTileBackgroundColor: Color {

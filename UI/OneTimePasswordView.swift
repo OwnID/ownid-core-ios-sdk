@@ -5,7 +5,6 @@ import Combine
 extension OwnID.UISDK.OneTimePasswordView {
     struct ViewState: LoggingEnabled {
         let isLoggingEnabled: Bool
-        var error = ""
         var isLoading = false
         var isDisplayingDidNotGetCode = false
     }
@@ -111,9 +110,6 @@ extension OwnID.UISDK {
                     topSection()
                     VStack {
                         OTPTextFieldView(viewModel: viewModel)
-                        errorView()
-                            .padding(.leading)
-                            .padding(.trailing)
                     }
                     TextButton(visualConfig: visualConfig,
                                actionHandler: {
@@ -130,7 +126,7 @@ extension OwnID.UISDK {
                         OwnID.UISDK.PopupManager.dismiss()
                         store.send(.cancel)
                     } label: {
-                        Image("closeImageOTP", bundle: .resourceBundle)
+                        Image("closeImage", bundle: .resourceBundle)
                     }
                 }
                 .padding()
@@ -169,20 +165,6 @@ extension OwnID.UISDK {
                 }
             }
         }
-        
-        @ViewBuilder
-        private func errorView() -> some View {
-            if !store.value.error.isEmpty {
-                HStack {
-                    Text(store.value.error)
-                        .multilineTextAlignment(.leading)
-                        .font(.system(size: 11))
-                        .foregroundColor(OwnID.Colors.otpContentErrorColor)
-                        .padding(.bottom, 6)
-                    Spacer()
-                }
-            }
-        }
     }
 }
 
@@ -195,7 +177,6 @@ extension OwnID.UISDK.OneTimePasswordView {
                 state.isLoading = false
                 return [Just(OwnID.UISDK.OneTimePasswordView.Action.cancelCodeOperation).eraseToEffect()]
             }
-            state.error = ""
             state.isLoading = true
             return [
                 Just(OwnID.UISDK.OneTimePasswordView.Action.displayDidNotGetCode)
@@ -211,7 +192,7 @@ extension OwnID.UISDK.OneTimePasswordView {
         case .cancelCodeOperation:
             return []
         case .error(let message):
-            state.error = message
+            // show here view bounce
             return []
         case .displayDidNotGetCode:
             state.isDisplayingDidNotGetCode = true

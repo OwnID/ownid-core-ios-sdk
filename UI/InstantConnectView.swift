@@ -88,6 +88,15 @@ public extension OwnID.UISDK {
                         EmptyView()
                     }
                 }
+                .overlay(alignment: .topTrailing) {
+                    Button {
+                        closeClosure()
+                    } label: {
+                        Image("closeImage", bundle: .resourceBundle)
+                    }
+                    .padding(.trailing)
+                    .padding(.top)
+                }
         }
         
         @ViewBuilder
@@ -96,13 +105,9 @@ public extension OwnID.UISDK {
                 Text(localizedKey: .emailCollectTitle)
                     .font(.system(size: 20))
                     .bold()
-                Spacer()
-                Button {
-                    closeClosure()
-                } label: {
-                    Image("closeImage", bundle: .resourceBundle)
-                }
             }
+            .padding(.top)
+            .padding(.bottom, 6)
         }
         
         @ViewBuilder
@@ -111,9 +116,8 @@ public extension OwnID.UISDK {
                 HStack {
                     Text(error)
                         .multilineTextAlignment(.leading)
-                        .foregroundColor(.red)
+                        .foregroundColor(OwnID.Colors.errorColor)
                         .padding(.bottom, 6)
-                    Spacer()
                 }
             }
         }
@@ -125,6 +129,7 @@ public extension OwnID.UISDK {
                 VStack {
                     Text(localizedKey: .emailCollectMessage)
                         .font(.system(size: 18))
+                    errorView()
                     TextField("", text: $email)
                         .font(.system(size: 17))
                         .keyboardType(.emailAddress)
@@ -134,10 +139,10 @@ public extension OwnID.UISDK {
                         .cornerRadius(cornerRadius)
                         .overlay(
                             RoundedRectangle(cornerRadius: cornerRadius)
-                                .stroke(OwnID.Colors.instantConnectViewEmailFiendBorderColor, lineWidth: borderWidth)
+                                .stroke(borderColor, lineWidth: borderWidth)
                         )
                         .padding(.bottom, 6)
-                    errorView()
+                        .padding(.top)
                     AuthButton(visualConfig: visualConfig,
                                actionHandler: { resultPublisher.send(()) },
                                isLoading: viewModel.state.isLoadingBinding,
@@ -151,6 +156,14 @@ public extension OwnID.UISDK {
                 email = emailValue
                 emailPublisher.send(emailValue)
                 focusedField = .email
+            }
+        }
+        
+        var borderColor: Color {
+            if focusedField == .email {
+                return OwnID.Colors.blue
+            } else {
+                return OwnID.Colors.instantConnectViewEmailFiendBorderColor
             }
         }
     }
