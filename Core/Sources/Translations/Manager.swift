@@ -7,7 +7,6 @@ extension OwnID.CoreSDK.TranslationsSDK {
         case tooltip = "tooltip-ios"
         case or
         case `continue`
-        case verify = "steps.otp.verify"
         case verifyEmail = "steps.otp.title-verify"
         case signInWithOneTimeCode = "steps.otp.title-sign"
         case didNotGetEmail = "steps.otp.no-email"

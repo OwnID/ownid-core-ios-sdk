@@ -101,6 +101,7 @@ extension OwnID.UISDK {
                 } label: {
                     Text(localizedKey: .didNotGetEmail)
                 }
+                .padding(.top)
             }
         }
         
@@ -108,17 +109,14 @@ extension OwnID.UISDK {
             if #available(iOS 15.0, *) {
                 return VStack {
                     topSection()
-                    VStack {
                         OTPTextFieldView(viewModel: viewModel)
+                        .padding(.bottom)
+                    if store.value.isLoading {
+                        OwnID.UISDK.SpinnerLoaderView(spinnerColor: visualConfig.loaderViewConfig.color,
+                                                      spinnerBackgroundColor: visualConfig.loaderViewConfig.backgroundColor,
+                                                      viewBackgroundColor: .clear)
+                        .frame(width: 28, height: 28)
                     }
-                    TextButton(visualConfig: visualConfig,
-                               actionHandler: {
-                        viewModel.submitCode()
-                    },
-                               isLoading: .constant(store.value.isLoading),
-                               buttonState: .constant(.enabled))
-                    .padding(.top)
-                    .padding(.bottom)
                     didNotGetEmail()
                 }
                 .overlay(alignment: .topTrailing) {
@@ -147,6 +145,8 @@ extension OwnID.UISDK {
                     .font(.system(size: 20))
                     .bold()
                     .padding(.bottom)
+                    .padding(.trailing, 18)
+                    .padding(.leading, 18)
                 
                 Text(verbatim: emailSentText)
                     .multilineTextAlignment(.center)
