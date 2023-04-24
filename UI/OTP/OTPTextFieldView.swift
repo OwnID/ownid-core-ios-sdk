@@ -160,8 +160,6 @@ extension OwnID.UISDK {
                     .frame(width: boxSideSize, height: boxSideSize)
                 }
             }
-            //            .onReceive(Just(code6)) { _ in  }
-            //            .onReceive(Just(code4)) { _ in  }
             .onChange(of: code1, perform: { newValue in
                 processTextChange(for: .one, binding: $code1)
             })
@@ -186,7 +184,6 @@ extension OwnID.UISDK {
         }
         
         func processTextChange(for field: OwnID.UISDK.OTPViewModel.FieldType, binding: Binding<String>) {
-            print("field: \(field), \(binding.wrappedValue)")
             if !binding.wrappedValue.isNumber {
                 binding.wrappedValue = ""
             }
