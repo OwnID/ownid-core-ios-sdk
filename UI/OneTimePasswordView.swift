@@ -102,6 +102,7 @@ extension OwnID.UISDK {
                     store.send(.emailIsNotRecieved)
                 } label: {
                     Text(localizedKey: .didNotGetEmail)
+                        .foregroundColor(OwnID.Colors.otpDidNotGetEmail)
                 }
                 .padding(.top)
             }

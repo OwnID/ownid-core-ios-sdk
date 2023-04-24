@@ -72,5 +72,9 @@ public extension OwnID {
         public static var otpTileSelectedBorderColor: Color {
             Color("\(OwnID.UISDK.OneTimePasswordView.self)TileSelectedBorderColor", bundle: .resourceBundle)
         }
+        
+        public static var otpDidNotGetEmail: Color {
+            Color("\(OwnID.UISDK.OneTimePasswordView.self)didNotGetEmail", bundle: .resourceBundle)
+        }
     }
 }
