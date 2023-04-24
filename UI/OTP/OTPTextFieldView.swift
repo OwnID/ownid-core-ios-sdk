@@ -117,9 +117,10 @@ extension OwnID.UISDK {
     @available(iOS 15.0, *)
     public struct OTPTextFieldView: View {
         
-        enum NextUpdateAcion {
+        enum NextUpdateAcion: Equatable {
             case update(String)
             case updatingFromPasteboard
+            case addEmptySpace
         }
         
         @ObservedObject var viewModel: OTPViewModel
@@ -128,13 +129,14 @@ extension OwnID.UISDK {
         private let spaceBetweenBoxes: CGFloat = 8
         private let cornerRadius = 6.0
         private let characterLimit = 1
+        private static let zeroWidthSpaceCharacter = "\u{200B}"
         
-        @State private var code1 = ""
-        @State private var code2 = ""
-        @State private var code3 = ""
-        @State private var code4 = ""
-        @State private var code5 = ""
-        @State private var code6 = ""
+        @State private var code1 = zeroWidthSpaceCharacter
+        @State private var code2 = zeroWidthSpaceCharacter
+        @State private var code3 = zeroWidthSpaceCharacter
+        @State private var code4 = zeroWidthSpaceCharacter
+        @State private var code5 = zeroWidthSpaceCharacter
+        @State private var code6 = zeroWidthSpaceCharacter
         @State private var nextUpdateAction: NextUpdateAcion?
         
         public var body: some View {
@@ -184,15 +186,27 @@ extension OwnID.UISDK {
         }
         
         func processTextChange(for field: OwnID.UISDK.OTPViewModel.FieldType, binding: Binding<String>) {
-            if !binding.wrappedValue.isNumber {
-                binding.wrappedValue = ""
+            let currentBindingValue = binding.wrappedValue
+            let actualValue = currentBindingValue.replacingOccurrences(of: Self.zeroWidthSpaceCharacter, with: "")
+            if !actualValue.isNumber {
+                binding.wrappedValue = Self.zeroWidthSpaceCharacter
+            }
+            let nextActionIsAddZero = nextUpdateAction == NextUpdateAcion.addEmptySpace
+            if actualValue.isEmpty, !nextActionIsAddZero {
+                binding.wrappedValue = Self.zeroWidthSpaceCharacter
+                nextUpdateAction = .addEmptySpace
+                focusOnNextLeftField(field: field)
+                return
+            }
+            if nextActionIsAddZero {
+                nextUpdateAction = .none
             }
             if case .updatingFromPasteboard = nextUpdateAction {
                 return
             }
-            if binding.wrappedValue.count == viewModel.codeLength.rawValue { // paste event of code
+            if actualValue.count == viewModel.codeLength.rawValue { // paste event of code
                 nextUpdateAction = .updatingFromPasteboard
-                let fieldValue = binding.wrappedValue
+                let fieldValue = actualValue
                 for index in 0...viewModel.codeLength.rawValue - 1 {
                     if let type = OwnID.UISDK.OTPViewModel.FieldType.typeForNumber(index + 1) {
                         let character = fieldValue.prefix(index + 1).suffix(1)
@@ -222,17 +236,17 @@ extension OwnID.UISDK {
                 return
             }
             var nextFieldValue = ""
-            if binding.wrappedValue.count > characterLimit {
-                let current = binding.wrappedValue
+            if actualValue.count > characterLimit {
+                let current = actualValue
                 nextFieldValue = String(current.dropFirst(characterLimit).prefix(characterLimit))
-                binding.wrappedValue = String(binding.wrappedValue.prefix(characterLimit))
+                binding.wrappedValue = String(actualValue.prefix(characterLimit))
                 nextUpdateAction = .update(nextFieldValue)
                 return
             }
-            viewModel.onUpdateOf(field: field, value: binding.wrappedValue)
+            viewModel.onUpdateOf(field: field, value: actualValue)
             switch field {
             case .one:
-                if !code1.isEmpty {
+                if !actualValue.isEmpty {
                     focusedField = .two
                     if case .update(let value) = nextUpdateAction {
                         nextUpdateAction = .none
@@ -241,7 +255,7 @@ extension OwnID.UISDK {
                 }
                 
             case .two:
-                if code2.isEmpty {
+                if actualValue.isEmpty {
                     focusedField = .one
                 } else {
                     focusedField = .three
@@ -252,7 +266,7 @@ extension OwnID.UISDK {
                 }
                 
             case .three:
-                if code3.isEmpty {
+                if actualValue.isEmpty {
                     focusedField = .two
                 } else {
                     focusedField = .four
@@ -263,7 +277,7 @@ extension OwnID.UISDK {
                 }
                 
             case .four:
-                if code4.isEmpty {
+                if actualValue.isEmpty {
                     focusedField = .three
                 } else {
                     if viewModel.codeLength == .four {
@@ -278,7 +292,7 @@ extension OwnID.UISDK {
                 }
                 
             case .five:
-                if code5.isEmpty {
+                if actualValue.isEmpty {
                     focusedField = .four
                 } else {
                     focusedField = .six
@@ -289,11 +303,28 @@ extension OwnID.UISDK {
                 }
                 
             case .six:
-                if code6.isEmpty {
+                if actualValue.isEmpty {
                     focusedField = .five
                 } else {
                     viewModel.submitCode()
                 }
+            }
+        }
+        
+        func focusOnNextLeftField(field: OwnID.UISDK.OTPViewModel.FieldType) {
+            switch field {
+            case .one:
+                break
+            case .two:
+                focusedField = .one
+            case .three:
+                focusedField = .two
+            case .four:
+                focusedField = .three
+            case .five:
+                focusedField = .four
+            case .six:
+                focusedField = .five
             }
         }
         
