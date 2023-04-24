@@ -156,6 +156,8 @@ extension OwnID.CoreSDK.CoreViewModel {
                 
             case .displayDidNotGetCode:
                 break
+            case .stopLoading:
+                break
             }
             return []
             

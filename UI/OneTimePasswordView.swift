@@ -7,6 +7,7 @@ extension OwnID.UISDK.OneTimePasswordView {
         let isLoggingEnabled: Bool
         var isLoading = false
         var isDisplayingDidNotGetCode = false
+        var attempts = 0
     }
     
     enum Action {
@@ -16,6 +17,7 @@ extension OwnID.UISDK.OneTimePasswordView {
         case emailIsNotRecieved
         case displayDidNotGetCode
         case error(String)
+        case stopLoading
     }
 }
 
@@ -110,6 +112,7 @@ extension OwnID.UISDK {
                 return VStack {
                     topSection()
                         OTPTextFieldView(viewModel: viewModel)
+                        .shake(animatableData: store.value.attempts)
                         .padding(.bottom)
                     if store.value.isLoading {
                         OwnID.UISDK.SpinnerLoaderView(spinnerColor: visualConfig.loaderViewConfig.color,
@@ -174,8 +177,8 @@ extension OwnID.UISDK.OneTimePasswordView {
         switch action {
         case .codeEntered:
             if state.isLoading {
-                state.isLoading = false
-                return [Just(OwnID.UISDK.OneTimePasswordView.Action.cancelCodeOperation).eraseToEffect()]
+                return [Just(.stopLoading) .eraseToEffect(),
+                        Just(OwnID.UISDK.OneTimePasswordView.Action.cancelCodeOperation).eraseToEffect()]
             }
             state.isLoading = true
             return [
@@ -184,16 +187,27 @@ extension OwnID.UISDK.OneTimePasswordView {
                     .eraseToEffect()
             ]
         case .cancel:
-            state.isLoading = false
-            return []
+            return [ Just(.stopLoading) .eraseToEffect() ]
+            
         case .emailIsNotRecieved:
-            state.isLoading = false
-            return []
+            return [ Just(.stopLoading) .eraseToEffect() ]
+            
         case .cancelCodeOperation:
             return []
+            
         case .error(let message):
-            // show here view bounce
+            UINotificationFeedbackGenerator().notificationOccurred(.error)
+            state.attempts += 1
+            return [
+                Just(.stopLoading)
+                    .delay(for: 1, scheduler: DispatchQueue.main)
+                    .eraseToEffect()
+            ]
+            
+        case .stopLoading:
+            state.isLoading = false
             return []
+            
         case .displayDidNotGetCode:
             state.isDisplayingDidNotGetCode = true
             return []
@@ -217,6 +231,31 @@ extension OwnID.UISDK.OneTimePasswordView.Action: CustomDebugStringConvertible {
             return "cancelCodeOperation"
         case .displayDidNotGetCode:
             return "displayDidNotGetCode"
+        case .stopLoading:
+            return "stopLoading"
         }
+    }
+}
+
+@available(iOS 15.0, *)
+extension OwnID.UISDK.OneTimePasswordView {
+    struct ShakeVeiwModifier: GeometryEffect {
+        var amount: CGFloat = 10
+        var shakesPerUnit = 3
+        var animatableData: CGFloat
+        
+        func effectValue(size: CGSize) -> ProjectionTransform {
+            ProjectionTransform(
+                CGAffineTransform(translationX: amount * sin(animatableData * .pi * CGFloat(shakesPerUnit)),
+                                  y: 0)
+            )
+        }
+    }
+}
+
+@available(iOS 15.0, *)
+extension View {
+    func shake(animatableData: Int) -> some View {
+        self.modifier(OwnID.UISDK.OneTimePasswordView.ShakeVeiwModifier(animatableData: CGFloat(animatableData))).animation(.default, value: animatableData)
     }
 }
