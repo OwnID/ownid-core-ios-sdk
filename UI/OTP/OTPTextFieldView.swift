@@ -21,6 +21,7 @@ extension String {
 }
 
 extension OwnID.UISDK.OTPViewModel {
+    
     enum FieldType: Identifiable, Hashable {
         static func typeForNumber(_ number: Int) -> Self? {
             switch number {
@@ -115,6 +116,12 @@ extension OwnID.UISDK {
 extension OwnID.UISDK {
     @available(iOS 15.0, *)
     public struct OTPTextFieldView: View {
+        
+        enum NextUpdateAcion {
+            case update(String)
+            case updatingFromPasteboard
+        }
+        
         @ObservedObject var viewModel: OTPViewModel
         @FocusState private var focusedField: OwnID.UISDK.OTPViewModel.FieldType?
         private let boxSideSize: CGFloat = 50
@@ -128,7 +135,7 @@ extension OwnID.UISDK {
         @State private var code4 = ""
         @State private var code5 = ""
         @State private var code6 = ""
-        @State private var isUpdatingCodeFromPaste = false
+        @State private var nextUpdateAction: NextUpdateAcion?
         
         public var body: some View {
             HStack(spacing: spaceBetweenBoxes) {
@@ -179,14 +186,15 @@ extension OwnID.UISDK {
         }
         
         func processTextChange(for field: OwnID.UISDK.OTPViewModel.FieldType, binding: Binding<String>) {
+            print("field: \(field), \(binding.wrappedValue)")
             if !binding.wrappedValue.isNumber {
                 binding.wrappedValue = ""
             }
-            if isUpdatingCodeFromPaste {
+            if case .updatingFromPasteboard = nextUpdateAction {
                 return
             }
             if binding.wrappedValue.count == viewModel.codeLength.rawValue { // paste event of code
-                isUpdatingCodeFromPaste = true
+                nextUpdateAction = .updatingFromPasteboard
                 let fieldValue = binding.wrappedValue
                 for index in 0...viewModel.codeLength.rawValue - 1 {
                     if let type = OwnID.UISDK.OTPViewModel.FieldType.typeForNumber(index + 1) {
@@ -212,18 +220,27 @@ extension OwnID.UISDK {
                 }
                 viewModel.submitCode()
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-                    isUpdatingCodeFromPaste = false
+                    nextUpdateAction = .none
                 }
                 return
             }
+            var nextFieldValue = ""
             if binding.wrappedValue.count > characterLimit {
+                let current = binding.wrappedValue
+                nextFieldValue = String(current.dropFirst(characterLimit).prefix(characterLimit))
                 binding.wrappedValue = String(binding.wrappedValue.prefix(characterLimit))
+                nextUpdateAction = .update(nextFieldValue)
+                return
             }
             viewModel.onUpdateOf(field: field, value: binding.wrappedValue)
             switch field {
             case .one:
                 if !code1.isEmpty {
                     focusedField = .two
+                    if case .update(let value) = nextUpdateAction {
+                        nextUpdateAction = .none
+                        code2 = value
+                    }
                 }
                 
             case .two:
@@ -231,6 +248,10 @@ extension OwnID.UISDK {
                     focusedField = .one
                 } else {
                     focusedField = .three
+                    if case .update(let value) = nextUpdateAction {
+                        nextUpdateAction = .none
+                        code3 = value
+                    }
                 }
                 
             case .three:
@@ -238,6 +259,10 @@ extension OwnID.UISDK {
                     focusedField = .two
                 } else {
                     focusedField = .four
+                    if case .update(let value) = nextUpdateAction {
+                        nextUpdateAction = .none
+                        code4 = value
+                    }
                 }
                 
             case .four:
@@ -248,6 +273,10 @@ extension OwnID.UISDK {
                         viewModel.submitCode()
                     } else {
                         focusedField = .five
+                        if case .update(let value) = nextUpdateAction {
+                            nextUpdateAction = .none
+                            code5 = value
+                        }
                     }
                 }
                 
@@ -256,6 +285,10 @@ extension OwnID.UISDK {
                     focusedField = .four
                 } else {
                     focusedField = .six
+                    if case .update(let value) = nextUpdateAction {
+                        nextUpdateAction = .none
+                        code6 = value
+                    }
                 }
                 
             case .six:

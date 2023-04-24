@@ -1,7 +1,6 @@
 import Foundation
 import Combine
 
-
 extension OwnID.UISDK {
     enum OneTimePasswordCodeLength: Int {
         case six = 6
