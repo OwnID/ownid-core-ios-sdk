@@ -3,26 +3,27 @@ import UIKit
 import Combine
 
 extension OwnID.UISDK {
-    static func showOTPView(store: Store<OwnID.UISDK.OneTimePasswordView.ViewState, OwnID.UISDK.OneTimePasswordView.Action>) {
-        let view = OwnID.UISDK.OneTimePasswordView(store: store, visualConfig: PopupManager.shared.visualLookConfig)
+    static func showOTPView(store: Store<OwnID.UISDK.OneTimePassword.ViewState, OwnID.UISDK.OneTimePassword.Action>) {
         if #available(iOS 15.0, *) {
+            let view = OwnID.UISDK.OneTimePassword.OneTimePasswordView(store: store, visualConfig: PopupManager.shared.visualLookConfig)
             view.presentAsPopup()
         }
     }
 }
 
-extension OwnID.UISDK {
+extension OwnID.UISDK.OneTimePassword {
+    @available(iOS 15.0, *)
     struct OneTimePasswordView: Popup {
-        static func == (lhs: OwnID.UISDK.OneTimePasswordView, rhs: OwnID.UISDK.OneTimePasswordView) -> Bool {
+        static func == (lhs: OwnID.UISDK.OneTimePassword.OneTimePasswordView, rhs: OwnID.UISDK.OneTimePassword.OneTimePasswordView) -> Bool {
             lhs.uuid == rhs.uuid
         }
         private let uuid = UUID().uuidString
         
-        private let viewModel: OTPViewModel
-        private var visualConfig: OTPViewConfig
+        private let viewModel: OwnID.UISDK.OTPViewModel
+        private var visualConfig: OwnID.UISDK.OTPViewConfig
         @ObservedObject var store: Store<ViewState, Action>
         private let titleState = TitleType.emailVerification
-        private let codeLength: OneTimePasswordCodeLength
+        private let codeLength: CodeLength
         private let titleType: TitleType
         
         @State private var emailSentText: String
@@ -30,14 +31,14 @@ extension OwnID.UISDK {
         @State private var isTranslationChanged = false
         
         init(store: Store<ViewState, Action>,
-             visualConfig: OTPViewConfig,
+             visualConfig: OwnID.UISDK.OTPViewConfig,
              titleType: TitleType = .oneTimePasswordSignIn,
-             codeLength: OneTimePasswordCodeLength = .six,
+             codeLength: CodeLength = .six,
              email: String = "fecemi9888@snowlash.com") {
             self.visualConfig = visualConfig
             self.store = store
             self.codeLength = codeLength
-            self.viewModel = OTPViewModel(codeLength: codeLength, store: store)
+            self.viewModel = OwnID.UISDK.OTPViewModel(codeLength: codeLength, store: store)
             
             self.titleType = titleType
             
@@ -68,35 +69,31 @@ extension OwnID.UISDK {
         }
         
         func createContent() -> some View {
-            if #available(iOS 15.0, *) {
-                return VStack {
-                    topSection()
-                        OTPTextFieldView(viewModel: viewModel)
-                        .shake(animatableData: store.value.attempts)
-                        .padding(.bottom)
-                    if store.value.isLoading {
-                        OwnID.UISDK.SpinnerLoaderView(spinnerColor: visualConfig.loaderViewConfig.color,
-                                                      spinnerBackgroundColor: visualConfig.loaderViewConfig.backgroundColor,
-                                                      viewBackgroundColor: .clear)
-                        .frame(width: 28, height: 28)
-                    }
-                    didNotGetEmail()
+            return VStack {
+                topSection()
+                OwnID.UISDK.OTPTextFieldView(viewModel: viewModel)
+                    .shake(animatableData: store.value.attempts)
+                    .padding(.bottom)
+                if store.value.isLoading {
+                    OwnID.UISDK.SpinnerLoaderView(spinnerColor: visualConfig.loaderViewConfig.color,
+                                                  spinnerBackgroundColor: visualConfig.loaderViewConfig.backgroundColor,
+                                                  viewBackgroundColor: .clear)
+                    .frame(width: 28, height: 28)
                 }
-                .overlay(alignment: .topTrailing) {
-                    Button {
-                        OwnID.UISDK.PopupManager.dismiss()
-                        store.send(.cancel)
-                    } label: {
-                        Image("closeImage", bundle: .resourceBundle)
-                    }
+                didNotGetEmail()
+            }
+            .overlay(alignment: .topTrailing) {
+                Button {
+                    OwnID.UISDK.PopupManager.dismiss()
+                    store.send(.cancel)
+                } label: {
+                    Image("closeImage", bundle: .resourceBundle)
                 }
-                .padding()
-                .onReceive(OwnID.CoreSDK.shared.translationsModule.translationsChangePublisher) {
-                    emailSentText = emailSentTextChangedClosure()
-                    isTranslationChanged.toggle()
-                }
-            } else {
-                return EmptyView()
+            }
+            .padding()
+            .onReceive(OwnID.CoreSDK.shared.translationsModule.translationsChangePublisher) {
+                emailSentText = emailSentTextChangedClosure()
+                isTranslationChanged.toggle()
             }
         }
         

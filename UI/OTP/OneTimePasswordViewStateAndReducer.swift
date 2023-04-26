@@ -1,14 +1,17 @@
 import Foundation
 import Combine
 
-extension OwnID.UISDK {
-    enum OneTimePasswordCodeLength: Int {
+extension OwnID.UISDK.OneTimePassword {
+    enum CodeLength: Int {
         case six = 6
         case four = 4
     }
 }
+extension OwnID.UISDK {
+    enum OneTimePassword { }
+}
 
-extension OwnID.UISDK.OneTimePasswordView {
+extension OwnID.UISDK.OneTimePassword {
     enum TitleType {
         case emailVerification
         case oneTimePasswordSignIn
@@ -42,18 +45,17 @@ extension OwnID.UISDK.OneTimePasswordView {
     }
 }
 
-@available(iOS 15.0, *)
-extension OwnID.UISDK.OneTimePasswordView {
-    static func viewModelReducer(state: inout OwnID.UISDK.OneTimePasswordView.ViewState, action: OwnID.UISDK.OneTimePasswordView.Action) -> [Effect<OwnID.UISDK.OneTimePasswordView.Action>] {
+extension OwnID.UISDK.OneTimePassword {
+    static func viewModelReducer(state: inout OwnID.UISDK.OneTimePassword.ViewState, action: OwnID.UISDK.OneTimePassword.Action) -> [Effect<OwnID.UISDK.OneTimePassword.Action>] {
         switch action {
         case .codeEntered:
             if state.isLoading {
                 return [Just(.stopLoading) .eraseToEffect(),
-                        Just(OwnID.UISDK.OneTimePasswordView.Action.cancelCodeOperation).eraseToEffect()]
+                        Just(OwnID.UISDK.OneTimePassword.Action.cancelCodeOperation).eraseToEffect()]
             }
             state.isLoading = true
             return [
-                Just(OwnID.UISDK.OneTimePasswordView.Action.displayDidNotGetCode)
+                Just(OwnID.UISDK.OneTimePassword.Action.displayDidNotGetCode)
                     .delay(for: 10, scheduler: DispatchQueue.main)
                     .eraseToEffect()
             ]
@@ -87,7 +89,7 @@ extension OwnID.UISDK.OneTimePasswordView {
 }
 
 @available(iOS 15.0, *)
-extension OwnID.UISDK.OneTimePasswordView.Action: CustomDebugStringConvertible {
+extension OwnID.UISDK.OneTimePassword.Action: CustomDebugStringConvertible {
     var debugDescription: String {
         switch self {
         case .codeEntered(_):

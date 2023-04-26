@@ -54,7 +54,7 @@ public extension OwnID {
         }
         
         public static var otpContentMessageColor: Color {
-            Color("\(OwnID.UISDK.OneTimePasswordView.self)contentMessage", bundle: .resourceBundle)
+            Color("\(OwnID.UISDK.OneTimePassword.self)contentMessage", bundle: .resourceBundle)
         }
         
         public static var errorColor: Color {
@@ -62,19 +62,19 @@ public extension OwnID {
         }
         
         public static var otpTileBackgroundColor: Color {
-            Color("\(OwnID.UISDK.OneTimePasswordView.self)TileBackgroundColor", bundle: .resourceBundle)
+            Color("\(OwnID.UISDK.OneTimePassword.self)TileBackgroundColor", bundle: .resourceBundle)
         }
         
         public static var otpTileBorderColor: Color {
-            Color("\(OwnID.UISDK.OneTimePasswordView.self)TileBorderColor", bundle: .resourceBundle)
+            Color("\(OwnID.UISDK.OneTimePassword.self)TileBorderColor", bundle: .resourceBundle)
         }
         
         public static var otpTileSelectedBorderColor: Color {
-            Color("\(OwnID.UISDK.OneTimePasswordView.self)TileSelectedBorderColor", bundle: .resourceBundle)
+            Color("\(OwnID.UISDK.OneTimePassword.self)TileSelectedBorderColor", bundle: .resourceBundle)
         }
         
         public static var otpDidNotGetEmail: Color {
-            Color("\(OwnID.UISDK.OneTimePasswordView.self)didNotGetEmail", bundle: .resourceBundle)
+            Color("\(OwnID.UISDK.OneTimePassword.self)didNotGetEmail", bundle: .resourceBundle)
         }
     }
 }

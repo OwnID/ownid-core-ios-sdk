@@ -1,7 +1,6 @@
 import SwiftUI
 
-@available(iOS 15.0, *)
-extension OwnID.UISDK.OneTimePasswordView {
+extension OwnID.UISDK.OneTimePassword {
     struct ShakeVeiwModifier: GeometryEffect {
         var amount: CGFloat = 10
         var shakesPerUnit = 3
@@ -16,9 +15,8 @@ extension OwnID.UISDK.OneTimePasswordView {
     }
 }
 
-@available(iOS 15.0, *)
 extension View {
     func shake(animatableData: Int) -> some View {
-        self.modifier(OwnID.UISDK.OneTimePasswordView.ShakeVeiwModifier(animatableData: CGFloat(animatableData))).animation(.default, value: animatableData)
+        self.modifier(OwnID.UISDK.OneTimePassword.ShakeVeiwModifier(animatableData: CGFloat(animatableData))).animation(.default, value: animatableData)
     }
 }
