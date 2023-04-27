@@ -12,7 +12,7 @@ extension OwnID.UISDK {
                 PopupStackView(popupContent: view)
                     .background(createOverlay())
                     .onTapGesture {
-                        OwnID.UISDK.PopupManager.dismiss()
+                        view.backgroundOverlayTapped()
                     }
             } else {
                 EmptyView()
@@ -78,11 +78,13 @@ public protocol Popup: View, Hashable, Equatable {
     var id: String { get }
 
     func createContent() -> V
+    func backgroundOverlayTapped()
 }
 
 public extension Popup {
     func presentAsPopup() { OwnID.UISDK.PopupManager.present(OwnID.UISDK.AnyPopup(self)) }
     func dismiss() { OwnID.UISDK.PopupManager.dismiss() }
+    func backgroundOverlayTapped() { dismiss() }
 
     static func ==(lhs: Self, rhs: Self) -> Bool { lhs.id == rhs.id }
     func hash(into hasher: inout Hasher) { hasher.combine(id) }

@@ -90,6 +90,7 @@ public extension OwnID.UISDK {
                 }
                 .overlay(alignment: .topTrailing) {
                     Button {
+                        viewModel.resetDataAndState()
                         closeClosure()
                     } label: {
                         Image("closeImage", bundle: .resourceBundle)
@@ -97,6 +98,11 @@ public extension OwnID.UISDK {
                     .padding(.trailing)
                     .padding(.top)
                 }
+        }
+        
+        public func backgroundOverlayTapped() {
+            viewModel.resetDataAndState()
+            closeClosure()
         }
         
         @ViewBuilder
