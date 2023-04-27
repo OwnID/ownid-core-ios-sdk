@@ -84,8 +84,7 @@ extension OwnID.UISDK.OneTimePassword {
             }
             .overlay(alignment: .topTrailing) {
                 Button {
-                    OwnID.UISDK.PopupManager.dismiss()
-                    store.send(.cancel)
+                    dismiss()
                 } label: {
                     Image("closeImage", bundle: .resourceBundle)
                 }
@@ -95,6 +94,15 @@ extension OwnID.UISDK.OneTimePassword {
                 emailSentText = emailSentTextChangedClosure()
                 isTranslationChanged.toggle()
             }
+        }
+        
+        func backgroundOverlayTapped() {
+            dismiss()
+        }
+        
+        private func dismiss() {
+            OwnID.UISDK.PopupManager.dismiss()
+            store.send(.cancel)
         }
         
         @available(iOS 15.0, *)

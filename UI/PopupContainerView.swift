@@ -11,6 +11,9 @@ extension OwnID.UISDK {
             if let view = stack.views.first {
                 PopupStackView(popupContent: view)
                     .background(createOverlay())
+                    .onTapGesture {
+                        view.backgroundOverlayTapped()
+                    }
             } else {
                 EmptyView()
             }
@@ -75,6 +78,7 @@ public protocol Popup: View, Hashable, Equatable {
     var id: String { get }
 
     func createContent() -> V
+    func backgroundOverlayTapped()
 }
 
 public extension Popup {
@@ -91,18 +95,23 @@ public extension Popup {
 extension OwnID.UISDK {
     struct AnyPopup: Popup {
         let id: String
-        
-        private let _body: AnyView
+        private let popup: any Popup
         
         init(_ popup: some Popup) {
+            self.popup = popup
             self.id = popup.id
-            self._body = AnyView(popup)
+        }
+        
+        func backgroundOverlayTapped() {
+            popup.backgroundOverlayTapped()
         }
     }
 }
 
 extension OwnID.UISDK.AnyPopup {
-    func createContent() -> some View { _body }
+    func createContent() -> some View {
+        AnyView(popup)
+    }
 }
 
 extension OwnID.UISDK.PopupManager {
