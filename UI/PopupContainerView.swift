@@ -11,6 +11,9 @@ extension OwnID.UISDK {
             if let view = stack.views.first {
                 PopupStackView(popupContent: view)
                     .background(createOverlay())
+                    .onTapGesture {
+                        OwnID.UISDK.PopupManager.dismiss()
+                    }
             } else {
                 EmptyView()
             }
