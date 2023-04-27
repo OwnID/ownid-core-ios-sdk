@@ -95,24 +95,23 @@ public extension Popup {
 extension OwnID.UISDK {
     struct AnyPopup: Popup {
         func backgroundOverlayTapped() {
-            closure()
+            popup.backgroundOverlayTapped()
         }
         
         let id: String
-        
-        private let _body: AnyView
-        private let closure: () -> Void
+        private let popup: any Popup
         
         init(_ popup: some Popup) {
+            self.popup = popup
             self.id = popup.id
-            self.closure = { popup.backgroundOverlayTapped() }
-            self._body = AnyView(popup)
         }
     }
 }
 
 extension OwnID.UISDK.AnyPopup {
-    func createContent() -> some View { _body }
+    func createContent() -> some View {
+        AnyView(popup)
+    }
 }
 
 extension OwnID.UISDK.PopupManager {

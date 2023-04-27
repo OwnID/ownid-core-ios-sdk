@@ -84,7 +84,7 @@ extension OwnID.UISDK.OneTimePassword {
             }
             .overlay(alignment: .topTrailing) {
                 Button {
-                    backgroundOverlayTapped()
+                    dismiss()
                 } label: {
                     Image("closeImage", bundle: .resourceBundle)
                 }
@@ -97,6 +97,10 @@ extension OwnID.UISDK.OneTimePassword {
         }
         
         func backgroundOverlayTapped() {
+            dismiss()
+        }
+        
+        private func dismiss() {
             OwnID.UISDK.PopupManager.dismiss()
             store.send(.cancel)
         }
