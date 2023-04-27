@@ -84,7 +84,6 @@ public protocol Popup: View, Hashable, Equatable {
 public extension Popup {
     func presentAsPopup() { OwnID.UISDK.PopupManager.present(OwnID.UISDK.AnyPopup(self)) }
     func dismiss() { OwnID.UISDK.PopupManager.dismiss() }
-    func backgroundOverlayTapped() { dismiss() }
 
     static func ==(lhs: Self, rhs: Self) -> Bool { lhs.id == rhs.id }
     func hash(into hasher: inout Hasher) { hasher.combine(id) }
@@ -95,12 +94,18 @@ public extension Popup {
 
 extension OwnID.UISDK {
     struct AnyPopup: Popup {
+        func backgroundOverlayTapped() {
+            closure()
+        }
+        
         let id: String
         
         private let _body: AnyView
+        private let closure: () -> Void
         
         init(_ popup: some Popup) {
             self.id = popup.id
+            self.closure = { popup.backgroundOverlayTapped() }
             self._body = AnyView(popup)
         }
     }
