@@ -94,16 +94,16 @@ public extension Popup {
 
 extension OwnID.UISDK {
     struct AnyPopup: Popup {
-        func backgroundOverlayTapped() {
-            popup.backgroundOverlayTapped()
-        }
-        
         let id: String
         private let popup: any Popup
         
         init(_ popup: some Popup) {
             self.popup = popup
             self.id = popup.id
+        }
+        
+        func backgroundOverlayTapped() {
+            popup.backgroundOverlayTapped()
         }
     }
 }
