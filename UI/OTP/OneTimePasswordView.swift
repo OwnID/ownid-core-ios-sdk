@@ -19,7 +19,7 @@ extension OwnID.UISDK.OneTimePassword {
         }
         private let uuid = UUID().uuidString
         
-        private let viewModel: OwnID.UISDK.OTPViewModel
+        private let viewModel: OwnID.UISDK.OTPTextFieldView.ViewModel
         private var visualConfig: OwnID.UISDK.OTPViewConfig
         @ObservedObject var store: Store<ViewState, Action>
         private let titleState = TitleType.emailVerification
@@ -38,7 +38,7 @@ extension OwnID.UISDK.OneTimePassword {
             self.visualConfig = visualConfig
             self.store = store
             self.codeLength = codeLength
-            self.viewModel = OwnID.UISDK.OTPViewModel(codeLength: codeLength, store: store)
+            self.viewModel = OwnID.UISDK.OTPTextFieldView.ViewModel(codeLength: codeLength, store: store)
             
             self.titleType = titleType
             
