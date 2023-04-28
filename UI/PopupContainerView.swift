@@ -32,8 +32,9 @@ extension OwnID.UISDK {
                     popupContent.createContent()
                         .background(OwnID.Colors.popupViewBackgroundColor
                             .onTapGesture {
+                                //TODO: reimplement it using @FocusState
                                 UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
-                            })
+                            }.ignoresSafeArea())
                         .transition(.move(edge: .top))
                 }
             }

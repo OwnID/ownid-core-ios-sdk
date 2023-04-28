@@ -90,6 +90,7 @@ extension OwnID.UISDK.OneTimePassword {
                 }
             }
             .padding()
+            .frame(minWidth: 0, maxWidth: .infinity)
             .onReceive(OwnID.CoreSDK.shared.translationsModule.translationsChangePublisher) {
                 emailSentText = emailSentTextChangedClosure()
                 isTranslationChanged.toggle()
