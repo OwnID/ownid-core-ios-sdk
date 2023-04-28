@@ -11,7 +11,7 @@ extension OwnID.UISDK.OTPTextFieldView {
             storage = Array(repeating: "", count: codeLength.rawValue + 1)
         }
         
-        private let codeLength: OwnID.UISDK.OneTimePassword.CodeLength
+        let codeLength: OwnID.UISDK.OneTimePassword.CodeLength
         
         private let store: Store<OwnID.UISDK.OneTimePassword.ViewState, OwnID.UISDK.OneTimePassword.Action>
         private var storage: [String]
@@ -33,7 +33,7 @@ extension OwnID.UISDK.OTPTextFieldView {
             storage[field.rawValue] = value
         }
         
-        private func combineCode() -> String {
+        func combineCode() -> String {
             let code = storage.reduce("", +)
             return code
         }
