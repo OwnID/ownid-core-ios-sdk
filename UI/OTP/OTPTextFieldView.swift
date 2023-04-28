@@ -103,8 +103,8 @@ extension OwnID.UISDK {
         private let store: Store<OwnID.UISDK.OneTimePassword.ViewState, OwnID.UISDK.OneTimePassword.Action>
         private var storage: [String]
         
-        let characterLimit = 1
-        static let zeroWidthSpaceCharacter = "\u{200B}"
+        private let characterLimit = 1
+        private static let zeroWidthSpaceCharacter = "\u{200B}"
         
         @Published var code1 = zeroWidthSpaceCharacter
         @Published var code2 = zeroWidthSpaceCharacter
@@ -116,7 +116,7 @@ extension OwnID.UISDK {
         
         @Published var currentFocusedField: OwnID.UISDK.OTPViewModel.FieldType?
         
-        func onUpdateOf(field: FieldType, value: String) {
+        private func onUpdateOf(field: FieldType, value: String) {
             storage[field.rawValue] = value
         }
         
@@ -258,7 +258,7 @@ extension OwnID.UISDK {
             }
         }
         
-        func focusOnNextLeftField(field: OwnID.UISDK.OTPViewModel.FieldType) {
+        private func focusOnNextLeftField(field: OwnID.UISDK.OTPViewModel.FieldType) {
             switch field {
             case .one:
                 break
