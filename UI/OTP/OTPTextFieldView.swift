@@ -125,10 +125,153 @@ extension OwnID.UISDK {
             return code
         }
         
-        func submitCode() {
+        private func submitCode() {
             let code = combineCode()
             if code.count == codeLength.rawValue {
                 store.send(.codeEntered(code))
+            }
+        }
+        
+        func processTextChange(for field: OwnID.UISDK.OTPViewModel.FieldType, binding: Binding<String>) {
+            let currentBindingValue = binding.wrappedValue
+            let actualValue = currentBindingValue.replacingOccurrences(of: OTPViewModel.zeroWidthSpaceCharacter, with: "")
+            if !actualValue.isNumber {
+                binding.wrappedValue = OTPViewModel.zeroWidthSpaceCharacter
+            }
+            let nextActionIsAddZero = nextUpdateAction == OwnID.UISDK.OTPViewModel.NextUpdateAcion.addEmptySpace
+            if actualValue.isEmpty, !nextActionIsAddZero {
+                binding.wrappedValue = OTPViewModel.zeroWidthSpaceCharacter
+                nextUpdateAction = .addEmptySpace
+                focusOnNextLeftField(field: field)
+                return
+            }
+            if nextActionIsAddZero {
+                nextUpdateAction = .none
+            }
+            if case .updatingFromPasteboard = nextUpdateAction {
+                return
+            }
+            if actualValue.count == codeLength.rawValue { // paste event of code
+                nextUpdateAction = .updatingFromPasteboard
+                let fieldValue = actualValue
+                for index in 0...codeLength.rawValue - 1 {
+                    if let type = OwnID.UISDK.OTPViewModel.FieldType.typeForNumber(index + 1) {
+                        let character = fieldValue.prefix(index + 1).suffix(1)
+                        let codeNumber = String(character)
+                        switch type {
+                        case .one:
+                            code1 = codeNumber
+                        case .two:
+                            code2 = codeNumber
+                        case .three:
+                            code3 = codeNumber
+                        case .four:
+                            code4 = codeNumber
+                        case .five:
+                            code5 = codeNumber
+                        case .six:
+                            code6 = codeNumber
+                        }
+                        
+                        onUpdateOf(field: type, value: codeNumber)
+                    }
+                }
+                submitCode()
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                    self.nextUpdateAction = .none
+                }
+                return
+            }
+            var nextFieldValue = ""
+            if actualValue.count > characterLimit {
+                let current = actualValue
+                nextFieldValue = String(current.dropFirst(characterLimit).prefix(characterLimit))
+                binding.wrappedValue = String(actualValue.prefix(characterLimit))
+                nextUpdateAction = .update(nextFieldValue)
+                return
+            }
+            onUpdateOf(field: field, value: actualValue)
+            switch field {
+            case .one:
+                if !actualValue.isEmpty {
+                    currentFocusedField = .two
+                    if case .update(let value) = nextUpdateAction {
+                        nextUpdateAction = .none
+                        code2 = value
+                    }
+                }
+                
+            case .two:
+                if actualValue.isEmpty {
+                    currentFocusedField = .one
+                } else {
+                    currentFocusedField = .three
+                    if case .update(let value) = nextUpdateAction {
+                        nextUpdateAction = .none
+                        code3 = value
+                    }
+                }
+                
+            case .three:
+                if actualValue.isEmpty {
+                    currentFocusedField = .two
+                } else {
+                    currentFocusedField = .four
+                    if case .update(let value) = nextUpdateAction {
+                        nextUpdateAction = .none
+                        code4 = value
+                    }
+                }
+                
+            case .four:
+                if actualValue.isEmpty {
+                    currentFocusedField = .three
+                } else {
+                    if codeLength == .four {
+                        submitCode()
+                    } else {
+                        currentFocusedField = .five
+                        if case .update(let value) = nextUpdateAction {
+                            nextUpdateAction = .none
+                            code5 = value
+                        }
+                    }
+                }
+                
+            case .five:
+                if actualValue.isEmpty {
+                    currentFocusedField = .four
+                } else {
+                    currentFocusedField = .six
+                    if case .update(let value) = nextUpdateAction {
+                        nextUpdateAction = .none
+                        code6 = value
+                    }
+                }
+                
+            case .six:
+                if actualValue.isEmpty {
+                    currentFocusedField = .five
+                } else {
+                    submitCode()
+                }
+            }
+        }
+        
+        func focusOnNextLeftField(field: OwnID.UISDK.OTPViewModel.FieldType) {
+            switch field {
+            case .one:
+                break
+            case .two:
+                currentFocusedField = .one
+            case .three:
+                currentFocusedField = .two
+            case .four:
+                currentFocusedField = .three
+            case .five:
+                currentFocusedField = .four
+            case .six:
+                currentFocusedField = .five
             }
         }
     }
@@ -170,168 +313,25 @@ extension OwnID.UISDK {
                 focusedField = newValue
             })
             .onChange(of: viewModel.code1, perform: { newValue in
-                processTextChange(for: .one, binding: $viewModel.code1)
+                viewModel.processTextChange(for: .one, binding: $viewModel.code1)
             })
             .onChange(of: viewModel.code2, perform: { newValue in
-                processTextChange(for: .two, binding: $viewModel.code2)
+                viewModel.processTextChange(for: .two, binding: $viewModel.code2)
             })
             .onChange(of: viewModel.code3, perform: { newValue in
-                processTextChange(for: .three, binding: $viewModel.code3)
+                viewModel.processTextChange(for: .three, binding: $viewModel.code3)
             })
             .onChange(of: viewModel.code4, perform: { newValue in
-                processTextChange(for: .four, binding: $viewModel.code4)
+                viewModel.processTextChange(for: .four, binding: $viewModel.code4)
             })
             .onChange(of: viewModel.code5, perform: { newValue in
-                processTextChange(for: .five, binding: $viewModel.code5)
+                viewModel.processTextChange(for: .five, binding: $viewModel.code5)
             })
             .onChange(of: viewModel.code6, perform: { newValue in
-                processTextChange(for: .six, binding: $viewModel.code6)
+                viewModel.processTextChange(for: .six, binding: $viewModel.code6)
             })
             .onAppear() {
                 focusedField = .one
-            }
-        }
-        
-        func processTextChange(for field: OwnID.UISDK.OTPViewModel.FieldType, binding: Binding<String>) {
-            let currentBindingValue = binding.wrappedValue
-            let actualValue = currentBindingValue.replacingOccurrences(of: OTPViewModel.zeroWidthSpaceCharacter, with: "")
-            if !actualValue.isNumber {
-                binding.wrappedValue = OTPViewModel.zeroWidthSpaceCharacter
-            }
-            let nextActionIsAddZero = viewModel.nextUpdateAction == OwnID.UISDK.OTPViewModel.NextUpdateAcion.addEmptySpace
-            if actualValue.isEmpty, !nextActionIsAddZero {
-                binding.wrappedValue = OTPViewModel.zeroWidthSpaceCharacter
-                viewModel.nextUpdateAction = .addEmptySpace
-                focusOnNextLeftField(field: field)
-                return
-            }
-            if nextActionIsAddZero {
-                viewModel.nextUpdateAction = .none
-            }
-            if case .updatingFromPasteboard = viewModel.nextUpdateAction {
-                return
-            }
-            if actualValue.count == viewModel.codeLength.rawValue { // paste event of code
-                viewModel.nextUpdateAction = .updatingFromPasteboard
-                let fieldValue = actualValue
-                for index in 0...viewModel.codeLength.rawValue - 1 {
-                    if let type = OwnID.UISDK.OTPViewModel.FieldType.typeForNumber(index + 1) {
-                        let character = fieldValue.prefix(index + 1).suffix(1)
-                        let codeNumber = String(character)
-                        switch type {
-                        case .one:
-                            viewModel.code1 = codeNumber
-                        case .two:
-                            viewModel.code2 = codeNumber
-                        case .three:
-                            viewModel.code3 = codeNumber
-                        case .four:
-                            viewModel.code4 = codeNumber
-                        case .five:
-                            viewModel.code5 = codeNumber
-                        case .six:
-                            viewModel.code6 = codeNumber
-                        }
-                        
-                        viewModel.onUpdateOf(field: type, value: codeNumber)
-                    }
-                }
-                viewModel.submitCode()
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-                    viewModel.nextUpdateAction = .none
-                }
-                return
-            }
-            var nextFieldValue = ""
-            if actualValue.count > viewModel.characterLimit {
-                let current = actualValue
-                nextFieldValue = String(current.dropFirst(viewModel.characterLimit).prefix(viewModel.characterLimit))
-                binding.wrappedValue = String(actualValue.prefix(viewModel.characterLimit))
-                viewModel.nextUpdateAction = .update(nextFieldValue)
-                return
-            }
-            viewModel.onUpdateOf(field: field, value: actualValue)
-            switch field {
-            case .one:
-                if !actualValue.isEmpty {
-                    focusedField = .two
-                    if case .update(let value) = viewModel.nextUpdateAction {
-                        viewModel.nextUpdateAction = .none
-                        viewModel.code2 = value
-                    }
-                }
-                
-            case .two:
-                if actualValue.isEmpty {
-                    focusedField = .one
-                } else {
-                    focusedField = .three
-                    if case .update(let value) = viewModel.nextUpdateAction {
-                        viewModel.nextUpdateAction = .none
-                        viewModel.code3 = value
-                    }
-                }
-                
-            case .three:
-                if actualValue.isEmpty {
-                    focusedField = .two
-                } else {
-                    focusedField = .four
-                    if case .update(let value) = viewModel.nextUpdateAction {
-                        viewModel.nextUpdateAction = .none
-                        viewModel.code4 = value
-                    }
-                }
-                
-            case .four:
-                if actualValue.isEmpty {
-                    focusedField = .three
-                } else {
-                    if viewModel.codeLength == .four {
-                        viewModel.submitCode()
-                    } else {
-                        focusedField = .five
-                        if case .update(let value) = viewModel.nextUpdateAction {
-                            viewModel.nextUpdateAction = .none
-                            viewModel.code5 = value
-                        }
-                    }
-                }
-                
-            case .five:
-                if actualValue.isEmpty {
-                    focusedField = .four
-                } else {
-                    focusedField = .six
-                    if case .update(let value) = viewModel.nextUpdateAction {
-                        viewModel.nextUpdateAction = .none
-                        viewModel.code6 = value
-                    }
-                }
-                
-            case .six:
-                if actualValue.isEmpty {
-                    focusedField = .five
-                } else {
-                    viewModel.submitCode()
-                }
-            }
-        }
-        
-        func focusOnNextLeftField(field: OwnID.UISDK.OTPViewModel.FieldType) {
-            switch field {
-            case .one:
-                break
-            case .two:
-                focusedField = .one
-            case .three:
-                focusedField = .two
-            case .four:
-                focusedField = .three
-            case .five:
-                focusedField = .four
-            case .six:
-                focusedField = .five
             }
         }
         
