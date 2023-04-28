@@ -59,11 +59,11 @@ extension OwnID.UISDK {
             }
         }
         
-        func tileBorderColor(for field: ViewModel.FieldType) -> Color {
+        private func tileBorderColor(for field: ViewModel.FieldType) -> Color {
             focusedField == field ? OwnID.Colors.otpTileSelectedBorderColor : OwnID.Colors.otpTileBorderColor
         }
         
-        func binding(for field: ViewModel.FieldType) -> Binding<String> {
+        private func binding(for field: ViewModel.FieldType) -> Binding<String> {
             switch field {
             case .one:
                 return $viewModel.code1

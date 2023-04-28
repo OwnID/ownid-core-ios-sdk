@@ -11,7 +11,7 @@ extension OwnID.UISDK.OTPTextFieldView {
             storage = Array(repeating: "", count: codeLength.rawValue + 1)
         }
         
-        let codeLength: OwnID.UISDK.OneTimePassword.CodeLength
+        private let codeLength: OwnID.UISDK.OneTimePassword.CodeLength
         
         private let store: Store<OwnID.UISDK.OneTimePassword.ViewState, OwnID.UISDK.OneTimePassword.Action>
         private var storage: [String]
