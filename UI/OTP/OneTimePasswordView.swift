@@ -26,6 +26,7 @@ extension OwnID.UISDK.OneTimePassword {
         private let codeLength: CodeLength
         private let titleType: TitleType
         
+        #warning("maybe move this translations approach to Property wrappers ?")
         @State private var emailSentText: String
         private let emailSentTextChangedClosure: (() -> String)
         @State private var isTranslationChanged = false
