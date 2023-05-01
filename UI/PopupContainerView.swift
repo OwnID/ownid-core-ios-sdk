@@ -31,10 +31,12 @@ extension OwnID.UISDK {
                 ZStack(alignment: .bottom) {
                     popupContent.createContent()
                         .background(OwnID.Colors.popupViewBackgroundColor
+                            .cornerRadius(9, corners: [.topLeft, .topRight])
+                            .ignoresSafeArea()
                             .onTapGesture {
                                 //TODO: reimplement it using @FocusState
                                 UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
-                            }.ignoresSafeArea())
+                            })
                         .transition(.move(edge: .top))
                 }
             }
