@@ -60,6 +60,7 @@ extension OwnID.CoreSDK.AccountManager {
 extension OwnID.CoreSDK.CurrentAccountManager: ASAuthorizationControllerDelegate { }
     
 extension OwnID.CoreSDK {
+    #warning("now can be moved to UI layer if needed https://developer.apple.com/documentation/authenticationservices/authorizationcontroller")
     final class CurrentAccountManager: NSObject {
         let authenticationAnchor = ASPresentationAnchor()
         
