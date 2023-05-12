@@ -29,7 +29,7 @@ extension OwnID.UISDK {
             }
             .disabled(!buttonState.isEnabled)
             .frame(height: visualConfig.authButtonConfig.height)
-            .padding(EdgeInsets(top: 10, leading: 8, bottom: 10, trailing: 8))
+            .padding(EdgeInsets(top: 0, leading: 8, bottom: 0, trailing: 8))
             .background(backgroundRectangle(color: visualConfig.authButtonConfig.backgroundColor))
             .cornerRadius(cornerRadiusValue)
             .onReceive(OwnID.CoreSDK.shared.translationsModule.translationsChangePublisher) {

@@ -10,10 +10,10 @@ extension OwnID.UISDK {
         var body: some View {
             if let view = stack.views.first {
                 PopupStackView(popupContent: view)
-                    .background(createOverlay())
-                    .onTapGesture {
-                        view.backgroundOverlayTapped()
-                    }
+                    .background(createOverlay()
+                        .onTapGesture {
+                            view.backgroundOverlayTapped()
+                        })
             } else {
                 EmptyView()
             }
@@ -30,7 +30,13 @@ extension OwnID.UISDK {
                 Spacer()
                 ZStack(alignment: .bottom) {
                     popupContent.createContent()
-                        .background(OwnID.Colors.popupViewBackgroundColor)
+                        .background(OwnID.Colors.popupViewBackgroundColor
+                            .cornerRadius(9, corners: [.topLeft, .topRight])
+                            .ignoresSafeArea()
+                            .onTapGesture {
+                                //TODO: reimplement it using @FocusState
+                                UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
+                            })
                         .transition(.move(edge: .top))
                 }
             }
