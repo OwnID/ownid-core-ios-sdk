@@ -5,6 +5,12 @@ extension OwnID.CoreSDK.CoreViewModel {
         switch action {
         case .sendInitialRequest:
             let emailInvalidEffect = errorEffect(.coreLog(entry: .errorEntry(Self.self), error: .emailIsInvalid))
+            
+#warning("simulating actual flow, imagine we need OTP straight away")
+            if true {
+                return [Just(Action.oneTimePassword).eraseToEffect()]
+            }
+            
             if state.email == nil {
                 return emailInvalidEffect
             }

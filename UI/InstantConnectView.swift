@@ -27,6 +27,7 @@ public extension OwnID.UISDK {
             static let publisherDebounce = 500
         }
         
+        #warning("as of latest changes, probably needs some redesign, as for now needs somehow a bit redesigned to be inited from core view model")
         enum FocusField: Hashable {
             case email
         }
