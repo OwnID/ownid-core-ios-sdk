@@ -83,10 +83,10 @@ public extension OwnID {
                                       supportedLanguages: supportedLanguages))
         }
         
-        func createCoreViewModelForRegister(email: Email? = .none,
+        func createCoreViewModelForRegister(loginId: String,
                                             sdkConfigurationName: String) -> CoreViewModel {
             let viewModel = CoreViewModel(type: .register,
-                                          email: email,
+                                          loginId: loginId,
                                           supportedLanguages: store.value.supportedLanguages,
                                           sdkConfigurationName: sdkConfigurationName,
                                           isLoggingEnabled: store.value.isLoggingEnabled,
@@ -96,10 +96,10 @@ public extension OwnID {
             return viewModel
         }
         
-        func createCoreViewModelForLogIn(email: Email? = .none,
+        func createCoreViewModelForLogIn(loginId: String,
                                          sdkConfigurationName: String) -> CoreViewModel {
             let viewModel = CoreViewModel(type: .login,
-                                          email: email,
+                                          loginId: loginId,
                                           supportedLanguages: store.value.supportedLanguages,
                                           sdkConfigurationName: sdkConfigurationName,
                                           isLoggingEnabled: store.value.isLoggingEnabled,

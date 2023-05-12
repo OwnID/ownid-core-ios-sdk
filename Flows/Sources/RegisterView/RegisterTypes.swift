@@ -42,13 +42,13 @@ public extension OwnID.FlowsSDK {
     
     struct RegistrationConfiguration {
         public init(payload: OwnID.CoreSDK.Payload,
-                    email: OwnID.CoreSDK.Email) {
+                    loginId: String) {
             self.payload = payload
-            self.email = email
+            self.loginId = loginId
         }
         
         public let payload: OwnID.CoreSDK.Payload
-        public let email: OwnID.CoreSDK.Email
+        public let loginId: String
     }
 }
 

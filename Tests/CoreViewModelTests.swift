@@ -97,7 +97,7 @@ final class CoreViewModelTests: XCTestCase {
     func testErrorEmptyEmail() {
         let exp = expectation(description: #function)
         
-        let model = OwnID.CoreSDK.shared.createCoreViewModelForRegister(sdkConfigurationName: sdkConfigurationName)
+        let model = OwnID.CoreSDK.shared.createCoreViewModelForRegister(loginId: "", sdkConfigurationName: sdkConfigurationName)
         model.eventPublisher.sink { completion in
             switch completion {
             case .finished:
@@ -120,7 +120,7 @@ final class CoreViewModelTests: XCTestCase {
     func testSuccessRegistrationPathWithPasskeys() {
         let exp = expectation(description: #function)
         let viewModel = OwnID.CoreSDK.CoreViewModel(type: .register,
-                                                    email: .init(rawValue: "lesot21279@duiter.com"),
+                                                    loginId: "lesot21279@duiter.com",
                                                     supportedLanguages: .init(rawValue: ["en"]),
                                                     sdkConfigurationName: sdkConfigurationName,
                                                     isLoggingEnabled: true,
@@ -156,7 +156,7 @@ final class CoreViewModelTests: XCTestCase {
     func testAuthManagerError() {
         let exp = expectation(description: #function)
         let viewModel = OwnID.CoreSDK.CoreViewModel(type: .register,
-                                                    email: .init(rawValue: "lesot21279@duiter.com"),
+                                                    loginId: "lesot21279@duiter.com",
                                                     supportedLanguages: .init(rawValue: ["en"]),
                                                     sdkConfigurationName: sdkConfigurationName,
                                                     isLoggingEnabled: true,
@@ -208,7 +208,7 @@ final class CoreViewModelTests: XCTestCase {
     func testInitResponseError() {
         let exp = expectation(description: #function)
         let viewModel = OwnID.CoreSDK.CoreViewModel(type: .register,
-                                                    email: .init(rawValue: "lesot21279@duiter.com"),
+                                                    loginId: "lesot21279@duiter.com",
                                                     supportedLanguages: .init(rawValue: ["en"]),
                                                     sdkConfigurationName: sdkConfigurationName,
                                                     isLoggingEnabled: true,

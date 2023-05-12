@@ -49,6 +49,7 @@ extension OwnID.CoreSDK {
         var fidoSettings: FidoSettings?
         var passkeysAutofillEnabled: Bool!
         var supportedLocales: [String]?
+        var loginIdSettings: LoginIdSettings!
         
         var finalStatusURL: ServerURL {
             var url = serverURL!

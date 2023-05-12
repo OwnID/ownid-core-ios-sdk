@@ -96,4 +96,31 @@ public extension OwnID.CoreSDK {
             return false
         }
     }
+    
+    struct LoginId {
+        let value: String
+        let settings: LoginIdSettings
+        
+        init(value: String, settings: LoginIdSettings) {
+            self.value = value
+            self.settings = settings
+        }
+        
+        var isValid: Bool {
+            return NSPredicate(format:"SELF MATCHES %@", settings.regex).evaluate(with: value)
+        }
+    }
+}
+
+extension OwnID.CoreSDK.LoginId {
+    var error: OwnID.CoreSDK.Error {
+        switch settings.type {
+        case .email:
+            return .emailIsInvalid
+        case .phoneNumber:
+            return .phoneNumberIsInvalid
+        case .userName:
+            return .userNameIsInvalid
+        }
+    }
 }

@@ -58,7 +58,7 @@ public extension OwnID.UISDK {
             self.visualConfig = visualConfig
             self.closeClosure = closeClosure
             
-            viewModel.updateEmailPublisher(emailPublisher.eraseToAnyPublisher())
+            viewModel.updateLoginIdPublisher(emailPublisher.eraseToAnyPublisher())
             viewModel.subscribe(to: eventPublisher)
             
             viewModel.eventPublisher.sink { [self] event in
