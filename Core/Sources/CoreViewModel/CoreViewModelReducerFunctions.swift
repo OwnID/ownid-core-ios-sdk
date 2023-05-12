@@ -31,8 +31,7 @@ extension OwnID.CoreSDK.CoreViewModel {
     
     static func createBrowserVM(for context: String,
                                 browserURL: String,
-                                loginId: String,
-                                type: OwnID.CoreSDK.LoginIdSettings.LoginIdType,
+                                loginId: OwnID.CoreSDK.LoginId?,
                                 sdkConfigurationName: String,
                                 store: Store<OwnID.CoreSDK.BrowserOpenerViewModel.State, OwnID.CoreSDK.BrowserOpenerViewModel.Action>,
                                 redirectionURLString: OwnID.CoreSDK.RedirectionURLString?,
@@ -42,10 +41,10 @@ extension OwnID.CoreSDK.CoreViewModel {
         let redirectParameter = "&redirectURI=" + redirect
         var urlString = browserURL
         //TODO: check it
-        if type == .email {
+        if let loginId, loginId.settings.type == .email {
             var emailSet = CharacterSet.urlHostAllowed
             emailSet.remove("+")
-            if let encoded = loginId.addingPercentEncoding(withAllowedCharacters: emailSet) {
+            if let encoded = loginId.value.addingPercentEncoding(withAllowedCharacters: emailSet) {
                 let emailParameter = "&e=" + encoded
                 urlString.append(emailParameter)
             }

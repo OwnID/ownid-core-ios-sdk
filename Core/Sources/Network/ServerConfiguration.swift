@@ -11,11 +11,12 @@ extension OwnID.CoreSDK {
         let serverURL: ServerURL
         let redirectURLString: RedirectionURLString?
         let platformSettings: PlatformSettings?
-        let loginId: LoginIdSettings
+        let loginIdSettings: LoginIdSettings
         let verification: Verification
 
         enum CodingKeys: String, CodingKey {
-            case supportedLocales, logLevel, fidoSettings, passkeysAutofillEnabled, loginId, verification
+            case supportedLocales, logLevel, fidoSettings, passkeysAutofillEnabled, verification
+            case loginIdSettings = "loginId"
             case serverURL = "serverUrl"
             case redirectURLString = "redirectUrl"
             case platformSettings = "iosSettings"
@@ -68,6 +69,6 @@ extension OwnID.CoreSDK {
 
 extension OwnID.CoreSDK.ServerConfiguration {
     static func mock(isFailed: Bool = false) -> Self {
-        Self(isFailed: isFailed, supportedLocales: [], logLevel: .error, fidoSettings: .none, passkeysAutofillEnabled: false, serverURL: URL(string: "https://ownid.com")!, redirectURLString: .none, platformSettings: .none, loginId: OwnID.CoreSDK.LoginIdSettings(type: .email, regex: ""), verification: OwnID.CoreSDK.Verification(type: .email))
+        Self(isFailed: isFailed, supportedLocales: [], logLevel: .error, fidoSettings: .none, passkeysAutofillEnabled: false, serverURL: URL(string: "https://ownid.com")!, redirectURLString: .none, platformSettings: .none, loginIdSettings: OwnID.CoreSDK.LoginIdSettings(type: .email, regex: ""), verification: OwnID.CoreSDK.Verification(type: .email))
     }
 }
