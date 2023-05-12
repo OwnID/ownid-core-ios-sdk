@@ -9,7 +9,7 @@ extension OwnID.CoreSDK.CoreViewModel {
         
         let sdkConfigurationName: String
         var session: APISessionProtocol!
-        let email: OwnID.CoreSDK.Email?
+        let loginId: String
         let type: OwnID.CoreSDK.RequestType
         let supportedLanguages: OwnID.CoreSDK.Languages
         
