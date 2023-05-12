@@ -41,7 +41,7 @@ public extension OwnID.FlowsSDK.LoginView {
         private let resultPublisher = PassthroughSubject<Result<OwnID.FlowsSDK.LoginEvent, OwnID.CoreSDK.Error>, Never>()
         private let loginPerformer: LoginPerformer
         private var payload: OwnID.CoreSDK.Payload?
-        private var email = ""
+        private var loginId = ""
         var coreViewModel: OwnID.CoreSDK.CoreViewModel!
         var currentMetadata: OwnID.CoreSDK.MetricLogEntry.CurrentMetricInformation?
         
@@ -53,10 +53,10 @@ public extension OwnID.FlowsSDK.LoginView {
         
         public init(loginPerformer: LoginPerformer,
                     sdkConfigurationName: String,
-                    emailPublisher: OwnID.CoreSDK.EmailPublisher) {
+                    loginIdPublisher: OwnID.CoreSDK.LoginIdPublisher) {
             self.sdkConfigurationName = sdkConfigurationName
             self.loginPerformer = loginPerformer
-            updateEmailPublisher(emailPublisher)
+            updateLoginIdPublisher(loginIdPublisher)
             Task {
                 // Delay the task by 1 second
                 try? await Task.sleep(nanoseconds: 1_000_000_000)
@@ -71,8 +71,8 @@ public extension OwnID.FlowsSDK.LoginView {
             OwnID.CoreSDK.logger.logAnalytic(.loginTrackMetric(action: .loaded, context: payload?.context))
         }
         
-        public func updateEmailPublisher(_ emailPublisher: OwnID.CoreSDK.EmailPublisher) {
-            emailPublisher.assign(to: \.email, on: self).store(in: &bag)
+        public func updateLoginIdPublisher(_ loginIdPublisher: OwnID.CoreSDK.LoginIdPublisher) {
+            loginIdPublisher.assign(to: \.loginId, on: self).store(in: &bag)
         }
         
         /// Reset visual state and any possible data from web flow
@@ -92,12 +92,11 @@ public extension OwnID.FlowsSDK.LoginView {
             coreViewModel = .none
         }
         
-        func skipPasswordTapped(usersEmail: String) {
+        func skipPasswordTapped(loginId: String) {
             switch state {
             case .initial:
                 DispatchQueue.main.async { [self] in
-                    let email = OwnID.CoreSDK.Email(rawValue: usersEmail)
-                    let coreViewModel = OwnID.CoreSDK.shared.createCoreViewModelForLogIn(email: email, sdkConfigurationName: sdkConfigurationName)
+                    let coreViewModel = OwnID.CoreSDK.shared.createCoreViewModelForLogIn(loginId: loginId, sdkConfigurationName: sdkConfigurationName)
                     self.coreViewModel = coreViewModel
                     subscribe(to: coreViewModel.eventPublisher)
                     state = .coreVM
@@ -148,9 +147,9 @@ public extension OwnID.FlowsSDK.LoginView {
                 .sink { _ in
                 } receiveValue: { [unowned self] event in
                     if state == .initial {
-                        OwnID.CoreSDK.logger.logAnalytic(.loginClickMetric(context: payload?.context, hasLoginId: !email.isEmpty))
+                        OwnID.CoreSDK.logger.logAnalytic(.loginClickMetric(context: payload?.context, hasLoginId: !loginId.isEmpty))
                     }
-                    skipPasswordTapped(usersEmail: email)
+                    skipPasswordTapped(loginId: loginId)
                 }
                 .store(in: &bag)
         }
@@ -160,7 +159,7 @@ public extension OwnID.FlowsSDK.LoginView {
 private extension OwnID.FlowsSDK.LoginView.ViewModel {
     func process(payload: OwnID.CoreSDK.Payload) {
         self.payload = payload
-        let loginPerformerPublisher = loginPerformer.login(payload: payload, email: email)
+        let loginPerformerPublisher = loginPerformer.login(payload: payload, email: loginId)
         loginPerformerPublisher
             .sink { [unowned self] completion in
                 if case .failure(let error) = completion {
@@ -170,7 +169,7 @@ private extension OwnID.FlowsSDK.LoginView.ViewModel {
                 OwnID.CoreSDK.logger.logAnalytic(.loginTrackMetric(action: .loggedIn,
                                                                    context: payload.context,
                                                                    authType: payload.authType))
-                OwnID.CoreSDK.DefaultsEmailSaver.save(email: email)
+                OwnID.CoreSDK.DefaultsEmailSaver.save(email: loginId)
                 state = .loggedIn
                 resultPublisher.send(.success(.loggedIn(loginResult: loginResult.operationResult, authType: loginResult.authType)))
                 resetDataAndState(isResettingToInitialState: false)

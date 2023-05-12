@@ -10,6 +10,8 @@ public extension OwnID.CoreSDK {
         case redirectParameterFromURLCancelledOpeningSDK
         case notValidRedirectionURLOrNotMatchingFromConfiguration
         case emailIsInvalid
+        case phoneNumberIsInvalid
+        case userNameIsInvalid
         case localConfigIsNotPresent
         case tokenDataIsMissing
         case contextIsMissing
@@ -71,6 +73,12 @@ extension OwnID.CoreSDK.Error: LocalizedError {
             
         case .emailIsInvalid:
             return "The email address is badly formatted"
+            
+        case .phoneNumberIsInvalid:
+            return "The phone number is badly formatted"
+            
+        case .userNameIsInvalid:
+            return "The user name is badly formatted"
             
         case .initRequestBodyEncodeFailed,
                 .settingRequestResponseIsEmpty,
@@ -141,6 +149,8 @@ extension OwnID.CoreSDK.Error: CustomDebugStringConvertible {
                 .localConfigIsNotPresent,
                 .notValidRedirectionURLOrNotMatchingFromConfiguration,
                 .emailIsInvalid,
+                .phoneNumberIsInvalid,
+                .userNameIsInvalid,
                 .authorizationManagerAuthError,
                 .authorizationManagerGeneralError,
                 .authorizationManagerDataMissing,

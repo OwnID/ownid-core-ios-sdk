@@ -63,7 +63,7 @@ public extension OwnID.FlowsSDK.RegisterView {
         private let registrationPerformer: RegistrationPerformer
         private var registrationData = RegistrationData()
         private let loginPerformer: LoginPerformer
-        private var email = ""
+        private var loginId = ""
         var coreViewModel: OwnID.CoreSDK.CoreViewModel!
         var currentMetadata: OwnID.CoreSDK.MetricLogEntry.CurrentMetricInformation?
         
@@ -76,12 +76,12 @@ public extension OwnID.FlowsSDK.RegisterView {
         public init(registrationPerformer: RegistrationPerformer,
                     loginPerformer: LoginPerformer,
                     sdkConfigurationName: String,
-                    emailPublisher: OwnID.CoreSDK.EmailPublisher) {
+                    loginIdPublisher: OwnID.CoreSDK.LoginIdPublisher) {
             self.sdkConfigurationName = sdkConfigurationName
             self.registrationPerformer = registrationPerformer
             self.loginPerformer = loginPerformer
-            emailPublisher.assign(to: \.email, on: self).store(in: &bag)
-            emailPublisher
+            loginIdPublisher.assign(to: \.loginId, on: self).store(in: &bag)
+            loginIdPublisher
                 .removeDuplicates()
                 .debounce(for: .seconds(0.77), scheduler: DispatchQueue.main)
                 .sink { [unowned self] userEmail in
@@ -103,7 +103,7 @@ public extension OwnID.FlowsSDK.RegisterView {
         }
         
         public func register(registerParameters: RegisterParameters = EmptyRegisterParameters()) {
-            if !email.isEmpty, !registrationData.persistedEmail.rawValue.isEmpty, email != registrationData.persistedEmail.rawValue {
+            if !loginId.isEmpty, !registrationData.persistedEmail.rawValue.isEmpty, loginId != registrationData.persistedEmail.rawValue {
                 handle(.coreLog(entry: .errorEntry(context: registrationData.payload?.context, Self.self), error: .plugin(underlying: OwnID.FlowsSDK.RegisterError.emailMismatch)))
                 return
             }
@@ -112,7 +112,7 @@ public extension OwnID.FlowsSDK.RegisterView {
                 return
             }
             let config = OwnID.FlowsSDK.RegistrationConfiguration(payload: payload,
-                                                                  email: OwnID.CoreSDK.Email(rawValue: email))
+                                                                  loginId: loginId)
             registrationPerformer.register(configuration: config, parameters: registerParameters)
                 .sink { [unowned self] completion in
                     if case .failure(let error) = completion {
@@ -122,7 +122,7 @@ public extension OwnID.FlowsSDK.RegisterView {
                     OwnID.CoreSDK.logger.logAnalytic(.registerTrackMetric(action: .registered,
                                                                           context: payload.context,
                                                                           authType: registrationResult.authType))
-                    OwnID.CoreSDK.DefaultsEmailSaver.save(email: email)
+                    OwnID.CoreSDK.DefaultsEmailSaver.save(email: loginId)
                     resultPublisher.send(.success(.userRegisteredAndLoggedIn(registrationResult: registrationResult.operationResult, authType: registrationResult.authType)))
                     resetDataAndState()
                 }
@@ -146,7 +146,7 @@ public extension OwnID.FlowsSDK.RegisterView {
             coreViewModel = .none
         }
         
-        func skipPasswordTapped(usersEmail: String) {
+        func skipPasswordTapped(loginId: String) {
             if case .coreVM = state {
                 resetToInitialState()
                 return
@@ -159,13 +159,12 @@ public extension OwnID.FlowsSDK.RegisterView {
             }
             if registrationData.payload != nil {
                 state = .ownidCreated
-                resultPublisher.send(.success(.readyToRegister(usersEmailFromWebApp: usersEmail, authType: registrationData.payload?.authType)))
+                resultPublisher.send(.success(.readyToRegister(usersEmailFromWebApp: loginId, authType: registrationData.payload?.authType)))
                 return
             }
-            let email = OwnID.CoreSDK.Email(rawValue: usersEmail)
-            let coreViewModel = OwnID.CoreSDK.shared.createCoreViewModelForRegister(email: email, sdkConfigurationName: sdkConfigurationName)
+            let coreViewModel = OwnID.CoreSDK.shared.createCoreViewModelForRegister(loginId: loginId, sdkConfigurationName: sdkConfigurationName)
             self.coreViewModel = coreViewModel
-            subscribe(to: coreViewModel.eventPublisher, persistingEmail: email)
+            subscribe(to: coreViewModel.eventPublisher, persistingEmail: OwnID.CoreSDK.Email(rawValue: loginId))
             state = .coreVM
             
             /// On iOS 13, this `asyncAfter` is required to make sure that subscription created by the time events start to
@@ -218,8 +217,8 @@ public extension OwnID.FlowsSDK.RegisterView {
             buttonEventPublisher
                 .sink { _ in
                 } receiveValue: { [unowned self] _ in
-                    OwnID.CoreSDK.logger.logAnalytic(.registerClickMetric(action: .click, context: registrationData.payload?.context, hasLoginId: !email.isEmpty))
-                    skipPasswordTapped(usersEmail: email)
+                    OwnID.CoreSDK.logger.logAnalytic(.registerClickMetric(action: .click, context: registrationData.payload?.context, hasLoginId: !loginId.isEmpty))
+                    skipPasswordTapped(loginId: loginId)
                 }
                 .store(in: &bag)
         }
@@ -229,7 +228,7 @@ public extension OwnID.FlowsSDK.RegisterView {
 private extension OwnID.FlowsSDK.RegisterView.ViewModel {
     
     func processLogin(payload: OwnID.CoreSDK.Payload) {
-        let loginPerformerPublisher = loginPerformer.login(payload: payload, email: email)
+        let loginPerformerPublisher = loginPerformer.login(payload: payload, email: loginId)
         loginPerformerPublisher
             .sink { [unowned self] completion in
                 if case .failure(let error) = completion {

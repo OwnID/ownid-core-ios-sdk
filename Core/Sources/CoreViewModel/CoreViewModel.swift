@@ -10,7 +10,7 @@ extension OwnID.CoreSDK {
         var eventPublisher: EventPublisher { resultPublisher.receive(on: DispatchQueue.main).eraseToAnyPublisher() }
         
         init(type: OwnID.CoreSDK.RequestType,
-             email: OwnID.CoreSDK.Email?,
+             loginId: String,
              supportedLanguages: OwnID.CoreSDK.Languages,
              sdkConfigurationName: String,
              isLoggingEnabled: Bool,
@@ -24,7 +24,7 @@ extension OwnID.CoreSDK {
                                      createAccountManagerClosure: createAccountManagerClosure,
                                      createBrowserOpenerClosure: createBrowserOpenerClosure,
                                      sdkConfigurationName: sdkConfigurationName,
-                                     email: email,
+                                     loginId: loginId,
                                      type: type,
                                      supportedLanguages: supportedLanguages)
             let store = Store(

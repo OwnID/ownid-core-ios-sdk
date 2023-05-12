@@ -72,6 +72,7 @@ extension OwnID.CoreSDK {
                     local.fidoSettings = serverConfiguration.fidoSettings
                     local.passkeysAutofillEnabled = serverConfiguration.passkeysAutofillEnabled
                     local.supportedLocales = serverConfiguration.supportedLocales
+                    local.loginId = serverConfiguration.loginId
                     return Just(.save(configurationLoadingEvent: .loaded(local), userFacingSDK: userFacingSDK)).eraseToAnyPublisher()
                 }
                 .eraseToAnyPublisher()

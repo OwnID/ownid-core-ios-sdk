@@ -18,7 +18,7 @@ public extension OwnID.CoreSDK {
     typealias AuthType = String
     
     /// Logs into or creates account for this user ID, passed by symbol
-    typealias EmailPublisher = AnyPublisher<String, Never>
+    typealias LoginIdPublisher = AnyPublisher<String, Never>
 }
 
 extension OwnID.CoreSDK {

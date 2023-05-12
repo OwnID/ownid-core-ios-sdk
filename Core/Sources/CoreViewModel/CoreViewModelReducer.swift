@@ -4,13 +4,20 @@ extension OwnID.CoreSDK.CoreViewModel {
     static func reducer(state: inout State, action: Action) -> [Effect<Action>] {
         switch action {
         case .sendInitialRequest:
-            let emailInvalidEffect = errorEffect(.coreLog(entry: .errorEntry(Self.self), error: .emailIsInvalid))
-            if state.email == nil {
-                return emailInvalidEffect
+            guard let loginIdSettings = state.configuration?.loginId,
+                  NSPredicate(format:"SELF MATCHES %@", loginIdSettings.regex).evaluate(with: state.loginId) else {
+                let error: OwnID.CoreSDK.Error
+                switch state.configuration?.loginId.type ?? .email {
+                case .email:
+                    error = .emailIsInvalid
+                case .phoneNumber:
+                    error = .phoneNumberIsInvalid
+                case .userName:
+                    error = .userNameIsInvalid
+                }
+                return errorEffect(.coreLog(entry: .errorEntry(Self.self), error: error))
             }
-            if let email = state.email, !email.rawValue.isEmpty, !email.isValid {
-                return emailInvalidEffect
-            }
+
             guard let configuration = state.configuration else { return errorEffect(.coreLog(entry: .errorEntry(Self.self), error: .localConfigIsNotPresent)) }
             let session = state.apiSessionCreationClosure(configuration.initURL,
                                                           configuration.statusURL,
@@ -18,7 +25,7 @@ extension OwnID.CoreSDK.CoreViewModel {
                                                           configuration.authURL,
                                                           state.supportedLanguages)
             state.session = session
-            return [sendInitialRequest(requestData: OwnID.CoreSDK.Init.RequestData(loginId: state.email?.rawValue,
+            return [sendInitialRequest(requestData: OwnID.CoreSDK.Init.RequestData(loginId: state.loginId,
                                                                                    type: state.type,
                                                                                    supportsFido2: isPasskeysSupported),
                                        session: session)]
@@ -31,7 +38,7 @@ extension OwnID.CoreSDK.CoreViewModel {
                  let authManager = state.createAccountManagerClosure(state.authManagerStore, domain, state.session.context, response.url)
                 switch state.type {
                 case .register:
-                    authManager.signUpWith(userName: state.email?.rawValue ?? "")
+                    authManager.signUpWith(userName: state.loginId)
                     
                 case .login:
                     authManager.signInWith()
@@ -41,7 +48,8 @@ extension OwnID.CoreSDK.CoreViewModel {
             } else {
                 let vm = createBrowserVM(for: context,
                                          browserURL: response.url,
-                                         email: state.email,
+                                         loginId: state.loginId,
+                                         type: state.configuration?.loginId.type ?? .email,
                                          sdkConfigurationName: state.sdkConfigurationName,
                                          store: state.browserViewModelStore,
                                          redirectionURLString: state.configuration?.redirectionURL,
@@ -83,7 +91,8 @@ extension OwnID.CoreSDK.CoreViewModel {
         case .authManagerRequestFail(let error, let browserBaseURL):
             let vm = createBrowserVM(for: state.session.context,
                                      browserURL: browserBaseURL,
-                                     email: state.email,
+                                     loginId: state.loginId,
+                                     type: state.configuration?.loginId.type ?? .email,
                                      sdkConfigurationName: state.sdkConfigurationName,
                                      store: state.browserViewModelStore,
                                      redirectionURLString: state.configuration?.redirectionURL,
@@ -128,7 +137,8 @@ extension OwnID.CoreSDK.CoreViewModel {
             case let .error(error, context, browserBaseURL):
                 let vm = createBrowserVM(for: context,
                                          browserURL: browserBaseURL,
-                                         email: state.email,
+                                         loginId: state.loginId,
+                                         type: state.configuration?.loginId.type ?? .email,
                                          sdkConfigurationName: state.sdkConfigurationName,
                                          store: state.browserViewModelStore,
                                          redirectionURLString: state.configuration?.redirectionURL,
