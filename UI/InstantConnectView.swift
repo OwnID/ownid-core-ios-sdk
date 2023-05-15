@@ -17,7 +17,17 @@ public extension OwnID.UISDK {
 public extension OwnID.UISDK {
     @available(iOS 15.0, *)
     struct InstantConnectView: Popup {
+        private enum Constants {
+            static let textFieldBorderWidth = 1.0
+            static let titleFontSize = 20.0
+            static let messageFontSize = 16.0
+            static let emailFontSize = 18.0
+            static let emailPadding = 10.0
+            static let bottomPadding = 6.0
+            static let publisherDebounce = 500
+        }
         
+        #warning("as of latest changes, probably needs some redesign, as for now needs somehow a bit redesigned to be inited from core view model")
         enum FocusField: Hashable {
             case email
         }
@@ -30,8 +40,6 @@ public extension OwnID.UISDK {
         
         private var visualConfig: VisualLookConfig
         private let closeClosure: () -> Void
-        private let cornerRadius = 10.0
-        private let borderWidth = 1.5
         
         @ObservedObject private var viewModel: OwnID.FlowsSDK.LoginView.ViewModel
         @FocusState private var focusedField: FocusField?
@@ -73,7 +81,7 @@ public extension OwnID.UISDK {
         
         var eventPublisher: OwnID.UISDK.EventPubliser {
             resultPublisher
-                .debounce(for: .milliseconds(500), scheduler: DispatchQueue.main)
+                .debounce(for: .milliseconds(Constants.publisherDebounce), scheduler: DispatchQueue.main)
                 .eraseToAnyPublisher()
         }
         
@@ -88,21 +96,35 @@ public extension OwnID.UISDK {
                         EmptyView()
                     }
                 }
+                .overlay(alignment: .topTrailing) {
+                    Button {
+                        dismiss()
+                    } label: {
+                        Image("closeImage", bundle: .resourceBundle)
+                    }
+                    .padding(.trailing)
+                    .padding(.top)
+                }
+        }
+        
+        public func backgroundOverlayTapped() {
+            dismiss()
+        }
+        
+        private func dismiss() {
+            viewModel.resetDataAndState()
+            closeClosure()
         }
         
         @ViewBuilder
         private func topSection() -> some View {
             HStack {
                 Text(localizedKey: .emailCollectTitle)
-                    .font(.system(size: 20))
+                    .font(.system(size: Constants.titleFontSize))
                     .bold()
-                Spacer()
-                Button {
-                    closeClosure()
-                } label: {
-                    Image("closeImage", bundle: .resourceBundle)
-                }
             }
+            .padding(.top)
+            .padding(.bottom, Constants.bottomPadding)
         }
         
         @ViewBuilder
@@ -111,9 +133,8 @@ public extension OwnID.UISDK {
                 HStack {
                     Text(error)
                         .multilineTextAlignment(.leading)
-                        .foregroundColor(.red)
-                        .padding(.bottom, 6)
-                    Spacer()
+                        .foregroundColor(OwnID.Colors.errorColor)
+                        .padding(.bottom, Constants.bottomPadding)
                 }
             }
         }
@@ -124,20 +145,26 @@ public extension OwnID.UISDK {
                 topSection()
                 VStack {
                     Text(localizedKey: .emailCollectMessage)
-                        .font(.system(size: 18))
+                        .font(.system(size: Constants.messageFontSize))
+                        .foregroundColor(OwnID.Colors.otpContentMessageColor)
+                        .padding(.bottom, Constants.bottomPadding)
+                    errorView()
                     TextField("", text: $email)
-                        .font(.system(size: 17))
+                        .onChange(of: email) { _ in
+                            error = ""
+                        }
+                        .font(.system(size: Constants.emailFontSize))
                         .keyboardType(.emailAddress)
                         .focused($focusedField, equals: .email)
-                        .padding(11)
+                        .padding(Constants.emailPadding)
                         .background(Rectangle().fill(.white))
-                        .cornerRadius(cornerRadius)
+                        .cornerRadius(cornerRadiusValue)
                         .overlay(
-                            RoundedRectangle(cornerRadius: cornerRadius)
-                                .stroke(OwnID.Colors.instantConnectViewEmailFiendBorderColor, lineWidth: borderWidth)
+                            RoundedRectangle(cornerRadius: cornerRadiusValue)
+                                .stroke(borderColor, lineWidth: Constants.textFieldBorderWidth)
                         )
-                        .padding(.bottom, 6)
-                    errorView()
+                        .padding(.bottom, Constants.bottomPadding)
+                        .padding(.top)
                     AuthButton(visualConfig: visualConfig,
                                actionHandler: { resultPublisher.send(()) },
                                isLoading: viewModel.state.isLoadingBinding,
@@ -151,6 +178,14 @@ public extension OwnID.UISDK {
                 email = emailValue
                 emailPublisher.send(emailValue)
                 focusedField = .email
+            }
+        }
+        
+        var borderColor: Color {
+            if focusedField == .email {
+                return OwnID.Colors.blue
+            } else {
+                return OwnID.Colors.instantConnectViewEmailFiendBorderColor
             }
         }
     }

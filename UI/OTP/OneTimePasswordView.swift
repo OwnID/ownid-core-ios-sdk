@@ -1,0 +1,149 @@
+import SwiftUI
+import UIKit
+import Combine
+
+extension OwnID.UISDK {
+    static func showOTPView(store: Store<OwnID.UISDK.OneTimePassword.ViewState, OwnID.UISDK.OneTimePassword.Action>) {
+        if #available(iOS 15.0, *) {
+            let view = OwnID.UISDK.OneTimePassword.OneTimePasswordView(store: store, visualConfig: PopupManager.shared.visualLookConfig)
+            view.presentAsPopup()
+        }
+    }
+}
+
+extension OwnID.UISDK.OneTimePassword {
+    @available(iOS 15.0, *)
+    struct OneTimePasswordView: Popup {
+        static func == (lhs: OwnID.UISDK.OneTimePassword.OneTimePasswordView, rhs: OwnID.UISDK.OneTimePassword.OneTimePasswordView) -> Bool {
+            lhs.uuid == rhs.uuid
+        }
+        
+        private enum Constants {
+            static let titleFontSize = 20.0
+            static let titlePadding = 18.0
+            static let messageFontSize = 16.0
+            static let didNotGetEmailFontSize = 14.0
+            static let spinnerSize = 28.0
+            static let closeImageName = "closeImage"
+            static let codeLengthReplacement = "%CODE_LENGTH%"
+            static let emailReplacement = "%LOGIN_ID%"
+        }
+        
+        private let uuid = UUID().uuidString
+        
+        private let viewModel: OwnID.UISDK.OTPTextFieldView.ViewModel
+        private var visualConfig: OwnID.UISDK.OTPViewConfig
+        @ObservedObject var store: Store<ViewState, Action>
+        private let titleState = TitleType.emailVerification
+        private let codeLength: CodeLength
+        private let titleType: TitleType
+        
+        #warning("maybe move this translations approach to Property wrappers ?")
+        @State private var emailSentText: String
+        private let emailSentTextChangedClosure: (() -> String)
+        @State private var isTranslationChanged = false
+        
+        init(store: Store<ViewState, Action>,
+             visualConfig: OwnID.UISDK.OTPViewConfig,
+             titleType: TitleType = .oneTimePasswordSignIn,
+             codeLength: CodeLength = .six,
+             email: String = "fecemi9888@snowlash.com") {
+            self.visualConfig = visualConfig
+            self.store = store
+            self.codeLength = codeLength
+            self.viewModel = OwnID.UISDK.OTPTextFieldView.ViewModel(codeLength: codeLength, store: store)
+            
+            self.titleType = titleType
+            
+            let emailSentTextChangedClosure = {
+                var text = OwnID.CoreSDK.TranslationsSDK.TranslationKey.otpSentEmail.localized()
+                let codeLengthReplacement = Constants.codeLengthReplacement
+                let emailReplacement = Constants.emailReplacement
+                text = text.replacingOccurrences(of: codeLengthReplacement, with: String(codeLength.rawValue))
+                text = text.replacingOccurrences(of: emailReplacement, with: email)
+                return text
+            }
+            self.emailSentTextChangedClosure = emailSentTextChangedClosure
+            _emailSentText = State(initialValue: emailSentTextChangedClosure())
+        }
+        
+        @ViewBuilder
+        private func didNotGetEmail() -> some View {
+            if store.value.isDisplayingDidNotGetCode {
+                Button {
+                    OwnID.UISDK.PopupManager.dismiss()
+                    store.send(.emailIsNotRecieved)
+                } label: {
+                    Text(localizedKey: .didNotGetEmail)
+                        .font(.system(size: Constants.didNotGetEmailFontSize))
+                        .foregroundColor(OwnID.Colors.otpDidNotGetEmail)
+                }
+                .padding(.top)
+            }
+        }
+        
+        func createContent() -> some View {
+            return VStack {
+                topSection()
+                OwnID.UISDK.OTPTextFieldView(viewModel: viewModel)
+                    .shake(animatableData: store.value.attempts)
+                    .padding(.bottom)
+                if store.value.isLoading {
+                    OwnID.UISDK.SpinnerLoaderView(spinnerColor: visualConfig.loaderViewConfig.color,
+                                                  spinnerBackgroundColor: visualConfig.loaderViewConfig.backgroundColor,
+                                                  viewBackgroundColor: .clear)
+                    .frame(width: Constants.spinnerSize, height: Constants.spinnerSize)
+                }
+                didNotGetEmail()
+            }
+            .overlay(alignment: .topTrailing) {
+                Button {
+                    dismiss()
+                } label: {
+                    Image(Constants.closeImageName, bundle: .resourceBundle)
+                }
+            }
+            .padding()
+            .frame(minWidth: 0, maxWidth: .infinity)
+            .onReceive(OwnID.CoreSDK.shared.translationsModule.translationsChangePublisher) {
+                emailSentText = emailSentTextChangedClosure()
+                isTranslationChanged.toggle()
+            }
+        }
+        
+        func backgroundOverlayTapped() {
+            dismiss()
+        }
+        
+        private func dismiss() {
+            OwnID.UISDK.PopupManager.dismiss()
+            store.send(.cancel)
+        }
+        
+        @available(iOS 15.0, *)
+        private func topSection() -> some View {
+            VStack {
+                Text(localizedKey: .signInWithOneTimeCode)
+                    .font(.system(size: Constants.titleFontSize))
+                    .bold()
+                    .padding(.bottom)
+                    .padding(.trailing, Constants.titlePadding)
+                    .padding(.leading, Constants.titlePadding)
+                Text(verbatim: emailSentText)
+                    .multilineTextAlignment(.center)
+                    .foregroundColor(OwnID.Colors.otpContentMessageColor)
+                    .font(.system(size: Constants.messageFontSize))
+                    .padding(.bottom)
+                
+                Text(localizedKey: .otpDescription)
+                    .font(.system(size: Constants.messageFontSize))
+            }
+            .padding()
+            .overlay {
+                if isTranslationChanged {
+                    EmptyView()
+                }
+            }
+        }
+    }
+}

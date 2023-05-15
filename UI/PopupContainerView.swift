@@ -10,7 +10,10 @@ extension OwnID.UISDK {
         var body: some View {
             if let view = stack.views.first {
                 PopupStackView(popupContent: view)
-                    .background(createOverlay())
+                    .background(createOverlay()
+                        .onTapGesture {
+                            view.backgroundOverlayTapped()
+                        })
             } else {
                 EmptyView()
             }
@@ -27,7 +30,13 @@ extension OwnID.UISDK {
                 Spacer()
                 ZStack(alignment: .bottom) {
                     popupContent.createContent()
-                        .background(OwnID.Colors.popupViewBackgroundColor)
+                        .background(OwnID.Colors.popupViewBackgroundColor
+                            .cornerRadius(9, corners: [.topLeft, .topRight])
+                            .ignoresSafeArea()
+                            .onTapGesture {
+                                //TODO: reimplement it using @FocusState
+                                UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
+                            })
                         .transition(.move(edge: .top))
                 }
             }
@@ -75,6 +84,7 @@ public protocol Popup: View, Hashable, Equatable {
     var id: String { get }
 
     func createContent() -> V
+    func backgroundOverlayTapped()
 }
 
 public extension Popup {
@@ -91,18 +101,23 @@ public extension Popup {
 extension OwnID.UISDK {
     struct AnyPopup: Popup {
         let id: String
-        
-        private let _body: AnyView
+        private let popup: any Popup
         
         init(_ popup: some Popup) {
+            self.popup = popup
             self.id = popup.id
-            self._body = AnyView(popup)
+        }
+        
+        func backgroundOverlayTapped() {
+            popup.backgroundOverlayTapped()
         }
     }
 }
 
 extension OwnID.UISDK.AnyPopup {
-    func createContent() -> some View { _body }
+    func createContent() -> some View {
+        AnyView(popup)
+    }
 }
 
 extension OwnID.UISDK.PopupManager {

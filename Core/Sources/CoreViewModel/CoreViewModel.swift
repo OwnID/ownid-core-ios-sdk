@@ -36,7 +36,7 @@ extension OwnID.CoreSDK {
             )
             self.store = store
             let oneTimePasswordViewStore = self.store.view(
-                value: { OwnID.UISDK.OneTimePasswordView.ViewState(isLoggingEnabled: $0.isLoggingEnabled) },
+                value: { OwnID.UISDK.OneTimePassword.ViewState(isLoggingEnabled: $0.isLoggingEnabled) },
                 action: { .oneTimePasswordView($0) },
                 action: { globalAction in
                     switch globalAction {
@@ -48,13 +48,7 @@ extension OwnID.CoreSDK {
                     }
                     return .none
                 },
-                reducer: {
-                    if #available(iOS 15.0, *) {
-                        return OwnID.UISDK.OneTimePasswordView.viewModelReducer(state: &$0, action: $1)
-                    } else {
-                        return []
-                    }
-                }
+                reducer: { OwnID.UISDK.OneTimePassword.viewModelReducer(state: &$0, action: $1) }
             )
             let browserStore = self.store.view(value: { $0.sdkConfigurationName } , action: { .browserVM($0) })
             let authManagerStore = self.store.view(value: { AccountManager.State(isLoggingEnabled: $0.isLoggingEnabled) },

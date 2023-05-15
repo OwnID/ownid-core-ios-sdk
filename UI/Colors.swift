@@ -53,29 +53,28 @@ public extension OwnID {
             Color("\(OwnID.UISDK.InstantConnectView.self)EmailFiendBorderColor", bundle: .resourceBundle)
         }
         
-        @available(iOS 15.0, *)
-        public static var instantConnectViewAuthButtonColor: Color {
-            Color("\(OwnID.UISDK.InstantConnectView.self)AuthButtonColor", bundle: .resourceBundle)
-        }
-        
         public static var otpContentMessageColor: Color {
-            Color("\(OwnID.UISDK.OneTimePasswordView.self)contentMessage", bundle: .resourceBundle)
+            Color("\(OwnID.UISDK.OneTimePassword.self)contentMessage", bundle: .resourceBundle)
         }
         
-        public static var otpContentErrorColor: Color {
-            Color("\(OwnID.UISDK.OneTimePasswordView.self)ErrorColor", bundle: .resourceBundle)
+        public static var errorColor: Color {
+            Color("errorColor", bundle: .resourceBundle)
         }
         
         public static var otpTileBackgroundColor: Color {
-            Color("\(OwnID.UISDK.OneTimePasswordView.self)TileBackgroundColor", bundle: .resourceBundle)
+            Color("\(OwnID.UISDK.OneTimePassword.self)TileBackgroundColor", bundle: .resourceBundle)
         }
         
         public static var otpTileBorderColor: Color {
-            Color("\(OwnID.UISDK.OneTimePasswordView.self)TileBorderColor", bundle: .resourceBundle)
+            Color("\(OwnID.UISDK.OneTimePassword.self)TileBorderColor", bundle: .resourceBundle)
         }
         
         public static var otpTileSelectedBorderColor: Color {
-            Color("\(OwnID.UISDK.OneTimePasswordView.self)TileSelectedBorderColor", bundle: .resourceBundle)
+            Color("\(OwnID.UISDK.OneTimePassword.self)TileSelectedBorderColor", bundle: .resourceBundle)
+        }
+        
+        public static var otpDidNotGetEmail: Color {
+            Color("\(OwnID.UISDK.OneTimePassword.self)didNotGetEmail", bundle: .resourceBundle)
         }
     }
 }

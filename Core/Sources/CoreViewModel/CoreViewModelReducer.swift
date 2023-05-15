@@ -8,7 +8,11 @@ extension OwnID.CoreSDK.CoreViewModel {
         
         switch action {
         case .sendInitialRequest:
-            
+#warning("simulating actual flow, imagine we need OTP straight away")
+            if true {
+                return [Just(Action.oneTimePassword).eraseToEffect()]
+            }
+
             guard loginId.isValid else {
                 return errorEffect(.coreLog(entry: .errorEntry(Self.self), error: loginId.error))
             }
@@ -157,6 +161,8 @@ extension OwnID.CoreSDK.CoreViewModel {
                 break
                 
             case .displayDidNotGetCode:
+                break
+            case .stopLoading:
                 break
             }
             return []

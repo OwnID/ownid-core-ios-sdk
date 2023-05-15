@@ -75,7 +75,6 @@ public final class Store<Value, Action>: ObservableObject {
             reducer: { localValue, localAction in
                 let effects = reducer(&localValue, localAction)
                 self.send(toGlobalAction(localAction))
-//                localValue = toLocalValue(self.value)
                 return effects
             }
         )
@@ -85,9 +84,6 @@ public final class Store<Value, Action>: ObservableObject {
                 localStore.processEffects(effects)
             }
         })
-//        localStore.viewCancellable = self.$value.sink { [weak localStore] newValue in
-//            localStore?.value = toLocalValue(newValue)
-//        }
         return localStore
     }
     

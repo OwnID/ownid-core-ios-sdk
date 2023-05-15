@@ -6,7 +6,7 @@ extension OwnID.CoreSDK.CoreViewModel {
         
         case addToState(browserViewModelStore: Store<OwnID.CoreSDK.BrowserOpenerViewModel.State, OwnID.CoreSDK.BrowserOpenerViewModel.Action>,
                         authStore: Store<OwnID.CoreSDK.AccountManager.State, OwnID.CoreSDK.AccountManager.Action>,
-                        oneTimePasswordStore: Store<OwnID.UISDK.OneTimePasswordView.ViewState, OwnID.UISDK.OneTimePasswordView.Action>)
+                        oneTimePasswordStore: Store<OwnID.UISDK.OneTimePassword.ViewState, OwnID.UISDK.OneTimePassword.Action>)
         case addToStateConfig(config: OwnID.CoreSDK.LocalConfiguration)
         case addToStateShouldStartInitRequest(value: Bool)
         
@@ -21,7 +21,7 @@ extension OwnID.CoreSDK.CoreViewModel {
         case oneTimePassword
         case statusRequestLoaded(response: OwnID.CoreSDK.Payload)
         case browserVM(OwnID.CoreSDK.BrowserOpenerViewModel.Action)
-        case oneTimePasswordView(OwnID.UISDK.OneTimePasswordView.Action)
+        case oneTimePasswordView(OwnID.UISDK.OneTimePassword.Action)
         case authManager(OwnID.CoreSDK.AccountManager.Action)
     }
 }

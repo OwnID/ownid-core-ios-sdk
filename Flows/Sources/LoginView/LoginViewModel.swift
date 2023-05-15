@@ -78,7 +78,7 @@ public extension OwnID.FlowsSDK.LoginView {
         /// Reset visual state and any possible data from web flow
         public func resetDataAndState(isResettingToInitialState: Bool = true) {
             payload = .none
-            resetToInitialState()
+            resetToInitialState(isResettingToInitialState: isResettingToInitialState)
         }
         
         /// Reset visual state
