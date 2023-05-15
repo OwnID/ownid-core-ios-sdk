@@ -147,8 +147,12 @@ public extension OwnID.UISDK {
                     Text(localizedKey: .emailCollectMessage)
                         .font(.system(size: Constants.messageFontSize))
                         .foregroundColor(OwnID.Colors.otpContentMessageColor)
+                        .padding(.bottom, Constants.bottomPadding)
                     errorView()
                     TextField("", text: $email)
+                        .onChange(of: email) { _ in
+                            error = ""
+                        }
                         .font(.system(size: Constants.emailFontSize))
                         .keyboardType(.emailAddress)
                         .focused($focusedField, equals: .email)

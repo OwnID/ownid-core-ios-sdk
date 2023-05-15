@@ -4,33 +4,38 @@ import Combine
 extension OwnID.UISDK {
     @available(iOS 15.0, *)
     public struct OTPTextFieldView: View {
+        private enum Constants {
+            static let boxSideSize: CGFloat = 50.0
+            static let spaceBetweenBoxes: CGFloat = 8.0
+            static let textFieldBorderWidth = 1.0
+            static let fontSize = 20.0
+            static let textFieldPadding = 12.0
+        }
+        
         @ObservedObject var viewModel: ViewModel
         @FocusState private var focusedField: ViewModel.FieldType?
-        private let boxSideSize: CGFloat = 50
-        private let spaceBetweenBoxes: CGFloat = 8
-        private let cornerRadius = 6.0
         
         public var body: some View {
-            HStack(spacing: spaceBetweenBoxes) {
+            HStack(spacing: Constants.spaceBetweenBoxes) {
                 ForEach(viewModel.codeLength.fields, id: \.self) { field in
                     ZStack {
                         Rectangle()
                             .foregroundColor(OwnID.Colors.otpTileBackgroundColor)
                             .border(tileBorderColor(for: field))
-                            .cornerRadius(cornerRadius)
+                            .cornerRadius(cornerRadiusValue)
                             .overlay(
-                                RoundedRectangle(cornerRadius: cornerRadius)
-                                    .stroke(tileBorderColor(for: field), lineWidth: 1)
+                                RoundedRectangle(cornerRadius: cornerRadiusValue)
+                                    .stroke(tileBorderColor(for: field), lineWidth: Constants.textFieldBorderWidth)
                             )
                         
                         TextField("", text: binding(for: field))
-                            .font(Font.system(size: 20))
+                            .font(.system(size: Constants.fontSize))
                             .multilineTextAlignment(.center)
                             .keyboardType(.numberPad)
                             .focused($focusedField, equals: field)
-                            .padding(12)
+                            .padding(Constants.textFieldPadding)
                     }
-                    .frame(width: boxSideSize, height: boxSideSize)
+                    .frame(width: Constants.boxSideSize, height: Constants.boxSideSize)
                 }
             }
             .onChange(of: viewModel.currentFocusedField, perform: { newValue in

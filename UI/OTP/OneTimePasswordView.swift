@@ -17,6 +17,18 @@ extension OwnID.UISDK.OneTimePassword {
         static func == (lhs: OwnID.UISDK.OneTimePassword.OneTimePasswordView, rhs: OwnID.UISDK.OneTimePassword.OneTimePasswordView) -> Bool {
             lhs.uuid == rhs.uuid
         }
+        
+        private enum Constants {
+            static let titleFontSize = 20.0
+            static let titlePadding = 18.0
+            static let messageFontSize = 16.0
+            static let didNotGetEmailFontSize = 14.0
+            static let spinnerSize = 28.0
+            static let closeImageName = "closeImage"
+            static let codeLengthReplacement = "%CODE_LENGTH%"
+            static let emailReplacement = "%LOGIN_ID%"
+        }
+        
         private let uuid = UUID().uuidString
         
         private let viewModel: OwnID.UISDK.OTPTextFieldView.ViewModel
@@ -45,8 +57,8 @@ extension OwnID.UISDK.OneTimePassword {
             
             let emailSentTextChangedClosure = {
                 var text = OwnID.CoreSDK.TranslationsSDK.TranslationKey.otpSentEmail.localized()
-                let codeLengthReplacement = "%CODE_LENGTH%"
-                let emailReplacement = "%LOGIN_ID%"
+                let codeLengthReplacement = Constants.codeLengthReplacement
+                let emailReplacement = Constants.emailReplacement
                 text = text.replacingOccurrences(of: codeLengthReplacement, with: String(codeLength.rawValue))
                 text = text.replacingOccurrences(of: emailReplacement, with: email)
                 return text
@@ -63,6 +75,7 @@ extension OwnID.UISDK.OneTimePassword {
                     store.send(.emailIsNotRecieved)
                 } label: {
                     Text(localizedKey: .didNotGetEmail)
+                        .font(.system(size: Constants.didNotGetEmailFontSize))
                         .foregroundColor(OwnID.Colors.otpDidNotGetEmail)
                 }
                 .padding(.top)
@@ -79,7 +92,7 @@ extension OwnID.UISDK.OneTimePassword {
                     OwnID.UISDK.SpinnerLoaderView(spinnerColor: visualConfig.loaderViewConfig.color,
                                                   spinnerBackgroundColor: visualConfig.loaderViewConfig.backgroundColor,
                                                   viewBackgroundColor: .clear)
-                    .frame(width: 28, height: 28)
+                    .frame(width: Constants.spinnerSize, height: Constants.spinnerSize)
                 }
                 didNotGetEmail()
             }
@@ -87,7 +100,7 @@ extension OwnID.UISDK.OneTimePassword {
                 Button {
                     dismiss()
                 } label: {
-                    Image("closeImage", bundle: .resourceBundle)
+                    Image(Constants.closeImageName, bundle: .resourceBundle)
                 }
             }
             .padding()
@@ -108,25 +121,22 @@ extension OwnID.UISDK.OneTimePassword {
         }
         
         @available(iOS 15.0, *)
-        @ViewBuilder
         private func topSection() -> some View {
             VStack {
                 Text(localizedKey: .signInWithOneTimeCode)
-                    .font(.system(size: 20))
+                    .font(.system(size: Constants.titleFontSize))
                     .bold()
                     .padding(.bottom)
-                    .padding(.trailing, 18)
-                    .padding(.leading, 18)
-                
+                    .padding(.trailing, Constants.titlePadding)
+                    .padding(.leading, Constants.titlePadding)
                 Text(verbatim: emailSentText)
                     .multilineTextAlignment(.center)
                     .foregroundColor(OwnID.Colors.otpContentMessageColor)
-                    .font(.system(size: 16))
+                    .font(.system(size: Constants.messageFontSize))
                     .padding(.bottom)
                 
                 Text(localizedKey: .otpDescription)
-                    .font(.system(size: 16))
-                    .fontWeight(.semibold)
+                    .font(.system(size: Constants.messageFontSize))
             }
             .padding()
             .overlay {
