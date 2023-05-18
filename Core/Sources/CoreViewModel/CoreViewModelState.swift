@@ -22,5 +22,9 @@ extension OwnID.CoreSDK.CoreViewModel {
         var oneTimePasswordStore: Store<OwnID.UISDK.OneTimePassword.ViewState, OwnID.UISDK.OneTimePassword.Action>!
         
         var shouldStartFlowOnConfigurationReceive = true
+        
+        var stopUrl: URL!
+        var finalUrl: URL!
+        var context: OwnID.CoreSDK.Context!
     }
 }

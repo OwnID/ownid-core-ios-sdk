@@ -6,9 +6,8 @@ public extension OwnID.CoreSDK {
 }
 
 public extension OwnID.CoreSDK.Init {
-    
     struct RequestData {
-        let loginId: String?
+        let loginId: String
         let type: OwnID.CoreSDK.RequestType
         let supportsFido2: Bool
     }
@@ -16,8 +15,10 @@ public extension OwnID.CoreSDK.Init {
     struct RequestBody: Encodable {
         let sessionChallenge: OwnID.CoreSDK.SessionChallenge
         let type: OwnID.CoreSDK.RequestType
-        let loginId: String?
+        let loginId: String
         let supportsFido2: Bool
+        var qr = false
+        var passkeyAutofill = false
         
         static func create(sessionChallenge: OwnID.CoreSDK.SessionChallenge, data: RequestData) -> Self {
             Self(sessionChallenge: sessionChallenge, type: data.type, loginId: data.loginId, supportsFido2: data.supportsFido2)
@@ -25,11 +26,35 @@ public extension OwnID.CoreSDK.Init {
     }
 }
 
+public extension OwnID.CoreSDK {
+    struct Step: Decodable {
+        enum StepType: String, Decodable {
+            case fido2Authorize, starting
+        }
+        
+        let type: StepType
+        let data: StepData
+    }
+    
+    struct StepData: Decodable {
+        let relyingPartyId: String?
+        let relyingPartyName: String?
+        let url: String?
+        let userDisplayName: String?
+        let userName: String?
+    }
+}
+
 public extension OwnID.CoreSDK.Init {
     struct Response: Decodable {
-        public let url: String
-        public let context: String?
-        public let nonce: String?
+        public let nonce: String? //TODO: remove
+        
+        let context: String
+        let expiration: Int?
+        let stopUrl: String
+        let finalStatusUrl: String
+        
+        let step: OwnID.CoreSDK.Step
     }
 }
 
@@ -52,6 +77,7 @@ extension OwnID.CoreSDK.Init {
             self.provider = provider
             self.supportedLanguages = supportedLanguages
         }
+        
         func perform() -> AnyPublisher<Response, OwnID.CoreSDK.CoreErrorLogWrapper> {
             Just(RequestBody.create(sessionChallenge: sessionChallenge, data: requestData))
                 .setFailureType(to: Error.self)
@@ -59,13 +85,7 @@ extension OwnID.CoreSDK.Init {
                 .encode(encoder: JSONEncoder())
                 .mapError { OwnID.CoreSDK.Error.initRequestBodyEncodeFailed(underlying: $0) }
                 .map { [self] body -> URLRequest in
-                    var request = URLRequest(url: url)
-                    request.httpMethod = "POST"
-                    request.httpBody = body
-                    request.addUserAgent()
-                    request.addAPIVersion()
-                    request.add(supportedLanguages: supportedLanguages)
-                    return request
+                    URLRequest.defaultPostRequest(url: url, body: body, supportedLanguages: supportedLanguages)
                 }
                 .eraseToAnyPublisher()
                 .flatMap { [self] request -> AnyPublisher<URLSession.DataTaskPublisher.Output, OwnID.CoreSDK.Error> in provider.apiResponse(for: request)

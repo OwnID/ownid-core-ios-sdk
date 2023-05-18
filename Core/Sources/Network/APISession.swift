@@ -3,11 +3,10 @@ import CryptoKit
 import Combine
 
 public protocol APISessionProtocol {
-    var context: OwnID.CoreSDK.Context! { get }
-    
     func performInitRequest(requestData: OwnID.CoreSDK.Init.RequestData) -> AnyPublisher<OwnID.CoreSDK.Init.Response, OwnID.CoreSDK.CoreErrorLogWrapper>
     func performFinalStatusRequest() -> AnyPublisher<OwnID.CoreSDK.Payload, OwnID.CoreSDK.CoreErrorLogWrapper>
     func performAuthRequest(fido2Payload: Encodable) -> AnyPublisher<OwnID.CoreSDK.Payload, OwnID.CoreSDK.CoreErrorLogWrapper>
+    func performStopRequest(url: URL) -> AnyPublisher<Data, OwnID.CoreSDK.CoreErrorLogWrapper>
 }
 
 
@@ -38,7 +37,6 @@ public extension OwnID.CoreSDK {
         private let sessionVerifier: SessionVerifier
         private let sessionChallenge: SessionChallenge
         private var nonce: Nonce!
-        public var context: Context!
         private var type: OwnID.CoreSDK.RequestType!
         private let initURL: ServerURL
         private let statusURL: ServerURL
@@ -72,10 +70,8 @@ extension OwnID.CoreSDK.APISession {
                                    supportedLanguages: supportedLanguages)
         .perform()
         .map { [unowned self] response in
-            nonce = response.nonce
-            context = response.context
-            self.type = requestData.type
-            OwnID.CoreSDK.logger.logCore(.entry(context: context, message: "\(OwnID.CoreSDK.Init.Request.self): Finished", Self.self))
+            type = requestData.type
+            OwnID.CoreSDK.logger.logCore(.entry(context: response.context, message: "\(OwnID.CoreSDK.Init.Request.self): Finished", Self.self))
             return response
         }
         .eraseToAnyPublisher()
@@ -84,7 +80,8 @@ extension OwnID.CoreSDK.APISession {
     public func performAuthRequest(fido2Payload: Encodable) -> AnyPublisher<OwnID.CoreSDK.Payload, OwnID.CoreSDK.CoreErrorLogWrapper> {
         OwnID.CoreSDK.Auth.Request(type: type,
                                    url: authURL,
-                                   context: context,
+                                   //TODO: #warning("replace to actual context")
+                                   context: "context",
                                    nonce: nonce,
                                    fido2LoginPayload: fido2Payload,
                                    supportedLanguages: supportedLanguages)
@@ -94,7 +91,8 @@ extension OwnID.CoreSDK.APISession {
     
     public func performFinalStatusRequest() -> AnyPublisher<OwnID.CoreSDK.Payload, OwnID.CoreSDK.CoreErrorLogWrapper> {
         OwnID.CoreSDK.Status.Request(url: finalStatusURL,
-                                     context: context,
+                                     //TODO: #warning("replace to actual context")
+                                     context: "context",
                                      nonce: nonce,
                                      sessionVerifier: sessionVerifier,
                                      type: type,
@@ -104,6 +102,11 @@ extension OwnID.CoreSDK.APISession {
             OwnID.CoreSDK.logger.logCore(.entry(context: payload.context, message: "\(OwnID.CoreSDK.Status.Request.self): Finished", Self.self))
         })
         .eraseToAnyPublisher()
+    }
+    
+    public func performStopRequest(url: URL) -> AnyPublisher<Data, OwnID.CoreSDK.CoreErrorLogWrapper> {
+        return OwnID.CoreSDK.Stop.Request(url: url, supportedLanguages: supportedLanguages)
+            .perform()
     }
 }
 

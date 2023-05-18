@@ -56,13 +56,7 @@ extension OwnID.CoreSDK.Status {
                 .encode(encoder: JSONEncoder())
                 .mapError { [self] in OwnID.CoreSDK.CoreErrorLogWrapper.coreLog(entry: .errorEntry(context: context, Self.self), error: .statusRequestBodyEncodeFailed(underlying: $0)) }
                 .map { [self] body -> URLRequest in
-                    var request = URLRequest(url: url)
-                    request.httpMethod = "POST"
-                    request.httpBody = body
-                    request.addUserAgent()
-                    request.addAPIVersion()
-                    request.add(supportedLanguages: supportedLanguages)
-                    return request
+                    URLRequest.defaultPostRequest(url: url, body: body, supportedLanguages: supportedLanguages)
                 }
                 .eraseToAnyPublisher()
             let dataParsingPublisher = OwnID.CoreSDK.EndOfFlowHandler.handle(inputPublisher: input.eraseToAnyPublisher(),

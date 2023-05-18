@@ -2,60 +2,30 @@ import Combine
 
 extension OwnID.CoreSDK.CoreViewModel {
     static func reducer(state: inout State, action: Action) -> [Effect<Action>] {
-        //TODO: get rid of this default LoginIdSettings
+        //TODO: remove it
         let loginIdSettings = state.configuration?.loginIdSettings ?? OwnID.CoreSDK.LoginIdSettings(type: .email, regex: "")
         let loginId = OwnID.CoreSDK.LoginId(value: state.loginId, settings: loginIdSettings)
         
         switch action {
         case .sendInitialRequest:
-#warning("simulating actual flow, imagine we need OTP straight away")
-            if true {
-                return [Just(Action.oneTimePassword).eraseToEffect()]
-            }
-
-            guard loginId.isValid else {
-                return errorEffect(.coreLog(entry: .errorEntry(Self.self), error: loginId.error))
-            }
-            
-            guard let configuration = state.configuration else { return errorEffect(.coreLog(entry: .errorEntry(Self.self), error: .localConfigIsNotPresent)) }
-            let session = state.apiSessionCreationClosure(configuration.initURL,
-                                                          configuration.statusURL,
-                                                          configuration.finalStatusURL,
-                                                          configuration.authURL,
-                                                          state.supportedLanguages)
-            state.session = session
-            return [sendInitialRequest(requestData: OwnID.CoreSDK.Init.RequestData(loginId: loginId.value,
-                                                                                   type: state.type,
-                                                                                   supportsFido2: isPasskeysSupported),
-                                       session: session)]
-            
+            let step = InitStep()
+            let effect = step.run(state: &state)
+            return effect
         case let .initialRequestLoaded(response):
-            guard let context = response.context else { return errorEffect(.coreLog(entry: .errorEntry(Self.self), error: .contextIsMissing)) }
-            if #available(iOS 16, *),
-               let config = state.configuration,
-               let domain = config.fidoSettings?.rpID {
-                 let authManager = state.createAccountManagerClosure(state.authManagerStore, domain, state.session.context, response.url)
-                switch state.type {
-                case .register:
-                    authManager.signUpWith(userName: loginId.value)
-                    
-                case .login:
-                    authManager.signInWith()
-                }
-                state.authManager = authManager
-                return []
-            } else {
-                let vm = createBrowserVM(for: context,
-                                         browserURL: response.url,
-                                         loginId: loginId,
-                                         sdkConfigurationName: state.sdkConfigurationName,
-                                         store: state.browserViewModelStore,
-                                         redirectionURLString: state.configuration?.redirectionURL,
-                                         creationClosure: state.createBrowserOpenerClosure)
-                state.browserViewModel = vm
-                return []
-            }
+            state.stopUrl = URL(string: response.stopUrl)
+            state.finalUrl = URL(string: response.finalStatusUrl)
+            state.context = response.context
             
+            let baseStep = BaseStep()
+            let action = baseStep.nextStepAction(response.step)
+            
+            return [Just(action).eraseToEffect()]
+        case .idCollect:
+//            OwnID.UISDK.showInstantConnectView(viewModel: <#T##OwnID.FlowsSDK.LoginView.ViewModel#>, visualConfig: <#T##OwnID.UISDK.VisualLookConfig#>)
+            return []
+        case .fido2Authorize(let step):
+            let step = FidoAuthStep(step: step)
+            return step.run(state: &state)
         case .error:
             return []
             
@@ -65,12 +35,14 @@ extension OwnID.CoreSDK.CoreViewModel {
             
         case .browserCancelled:
             state.browserViewModel = .none
-            return []
+            let stopStep = StopStep()
+            return stopStep.run(state: &state)
             
         case .cancelled:
             state.browserViewModel = .none
             state.authManager = .none
             return []
+            //TODO: cancel request if all other cancels lead here
             
         case .oneTimePassword:
             OwnID.UISDK.showOTPView(store: state.oneTimePasswordStore)
@@ -85,9 +57,11 @@ extension OwnID.CoreSDK.CoreViewModel {
             
         case .statusRequestLoaded:
             return []
+        case .stopRequestLoaded:
+            return []
             
         case .authManagerRequestFail(let error, let browserBaseURL):
-            let vm = createBrowserVM(for: state.session.context,
+            let vm = createBrowserVM(for: state.context,
                                      browserURL: browserBaseURL,
                                      loginId: loginId,
                                      sdkConfigurationName: state.sdkConfigurationName,
@@ -123,6 +97,7 @@ extension OwnID.CoreSDK.CoreViewModel {
             return []
             
         // MARK: AuthManager
+            //TODO: move auth manager action handling to fido step
         case let .authManager(authManagerAction):
             switch authManagerAction {
             case .didFinishRegistration(let fido2RegisterPayload, let browserBaseURL):

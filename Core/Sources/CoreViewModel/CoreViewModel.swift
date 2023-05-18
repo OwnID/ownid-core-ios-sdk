@@ -125,6 +125,8 @@ extension OwnID.CoreSDK {
                         resultPublisher.send(.loading)
                         
                     case .initialRequestLoaded,
+                            .idCollect,
+                            .fido2Authorize,
                             .addErrorToInternalStates,
                             .sendStatusRequest,
                             .authManagerRequestFail,
@@ -135,7 +137,8 @@ extension OwnID.CoreSDK {
                             .oneTimePasswordView,
                             .oneTimePassword,
                             .browserVM,
-                            .authRequestLoaded:
+                            .authRequestLoaded,
+                            .stopRequestLoaded:
                         internalStatesChange.append(action.debugDescription)
                         
                     case let .statusRequestLoaded(payload):

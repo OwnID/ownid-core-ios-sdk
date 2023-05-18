@@ -12,6 +12,8 @@ extension OwnID.CoreSDK.CoreViewModel {
         
         case sendInitialRequest
         case initialRequestLoaded(response: OwnID.CoreSDK.Init.Response)
+        case idCollect
+        case fido2Authorize(step: OwnID.CoreSDK.Step)
         case authManagerRequestFail(error: OwnID.CoreSDK.CoreErrorLogWrapper, browserBaseURL: String)
         case sendStatusRequest
         case browserCancelled
@@ -23,5 +25,6 @@ extension OwnID.CoreSDK.CoreViewModel {
         case browserVM(OwnID.CoreSDK.BrowserOpenerViewModel.Action)
         case oneTimePasswordView(OwnID.UISDK.OneTimePassword.Action)
         case authManager(OwnID.CoreSDK.AccountManager.Action)
+        case stopRequestLoaded
     }
 }

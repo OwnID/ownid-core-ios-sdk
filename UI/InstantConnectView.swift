@@ -6,6 +6,7 @@ public extension OwnID.UISDK {
     static func showInstantConnectView(viewModel: OwnID.FlowsSDK.LoginView.ViewModel,
                                        visualConfig: OwnID.UISDK.VisualLookConfig) {
         if #available(iOS 15.0, *) {
+//            let visualConfig = PopupManager.shared.visualLookConfig
             let view = OwnID.UISDK.InstantConnectView(viewModel: viewModel, visualConfig: visualConfig, closeClosure: {
                 OwnID.UISDK.PopupManager.dismiss()
             })

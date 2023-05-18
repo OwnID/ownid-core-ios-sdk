@@ -2,25 +2,6 @@ import LocalAuthentication
 import Combine
 
 extension OwnID.CoreSDK.CoreViewModel {
-    static var isPasskeysSupported: Bool {
-        let isLeastPasskeysSupportediOS = ProcessInfo().isOperatingSystemAtLeast(OperatingSystemVersion(majorVersion: 16, minorVersion: 0, patchVersion: 0))
-        var isBiometricsAvailable = false
-        let authContext = LAContext()
-        let _ = authContext.canEvaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, error: nil)
-        switch authContext.biometryType {
-        case .none:
-            break
-        case .touchID:
-            isBiometricsAvailable = true
-        case .faceID:
-            isBiometricsAvailable = true
-        @unknown default:
-            print("please update biometrics types")
-        }
-        let isPasscodeAvailable = LAContext().canEvaluatePolicy(.deviceOwnerAuthentication, error: nil)
-        let isPasskeysSupported = isLeastPasskeysSupportediOS && (isBiometricsAvailable || isPasscodeAvailable)
-        return isPasskeysSupported
-    }
     static func didFinishAuthManagerAction(_ state: State,
                                            _ fido2RegisterPayload: Encodable,
                                            _ browserBaseURL: String) -> [Effect<Action>] {
@@ -40,7 +21,6 @@ extension OwnID.CoreSDK.CoreViewModel {
         let redirect = redirectionEncoded! + "?context=" + context
         let redirectParameter = "&redirectURI=" + redirect
         var urlString = browserURL
-        //TODO: check it
         if let loginId, loginId.settings.type == .email {
             var emailSet = CharacterSet.urlHostAllowed
             emailSet.remove("+")
@@ -54,20 +34,7 @@ extension OwnID.CoreSDK.CoreViewModel {
         let vm = creationClosure(store, url, redirectionURLString ?? "")
         return vm
     }
-    
-    static func errorEffect(_ error: OwnID.CoreSDK.CoreErrorLogWrapper) -> [Effect<Action>] {
-        [Just(.error(error)).eraseToEffect()]
-    }
-    
-    static func sendInitialRequest(requestData: OwnID.CoreSDK.Init.RequestData,
-                                   session: APISessionProtocol) -> Effect<Action> {
-        session.performInitRequest(requestData: requestData)
-            .receive(on: DispatchQueue.main)
-            .map { Action.initialRequestLoaded(response: $0) }
-            .catch { Just(Action.error($0)) }
-            .eraseToEffect()
-    }
-    
+
     static func sendAuthRequest(session: APISessionProtocol,
                                 fido2Payload: Encodable,
                                 browserBaseURL: String) -> Effect<Action> {
