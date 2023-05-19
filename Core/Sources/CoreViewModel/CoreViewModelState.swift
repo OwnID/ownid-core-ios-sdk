@@ -26,5 +26,8 @@ extension OwnID.CoreSDK.CoreViewModel {
         var stopUrl: URL!
         var finalUrl: URL!
         var context: OwnID.CoreSDK.Context!
+        
+        #warning("temporary desicion until move auth manager methods to FidoAuthStep class")
+        var fidoStep: FidoAuthStep!
     }
 }

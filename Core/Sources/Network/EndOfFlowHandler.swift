@@ -1,11 +1,10 @@
 import Combine
 
 extension OwnID.CoreSDK {
-    
+    //TODO: remove it
     final class EndOfFlowHandler {
         static func handle(inputPublisher: AnyPublisher<URLRequest, OwnID.CoreSDK.CoreErrorLogWrapper>,
                            context: OwnID.CoreSDK.Context,
-                           nonce: OwnID.CoreSDK.Nonce,
                            requestLanguage: String?,
                            provider: APIProvider,
                            shouldIgnoreResponseBody: Bool,
@@ -32,7 +31,7 @@ extension OwnID.CoreSDK {
                 .eraseToAnyPublisher()
                 .tryMap { response -> OwnID.CoreSDK.Payload in
                     if shouldIgnoreResponseBody {
-                        return OwnID.CoreSDK.Payload(dataContainer: .none, metadata: .none, context: context, nonce: nonce, loginId: .none, responseType: .registrationInfo, authType: .none, requestLanguage: .none)
+                        return OwnID.CoreSDK.Payload(dataContainer: .none, metadata: .none, context: context, loginId: .none, responseType: .registrationInfo, authType: .none, requestLanguage: .none)
                     }
                     guard let responseContext = response["context"] as? String else { throw emptyResponseError() }
                     guard context == responseContext else { throw contextMismatchError() }
@@ -55,10 +54,10 @@ extension OwnID.CoreSDK {
                     if let flowInfo = response["flowInfo"] as? [String: Any], let authType = flowInfo["authType"] as? String {
                         authTypeValue = authType
                     }
+                    
                     let payload = OwnID.CoreSDK.Payload(dataContainer: responseData,
                                                         metadata: metadataDict,
                                                         context: context,
-                                                        nonce: nonce,
                                                         loginId: loginId,
                                                         responseType: requestResponseType,
                                                         authType: authTypeValue,

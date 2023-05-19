@@ -13,6 +13,8 @@ extension OwnID.CoreSDK.CoreViewModel {
                 return .fido2Authorize(step: step)
             case .starting:
                 return .idCollect
+            case .success:
+                return .success
             }
         }
         
@@ -80,12 +82,12 @@ extension OwnID.CoreSDK.CoreViewModel {
                 return errorEffect(.coreLog(entry: .errorEntry(Self.self), error: .contextIsMissing))
             }
             
-            guard let url = step.data.url else {
+            guard let url = step.data?.url else {
                 return errorEffect(.coreLog(entry: .errorEntry(Self.self), error: .urlIsMissing))
             }
             
             if #available(iOS 16, *),
-               let domain = step.data.relyingPartyId {
+               let domain = step.data?.relyingPartyId {
                 let authManager = state.createAccountManagerClosure(state.authManagerStore, domain, state.context, url)
                 switch state.type {
                 case .register:
@@ -107,6 +109,19 @@ extension OwnID.CoreSDK.CoreViewModel {
             
             return []
         }
+        
+        func sendAuthRequest(state: inout OwnID.CoreSDK.CoreViewModel.State,
+                             fido2Payload: Encodable) -> [Effect<Action>] {
+            guard let urlString = step.data?.url, let url = URL(string: urlString) else {
+                return errorEffect(.coreLog(entry: .errorEntry(Self.self), error: .urlIsMissing))
+            }
+            
+            return [state.session.performAuthRequest(url: url, fido2Payload: fido2Payload, context: state.context)
+                .receive(on: DispatchQueue.main)
+                .map { [self] in nextStepAction($0.step) }
+                .catch { Just(Action.authManagerRequestFail(error: $0, browserBaseURL: urlString)) }
+                .eraseToEffect()]
+        }
     }
     
     class StopStep: BaseStep {
@@ -114,6 +129,29 @@ extension OwnID.CoreSDK.CoreViewModel {
             let action = state.session.performStopRequest(url: state.stopUrl)
                 .receive(on: DispatchQueue.main)
                 .map { _ in Action.stopRequestLoaded }
+                .catch { Just(Action.error($0)) }
+                .eraseToEffect()
+            
+            return [action]
+        }
+    }
+    
+    class FinalStep: BaseStep {
+        override func run(state: inout OwnID.CoreSDK.CoreViewModel.State) -> [Effect<OwnID.CoreSDK.CoreViewModel.Action>] {
+            let requestLanguage = state.supportedLanguages.rawValue.first
+            let action = state.session.performFinalStatusRequest(url: state.finalUrl, context: state.context)
+                .receive(on: DispatchQueue.main)
+                .map { response in
+                    let payload = OwnID.CoreSDK.Payload(dataContainer: response.payload.data,
+                                                        metadata: response.metadata,
+                                                        context: response.context,
+                                                        loginId: response.payload.loginId,
+                                                        responseType: OwnID.CoreSDK.StatusResponseType(rawValue: response.payload.type ?? "") ?? .registrationInfo,
+                                                        authType: response.flowInfo.authType,
+                                                        requestLanguage: requestLanguage)
+                    return payload
+                }
+                .map { Action.statusRequestLoaded(response: $0) }
                 .catch { Just(Action.error($0)) }
                 .eraseToEffect()
             

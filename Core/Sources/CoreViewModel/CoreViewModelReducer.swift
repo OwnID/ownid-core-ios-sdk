@@ -24,14 +24,16 @@ extension OwnID.CoreSDK.CoreViewModel {
 //            OwnID.UISDK.showInstantConnectView(viewModel: <#T##OwnID.FlowsSDK.LoginView.ViewModel#>, visualConfig: <#T##OwnID.UISDK.VisualLookConfig#>)
             return []
         case .fido2Authorize(let step):
-            let step = FidoAuthStep(step: step)
-            return step.run(state: &state)
+            let fidoStep = FidoAuthStep(step: step)
+            state.fidoStep = fidoStep
+            return fidoStep.run(state: &state)
         case .error:
             return []
             
         case .sendStatusRequest:
             state.browserViewModel = .none
-            return [sendStatusRequest(session: state.session)]
+            let finalStep = FinalStep()
+            return finalStep.run(state: &state)
             
         case .browserCancelled:
             state.browserViewModel = .none
@@ -52,8 +54,9 @@ extension OwnID.CoreSDK.CoreViewModel {
             state.authManager = .none
             return []
             
-        case .authRequestLoaded:
-            return [sendStatusRequest(session: state.session)]
+        case .success:
+            let finalStep = FinalStep()
+            return finalStep.run(state: &state)
             
         case .statusRequestLoaded:
             return []
@@ -101,10 +104,12 @@ extension OwnID.CoreSDK.CoreViewModel {
         case let .authManager(authManagerAction):
             switch authManagerAction {
             case .didFinishRegistration(let fido2RegisterPayload, let browserBaseURL):
-                return didFinishAuthManagerAction(state, fido2RegisterPayload, browserBaseURL)
+                let fidoStep = state.fidoStep
+                return fidoStep?.sendAuthRequest(state: &state, fido2Payload: fido2RegisterPayload) ?? []
                 
             case .didFinishLogin(let fido2LoginPayload, let browserBaseURL):
-                return didFinishAuthManagerAction(state, fido2LoginPayload, browserBaseURL)
+                let fidoStep = state.fidoStep
+                return fidoStep?.sendAuthRequest(state: &state, fido2Payload: fido2LoginPayload) ?? []
                 
             case let .error(error, context, browserBaseURL):
                 let vm = createBrowserVM(for: context,

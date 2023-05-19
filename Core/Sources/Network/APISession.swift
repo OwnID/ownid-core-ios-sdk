@@ -4,8 +4,9 @@ import Combine
 
 public protocol APISessionProtocol {
     func performInitRequest(requestData: OwnID.CoreSDK.Init.RequestData) -> AnyPublisher<OwnID.CoreSDK.Init.Response, OwnID.CoreSDK.CoreErrorLogWrapper>
-    func performFinalStatusRequest() -> AnyPublisher<OwnID.CoreSDK.Payload, OwnID.CoreSDK.CoreErrorLogWrapper>
-    func performAuthRequest(fido2Payload: Encodable) -> AnyPublisher<OwnID.CoreSDK.Payload, OwnID.CoreSDK.CoreErrorLogWrapper>
+    func performAuthRequest(url: URL, fido2Payload: Encodable, context: OwnID.CoreSDK.Context) -> AnyPublisher<OwnID.CoreSDK.Auth.Response, OwnID.CoreSDK.CoreErrorLogWrapper>
+    func performFinalStatusRequest(url: URL,
+                                   context: OwnID.CoreSDK.Context) -> AnyPublisher<OwnID.CoreSDK.Status.Response, OwnID.CoreSDK.CoreErrorLogWrapper>
     func performStopRequest(url: URL) -> AnyPublisher<Data, OwnID.CoreSDK.CoreErrorLogWrapper>
 }
 
@@ -25,8 +26,6 @@ extension APISessionProtocol {
             supportedLanguages in
             OwnID.CoreSDK.APISession(initURL: initURL,
                                      statusURL: statusURL,
-                                     finalStatusURL: finalStatusURL,
-                                     authURL: authURL,
                                      supportedLanguages: supportedLanguages)
         }
     }
@@ -36,23 +35,16 @@ public extension OwnID.CoreSDK {
     final class APISession: APISessionProtocol {
         private let sessionVerifier: SessionVerifier
         private let sessionChallenge: SessionChallenge
-        private var nonce: Nonce!
         private var type: OwnID.CoreSDK.RequestType!
         private let initURL: ServerURL
         private let statusURL: ServerURL
-        private let finalStatusURL: ServerURL
-        private let authURL: ServerURL
         private let supportedLanguages: OwnID.CoreSDK.Languages
         
         public init(initURL: ServerURL,
                     statusURL: ServerURL,
-                    finalStatusURL: ServerURL,
-                    authURL: ServerURL,
                     supportedLanguages: OwnID.CoreSDK.Languages) {
             self.initURL = initURL
             self.statusURL = statusURL
-            self.finalStatusURL = finalStatusURL
-            self.authURL = authURL
             self.supportedLanguages = supportedLanguages
             let sessionVerifierData = Self.random()
             sessionVerifier = sessionVerifierData.toBase64URL()
@@ -77,23 +69,22 @@ extension OwnID.CoreSDK.APISession {
         .eraseToAnyPublisher()
     }
     
-    public func performAuthRequest(fido2Payload: Encodable) -> AnyPublisher<OwnID.CoreSDK.Payload, OwnID.CoreSDK.CoreErrorLogWrapper> {
+    public func performAuthRequest(url: URL,
+                                   fido2Payload: Encodable,
+                                   context: OwnID.CoreSDK.Context) -> AnyPublisher<OwnID.CoreSDK.Auth.Response, OwnID.CoreSDK.CoreErrorLogWrapper> {
         OwnID.CoreSDK.Auth.Request(type: type,
-                                   url: authURL,
-                                   //TODO: #warning("replace to actual context")
-                                   context: "context",
-                                   nonce: nonce,
+                                   url: url,
+                                   context: context,
                                    fido2LoginPayload: fido2Payload,
                                    supportedLanguages: supportedLanguages)
         .perform()
         .eraseToAnyPublisher()
     }
     
-    public func performFinalStatusRequest() -> AnyPublisher<OwnID.CoreSDK.Payload, OwnID.CoreSDK.CoreErrorLogWrapper> {
-        OwnID.CoreSDK.Status.Request(url: finalStatusURL,
-                                     //TODO: #warning("replace to actual context")
-                                     context: "context",
-                                     nonce: nonce,
+    public func performFinalStatusRequest(url: URL,
+                                          context: OwnID.CoreSDK.Context) -> AnyPublisher<OwnID.CoreSDK.Status.Response, OwnID.CoreSDK.CoreErrorLogWrapper> {
+        OwnID.CoreSDK.Status.Request(url: url,
+                                     context: context,
                                      sessionVerifier: sessionVerifier,
                                      type: type,
                                      supportedLanguages: supportedLanguages)

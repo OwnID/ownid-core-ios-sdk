@@ -137,7 +137,7 @@ extension OwnID.CoreSDK {
                             .oneTimePasswordView,
                             .oneTimePassword,
                             .browserVM,
-                            .authRequestLoaded,
+                            .success,
                             .stopRequestLoaded:
                         internalStatesChange.append(action.debugDescription)
                         

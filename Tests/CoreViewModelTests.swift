@@ -55,6 +55,19 @@ extension OwnID.CoreSDK.AccountManager {
 
 extension OwnID.CoreSDK {
     final class APISessionMock: APISessionProtocol {
+        //TODO: cover tests
+        func performAuthRequest(url: URL, fido2Payload: Encodable, context: OwnID.CoreSDK.Context) -> AnyPublisher<OwnID.CoreSDK.Auth.Response, OwnID.CoreSDK.CoreErrorLogWrapper> {
+            
+        }
+        
+        func performFinalStatusRequest(url: URL, context: OwnID.CoreSDK.Context) -> AnyPublisher<OwnID.CoreSDK.Status.Response, OwnID.CoreSDK.CoreErrorLogWrapper> {
+            
+        }
+        
+        func performStopRequest(url: URL) -> AnyPublisher<Data, OwnID.CoreSDK.CoreErrorLogWrapper> {
+            
+        }
+        
         init(isInitSuccessful: Bool) {
             self.isInitSuccessful = isInitSuccessful
         }
@@ -200,8 +213,6 @@ final class CoreViewModelTests: XCTestCase {
         var config = try! OwnID.CoreSDK.LocalConfiguration(appID: "e8qkk8umn5hxqg", redirectionURL: "com.ownid.demo.firebase://ownid/redirect/", environment: "staging")
         let domain = "https://ownid.com"
         config.serverURL = URL(string: domain)!
-        let settings = OwnID.CoreSDK.FidoSettings(rpID: domain, rpName: domain)
-        config.fidoSettings = settings
         return config
     }
     

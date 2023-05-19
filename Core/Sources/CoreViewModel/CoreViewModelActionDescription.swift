@@ -25,8 +25,8 @@ extension OwnID.CoreSDK.CoreViewModel.Action: CustomDebugStringConvertible {
             return "statusRequestLoaded"
         case .browserVM:
             return "browserVM"
-        case .authRequestLoaded:
-            return "authRequestLoaded"
+        case .success:
+            return "success"
         case .authManager(let action):
             return "authManagerAction \(action.debugDescription)"
         case .authManagerCancelled:

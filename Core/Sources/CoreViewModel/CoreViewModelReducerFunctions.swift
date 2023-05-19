@@ -2,14 +2,6 @@ import LocalAuthentication
 import Combine
 
 extension OwnID.CoreSDK.CoreViewModel {
-    static func didFinishAuthManagerAction(_ state: State,
-                                           _ fido2RegisterPayload: Encodable,
-                                           _ browserBaseURL: String) -> [Effect<Action>] {
-        [sendAuthRequest(session: state.session,
-                         fido2Payload: fido2RegisterPayload,
-                         browserBaseURL: browserBaseURL)]
-    }
-    
     static func createBrowserVM(for context: String,
                                 browserURL: String,
                                 loginId: OwnID.CoreSDK.LoginId?,
@@ -33,22 +25,5 @@ extension OwnID.CoreSDK.CoreViewModel {
         let url = URL(string: urlString)!
         let vm = creationClosure(store, url, redirectionURLString ?? "")
         return vm
-    }
-
-    static func sendAuthRequest(session: APISessionProtocol,
-                                fido2Payload: Encodable,
-                                browserBaseURL: String) -> Effect<Action> {
-        session.performAuthRequest(fido2Payload: fido2Payload)
-            .receive(on: DispatchQueue.main)
-            .map { _ in Action.authRequestLoaded }
-            .catch { Just(Action.authManagerRequestFail(error: $0, browserBaseURL: browserBaseURL)) }
-            .eraseToEffect()
-    }
-    
-    static func sendStatusRequest(session: APISessionProtocol) -> Effect<Action> {
-        session.performFinalStatusRequest()
-            .map { Action.statusRequestLoaded(response: $0) }
-            .catch { Just(Action.error($0)) }
-            .eraseToEffect()
     }
 }

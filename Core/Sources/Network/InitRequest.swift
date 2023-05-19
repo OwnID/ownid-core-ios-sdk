@@ -29,11 +29,11 @@ public extension OwnID.CoreSDK.Init {
 public extension OwnID.CoreSDK {
     struct Step: Decodable {
         enum StepType: String, Decodable {
-            case fido2Authorize, starting
+            case fido2Authorize, starting, success
         }
         
         let type: StepType
-        let data: StepData
+        let data: StepData?
     }
     
     struct StepData: Decodable {
@@ -47,8 +47,6 @@ public extension OwnID.CoreSDK {
 
 public extension OwnID.CoreSDK.Init {
     struct Response: Decodable {
-        public let nonce: String? //TODO: remove
-        
         let context: String
         let expiration: Int?
         let stopUrl: String
