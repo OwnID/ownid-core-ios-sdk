@@ -57,13 +57,35 @@ public extension OwnID.CoreSDK {
     
     struct Payload {
         /// Used for later processing and creating login\registration requests
-        public let dataContainer: Any?
-        public let metadata: Any?
+        public let dataContainer: PayloadData?
+        public let metadata: Metadata?
         public let context: OwnID.CoreSDK.Context
         public let loginId: LoginID?
         public let responseType: StatusResponseType
         public let authType: AuthType?
         public let requestLanguage: String?
+    }
+    
+    struct Metadata: Decodable {
+        public let collectionName: String?
+        public let docId: String?
+        public let userIdKey: String?
+    }
+    
+    struct PayloadData: Codable {
+        let authType: String?
+        let createdTimestamp: String?
+        let creationSource: String?
+        let fido2CredentialId: String?
+        let fido2RpId: String?
+        let fido2SignatureCounter: String?
+        let isSharable: Bool?
+        let os: String?
+        let osVersion: String?
+        let pubKey: String?
+        let source: String?
+        public let idToken: String?
+        public let sessionInfo: String?
     }
 }
 

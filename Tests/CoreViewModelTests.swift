@@ -68,9 +68,9 @@ extension OwnID.CoreSDK {
             
         }
         
-//        init(isInitSuccessful: Bool) {
-//            self.isInitSuccessful = isInitSuccessful
-//        }
+        init(isInitSuccessful: Bool) {
+            self.isInitSuccessful = isInitSuccessful
+        }
         
         var isInitSuccessful = true
         var context: OwnID.CoreSDK.Context! { "KreJ96smzSwveEb5QfaJzJ" }

@@ -14,7 +14,9 @@ public extension OwnID.CoreSDK {
 
 public extension OwnID.CoreSDK.CoreErrorLogWrapper {
     static func coreLog(entry: OwnID.CoreSDK.CoreMetricLogEntry, error: OwnID.CoreSDK.Error) -> OwnID.CoreSDK.CoreErrorLogWrapper {
-        OwnID.CoreSDK.CoreErrorLogWrapper(entry: entry, error: error)
+        let coreErrorLogWrapper = OwnID.CoreSDK.CoreErrorLogWrapper(entry: entry, error: error)
+        print(coreErrorLogWrapper)
+        return coreErrorLogWrapper
     }
 }
 

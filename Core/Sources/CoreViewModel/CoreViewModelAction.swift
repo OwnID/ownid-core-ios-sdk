@@ -11,9 +11,9 @@ extension OwnID.CoreSDK.CoreViewModel {
         case addToStateShouldStartInitRequest(value: Bool)
         
         case sendInitialRequest
-        case initialRequestLoaded(response: OwnID.CoreSDK.Init.Response)
+        case initialRequestLoaded(response: InitResponse)
         case idCollect
-        case fido2Authorize(step: OwnID.CoreSDK.Step)
+        case fido2Authorize(step: Step)
         case authManagerRequestFail(error: OwnID.CoreSDK.CoreErrorLogWrapper, browserBaseURL: String)
         case sendStatusRequest
         case browserCancelled

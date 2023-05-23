@@ -2,10 +2,6 @@ import Combine
 
 extension OwnID.CoreSDK.CoreViewModel {
     static func reducer(state: inout State, action: Action) -> [Effect<Action>] {
-        //TODO: remove it
-        let loginIdSettings = state.configuration?.loginIdSettings ?? OwnID.CoreSDK.LoginIdSettings(type: .email, regex: "")
-        let loginId = OwnID.CoreSDK.LoginId(value: state.loginId, settings: loginIdSettings)
-        
         switch action {
         case .sendInitialRequest:
             let step = InitStep()
@@ -21,6 +17,7 @@ extension OwnID.CoreSDK.CoreViewModel {
             
             return [Just(action).eraseToEffect()]
         case .idCollect:
+            let step = IdCollectStep()
 //            OwnID.UISDK.showInstantConnectView(viewModel: <#T##OwnID.FlowsSDK.LoginView.ViewModel#>, visualConfig: <#T##OwnID.UISDK.VisualLookConfig#>)
             return []
         case .fido2Authorize(let step):
@@ -44,7 +41,6 @@ extension OwnID.CoreSDK.CoreViewModel {
             state.browserViewModel = .none
             state.authManager = .none
             return []
-            //TODO: cancel request if all other cancels lead here
             
         case .oneTimePassword:
             OwnID.UISDK.showOTPView(store: state.oneTimePasswordStore)
@@ -63,16 +59,9 @@ extension OwnID.CoreSDK.CoreViewModel {
         case .stopRequestLoaded:
             return []
             
-        case .authManagerRequestFail(let error, let browserBaseURL):
-            let vm = createBrowserVM(for: state.context,
-                                     browserURL: browserBaseURL,
-                                     loginId: loginId,
-                                     sdkConfigurationName: state.sdkConfigurationName,
-                                     store: state.browserViewModelStore,
-                                     redirectionURLString: state.configuration?.redirectionURL,
-                                     creationClosure: state.createBrowserOpenerClosure)
-            state.browserViewModel = vm
-            return [Just(.addErrorToInternalStates(error.error)).eraseToEffect()]
+        case .authManagerRequestFail:
+            let stopStep = StopStep()
+            return stopStep.run(state: &state)
             
         case let .addToState(browserViewModelStore, authStore, oneTimePasswordStore):
             state.browserViewModelStore = browserViewModelStore
@@ -103,24 +92,17 @@ extension OwnID.CoreSDK.CoreViewModel {
             //TODO: move auth manager action handling to fido step
         case let .authManager(authManagerAction):
             switch authManagerAction {
-            case .didFinishRegistration(let fido2RegisterPayload, let browserBaseURL):
+            case .didFinishRegistration(let fido2RegisterPayload, _):
                 let fidoStep = state.fidoStep
                 return fidoStep?.sendAuthRequest(state: &state, fido2Payload: fido2RegisterPayload) ?? []
                 
-            case .didFinishLogin(let fido2LoginPayload, let browserBaseURL):
+            case .didFinishLogin(let fido2LoginPayload, _):
                 let fidoStep = state.fidoStep
                 return fidoStep?.sendAuthRequest(state: &state, fido2Payload: fido2LoginPayload) ?? []
                 
-            case let .error(error, context, browserBaseURL):
-                let vm = createBrowserVM(for: context,
-                                         browserURL: browserBaseURL,
-                                         loginId: loginId,
-                                         sdkConfigurationName: state.sdkConfigurationName,
-                                         store: state.browserViewModelStore,
-                                         redirectionURLString: state.configuration?.redirectionURL,
-                                         creationClosure: state.createBrowserOpenerClosure)
-                state.browserViewModel = vm
-                return [Just(.addErrorToInternalStates(error)).eraseToEffect()]
+            case .error(_, _, _):
+                let stopStep = StopStep()
+                return stopStep.run(state: &state)
             }
             
         case .oneTimePasswordView(let action):

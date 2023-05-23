@@ -8,7 +8,7 @@ extension OwnID.CoreSDK.AccountManager {
             let manager = OwnID.CoreSDK.CurrentAccountManager(store: store, domain: domain, challenge: challenge, browserBaseURL: browserBaseURL)
             let current = Self {
                 if #available(iOS 16.0, *) {
-                    manager.signInWith()
+                    manager.signIn()
                 }
             } cancelClosure: {
                 if #available(iOS 16.0, *) {
@@ -30,7 +30,7 @@ extension OwnID.CoreSDK {
         var cancelClosure: () -> Void
         var signUpClosure: (_ userName: String) -> Void
         
-        func signInWith() {
+        func signIn() {
             signInClosure()
         }
         
@@ -89,7 +89,7 @@ extension OwnID.CoreSDK {
         }
         
         @available(iOS 16.0, *)
-        func signInWith() {
+        func signIn() {
             currentAuthController?.cancel()
             let securityKeyProvider = ASAuthorizationSecurityKeyPublicKeyCredentialProvider(relyingPartyIdentifier: domain)
             let publicKeyCredentialProvider = ASAuthorizationPlatformPublicKeyCredentialProvider(relyingPartyIdentifier: domain)

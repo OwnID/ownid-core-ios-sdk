@@ -15,12 +15,10 @@ extension OwnID.CoreSDK {
              sdkConfigurationName: String,
              isLoggingEnabled: Bool,
              clientConfiguration: LocalConfiguration?,
-             apiSessionCreationClosure: @escaping APISessionProtocol.CreationClosure = OwnID.CoreSDK.APISession.defaultAPISession,
              createAccountManagerClosure: @escaping AccountManager.CreationClosure = OwnID.CoreSDK.AccountManager.defaultAccountManager,
              createBrowserOpenerClosure: @escaping BrowserOpener.CreationClosure = BrowserOpener.defaultOpener) {
             let initialState = State(isLoggingEnabled: isLoggingEnabled,
                                      configuration: clientConfiguration,
-                                     apiSessionCreationClosure: apiSessionCreationClosure,
                                      createAccountManagerClosure: createAccountManagerClosure,
                                      createBrowserOpenerClosure: createBrowserOpenerClosure,
                                      sdkConfigurationName: sdkConfigurationName,
@@ -137,8 +135,7 @@ extension OwnID.CoreSDK {
                             .oneTimePasswordView,
                             .oneTimePassword,
                             .browserVM,
-                            .success,
-                            .stopRequestLoaded:
+                            .success:
                         internalStatesChange.append(action.debugDescription)
                         
                     case let .statusRequestLoaded(payload):
@@ -154,7 +151,8 @@ extension OwnID.CoreSDK {
                     case .browserCancelled,
                             .authManagerCancelled,
                             .oneTimePasswordCancelled,
-                            .cancelled:
+                            .cancelled,
+                            .stopRequestLoaded:
                         internalStatesChange.append(String(describing: action))
                         flowsFinished()
                         resultPublisher.send(.cancelled)

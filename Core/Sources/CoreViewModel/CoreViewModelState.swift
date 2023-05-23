@@ -3,12 +3,10 @@ extension OwnID.CoreSDK.CoreViewModel {
         let isLoggingEnabled: Bool
         var configuration: OwnID.CoreSDK.LocalConfiguration?
         
-        let apiSessionCreationClosure: APISessionProtocol.CreationClosure
         let createAccountManagerClosure: OwnID.CoreSDK.AccountManager.CreationClosure
         let createBrowserOpenerClosure: OwnID.CoreSDK.BrowserOpener.CreationClosure
         
         let sdkConfigurationName: String
-        var session: APISessionProtocol!
         let loginId: String
         let type: OwnID.CoreSDK.RequestType
         let supportedLanguages: OwnID.CoreSDK.Languages
@@ -23,6 +21,8 @@ extension OwnID.CoreSDK.CoreViewModel {
         
         var shouldStartFlowOnConfigurationReceive = true
         
+        var sessionVerifier: OwnID.CoreSDK.SessionVerifier!
+        var session: OwnID.CoreSDK.SessionService!
         var stopUrl: URL!
         var finalUrl: URL!
         var context: OwnID.CoreSDK.Context!
