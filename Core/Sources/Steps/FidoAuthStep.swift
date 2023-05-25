@@ -23,10 +23,6 @@ extension OwnID.CoreSDK.CoreViewModel {
         }
     }
     
-    struct AuthResponse: Decodable {
-        let step: Step
-    }
-    
     class FidoAuthStep: BaseStep {
         private let step: Step
         
@@ -57,7 +53,7 @@ extension OwnID.CoreSDK.CoreViewModel {
         func sendAuthRequest(state: inout OwnID.CoreSDK.CoreViewModel.State,
                              fido2Payload: Encodable) -> [Effect<Action>] {
             guard let urlString = step.fidoData?.url, let url = URL(string: urlString) else {
-                return errorEffect(.coreLog(entry: .errorEntry(Self.self), error: .urlIsMissing))
+                return errorEffect(.coreLog(entry: .errorEntry(Self.self), error: .dataIsMissing))
             }
 
             let context = state.context
@@ -66,7 +62,7 @@ extension OwnID.CoreSDK.CoreViewModel {
             let effect = state.session.perform(url: url,
                                                method: .post,
                                                body: requestBody,
-                                               with: AuthResponse.self)
+                                               with: StepResponse.self)
                 .receive(on: DispatchQueue.main)
                 .handleEvents(receiveOutput: { response in
                     OwnID.CoreSDK.logger.logCore(.entry(context: context, message: "Auth Request Finished", Self.self))

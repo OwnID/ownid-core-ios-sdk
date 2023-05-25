@@ -14,6 +14,7 @@ public extension OwnID.CoreSDK {
         case userNameIsInvalid
         case localConfigIsNotPresent
         case urlIsMissing
+        case dataIsMissing
         case tokenDataIsMissing
         case contextIsMissing
         case flowCancelled
@@ -121,6 +122,9 @@ extension OwnID.CoreSDK.Error: LocalizedError {
         case .urlIsMissing:
             return "URL is missing"
             
+        case .dataIsMissing:
+            return "Data is missing"
+            
         case .flowCancelled:
             return "Flow cancelled"
             
@@ -161,6 +165,7 @@ extension OwnID.CoreSDK.Error: CustomDebugStringConvertible {
                 .authorizationManagerUnknownAuthType,
                 .contextIsMissing,
                 .urlIsMissing,
+                .dataIsMissing,
                 .flowCancelled,
                 .redirectParameterFromURLCancelledOpeningSDK,
                 .initRequestNetworkFailed,

@@ -24,16 +24,6 @@ extension OwnID.CoreSDK.CoreViewModel {
     
     class InitStep: BaseStep {
         override func run(state: inout State) -> [Effect<Action>] {
-            guard let loginIdSettings = state.configuration?.loginIdSettings else {
-                return errorEffect(.coreLog(entry: .errorEntry(Self.self), error: .localConfigIsNotPresent))
-            }
-            
-            let loginId = OwnID.CoreSDK.LoginId(value: state.loginId, settings: loginIdSettings)
-            
-            if !loginId.value.isEmpty, !loginId.isValid {
-                return errorEffect(.coreLog(entry: .errorEntry(Self.self), error: loginId.error))
-            }
-            
             guard let configuration = state.configuration else {
                 return errorEffect(.coreLog(entry: .errorEntry(Self.self), error: .localConfigIsNotPresent))
             }
@@ -48,7 +38,7 @@ extension OwnID.CoreSDK.CoreViewModel {
 
             let requestBody = InitRequestBody(sessionChallenge: sessionChallenge,
                                               type: state.type,
-                                              loginId: loginId.value,
+                                              loginId: state.loginId,
                                               supportsFido2: isPasskeysSupported)
             return [sendInitialRequest(requestBody: requestBody, session: session, configuration: configuration)]
         }

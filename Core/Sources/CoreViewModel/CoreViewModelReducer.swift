@@ -16,15 +16,17 @@ extension OwnID.CoreSDK.CoreViewModel {
             let action = baseStep.nextStepAction(response.step)
             
             return [Just(action).eraseToEffect()]
-        case .idCollect:
-            let step = IdCollectStep()
-//            OwnID.UISDK.showInstantConnectView(viewModel: <#T##OwnID.FlowsSDK.LoginView.ViewModel#>, visualConfig: <#T##OwnID.UISDK.VisualLookConfig#>)
-            return []
+        case .idCollect(let step):
+            let idCollectStep = IdCollectStep(step: step)
+            state.idCollectStep = idCollectStep
+            return idCollectStep.run(state: &state)
         case .fido2Authorize(let step):
             let fidoStep = FidoAuthStep(step: step)
             state.fidoStep = fidoStep
             return fidoStep.run(state: &state)
         case .error:
+            return []
+        case .nonTerminalError:
             return []
             
         case .sendStatusRequest:
@@ -42,9 +44,10 @@ extension OwnID.CoreSDK.CoreViewModel {
             state.authManager = .none
             return []
             
-        case .oneTimePassword:
-            OwnID.UISDK.showOTPView(store: state.oneTimePasswordStore)
-            return []
+        case .oneTimePassword(let step):
+            let otpStep = OTPAuthStep(step: step)
+            state.otpStep = otpStep
+            return otpStep.run(state: &state)
             
         case .authManagerCancelled:
             state.authManager = .none
@@ -63,10 +66,15 @@ extension OwnID.CoreSDK.CoreViewModel {
             let stopStep = StopStep()
             return stopStep.run(state: &state)
             
-        case let .addToState(browserViewModelStore, authStore, oneTimePasswordStore):
+        case .webApp(let step):
+            let webAppStep = WebAppStep(step: step)
+            return webAppStep.run(state: &state)
+            
+        case let .addToState(browserViewModelStore, authStore, oneTimePasswordStore, idCollectViewStore):
             state.browserViewModelStore = browserViewModelStore
             state.authManagerStore = authStore
             state.oneTimePasswordStore = oneTimePasswordStore
+            state.idCollectViewStore = idCollectViewStore
             return []
             
         case let .browserVM(browserVMAction):
@@ -107,16 +115,29 @@ extension OwnID.CoreSDK.CoreViewModel {
             
         case .oneTimePasswordView(let action):
             switch action {
-            case .codeEntered(let code):
+            case .viewLoaded:
                 break
+            case .codeRestarted:
+                break
+            case .codeEntered(let code):
+                let otpStep = state.otpStep
+                return otpStep?.sendCode(code: code, state: &state) ?? []
                 
             case .cancel:
-                return [Just(.oneTimePasswordCancelled).eraseToEffect()]
+                let stopStep = StopStep()
+                return stopStep.run(state: &state)
                 
             case .emailIsNotRecieved:
-                break
+                let otpStep = state.otpStep
+                return otpStep?.restart(state: &state) ?? []
                 
             case .error:
+                break
+                
+            case .success:
+                break
+                
+            case .nonTerminalError:
                 break
                 
             case .cancelCodeOperation:
@@ -130,7 +151,20 @@ extension OwnID.CoreSDK.CoreViewModel {
             return []
             
         case .oneTimePasswordCancelled:
-            return []
+            let stopStep = StopStep()
+            return stopStep.run(state: &state)
+            
+        case .idCollectView(let action):
+            switch action {
+            case .cancel:
+                let stopStep = StopStep()
+                return stopStep.run(state: &state)
+            case .loginIdEntered(let loginId):
+                let idCollectStep = state.idCollectStep
+                return idCollectStep?.sendAuthRequest(state: &state, loginId: loginId) ?? []
+            case .error:
+                return []
+            }
         }
     }
 }

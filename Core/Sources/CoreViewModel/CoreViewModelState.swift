@@ -19,6 +19,8 @@ extension OwnID.CoreSDK.CoreViewModel {
         
         var oneTimePasswordStore: Store<OwnID.UISDK.OneTimePassword.ViewState, OwnID.UISDK.OneTimePassword.Action>!
         
+        var idCollectViewStore: Store<OwnID.UISDK.InstantConnent.ViewState, OwnID.UISDK.InstantConnent.Action>!
+        
         var shouldStartFlowOnConfigurationReceive = true
         
         var sessionVerifier: OwnID.CoreSDK.SessionVerifier!
@@ -29,5 +31,7 @@ extension OwnID.CoreSDK.CoreViewModel {
         
         #warning("temporary desicion until move auth manager methods to FidoAuthStep class")
         var fidoStep: FidoAuthStep!
+        var otpStep: OTPAuthStep!
+        var idCollectStep: IdCollectStep!
     }
 }

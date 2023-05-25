@@ -3,9 +3,22 @@ import UIKit
 import Combine
 
 extension OwnID.UISDK {
-    static func showOTPView(store: Store<OwnID.UISDK.OneTimePassword.ViewState, OwnID.UISDK.OneTimePassword.Action>) {
+    static func showOTPView(store: Store<OwnID.UISDK.OneTimePassword.ViewState, OwnID.UISDK.OneTimePassword.Action>,
+                            loginId: String,
+                            otpLength: Int,
+                            restartUrl: URL,
+                            type: OwnID.CoreSDK.CoreViewModel.Step.StepType,
+                            verificationType: OwnID.CoreSDK.Verification.VerificationType) {
         if #available(iOS 15.0, *) {
-            let view = OwnID.UISDK.OneTimePassword.OneTimePasswordView(store: store, visualConfig: PopupManager.shared.visualLookConfig)
+            let titleType: OwnID.UISDK.OneTimePassword.TitleType = type == .loginIDAuthorization ? .oneTimePasswordSignIn : .emailVerification
+            let codeLength = OneTimePassword.CodeLength(rawValue: otpLength) ?? .four
+            let view = OwnID.UISDK.OneTimePassword.OneTimePasswordView(store: store,
+                                                                       visualConfig: PopupManager.shared.visualLookConfig,
+                                                                       loginId: loginId,
+                                                                       codeLength: codeLength,
+                                                                       restartURL: restartUrl,
+                                                                       titleType: titleType,
+                                                                       verificationType: verificationType)
             view.presentAsPopup()
         }
     }
@@ -37,6 +50,7 @@ extension OwnID.UISDK.OneTimePassword {
         private let titleState = TitleType.emailVerification
         private let codeLength: CodeLength
         private let titleType: TitleType
+        private let restartURL: URL
         
         #warning("maybe move this translations approach to Property wrappers ?")
         @State private var emailSentText: String
@@ -45,12 +59,15 @@ extension OwnID.UISDK.OneTimePassword {
         
         init(store: Store<ViewState, Action>,
              visualConfig: OwnID.UISDK.OTPViewConfig,
+             loginId: String,
+             codeLength: CodeLength = .four,
+             restartURL: URL,
              titleType: TitleType = .oneTimePasswordSignIn,
-             codeLength: CodeLength = .six,
-             email: String = "fecemi9888@snowlash.com") {
+             verificationType: OwnID.CoreSDK.Verification.VerificationType) {
             self.visualConfig = visualConfig
             self.store = store
             self.codeLength = codeLength
+            self.restartURL = restartURL
             self.viewModel = OwnID.UISDK.OTPTextFieldView.ViewModel(codeLength: codeLength, store: store)
             
             self.titleType = titleType
@@ -60,7 +77,7 @@ extension OwnID.UISDK.OneTimePassword {
                 let codeLengthReplacement = Constants.codeLengthReplacement
                 let emailReplacement = Constants.emailReplacement
                 text = text.replacingOccurrences(of: codeLengthReplacement, with: String(codeLength.rawValue))
-                text = text.replacingOccurrences(of: emailReplacement, with: email)
+                text = text.replacingOccurrences(of: emailReplacement, with: loginId)
                 return text
             }
             self.emailSentTextChangedClosure = emailSentTextChangedClosure
@@ -71,7 +88,6 @@ extension OwnID.UISDK.OneTimePassword {
         private func didNotGetEmail() -> some View {
             if store.value.isDisplayingDidNotGetCode {
                 Button {
-                    OwnID.UISDK.PopupManager.dismiss()
                     store.send(.emailIsNotRecieved)
                 } label: {
                     Text(localizedKey: .didNotGetEmail)

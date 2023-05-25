@@ -62,7 +62,7 @@ extension OwnID.CoreSDK.CoreViewModel {
     struct OTPStepData: Decodable {
         let url: String
         let restartUrl: String
-        let verificationType: String
+        let verificationType: OwnID.CoreSDK.Verification.VerificationType
         let otpLength: Int?
     }
     

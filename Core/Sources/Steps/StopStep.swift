@@ -7,7 +7,7 @@ extension OwnID.CoreSDK.CoreViewModel {
     class StopStep: BaseStep {
         override func run(state: inout State) -> [Effect<OwnID.CoreSDK.CoreViewModel.Action>] {
             let context = state.context
-            let action = state.session.perform(url: state.stopUrl,
+            let effect = state.session.perform(url: state.stopUrl,
                                                method: .post,
                                                body: EmptyBody(),
                                                with: EmptyBody.self)
@@ -18,7 +18,7 @@ extension OwnID.CoreSDK.CoreViewModel {
                 .map { _ in Action.stopRequestLoaded }
                 .catch { _ in Just(Action.stopRequestLoaded) }
                 .eraseToEffect()
-            return [action]
+            return [effect]
         }
     }
 }

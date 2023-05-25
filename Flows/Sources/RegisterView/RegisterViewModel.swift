@@ -228,7 +228,7 @@ public extension OwnID.FlowsSDK.RegisterView {
 private extension OwnID.FlowsSDK.RegisterView.ViewModel {
     
     func processLogin(payload: OwnID.CoreSDK.Payload) {
-        let loginPerformerPublisher = loginPerformer.login(payload: payload, email: loginId)
+        let loginPerformerPublisher = loginPerformer.login(payload: payload, loginId: loginId)
         loginPerformerPublisher
             .sink { [unowned self] completion in
                 if case .failure(let error) = completion {

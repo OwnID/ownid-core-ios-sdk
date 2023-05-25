@@ -159,7 +159,7 @@ public extension OwnID.FlowsSDK.LoginView {
 private extension OwnID.FlowsSDK.LoginView.ViewModel {
     func process(payload: OwnID.CoreSDK.Payload) {
         self.payload = payload
-        let loginPerformerPublisher = loginPerformer.login(payload: payload, email: loginId)
+        let loginPerformerPublisher = loginPerformer.login(payload: payload, loginId: loginId)
         loginPerformerPublisher
             .sink { [unowned self] completion in
                 if case .failure(let error) = completion {

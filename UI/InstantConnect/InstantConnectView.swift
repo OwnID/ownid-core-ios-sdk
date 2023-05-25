@@ -2,12 +2,16 @@ import SwiftUI
 import UIKit
 import Combine
 
-public extension OwnID.UISDK {
-    static func showInstantConnectView(viewModel: OwnID.FlowsSDK.LoginView.ViewModel,
-                                       visualConfig: OwnID.UISDK.VisualLookConfig) {
+extension OwnID.UISDK {
+    static func showInstantConnectView(store: Store<OwnID.UISDK.InstantConnent.ViewState, OwnID.UISDK.InstantConnent.Action>,
+                                       loginId: String,
+                                       loginIdSettings: OwnID.CoreSDK.LoginIdSettings) {
         if #available(iOS 15.0, *) {
-//            let visualConfig = PopupManager.shared.visualLookConfig
-            let view = OwnID.UISDK.InstantConnectView(viewModel: viewModel, visualConfig: visualConfig, closeClosure: {
+            let view = OwnID.UISDK.InstantConnent.InstantConnectView(store: store,
+                                                                     visualConfig: OwnID.UISDK.VisualLookConfig(),
+                                                                     loginId: loginId,
+                                                                     loginIdSettings: loginIdSettings,
+                                                                     closeClosure: {
                 OwnID.UISDK.PopupManager.dismiss()
             })
             view.presentAsPopup()
@@ -15,7 +19,11 @@ public extension OwnID.UISDK {
     }
 }
 
-public extension OwnID.UISDK {
+extension OwnID.UISDK {
+    enum InstantConnent { }
+}
+
+extension OwnID.UISDK.InstantConnent {
     @available(iOS 15.0, *)
     struct InstantConnectView: Popup {
         private enum Constants {
@@ -28,67 +36,48 @@ public extension OwnID.UISDK {
             static let publisherDebounce = 500
         }
         
-        #warning("as of latest changes, probably needs some redesign, as for now needs somehow a bit redesigned to be inited from core view model")
         enum FocusField: Hashable {
             case email
         }
         
-        public static func == (lhs: OwnID.UISDK.InstantConnectView, rhs: OwnID.UISDK.InstantConnectView) -> Bool {
+        public static func == (lhs: OwnID.UISDK.InstantConnent.InstantConnectView,
+                               rhs: OwnID.UISDK.InstantConnent.InstantConnectView) -> Bool {
             lhs.uuid == rhs.uuid
         }
         private let uuid = UUID().uuidString
-        private let emailPublisher = PassthroughSubject<String, Never>()
+        private let loginIdPublisher = PassthroughSubject<String, Never>()
         
-        private var visualConfig: VisualLookConfig
+        private var visualConfig: OwnID.UISDK.VisualLookConfig
         private let closeClosure: () -> Void
         
-        @ObservedObject private var viewModel: OwnID.FlowsSDK.LoginView.ViewModel
+        @ObservedObject var store: Store<ViewState, Action>
+        @ObservedObject private var viewModel: ViewModel
         @FocusState private var focusedField: FocusField?
-        @State private var email = ""
-        @State private var error = ""
-        
-        private let resultPublisher = PassthroughSubject<Void, Never>()
+        @State private var loginId = ""
+        private let loginIdSettings: OwnID.CoreSDK.LoginIdSettings
+
         private var bag = Set<AnyCancellable>()
         
         @State private var isTranslationChanged = false
         
-        public init(viewModel: OwnID.FlowsSDK.LoginView.ViewModel,
-                    visualConfig: VisualLookConfig,
-                    closeClosure: @escaping () -> Void) {
-            self.viewModel = viewModel
+        init(store: Store<ViewState, Action>,
+             visualConfig: OwnID.UISDK.VisualLookConfig,
+             loginId: String,
+             loginIdSettings: OwnID.CoreSDK.LoginIdSettings,
+             closeClosure: @escaping () -> Void) {
+            self.store = store
+            self.loginId = loginId
+            self.loginIdSettings = loginIdSettings
             self.visualConfig = visualConfig
             self.closeClosure = closeClosure
+            self.viewModel = ViewModel(store: store, loginId: loginId, loginIdSettings: loginIdSettings)
             
-            viewModel.updateLoginIdPublisher(emailPublisher.eraseToAnyPublisher())
-            viewModel.subscribe(to: eventPublisher)
-            
-            viewModel.eventPublisher.sink { [self] event in
-                switch event {
-                case .success(let event):
-                    switch event {
-                    case .loading:
-                        break
-                        
-                    case .loggedIn:
-                        closeClosure()
-                    }
-                    
-                case .failure(let error):
-                    self.error = error.localizedDescription
-                }
-            }
-            .store(in: &bag)
-        }
-        
-        var eventPublisher: OwnID.UISDK.EventPubliser {
-            resultPublisher
-                .debounce(for: .milliseconds(Constants.publisherDebounce), scheduler: DispatchQueue.main)
-                .eraseToAnyPublisher()
+            viewModel.updateLoginIdPublisher(loginIdPublisher.eraseToAnyPublisher())
         }
         
         public func createContent() -> some View {
             viewContent()
-                .onChange(of: email) { newValue in emailPublisher.send(newValue) }
+                .onChange(of: loginId) { newValue in loginIdPublisher.send(newValue) }
                 .onReceive(OwnID.CoreSDK.shared.translationsModule.translationsChangePublisher) {
                     isTranslationChanged.toggle()
                 }
@@ -113,7 +102,7 @@ public extension OwnID.UISDK {
         }
         
         private func dismiss() {
-            viewModel.resetDataAndState()
+            store.send(.cancel)
             closeClosure()
         }
         
@@ -130,9 +119,9 @@ public extension OwnID.UISDK {
         
         @ViewBuilder
         private func errorView() -> some View {
-            if !error.isEmpty {
+            if !viewModel.error.isEmpty {
                 HStack {
-                    Text(error)
+                    Text(viewModel.error)
                         .multilineTextAlignment(.leading)
                         .foregroundColor(OwnID.Colors.errorColor)
                         .padding(.bottom, Constants.bottomPadding)
@@ -150,9 +139,9 @@ public extension OwnID.UISDK {
                         .foregroundColor(OwnID.Colors.otpContentMessageColor)
                         .padding(.bottom, Constants.bottomPadding)
                     errorView()
-                    TextField("", text: $email)
-                        .onChange(of: email) { _ in
-                            error = ""
+                    TextField("", text: $loginId)
+                        .onChange(of: loginId) { _ in
+                            viewModel.error = ""
                         }
                         .font(.system(size: Constants.emailFontSize))
                         .keyboardType(.emailAddress)
@@ -166,18 +155,19 @@ public extension OwnID.UISDK {
                         )
                         .padding(.bottom, Constants.bottomPadding)
                         .padding(.top)
-                    AuthButton(visualConfig: visualConfig,
-                               actionHandler: { resultPublisher.send(()) },
-                               isLoading: viewModel.state.isLoadingBinding,
-                               buttonState: viewModel.state.buttonStateBinding,
-                               translationKey: .stepsContinue)
+                    OwnID.UISDK.AuthButton(visualConfig: visualConfig,
+                                           actionHandler: { viewModel.postLoginId() },
+                                           isLoading: $viewModel.isLoading,
+                                           buttonState: $viewModel.buttonState,
+                                           translationKey: .stepsContinue)
                 }
             }
             .padding()
             .onAppear() {
-                let emailValue = OwnID.CoreSDK.DefaultsEmailSaver.getEmail() ?? ""
-                email = emailValue
-                emailPublisher.send(emailValue)
+                //TODO: reimplement DefaultsEmailSaver
+                //                let emailValue = OwnID.CoreSDK.DefaultsEmailSaver.getEmail() ?? ""
+                //                email = emailValue
+                //                emailPublisher.send(emailValue)
                 focusedField = .email
             }
         }

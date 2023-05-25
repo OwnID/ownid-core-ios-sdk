@@ -33,14 +33,32 @@ extension OwnID.CoreSDK {
                 )
             )
             self.store = store
+            
+            let idCollectViewStore = self.store.view(
+                value: { OwnID.UISDK.InstantConnent.ViewState(isLoggingEnabled: $0.isLoggingEnabled) },
+                action: { .idCollectView($0) },
+                action: { globalAction in
+                    switch globalAction {
+                    case .error:
+                        return .error
+                    default:
+                        break
+                    }
+                    return nil
+                },
+                reducer: { OwnID.UISDK.InstantConnent.viewModelReducer(state: &$0, action: $1) }
+            )
             let oneTimePasswordViewStore = self.store.view(
                 value: { OwnID.UISDK.OneTimePassword.ViewState(isLoggingEnabled: $0.isLoggingEnabled) },
                 action: { .oneTimePasswordView($0) },
                 action: { globalAction in
                     switch globalAction {
-                    case .error(let error):
-                        return .error(error.error.localizedDescription)
-                        
+                    case .error:
+                        return .error
+                    case .nonTerminalError:
+                        return .nonTerminalError
+                    case .success:
+                        return .success
                     default:
                         break
                     }
@@ -51,7 +69,10 @@ extension OwnID.CoreSDK {
             let browserStore = self.store.view(value: { $0.sdkConfigurationName } , action: { .browserVM($0) })
             let authManagerStore = self.store.view(value: { AccountManager.State(isLoggingEnabled: $0.isLoggingEnabled) },
                                                    action: { .authManager($0) })
-            self.store.send(.addToState(browserViewModelStore: browserStore, authStore: authManagerStore, oneTimePasswordStore: oneTimePasswordViewStore))
+            self.store.send(.addToState(browserViewModelStore: browserStore,
+                                        authStore: authManagerStore,
+                                        oneTimePasswordStore: oneTimePasswordViewStore,
+                                        idCollectViewStore: idCollectViewStore))
             setupEventPublisher()
         }
         
@@ -131,11 +152,14 @@ extension OwnID.CoreSDK {
                             .addToState,
                             .addToStateConfig,
                             .addToStateShouldStartInitRequest,
+                            .idCollectView,
                             .authManager,
                             .oneTimePasswordView,
                             .oneTimePassword,
                             .browserVM,
-                            .success:
+                            .webApp,
+                            .success,
+                            .nonTerminalError:
                         internalStatesChange.append(action.debugDescription)
                         
                     case let .statusRequestLoaded(payload):
