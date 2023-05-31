@@ -52,7 +52,7 @@ public extension OwnID.CoreSDK {
         
         case authorizationManagerGeneralError(underlying: Swift.Error)
         case authorizationManagerCredintialsNotFoundOrCanlelledByUser(underlying: ASAuthorizationError)
-        case authorizationManagerAuthError(userInfo: [String : Any])
+        case authorizationManagerAuthError(underlying: Swift.Error)
         case authorizationManagerDataMissing
         case authorizationManagerUnknownAuthType
         

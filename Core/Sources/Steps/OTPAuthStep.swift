@@ -94,8 +94,7 @@ extension OwnID.CoreSDK.CoreViewModel {
                 .map({ [self] response in
                     if let step = response.step {
                         return nextStepAction(step)
-                    } else if let error = response.error {
-                        let serverError = OwnID.CoreSDK.ServerError(error: error.userMessage ?? "")
+                    } else if let _ = response.error {
                         return .nonTerminalError
                     }
                     

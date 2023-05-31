@@ -49,8 +49,8 @@ public extension OwnID {
         }
         
         @available(iOS 15.0, *)
-        public static var instantConnectViewEmailFiendBorderColor: Color {
-            Color("\(OwnID.UISDK.InstantConnent.InstantConnectView.self)EmailFiendBorderColor", bundle: .resourceBundle)
+        public static var idCollectViewLoginFieldBorderColor: Color {
+            Color("\(OwnID.UISDK.IdCollect.IdCollectView.self)LoginFieldBorderColor", bundle: .resourceBundle)
         }
         
         public static var otpContentMessageColor: Color {

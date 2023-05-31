@@ -3,15 +3,15 @@ import UIKit
 import Combine
 
 extension OwnID.UISDK {
-    static func showInstantConnectView(store: Store<OwnID.UISDK.InstantConnent.ViewState, OwnID.UISDK.InstantConnent.Action>,
-                                       loginId: String,
-                                       loginIdSettings: OwnID.CoreSDK.LoginIdSettings) {
+    static func showIdCollectView(store: Store<OwnID.UISDK.IdCollect.ViewState, OwnID.UISDK.IdCollect.Action>,
+                                  loginId: String,
+                                  loginIdSettings: OwnID.CoreSDK.LoginIdSettings) {
         if #available(iOS 15.0, *) {
-            let view = OwnID.UISDK.InstantConnent.InstantConnectView(store: store,
-                                                                     visualConfig: OwnID.UISDK.VisualLookConfig(),
-                                                                     loginId: loginId,
-                                                                     loginIdSettings: loginIdSettings,
-                                                                     closeClosure: {
+            let view = OwnID.UISDK.IdCollect.IdCollectView(store: store,
+                                                                visualConfig: OwnID.UISDK.VisualLookConfig(),
+                                                                loginId: loginId,
+                                                                loginIdSettings: loginIdSettings,
+                                                                closeClosure: {
                 OwnID.UISDK.PopupManager.dismiss()
             })
             view.presentAsPopup()
@@ -20,12 +20,12 @@ extension OwnID.UISDK {
 }
 
 extension OwnID.UISDK {
-    enum InstantConnent { }
+    enum IdCollect { }
 }
 
-extension OwnID.UISDK.InstantConnent {
+extension OwnID.UISDK.IdCollect {
     @available(iOS 15.0, *)
-    struct InstantConnectView: Popup {
+    struct IdCollectView: Popup {
         private enum Constants {
             static let textFieldBorderWidth = 1.0
             static let titleFontSize = 20.0
@@ -40,8 +40,8 @@ extension OwnID.UISDK.InstantConnent {
             case email
         }
         
-        public static func == (lhs: OwnID.UISDK.InstantConnent.InstantConnectView,
-                               rhs: OwnID.UISDK.InstantConnent.InstantConnectView) -> Bool {
+        public static func == (lhs: OwnID.UISDK.IdCollect.IdCollectView,
+                               rhs: OwnID.UISDK.IdCollect.IdCollectView) -> Bool {
             lhs.uuid == rhs.uuid
         }
         private let uuid = UUID().uuidString
@@ -164,10 +164,9 @@ extension OwnID.UISDK.InstantConnent {
             }
             .padding()
             .onAppear() {
-                //TODO: reimplement DefaultsEmailSaver
-                //                let emailValue = OwnID.CoreSDK.DefaultsEmailSaver.getEmail() ?? ""
-                //                email = emailValue
-                //                emailPublisher.send(emailValue)
+                let loginIdValue = loginId.isEmpty ? (OwnID.CoreSDK.DefaultsLoginIdSaver.getLoginId() ?? "") : loginId
+                loginId = loginIdValue
+                loginIdPublisher.send(loginIdValue)
                 focusedField = .email
             }
         }
@@ -176,7 +175,7 @@ extension OwnID.UISDK.InstantConnent {
             if focusedField == .email {
                 return OwnID.Colors.blue
             } else {
-                return OwnID.Colors.instantConnectViewEmailFiendBorderColor
+                return OwnID.Colors.idCollectViewLoginFieldBorderColor
             }
         }
     }

@@ -35,7 +35,7 @@ extension OwnID.CoreSDK {
             self.store = store
             
             let idCollectViewStore = self.store.view(
-                value: { OwnID.UISDK.InstantConnent.ViewState(isLoggingEnabled: $0.isLoggingEnabled) },
+                value: { OwnID.UISDK.IdCollect.ViewState(isLoggingEnabled: $0.isLoggingEnabled) },
                 action: { .idCollectView($0) },
                 action: { globalAction in
                     switch globalAction {
@@ -46,7 +46,7 @@ extension OwnID.CoreSDK {
                     }
                     return nil
                 },
-                reducer: { OwnID.UISDK.InstantConnent.viewModelReducer(state: &$0, action: $1) }
+                reducer: { OwnID.UISDK.IdCollect.viewModelReducer(state: &$0, action: $1) }
             )
             let oneTimePasswordViewStore = self.store.view(
                 value: { OwnID.UISDK.OneTimePassword.ViewState(isLoggingEnabled: $0.isLoggingEnabled) },

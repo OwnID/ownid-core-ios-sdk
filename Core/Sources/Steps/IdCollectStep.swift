@@ -19,9 +19,9 @@ extension OwnID.CoreSDK.CoreViewModel {
             }
             
             OwnID.UISDK.PopupManager.dismiss()
-            OwnID.UISDK.showInstantConnectView(store: state.idCollectViewStore,
-                                               loginId: state.loginId,
-                                               loginIdSettings: loginIdSettings)
+            OwnID.UISDK.showIdCollectView(store: state.idCollectViewStore,
+                                          loginId: state.loginId,
+                                          loginIdSettings: loginIdSettings)
             
             return []
         }
@@ -34,6 +34,7 @@ extension OwnID.CoreSDK.CoreViewModel {
 
             let context = state.context
             let requestBody = IdCollectRequestBody(loginId: loginId)
+            state.loginId = loginId
             let effect = state.session.perform(url: url,
                                                method: .post,
                                                body: requestBody,

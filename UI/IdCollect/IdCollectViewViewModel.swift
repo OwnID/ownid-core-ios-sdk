@@ -1,6 +1,6 @@
 import Combine
 
-extension OwnID.UISDK.InstantConnent {
+extension OwnID.UISDK.IdCollect {
     final class ViewModel: ObservableObject {
         private var loginId = ""
         

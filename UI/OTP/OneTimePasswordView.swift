@@ -104,6 +104,9 @@ extension OwnID.UISDK.OneTimePassword {
                 OwnID.UISDK.OTPTextFieldView(viewModel: viewModel)
                     .shake(animatableData: store.value.attempts)
                     .padding(.bottom)
+                    .onChange(of: store.value.attempts) { newValue in
+                        viewModel.resetCode()
+                    }
                 if store.value.isLoading {
                     OwnID.UISDK.SpinnerLoaderView(spinnerColor: visualConfig.loaderViewConfig.color,
                                                   spinnerBackgroundColor: visualConfig.loaderViewConfig.backgroundColor,

@@ -7,7 +7,7 @@ extension OwnID.CoreSDK.CoreViewModel {
         let createBrowserOpenerClosure: OwnID.CoreSDK.BrowserOpener.CreationClosure
         
         let sdkConfigurationName: String
-        let loginId: String
+        var loginId: String
         let type: OwnID.CoreSDK.RequestType
         let supportedLanguages: OwnID.CoreSDK.Languages
         
@@ -19,7 +19,7 @@ extension OwnID.CoreSDK.CoreViewModel {
         
         var oneTimePasswordStore: Store<OwnID.UISDK.OneTimePassword.ViewState, OwnID.UISDK.OneTimePassword.Action>!
         
-        var idCollectViewStore: Store<OwnID.UISDK.InstantConnent.ViewState, OwnID.UISDK.InstantConnent.Action>!
+        var idCollectViewStore: Store<OwnID.UISDK.IdCollect.ViewState, OwnID.UISDK.IdCollect.Action>!
         
         var shouldStartFlowOnConfigurationReceive = true
         
