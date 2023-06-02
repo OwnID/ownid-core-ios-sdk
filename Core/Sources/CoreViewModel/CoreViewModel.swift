@@ -17,6 +17,10 @@ extension OwnID.CoreSDK {
              clientConfiguration: LocalConfiguration?,
              createAccountManagerClosure: @escaping AccountManager.CreationClosure = OwnID.CoreSDK.AccountManager.defaultAccountManager,
              createBrowserOpenerClosure: @escaping BrowserOpener.CreationClosure = BrowserOpener.defaultOpener) {
+            var loginId = loginId
+            if loginId.isBlank, let savedLoginId = DefaultsLoginIdSaver.getLoginId(), !savedLoginId.isBlank {
+                loginId = savedLoginId
+            }
             let initialState = State(isLoggingEnabled: isLoggingEnabled,
                                      configuration: clientConfiguration,
                                      createAccountManagerClosure: createAccountManagerClosure,

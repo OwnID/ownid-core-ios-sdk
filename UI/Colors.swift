@@ -53,6 +53,11 @@ public extension OwnID {
             Color("\(OwnID.UISDK.IdCollect.IdCollectView.self)LoginFieldBorderColor", bundle: .resourceBundle)
         }
         
+        @available(iOS 15.0, *)
+        public static var idCollectViewLoginFieldBackgroundColor: Color {
+            Color("\(OwnID.UISDK.IdCollect.IdCollectView.self)LoginFieldBackgroundColor", bundle: .resourceBundle)
+        }
+        
         public static var otpContentMessageColor: Color {
             Color("\(OwnID.UISDK.OneTimePassword.self)contentMessage", bundle: .resourceBundle)
         }

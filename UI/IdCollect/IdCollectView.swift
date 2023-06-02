@@ -34,6 +34,7 @@ extension OwnID.UISDK.IdCollect {
             static let emailPadding = 10.0
             static let bottomPadding = 6.0
             static let publisherDebounce = 500
+            static let closeImageName = "closeImage"
         }
         
         enum FocusField: Hashable {
@@ -90,7 +91,7 @@ extension OwnID.UISDK.IdCollect {
                     Button {
                         dismiss()
                     } label: {
-                        Image("closeImage", bundle: .resourceBundle)
+                        Image(Constants.closeImageName, bundle: .resourceBundle)
                     }
                     .padding(.trailing)
                     .padding(.top)
@@ -147,7 +148,7 @@ extension OwnID.UISDK.IdCollect {
                         .keyboardType(.emailAddress)
                         .focused($focusedField, equals: .email)
                         .padding(Constants.emailPadding)
-                        .background(Rectangle().fill(.white))
+                        .background(Rectangle().fill(OwnID.Colors.idCollectViewLoginFieldBackgroundColor))
                         .cornerRadius(cornerRadiusValue)
                         .overlay(
                             RoundedRectangle(cornerRadius: cornerRadiusValue)
@@ -164,9 +165,6 @@ extension OwnID.UISDK.IdCollect {
             }
             .padding()
             .onAppear() {
-                let loginIdValue = loginId.isEmpty ? (OwnID.CoreSDK.DefaultsLoginIdSaver.getLoginId() ?? "") : loginId
-                loginId = loginIdValue
-                loginIdPublisher.send(loginIdValue)
                 focusedField = .email
             }
         }

@@ -53,4 +53,8 @@ extension String {
         }
         return self
     }
+    
+    var isBlank: Bool {
+        return allSatisfy { $0.isWhitespace }
+    }
 }

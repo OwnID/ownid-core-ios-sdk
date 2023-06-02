@@ -34,7 +34,6 @@ extension OwnID.UISDK {
                             .keyboardType(.numberPad)
                             .focused($focusedField, equals: field)
                             .padding(Constants.textFieldPadding)
-                            .disabled(viewModel.disableTextFields)
                     }
                     .frame(width: Constants.boxSideSize, height: Constants.boxSideSize)
                 }

@@ -122,7 +122,9 @@ public extension OwnID.FlowsSDK.RegisterView {
                     OwnID.CoreSDK.logger.logAnalytic(.registerTrackMetric(action: .registered,
                                                                           context: payload.context,
                                                                           authType: registrationResult.authType))
-                    OwnID.CoreSDK.DefaultsLoginIdSaver.save(loginId: loginId)
+                    if let loginId = payload.loginId {
+                        OwnID.CoreSDK.DefaultsLoginIdSaver.save(loginId: loginId)
+                    }
                     resultPublisher.send(.success(.userRegisteredAndLoggedIn(registrationResult: registrationResult.operationResult, authType: registrationResult.authType)))
                     resetDataAndState()
                 }

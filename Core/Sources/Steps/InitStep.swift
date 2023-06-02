@@ -7,7 +7,7 @@ extension OwnID.CoreSDK.CoreViewModel {
     struct InitRequestBody: Encodable {
         let sessionChallenge: OwnID.CoreSDK.SessionChallenge
         let type: OwnID.CoreSDK.RequestType
-        let loginId: String
+        let loginId: String?
         let supportsFido2: Bool
         var qr = false
         var passkeyAutofill = false
@@ -38,7 +38,7 @@ extension OwnID.CoreSDK.CoreViewModel {
 
             let requestBody = InitRequestBody(sessionChallenge: sessionChallenge,
                                               type: state.type,
-                                              loginId: state.loginId,
+                                              loginId: state.loginId.isBlank ? nil : state.loginId,
                                               supportsFido2: isPasskeysSupported)
             return [sendInitialRequest(requestBody: requestBody, session: session, configuration: configuration)]
         }

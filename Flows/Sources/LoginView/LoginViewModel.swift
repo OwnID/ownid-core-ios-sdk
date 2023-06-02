@@ -169,11 +169,9 @@ private extension OwnID.FlowsSDK.LoginView.ViewModel {
                 OwnID.CoreSDK.logger.logAnalytic(.loginTrackMetric(action: .loggedIn,
                                                                    context: payload.context,
                                                                    authType: payload.authType))
-                var savedLoginId = loginId
                 if let loginId = payload.loginId {
-                    savedLoginId = loginId
+                    OwnID.CoreSDK.DefaultsLoginIdSaver.save(loginId: loginId)
                 }
-                OwnID.CoreSDK.DefaultsLoginIdSaver.save(loginId: savedLoginId)
                 resultPublisher.send(.success(.loggedIn(loginResult: loginResult.operationResult, authType: loginResult.authType)))
                 resetDataAndState(isResettingToInitialState: false)
             }

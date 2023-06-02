@@ -31,11 +31,13 @@ extension OwnID.UISDK.OneTimePassword {
         let isLoggingEnabled: Bool
         var isLoading = false
         var isDisplayingDidNotGetCode = false
+        var isCodeEnteringStarted = false
         var attempts = 0
     }
     
     enum Action {
         case viewLoaded
+        case codeEnteringStarted
         case codeEntered(String)
         case cancel
         case cancelCodeOperation
@@ -56,6 +58,9 @@ extension OwnID.UISDK.OneTimePassword {
             return [Just(OwnID.UISDK.OneTimePassword.Action.displayDidNotGetCode)
                 .delay(for: 10, scheduler: DispatchQueue.main)
                 .eraseToEffect()]
+        case .codeEnteringStarted:
+            state.isCodeEnteringStarted = true
+            return []
         case .codeRestarted:
             return []
         case .codeEntered:
@@ -78,7 +83,6 @@ extension OwnID.UISDK.OneTimePassword {
             state.attempts += 1
             return [
                 Just(.stopLoading)
-                    .delay(for: 1, scheduler: DispatchQueue.main)
                     .eraseToEffect()
             ]
         case .error:
@@ -108,6 +112,8 @@ extension OwnID.UISDK.OneTimePassword.Action: CustomDebugStringConvertible {
             return "viewLoaded"
         case .codeRestarted:
             return "codeRestarted"
+        case .codeEnteringStarted:
+            return "codeEnteringStarted"
         case .codeEntered(_):
             return "codeEntered"
         case .cancel:

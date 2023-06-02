@@ -2,9 +2,9 @@ import Foundation
 
 extension OwnID.CoreSDK {
     final class DefaultsLoginIdSaver {
-        private static let emailKey = "email_saver_key"
-        static func save(loginId: String) { UserDefaults.standard.set(loginId, forKey: emailKey) }
+        private static let loginIdKey = "email_saver_key"
+        static func save(loginId: String) { UserDefaults.standard.set(loginId, forKey: loginIdKey) }
         
-        static func getLoginId() -> String? { UserDefaults.standard.value(forKey: emailKey) as? String }
+        static func getLoginId() -> String? { UserDefaults.standard.value(forKey: loginIdKey) as? String }
     }
 }

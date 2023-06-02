@@ -97,16 +97,15 @@ extension OwnID.CoreSDK.CoreViewModel {
             return []
             
         // MARK: AuthManager
-            //TODO: move auth manager action handling to fido step
         case let .authManager(authManagerAction):
             switch authManagerAction {
             case .didFinishRegistration(let fido2RegisterPayload, _):
                 let fidoStep = state.fidoStep
-                return fidoStep?.sendAuthRequest(state: &state, fido2Payload: fido2RegisterPayload) ?? []
+                return fidoStep?.sendAuthRequest(state: &state, fido2Payload: fido2RegisterPayload, type: .register) ?? []
                 
             case .didFinishLogin(let fido2LoginPayload, _):
                 let fidoStep = state.fidoStep
-                return fidoStep?.sendAuthRequest(state: &state, fido2Payload: fido2LoginPayload) ?? []
+                return fidoStep?.sendAuthRequest(state: &state, fido2Payload: fido2LoginPayload, type: .login) ?? []
                 
             case .error(let error, _, _):
                 switch error {
@@ -152,6 +151,8 @@ extension OwnID.CoreSDK.CoreViewModel {
             case .displayDidNotGetCode:
                 break
             case .stopLoading:
+                break
+            case .codeEnteringStarted:
                 break
             }
             return []

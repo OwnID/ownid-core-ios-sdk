@@ -28,7 +28,7 @@ extension OwnID.UISDK.OTPTextFieldView {
         @Published var code5 = zeroWidthSpaceCharacter
         @Published var code6 = zeroWidthSpaceCharacter
         @Published var nextUpdateAction: NextUpdateAcion?
-        @Published var disableTextFields = false
+        private var disableTextFields = false
         
         @Published var currentFocusedField: FieldType?
         
@@ -61,6 +61,18 @@ extension OwnID.UISDK.OTPTextFieldView {
         }
         
         func processTextChange(for field: FieldType, binding: Binding<String>) {
+            store.send(.codeEnteringStarted)
+            
+            let currentBindingValue = binding.wrappedValue
+            let actualValue = currentBindingValue.replacingOccurrences(of: Self.zeroWidthSpaceCharacter, with: "")
+            if actualValue.count > 1 {
+                binding.wrappedValue = String(actualValue.prefix(1))
+            }
+            
+            if !actualValue.isNumber {
+                binding.wrappedValue = Self.zeroWidthSpaceCharacter
+            }
+            
             guard !isResetting else {
                 if field == lastFieldType {
                     disableTextFields = false
@@ -70,11 +82,10 @@ extension OwnID.UISDK.OTPTextFieldView {
                 return
             }
             
-            let currentBindingValue = binding.wrappedValue
-            let actualValue = currentBindingValue.replacingOccurrences(of: Self.zeroWidthSpaceCharacter, with: "")
-            if !actualValue.isNumber {
-                binding.wrappedValue = Self.zeroWidthSpaceCharacter
+            guard !disableTextFields else {
+                return
             }
+            
             let nextActionIsAddZero = nextUpdateAction == .addEmptySpace
             if actualValue.isEmpty, !nextActionIsAddZero {
                 binding.wrappedValue = Self.zeroWidthSpaceCharacter
