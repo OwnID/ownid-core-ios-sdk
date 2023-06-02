@@ -65,29 +65,6 @@ public extension OwnID.CoreSDK {
         public let authType: AuthType?
         public let requestLanguage: String?
     }
-    
-    struct Metadata: Decodable {
-        public let collectionName: String?
-        public let docId: String?
-        public let userIdKey: String?
-    }
-    
-    struct PayloadData {
-        let authType: String?
-        let createdTimestamp: String?
-        let creationSource: String?
-        let fido2CredentialId: String?
-        let fido2RpId: String?
-        let fido2SignatureCounter: String?
-        let isSharable: Bool?
-        let os: String?
-        let osVersion: String?
-        let pubKey: String?
-        let source: String?
-        public let idToken: String?
-        public let sessionInfo: [String: Any]?
-        public let errorJson: [String: Any]?
-    }
 }
 
 public extension OwnID.CoreSDK {
