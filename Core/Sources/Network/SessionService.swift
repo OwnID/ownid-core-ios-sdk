@@ -33,6 +33,36 @@ extension OwnID.CoreSDK {
                                                            method: HTTPMethod,
                                                            body: Body,
                                                            with type: Response.Type) -> AnyPublisher<Response, ServiceError> {
+            performRequest(url: url, method: method, body: body)
+                .tryMap { [self] response -> Data in
+                    guard !response.data.isEmpty else { throw ServiceError.responseIsEmpty }
+                    self.printResponse(data: response.data)
+                    return response.data
+                }
+                .eraseToAnyPublisher()
+                .decode(type: type, decoder: JSONDecoder())
+                .mapError { ServiceError.decodeFailed(error: $0) }
+                .eraseToAnyPublisher()
+        }
+        
+        func perform<Body: Encodable>(url: OwnID.CoreSDK.ServerURL,
+                                      method: HTTPMethod,
+                                      body: Body) -> AnyPublisher<[String: Any], ServiceError> {
+            performRequest(url: url, method: method, body: body)
+                .tryMap { [self] response -> [String: Any] in
+                    guard !response.data.isEmpty else { throw ServiceError.responseIsEmpty }
+                    let json = try JSONSerialization.jsonObject(with: response.data, options: []) as? [String : Any]
+                    self.printResponse(data: response.data)
+                    return json ?? [:]
+                }
+                .eraseToAnyPublisher()
+                .mapError { ServiceError.decodeFailed(error: $0) }
+                .eraseToAnyPublisher()
+        }
+        
+        private func performRequest<Body: Encodable>(url: OwnID.CoreSDK.ServerURL,
+                                                     method: HTTPMethod,
+                                                     body: Body) -> AnyPublisher<URLSession.DataTaskPublisher.Output, ServiceError> {
             Just(body)
                 .setFailureType(to: ServiceError.self)
                 .eraseToAnyPublisher()
@@ -48,15 +78,6 @@ extension OwnID.CoreSDK {
                         .mapError { ServiceError.networkFailed(underlying: $0) }
                         .eraseToAnyPublisher()
                 }
-                .eraseToAnyPublisher()
-                .tryMap { [self] response -> Data in
-                    guard !response.data.isEmpty else { throw ServiceError.responseIsEmpty }
-                    self.printResponse(data: response.data)
-                    return response.data
-                }
-                .eraseToAnyPublisher()
-                .decode(type: type, decoder: JSONDecoder())
-                .mapError { ServiceError.decodeFailed(error: $0) }
                 .eraseToAnyPublisher()
         }
         

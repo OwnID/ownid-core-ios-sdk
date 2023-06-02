@@ -57,8 +57,8 @@ public extension OwnID.CoreSDK {
     
     struct Payload {
         /// Used for later processing and creating login\registration requests
-        public let dataContainer: PayloadData?
-        public let metadata: Metadata?
+        public let dataContainer: Any?
+        public let metadata: Any?
         public let context: OwnID.CoreSDK.Context
         public let loginId: LoginID?
         public let responseType: StatusResponseType
@@ -72,7 +72,7 @@ public extension OwnID.CoreSDK {
         public let userIdKey: String?
     }
     
-    struct PayloadData: Codable {
+    struct PayloadData {
         let authType: String?
         let createdTimestamp: String?
         let creationSource: String?
@@ -85,7 +85,8 @@ public extension OwnID.CoreSDK {
         let pubKey: String?
         let source: String?
         public let idToken: String?
-        public let sessionInfo: String?
+        public let sessionInfo: [String: Any]?
+        public let errorJson: [String: Any]?
     }
 }
 
