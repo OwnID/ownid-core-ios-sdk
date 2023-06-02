@@ -159,7 +159,7 @@ public extension OwnID.FlowsSDK.LoginView {
 private extension OwnID.FlowsSDK.LoginView.ViewModel {
     func process(payload: OwnID.CoreSDK.Payload) {
         self.payload = payload
-        let loginPerformerPublisher = loginPerformer.login(payload: payload, email: loginId)
+        let loginPerformerPublisher = loginPerformer.login(payload: payload, loginId: loginId)
         loginPerformerPublisher
             .sink { [unowned self] completion in
                 if case .failure(let error) = completion {
@@ -169,8 +169,9 @@ private extension OwnID.FlowsSDK.LoginView.ViewModel {
                 OwnID.CoreSDK.logger.logAnalytic(.loginTrackMetric(action: .loggedIn,
                                                                    context: payload.context,
                                                                    authType: payload.authType))
-                OwnID.CoreSDK.DefaultsEmailSaver.save(email: loginId)
-                state = .loggedIn
+                if let loginId = payload.loginId {
+                    OwnID.CoreSDK.DefaultsLoginIdSaver.save(loginId: loginId)
+                }
                 resultPublisher.send(.success(.loggedIn(loginResult: loginResult.operationResult, authType: loginResult.authType)))
                 resetDataAndState(isResettingToInitialState: false)
             }

@@ -6,9 +6,9 @@ extension OwnID.CoreSDK.AccountManager {
     static var defaultAccountManager: CreationClosure {
         { store, domain, challenge, browserBaseURL in
             let manager = OwnID.CoreSDK.CurrentAccountManager(store: store, domain: domain, challenge: challenge, browserBaseURL: browserBaseURL)
-            let current = Self {
+            let current = Self { credId in
                 if #available(iOS 16.0, *) {
-                    manager.signInWith()
+                    manager.signIn(credId: credId)
                 }
             } cancelClosure: {
                 if #available(iOS 16.0, *) {
@@ -26,12 +26,12 @@ extension OwnID.CoreSDK.AccountManager {
 
 extension OwnID.CoreSDK {
     struct AccountManager {
-        var signInClosure: () -> Void
+        var signInClosure: (_ credId: String) -> Void
         var cancelClosure: () -> Void
         var signUpClosure: (_ userName: String) -> Void
         
-        func signInWith() {
-            signInClosure()
+        func signIn(credId: String) {
+            signInClosure(credId)
         }
         
         func cancel() {
@@ -89,17 +89,18 @@ extension OwnID.CoreSDK {
         }
         
         @available(iOS 16.0, *)
-        func signInWith() {
+        func signIn(credId: String) {
             currentAuthController?.cancel()
             let securityKeyProvider = ASAuthorizationSecurityKeyPublicKeyCredentialProvider(relyingPartyIdentifier: domain)
             let publicKeyCredentialProvider = ASAuthorizationPlatformPublicKeyCredentialProvider(relyingPartyIdentifier: domain)
             
             let assertionRequest = publicKeyCredentialProvider.createCredentialAssertionRequest(challenge: challengeData)
             let securityKeyRequest = securityKeyProvider.createCredentialAssertionRequest(challenge: challengeData)
-//            let data = Data(base64Encoded: "SGbM/adQJLNhDTeO03MdWx351QY=", options: .ignoreUnknownCharacters)
-//            let cred = ASAuthorizationPlatformPublicKeyCredentialDescriptor(credentialID: data!)
-//            assertionRequest.allowedCredentials = [cred]
-            let requests = [ assertionRequest, securityKeyRequest ]
+            if let data = Data(base64urlEncoded: credId) {
+                let cred = ASAuthorizationPlatformPublicKeyCredentialDescriptor(credentialID: data)
+                assertionRequest.allowedCredentials = [cred]
+            }
+            let requests = [assertionRequest, securityKeyRequest]
             let authController = ASAuthorizationController(authorizationRequests: requests)
             authController.delegate = self
             authController.presentationContextProvider = self
@@ -124,7 +125,7 @@ extension OwnID.CoreSDK {
             let publicKeyCredentialProvider = ASAuthorizationPlatformPublicKeyCredentialProvider(relyingPartyIdentifier: domain)
             let assertionRequest = publicKeyCredentialProvider.createCredentialAssertionRequest(challenge: challengeData)
             
-            let authController = ASAuthorizationController(authorizationRequests: [ assertionRequest ] )
+            let authController = ASAuthorizationController(authorizationRequests: [assertionRequest])
             authController.delegate = self
             authController.presentationContextProvider = self
             authController.performAutoFillAssistedRequests()
@@ -142,7 +143,7 @@ extension OwnID.CoreSDK {
                                                                                                       name: userName,
                                                                                                       userID: userName.data(using: .utf8)!)
             
-            let authController = ASAuthorizationController(authorizationRequests: [ registrationRequest ] )
+            let authController = ASAuthorizationController(authorizationRequests: [registrationRequest])
             authController.delegate = self
             authController.presentationContextProvider = self
             authController.performRequests()
@@ -219,7 +220,7 @@ extension OwnID.CoreSDK {
                     store.send(.error(error: .authorizationManagerCredintialsNotFoundOrCanlelledByUser(underlying: authorizationError), context: challenge, browserBaseURL: browserBaseURL))
                 }
             } else {
-                store.send(.error(error: .authorizationManagerAuthError(userInfo: (error as NSError).userInfo), context: challenge, browserBaseURL: browserBaseURL))
+                store.send(.error(error: .authorizationManagerAuthError(underlying: error), context: challenge, browserBaseURL: browserBaseURL))
             }
             
             isPerformingModalReqest = false

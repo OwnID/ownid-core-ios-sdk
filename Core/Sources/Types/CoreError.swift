@@ -13,6 +13,8 @@ public extension OwnID.CoreSDK {
         case phoneNumberIsInvalid
         case userNameIsInvalid
         case localConfigIsNotPresent
+        case urlIsMissing
+        case dataIsMissing
         case tokenDataIsMissing
         case contextIsMissing
         case flowCancelled
@@ -50,7 +52,7 @@ public extension OwnID.CoreSDK {
         
         case authorizationManagerGeneralError(underlying: Swift.Error)
         case authorizationManagerCredintialsNotFoundOrCanlelledByUser(underlying: ASAuthorizationError)
-        case authorizationManagerAuthError(userInfo: [String : Any])
+        case authorizationManagerAuthError(underlying: Swift.Error)
         case authorizationManagerDataMissing
         case authorizationManagerUnknownAuthType
         
@@ -117,6 +119,12 @@ extension OwnID.CoreSDK.Error: LocalizedError {
         case .contextIsMissing:
             return "Context is missing"
             
+        case .urlIsMissing:
+            return "URL is missing"
+            
+        case .dataIsMissing:
+            return "Data is missing"
+            
         case .flowCancelled:
             return "Flow cancelled"
             
@@ -156,6 +164,8 @@ extension OwnID.CoreSDK.Error: CustomDebugStringConvertible {
                 .authorizationManagerDataMissing,
                 .authorizationManagerUnknownAuthType,
                 .contextIsMissing,
+                .urlIsMissing,
+                .dataIsMissing,
                 .flowCancelled,
                 .redirectParameterFromURLCancelledOpeningSDK,
                 .initRequestNetworkFailed,

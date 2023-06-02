@@ -46,7 +46,6 @@ extension OwnID.CoreSDK {
         let appID: OwnID.CoreSDK.AppID
         let environment: String?
         var serverURL: ServerURL!
-        var fidoSettings: FidoSettings?
         var passkeysAutofillEnabled: Bool!
         var supportedLocales: [String]?
         var loginIdSettings: LoginIdSettings!

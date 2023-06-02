@@ -38,7 +38,7 @@ extension OwnID.FlowsSDK.RegisterView.ViewModel {
     
     struct RegistrationData {
         fileprivate var payload: OwnID.CoreSDK.Payload?
-        fileprivate var persistedEmail = OwnID.CoreSDK.Email(rawValue: "")
+        fileprivate var persistedLoginId: OwnID.CoreSDK.LoginID = ""
     }
 }
 
@@ -103,7 +103,7 @@ public extension OwnID.FlowsSDK.RegisterView {
         }
         
         public func register(registerParameters: RegisterParameters = EmptyRegisterParameters()) {
-            if !loginId.isEmpty, !registrationData.persistedEmail.rawValue.isEmpty, loginId != registrationData.persistedEmail.rawValue {
+            if !loginId.isEmpty, !registrationData.persistedLoginId.isEmpty, loginId != registrationData.persistedLoginId {
                 handle(.coreLog(entry: .errorEntry(context: registrationData.payload?.context, Self.self), error: .plugin(underlying: OwnID.FlowsSDK.RegisterError.emailMismatch)))
                 return
             }
@@ -122,7 +122,9 @@ public extension OwnID.FlowsSDK.RegisterView {
                     OwnID.CoreSDK.logger.logAnalytic(.registerTrackMetric(action: .registered,
                                                                           context: payload.context,
                                                                           authType: registrationResult.authType))
-                    OwnID.CoreSDK.DefaultsEmailSaver.save(email: loginId)
+                    if let loginId = payload.loginId {
+                        OwnID.CoreSDK.DefaultsLoginIdSaver.save(loginId: loginId)
+                    }
                     resultPublisher.send(.success(.userRegisteredAndLoggedIn(registrationResult: registrationResult.operationResult, authType: registrationResult.authType)))
                     resetDataAndState()
                 }
@@ -157,14 +159,14 @@ public extension OwnID.FlowsSDK.RegisterView {
                 resultPublisher.send(.success(.resetTapped))
                 return
             }
-            if registrationData.payload != nil {
+            if registrationData.payload != nil, registrationData.payload?.loginId == loginId {
                 state = .ownidCreated
                 resultPublisher.send(.success(.readyToRegister(usersEmailFromWebApp: loginId, authType: registrationData.payload?.authType)))
                 return
             }
             let coreViewModel = OwnID.CoreSDK.shared.createCoreViewModelForRegister(loginId: loginId, sdkConfigurationName: sdkConfigurationName)
             self.coreViewModel = coreViewModel
-            subscribe(to: coreViewModel.eventPublisher, persistingEmail: OwnID.CoreSDK.Email(rawValue: loginId))
+            subscribe(to: coreViewModel.eventPublisher, persistingLoginId: loginId)
             state = .coreVM
             
             /// On iOS 13, this `asyncAfter` is required to make sure that subscription created by the time events start to
@@ -174,8 +176,8 @@ public extension OwnID.FlowsSDK.RegisterView {
             }
         }
         
-        func subscribe(to eventsPublisher: OwnID.CoreSDK.CoreViewModel.EventPublisher, persistingEmail: OwnID.CoreSDK.Email) {
-            registrationData.persistedEmail = persistingEmail
+        func subscribe(to eventsPublisher: OwnID.CoreSDK.CoreViewModel.EventPublisher, persistingLoginId: OwnID.CoreSDK.LoginID) {
+            registrationData.persistedLoginId = persistingLoginId
             coreViewModelBag.forEach { $0.cancel() }
             coreViewModelBag.removeAll()
             eventsPublisher
@@ -192,7 +194,7 @@ public extension OwnID.FlowsSDK.RegisterView {
                             self.registrationData.payload = payload
                             state = .ownidCreated
                             if let loginId = registrationData.payload?.loginId {
-                                registrationData.persistedEmail = OwnID.CoreSDK.Email(rawValue: loginId)
+                                registrationData.persistedLoginId = loginId
                             }
                             resultPublisher.send(.success(.readyToRegister(usersEmailFromWebApp: registrationData.payload?.loginId, authType: registrationData.payload?.authType)))
                             
@@ -228,7 +230,7 @@ public extension OwnID.FlowsSDK.RegisterView {
 private extension OwnID.FlowsSDK.RegisterView.ViewModel {
     
     func processLogin(payload: OwnID.CoreSDK.Payload) {
-        let loginPerformerPublisher = loginPerformer.login(payload: payload, email: loginId)
+        let loginPerformerPublisher = loginPerformer.login(payload: payload, loginId: loginId)
         loginPerformerPublisher
             .sink { [unowned self] completion in
                 if case .failure(let error) = completion {

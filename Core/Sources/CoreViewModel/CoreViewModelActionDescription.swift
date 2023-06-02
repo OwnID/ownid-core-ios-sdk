@@ -11,8 +11,16 @@ extension OwnID.CoreSDK.CoreViewModel.Action: CustomDebugStringConvertible {
             return "sendInitialRequest"
         case .initialRequestLoaded:
             return "initialRequestLoaded"
+        case .idCollect:
+            return "idCollect"
+        case .webApp:
+            return "webApp"
+        case .fido2Authorize:
+            return "fido2Authorize"
         case .error(let error):
             return "error \(error.localizedDescription)"
+        case .nonTerminalError:
+            return "nonTerminalError"
         case .sendStatusRequest:
             return "sendStatusRequest"
         case .browserCancelled:
@@ -21,8 +29,8 @@ extension OwnID.CoreSDK.CoreViewModel.Action: CustomDebugStringConvertible {
             return "statusRequestLoaded"
         case .browserVM:
             return "browserVM"
-        case .authRequestLoaded:
-            return "authRequestLoaded"
+        case .success:
+            return "success"
         case .authManager(let action):
             return "authManagerAction \(action.debugDescription)"
         case .authManagerCancelled:
@@ -42,6 +50,10 @@ extension OwnID.CoreSDK.CoreViewModel.Action: CustomDebugStringConvertible {
             return "oneTimePasswordCancelled"
         case .oneTimePasswordView:
             return "oneTimePasswordView"
+        case .idCollectView:
+            return "idCollectView"
+        case .stopRequestLoaded:
+            return "stopRequestLoaded"
         }
     }
 }

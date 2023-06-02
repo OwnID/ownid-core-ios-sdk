@@ -3,9 +3,22 @@ import UIKit
 import Combine
 
 extension OwnID.UISDK {
-    static func showOTPView(store: Store<OwnID.UISDK.OneTimePassword.ViewState, OwnID.UISDK.OneTimePassword.Action>) {
+    static func showOTPView(store: Store<OwnID.UISDK.OneTimePassword.ViewState, OwnID.UISDK.OneTimePassword.Action>,
+                            loginId: String,
+                            otpLength: Int,
+                            restartUrl: URL,
+                            type: OwnID.CoreSDK.CoreViewModel.Step.StepType,
+                            verificationType: OwnID.CoreSDK.Verification.VerificationType) {
         if #available(iOS 15.0, *) {
-            let view = OwnID.UISDK.OneTimePassword.OneTimePasswordView(store: store, visualConfig: PopupManager.shared.visualLookConfig)
+            let titleType: OwnID.UISDK.OneTimePassword.TitleType = type == .loginIDAuthorization ? .oneTimePasswordSignIn : .emailVerification
+            let codeLength = OneTimePassword.CodeLength(rawValue: otpLength) ?? .four
+            let view = OwnID.UISDK.OneTimePassword.OneTimePasswordView(store: store,
+                                                                       visualConfig: PopupManager.shared.visualLookConfig,
+                                                                       loginId: loginId,
+                                                                       codeLength: codeLength,
+                                                                       restartURL: restartUrl,
+                                                                       titleType: titleType,
+                                                                       verificationType: verificationType)
             view.presentAsPopup()
         }
     }
@@ -19,11 +32,13 @@ extension OwnID.UISDK.OneTimePassword {
         }
         
         private enum Constants {
+            static let topPadding = 24.0
             static let titleFontSize = 20.0
             static let titlePadding = 18.0
             static let messageFontSize = 16.0
             static let didNotGetEmailFontSize = 14.0
             static let spinnerSize = 28.0
+            static let bottomViewHeight = 40.0
             static let closeImageName = "closeImage"
             static let codeLengthReplacement = "%CODE_LENGTH%"
             static let emailReplacement = "%LOGIN_ID%"
@@ -37,6 +52,7 @@ extension OwnID.UISDK.OneTimePassword {
         private let titleState = TitleType.emailVerification
         private let codeLength: CodeLength
         private let titleType: TitleType
+        private let restartURL: URL
         
         #warning("maybe move this translations approach to Property wrappers ?")
         @State private var emailSentText: String
@@ -45,12 +61,15 @@ extension OwnID.UISDK.OneTimePassword {
         
         init(store: Store<ViewState, Action>,
              visualConfig: OwnID.UISDK.OTPViewConfig,
+             loginId: String,
+             codeLength: CodeLength = .four,
+             restartURL: URL,
              titleType: TitleType = .oneTimePasswordSignIn,
-             codeLength: CodeLength = .six,
-             email: String = "fecemi9888@snowlash.com") {
+             verificationType: OwnID.CoreSDK.Verification.VerificationType) {
             self.visualConfig = visualConfig
             self.store = store
             self.codeLength = codeLength
+            self.restartURL = restartURL
             self.viewModel = OwnID.UISDK.OTPTextFieldView.ViewModel(codeLength: codeLength, store: store)
             
             self.titleType = titleType
@@ -60,7 +79,7 @@ extension OwnID.UISDK.OneTimePassword {
                 let codeLengthReplacement = Constants.codeLengthReplacement
                 let emailReplacement = Constants.emailReplacement
                 text = text.replacingOccurrences(of: codeLengthReplacement, with: String(codeLength.rawValue))
-                text = text.replacingOccurrences(of: emailReplacement, with: email)
+                text = text.replacingOccurrences(of: emailReplacement, with: loginId)
                 return text
             }
             self.emailSentTextChangedClosure = emailSentTextChangedClosure
@@ -69,16 +88,14 @@ extension OwnID.UISDK.OneTimePassword {
         
         @ViewBuilder
         private func didNotGetEmail() -> some View {
-            if store.value.isDisplayingDidNotGetCode {
+            if store.value.isDisplayingDidNotGetCode && !store.value.isCodeEnteringStarted {
                 Button {
-                    OwnID.UISDK.PopupManager.dismiss()
                     store.send(.emailIsNotRecieved)
                 } label: {
                     Text(localizedKey: .didNotGetEmail)
                         .font(.system(size: Constants.didNotGetEmailFontSize))
                         .foregroundColor(OwnID.Colors.otpDidNotGetEmail)
                 }
-                .padding(.top)
             }
         }
         
@@ -87,24 +104,30 @@ extension OwnID.UISDK.OneTimePassword {
                 topSection()
                 OwnID.UISDK.OTPTextFieldView(viewModel: viewModel)
                     .shake(animatableData: store.value.attempts)
-                    .padding(.bottom)
-                if store.value.isLoading {
-                    OwnID.UISDK.SpinnerLoaderView(spinnerColor: visualConfig.loaderViewConfig.color,
-                                                  spinnerBackgroundColor: visualConfig.loaderViewConfig.backgroundColor,
-                                                  viewBackgroundColor: .clear)
-                    .frame(width: Constants.spinnerSize, height: Constants.spinnerSize)
+                    .onChange(of: store.value.attempts) { newValue in
+                        viewModel.resetCode()
+                    }
+                ZStack {
+                    if store.value.isLoading {
+                        OwnID.UISDK.SpinnerLoaderView(spinnerColor: visualConfig.loaderViewConfig.color,
+                                                      spinnerBackgroundColor: visualConfig.loaderViewConfig.backgroundColor,
+                                                      viewBackgroundColor: .clear)
+                        .frame(width: Constants.spinnerSize, height: Constants.spinnerSize)
+                    }
+                    didNotGetEmail()
                 }
-                didNotGetEmail()
+                .frame(height: Constants.bottomViewHeight)
             }
+            .frame(minWidth: 0, maxWidth: .infinity)
             .overlay(alignment: .topTrailing) {
                 Button {
                     dismiss()
                 } label: {
                     Image(Constants.closeImageName, bundle: .resourceBundle)
                 }
+                .padding(.trailing)
+                .padding(.top)
             }
-            .padding()
-            .frame(minWidth: 0, maxWidth: .infinity)
             .onReceive(OwnID.CoreSDK.shared.translationsModule.translationsChangePublisher) {
                 emailSentText = emailSentTextChangedClosure()
                 isTranslationChanged.toggle()
@@ -129,6 +152,7 @@ extension OwnID.UISDK.OneTimePassword {
                     .padding(.bottom)
                     .padding(.trailing, Constants.titlePadding)
                     .padding(.leading, Constants.titlePadding)
+                    .padding(.top, Constants.topPadding)
                 Text(verbatim: emailSentText)
                     .multilineTextAlignment(.center)
                     .foregroundColor(OwnID.Colors.otpContentMessageColor)

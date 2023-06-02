@@ -60,7 +60,6 @@ public extension OwnID.CoreSDK {
         public let dataContainer: Any?
         public let metadata: Any?
         public let context: OwnID.CoreSDK.Context
-        public let nonce: OwnID.CoreSDK.Nonce
         public let loginId: LoginID?
         public let responseType: StatusResponseType
         public let authType: AuthType?

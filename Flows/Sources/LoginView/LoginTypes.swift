@@ -20,22 +20,8 @@ public extension OwnID.FlowsSDK {
         case loading
         case loggedIn(loginResult: OperationResult, authType: OwnID.CoreSDK.AuthType?)
     }
-    
-    struct LinkOnLoginConfiguration {
-        public init(email: OwnID.CoreSDK.Email,
-                    payload: OwnID.CoreSDK.Payload,
-                    password: OwnID.FlowsSDK.Password) {
-            self.email = email
-            self.payload = payload
-            self.password = password
-        }
-        
-        public let email: OwnID.CoreSDK.Email
-        public let password: OwnID.FlowsSDK.Password
-        public let payload: OwnID.CoreSDK.Payload
-    }
 }
 
 public protocol LoginPerformer {
-    func login(payload: OwnID.CoreSDK.Payload, email: String) -> OwnID.LoginResultPublisher
+    func login(payload: OwnID.CoreSDK.Payload, loginId: String) -> OwnID.LoginResultPublisher
 }

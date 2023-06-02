@@ -9,6 +9,8 @@ extension OwnID.UISDK.OTPTextFieldView {
             self.codeLength = codeLength
             self.store = store
             storage = Array(repeating: "", count: codeLength.rawValue + 1)
+            
+            store.send(.viewLoaded)
         }
         
         let codeLength: OwnID.UISDK.OneTimePassword.CodeLength
@@ -26,8 +28,11 @@ extension OwnID.UISDK.OTPTextFieldView {
         @Published var code5 = zeroWidthSpaceCharacter
         @Published var code6 = zeroWidthSpaceCharacter
         @Published var nextUpdateAction: NextUpdateAcion?
+        private var disableTextFields = false
         
         @Published var currentFocusedField: FieldType?
+        
+        private var isResetting = false
         
         private func storeFieldValue(field: FieldType, value: String) {
             storage[field.rawValue] = value
@@ -39,19 +44,49 @@ extension OwnID.UISDK.OTPTextFieldView {
         }
         
         private func submitCode() {
+            disableTextFields = true
             let code = combineCode()
             if code.count == codeLength.rawValue {
                 store.send(.codeEntered(code))
             }
         }
         
+        private var lastFieldType: FieldType {
+            switch codeLength {
+            case .four:
+                return .four
+            case .six:
+                return .six
+            }
+        }
+        
         func processTextChange(for field: FieldType, binding: Binding<String>) {
+            store.send(.codeEnteringStarted)
+            
             let currentBindingValue = binding.wrappedValue
             let actualValue = currentBindingValue.replacingOccurrences(of: Self.zeroWidthSpaceCharacter, with: "")
+            if actualValue.count > 1 {
+                binding.wrappedValue = String(actualValue.prefix(1))
+            }
+            
             if !actualValue.isNumber {
                 binding.wrappedValue = Self.zeroWidthSpaceCharacter
             }
-            let nextActionIsAddZero = nextUpdateAction == NextUpdateAcion.addEmptySpace
+            
+            guard !isResetting else {
+                if field == lastFieldType {
+                    disableTextFields = false
+                    isResetting = false
+                    currentFocusedField = .one
+                }
+                return
+            }
+            
+            guard !disableTextFields else {
+                return
+            }
+            
+            let nextActionIsAddZero = nextUpdateAction == .addEmptySpace
             if actualValue.isEmpty, !nextActionIsAddZero {
                 binding.wrappedValue = Self.zeroWidthSpaceCharacter
                 nextUpdateAction = .addEmptySpace
@@ -78,6 +113,19 @@ extension OwnID.UISDK.OTPTextFieldView {
             }
             storeFieldValue(field: field, value: actualValue)
             moveFocusAndSubmitCodeIfNeeded(field, actualValue)
+        }
+        
+        func resetCode() {
+            isResetting = true
+            code1 = Self.zeroWidthSpaceCharacter
+            code2 = Self.zeroWidthSpaceCharacter
+            code3 = Self.zeroWidthSpaceCharacter
+            code4 = Self.zeroWidthSpaceCharacter
+            if codeLength == .six {
+                code5 = Self.zeroWidthSpaceCharacter
+                code6 = Self.zeroWidthSpaceCharacter
+            }
+            storage = Array(repeating: "", count: codeLength.rawValue + 1)
         }
     }
 }

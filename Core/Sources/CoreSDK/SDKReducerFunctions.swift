@@ -69,7 +69,6 @@ extension OwnID.CoreSDK {
                     var local = config
                     local.serverURL = serverConfiguration.serverURL
                     local.redirectionURL = (serverConfiguration.platformSettings?.redirectUrlOverride ?? serverConfiguration.redirectURLString) ?? local.redirectionURL
-                    local.fidoSettings = serverConfiguration.fidoSettings
                     local.passkeysAutofillEnabled = serverConfiguration.passkeysAutofillEnabled
                     local.supportedLocales = serverConfiguration.supportedLocales
                     local.loginIdSettings = serverConfiguration.loginIdSettings

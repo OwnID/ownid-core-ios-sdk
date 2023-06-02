@@ -6,7 +6,6 @@ extension OwnID.CoreSDK {
         var isFailed = false
         let supportedLocales: [String]
         let logLevel: LogLevel
-        let fidoSettings: FidoSettings?
         let passkeysAutofillEnabled: Bool
         let serverURL: ServerURL
         let redirectURLString: RedirectionURLString?
@@ -15,21 +14,11 @@ extension OwnID.CoreSDK {
         let verification: Verification
 
         enum CodingKeys: String, CodingKey {
-            case supportedLocales, logLevel, fidoSettings, passkeysAutofillEnabled, verification
+            case supportedLocales, logLevel, passkeysAutofillEnabled, verification
             case loginIdSettings = "loginId"
             case serverURL = "serverUrl"
             case redirectURLString = "redirectUrl"
             case platformSettings = "iosSettings"
-        }
-    }
-
-    // MARK: - FidoSettings
-    struct FidoSettings: Codable {
-        let rpID, rpName: String
-
-        enum CodingKeys: String, CodingKey {
-            case rpID = "rpId"
-            case rpName
         }
     }
     
@@ -69,6 +58,6 @@ extension OwnID.CoreSDK {
 
 extension OwnID.CoreSDK.ServerConfiguration {
     static func mock(isFailed: Bool = false) -> Self {
-        Self(isFailed: isFailed, supportedLocales: [], logLevel: .error, fidoSettings: .none, passkeysAutofillEnabled: false, serverURL: URL(string: "https://ownid.com")!, redirectURLString: .none, platformSettings: .none, loginIdSettings: OwnID.CoreSDK.LoginIdSettings(type: .email, regex: ""), verification: OwnID.CoreSDK.Verification(type: .email))
+        Self(isFailed: isFailed, supportedLocales: [], logLevel: .error, passkeysAutofillEnabled: false, serverURL: URL(string: "https://ownid.com")!, redirectURLString: .none, platformSettings: .none, loginIdSettings: OwnID.CoreSDK.LoginIdSettings(type: .email, regex: ""), verification: OwnID.CoreSDK.Verification(type: .email))
     }
 }
