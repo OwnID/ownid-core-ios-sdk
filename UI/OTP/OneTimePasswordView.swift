@@ -11,11 +11,10 @@ extension OwnID.UISDK {
                             verificationType: OwnID.CoreSDK.Verification.VerificationType) {
         if #available(iOS 15.0, *) {
             let titleType: OwnID.UISDK.OneTimePassword.TitleType = type == .loginIDAuthorization ? .oneTimePasswordSignIn : .emailVerification
-            let codeLength = OneTimePassword.CodeLength(rawValue: otpLength) ?? .four
             let view = OwnID.UISDK.OneTimePassword.OneTimePasswordView(store: store,
                                                                        visualConfig: PopupManager.shared.visualLookConfig,
                                                                        loginId: loginId,
-                                                                       codeLength: codeLength,
+                                                                       codeLength: otpLength,
                                                                        restartURL: restartUrl,
                                                                        titleType: titleType,
                                                                        verificationType: verificationType)
@@ -50,7 +49,7 @@ extension OwnID.UISDK.OneTimePassword {
         private var visualConfig: OwnID.UISDK.OTPViewConfig
         @ObservedObject var store: Store<ViewState, Action>
         private let titleState = TitleType.emailVerification
-        private let codeLength: CodeLength
+        private let codeLength: Int
         private let titleType: TitleType
         private let restartURL: URL
         
@@ -62,7 +61,7 @@ extension OwnID.UISDK.OneTimePassword {
         init(store: Store<ViewState, Action>,
              visualConfig: OwnID.UISDK.OTPViewConfig,
              loginId: String,
-             codeLength: CodeLength = .four,
+             codeLength: Int,
              restartURL: URL,
              titleType: TitleType = .oneTimePasswordSignIn,
              verificationType: OwnID.CoreSDK.Verification.VerificationType) {
@@ -78,7 +77,7 @@ extension OwnID.UISDK.OneTimePassword {
                 var text = OwnID.CoreSDK.TranslationsSDK.TranslationKey.otpSentEmail.localized()
                 let codeLengthReplacement = Constants.codeLengthReplacement
                 let emailReplacement = Constants.emailReplacement
-                text = text.replacingOccurrences(of: codeLengthReplacement, with: String(codeLength.rawValue))
+                text = text.replacingOccurrences(of: codeLengthReplacement, with: String(codeLength))
                 text = text.replacingOccurrences(of: emailReplacement, with: loginId)
                 return text
             }

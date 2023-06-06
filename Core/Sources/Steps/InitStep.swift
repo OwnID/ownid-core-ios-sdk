@@ -1,6 +1,5 @@
 import Foundation
 import Combine
-import LocalAuthentication
 import CryptoKit
 
 extension OwnID.CoreSDK.CoreViewModel {
@@ -39,7 +38,7 @@ extension OwnID.CoreSDK.CoreViewModel {
             let requestBody = InitRequestBody(sessionChallenge: sessionChallenge,
                                               type: state.type,
                                               loginId: state.loginId.isBlank ? nil : state.loginId,
-                                              supportsFido2: isPasskeysSupported)
+                                              supportsFido2: OwnID.CoreSDK.isPasskeysSupported)
             return [sendInitialRequest(requestBody: requestBody, session: session, configuration: configuration)]
         }
         
@@ -81,26 +80,6 @@ extension OwnID.CoreSDK.CoreViewModel {
                 fatalError()
             }
             return keyData
-        }
-        
-        private var isPasskeysSupported: Bool {
-            let isLeastPasskeysSupportediOS = ProcessInfo().isOperatingSystemAtLeast(OperatingSystemVersion(majorVersion: 16, minorVersion: 0, patchVersion: 0))
-            var isBiometricsAvailable = false
-            let authContext = LAContext()
-            let _ = authContext.canEvaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, error: nil)
-            switch authContext.biometryType {
-            case .none:
-                break
-            case .touchID:
-                isBiometricsAvailable = true
-            case .faceID:
-                isBiometricsAvailable = true
-            @unknown default:
-                print("please update biometrics types")
-            }
-            let isPasscodeAvailable = LAContext().canEvaluatePolicy(.deviceOwnerAuthentication, error: nil)
-            let isPasskeysSupported = isLeastPasskeysSupportediOS && (isBiometricsAvailable || isPasscodeAvailable)
-            return isPasskeysSupported
         }
     }
 }

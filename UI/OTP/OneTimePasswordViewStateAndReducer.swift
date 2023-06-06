@@ -1,12 +1,6 @@
 import Foundation
 import Combine
 
-extension OwnID.UISDK.OneTimePassword {
-    enum CodeLength: Int {
-        case six = 6
-        case four = 4
-    }
-}
 extension OwnID.UISDK {
     enum OneTimePassword { }
 }

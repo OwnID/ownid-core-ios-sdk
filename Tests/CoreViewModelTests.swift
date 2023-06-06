@@ -21,7 +21,7 @@ extension OwnID.CoreSDK.AccountManager {
             let rawAuthenticatorData = "rawAuthenticatorData"
             let signature = "signature"
             let attestationObject = "attestationObject"
-            let current = Self {
+            let current = Self { credId in
                 let payload = OwnID.CoreSDK.Fido2LoginPayload(credentialId: credentialID,
                                                               clientDataJSON: clientDataJSON.base64urlEncodedString(),
                                                               authenticatorData: rawAuthenticatorData,
@@ -41,60 +41,15 @@ extension OwnID.CoreSDK.AccountManager {
     
     static var mockErrorAccountManager: CreationClosure {
         { store, domain, challenge, browserBaseURL in
-            let current = Self {
-                store.send(.error(error: .authorizationManagerAuthError(userInfo: [:]), context: "frogkolvjt", browserBaseURL: browserBaseURL))
+            let current = Self { credId in
+                store.send(.error(error: .authorizationManagerAuthError(underlying: OwnID.CoreSDK.Error.dataIsMissing), context: "frogkolvjt", browserBaseURL: browserBaseURL))
             } cancelClosure: {
                 
             } signUpClosure: { userName in
-                store.send(.error(error: .authorizationManagerAuthError(userInfo: [:]), context: "frogkolvjt", browserBaseURL: browserBaseURL))
+                store.send(.error(error: .authorizationManagerAuthError(underlying: OwnID.CoreSDK.Error.dataIsMissing), context: "frogkolvjt", browserBaseURL: browserBaseURL))
             }
             return current
         }
-    }
-}
-
-extension OwnID.CoreSDK {
-    final class APISessionMock: APISessionProtocol {
-        //TODO: cover tests
-        func performAuthRequest(url: URL, fido2Payload: Encodable, context: OwnID.CoreSDK.Context) -> AnyPublisher<OwnID.CoreSDK.Auth.Response, OwnID.CoreSDK.CoreErrorLogWrapper> {
-            
-        }
-        
-        func performFinalStatusRequest(url: URL, context: OwnID.CoreSDK.Context) -> AnyPublisher<OwnID.CoreSDK.Status.Response, OwnID.CoreSDK.CoreErrorLogWrapper> {
-            
-        }
-        
-        func performStopRequest(url: URL) -> AnyPublisher<Data, OwnID.CoreSDK.CoreErrorLogWrapper> {
-            
-        }
-        
-        init(isInitSuccessful: Bool) {
-            self.isInitSuccessful = isInitSuccessful
-        }
-        
-        var isInitSuccessful = true
-        var context: OwnID.CoreSDK.Context! { "KreJ96smzSwveEb5QfaJzJ" }
-        var nonce: OwnID.CoreSDK.Nonce { "acfc66ed-8c1a-4956-b114-e9fa0e189cd7" }
-        
-        func performInitRequest(requestData: OwnID.CoreSDK.Init.RequestData) -> AnyPublisher<OwnID.CoreSDK.Init.Response, OwnID.CoreSDK.CoreErrorLogWrapper> {
-            if isInitSuccessful {
-                return Just(OwnID.CoreSDK.Init.Response(url: "https://www.apple.com", context: context, nonce: nonce)).setFailureType(to: OwnID.CoreSDK.CoreErrorLogWrapper.self).eraseToAnyPublisher()
-            } else {
-                return Fail(outputType: OwnID.CoreSDK.Init.Response.self, failure: OwnID.CoreSDK.CoreErrorLogWrapper(entry: .init(context: context, message: "", codeInitiator: #function, sdkName: OwnID.CoreSDK.sdkName, version: OwnID.CoreSDK.version), error: .initRequestResponseIsEmpty)).eraseToAnyPublisher()
-            }
-        }
-        
-        func performFinalStatusRequest() -> AnyPublisher<OwnID.CoreSDK.Payload, OwnID.CoreSDK.CoreErrorLogWrapper> {
-            Just(OwnID.CoreSDK.Payload(dataContainer: .none, metadata: .none, context: context, nonce: nonce, loginId: .none, responseType: .registrationInfo, authType: .none, requestLanguage: .none)).setFailureType(to: OwnID.CoreSDK.CoreErrorLogWrapper.self).eraseToAnyPublisher()
-        }
-        
-        func performAuthRequest(fido2Payload: Encodable) -> AnyPublisher<OwnID.CoreSDK.Payload, OwnID.CoreSDK.CoreErrorLogWrapper> {
-            Just(OwnID.CoreSDK.Payload(dataContainer: [String: String](), metadata: .none, context: context, nonce: nonce, loginId: .none, responseType: .registrationInfo, authType: "biometrics", requestLanguage: "uk-US")).setFailureType(to: OwnID.CoreSDK.CoreErrorLogWrapper.self).eraseToAnyPublisher()
-        }
-    }
-    
-    static func session(isInitSuccessful: Bool = true) -> APISessionProtocol.CreationClosure {
-        { _, _ , _ , _ ,_  in OwnID.CoreSDK.APISessionMock(isInitSuccessful: isInitSuccessful) }
     }
 }
 
@@ -138,7 +93,6 @@ final class CoreViewModelTests: XCTestCase {
                                                     sdkConfigurationName: sdkConfigurationName,
                                                     isLoggingEnabled: true,
                                                     clientConfiguration: localConfig,
-                                                    apiSessionCreationClosure: OwnID.CoreSDK.session(),
                                                     createAccountManagerClosure: OwnID.CoreSDK.AccountManager.mockAccountManager)
         
         viewModel.eventPublisher.sink { completion in
@@ -174,8 +128,8 @@ final class CoreViewModelTests: XCTestCase {
                                                     sdkConfigurationName: sdkConfigurationName,
                                                     isLoggingEnabled: true,
                                                     clientConfiguration: localConfig,
-                                                    apiSessionCreationClosure: OwnID.CoreSDK.session(),
-                                                    createAccountManagerClosure: OwnID.CoreSDK.AccountManager.mockErrorAccountManager, createBrowserOpenerClosure: OwnID.CoreSDK.BrowserOpener.instantOpener)
+                                                    createAccountManagerClosure: OwnID.CoreSDK.AccountManager.mockErrorAccountManager,
+                                                    createBrowserOpenerClosure: OwnID.CoreSDK.BrowserOpener.instantOpener)
         
         viewModel.eventPublisher.sink { completion in
             switch completion {
@@ -224,7 +178,6 @@ final class CoreViewModelTests: XCTestCase {
                                                     sdkConfigurationName: sdkConfigurationName,
                                                     isLoggingEnabled: true,
                                                     clientConfiguration: localConfig,
-                                                    apiSessionCreationClosure: OwnID.CoreSDK.session(isInitSuccessful: false),
                                                     createAccountManagerClosure: OwnID.CoreSDK.AccountManager.mockErrorAccountManager, createBrowserOpenerClosure: OwnID.CoreSDK.BrowserOpener.instantOpener)
         
         viewModel.eventPublisher.sink { completion in
