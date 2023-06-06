@@ -13,76 +13,46 @@ extension OwnID.UISDK {
         }
         
         @ObservedObject var viewModel: ViewModel
-        @FocusState private var focusedField: ViewModel.FieldType?
+        @FocusState private var focusedField: Int?
         
         public var body: some View {
             HStack(spacing: Constants.spaceBetweenBoxes) {
-                ForEach(viewModel.codeLength.fields, id: \.self) { field in
+                ForEach(0..<viewModel.codeLength, id: \.self) { index in
                     ZStack {
                         Rectangle()
                             .foregroundColor(OwnID.Colors.otpTileBackgroundColor)
-                            .border(tileBorderColor(for: field))
+                            .border(tileBorderColor(for: index))
                             .cornerRadius(cornerRadiusValue)
                             .overlay(
                                 RoundedRectangle(cornerRadius: cornerRadiusValue)
-                                    .stroke(tileBorderColor(for: field), lineWidth: Constants.textFieldBorderWidth)
+                                    .stroke(tileBorderColor(for: index), lineWidth: Constants.textFieldBorderWidth)
                             )
                         
-                        TextField("", text: binding(for: field))
+                        TextField("", text: $viewModel.codes[index])
                             .font(.system(size: Constants.fontSize))
                             .multilineTextAlignment(.center)
                             .keyboardType(.numberPad)
-                            .focused($focusedField, equals: field)
+                            .focused($focusedField, equals: index)
                             .padding(Constants.textFieldPadding)
                     }
-                    .frame(width: Constants.boxSideSize, height: Constants.boxSideSize)
+                    .aspectRatio(1, contentMode: .fit)
+                    .frame(maxWidth: Constants.boxSideSize, maxHeight: Constants.boxSideSize)
                 }
             }
-            .onChange(of: viewModel.currentFocusedField, perform: { newValue in
+            .onChange(of: viewModel.currentFocusedFieldIndex, perform: { newValue in
                 focusedField = newValue
             })
-            .onChange(of: viewModel.code1, perform: { newValue in
-                viewModel.processTextChange(for: .one, binding: $viewModel.code1)
-            })
-            .onChange(of: viewModel.code2, perform: { newValue in
-                viewModel.processTextChange(for: .two, binding: $viewModel.code2)
-            })
-            .onChange(of: viewModel.code3, perform: { newValue in
-                viewModel.processTextChange(for: .three, binding: $viewModel.code3)
-            })
-            .onChange(of: viewModel.code4, perform: { newValue in
-                viewModel.processTextChange(for: .four, binding: $viewModel.code4)
-            })
-            .onChange(of: viewModel.code5, perform: { newValue in
-                viewModel.processTextChange(for: .five, binding: $viewModel.code5)
-            })
-            .onChange(of: viewModel.code6, perform: { newValue in
-                viewModel.processTextChange(for: .six, binding: $viewModel.code6)
+            .onChange(of: viewModel.codes, perform: { newValue in
+                guard let index = focusedField else { return }
+                viewModel.processTextChange(for: index, binding: $viewModel.codes[index])
             })
             .onAppear() {
-                focusedField = .one
+                focusedField = 0
             }
         }
         
-        private func tileBorderColor(for field: ViewModel.FieldType) -> Color {
-            focusedField == field ? OwnID.Colors.otpTileSelectedBorderColor : OwnID.Colors.otpTileBorderColor
-        }
-        
-        private func binding(for field: ViewModel.FieldType) -> Binding<String> {
-            switch field {
-            case .one:
-                return $viewModel.code1
-            case .two:
-                return $viewModel.code2
-            case .three:
-                return $viewModel.code3
-            case .four:
-                return $viewModel.code4
-            case .five:
-                return $viewModel.code5
-            case .six:
-                return $viewModel.code6
-            }
+        private func tileBorderColor(for index: Int) -> Color {
+            focusedField == index ? OwnID.Colors.otpTileSelectedBorderColor : OwnID.Colors.otpTileBorderColor
         }
     }
 }

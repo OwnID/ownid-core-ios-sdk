@@ -4,14 +4,14 @@ extension OwnID.CoreSDK {
     // MARK: - ServerConfiguration
     struct ServerConfiguration: Codable {
         var isFailed = false
-        let supportedLocales: [String]
+        let supportedLocales: [String]?
         let logLevel: LogLevel
-        let passkeysAutofillEnabled: Bool
+        let passkeysAutofillEnabled: Bool?
         let serverURL: ServerURL
         let redirectURLString: RedirectionURLString?
         let platformSettings: PlatformSettings?
         let loginIdSettings: LoginIdSettings
-        let verification: Verification
+        let verification: Verification?
 
         enum CodingKeys: String, CodingKey {
             case supportedLocales, logLevel, passkeysAutofillEnabled, verification

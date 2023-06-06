@@ -144,6 +144,7 @@ extension OwnID.UISDK.IdCollect {
                         .onChange(of: loginId) { _ in
                             viewModel.error = ""
                         }
+                        .autocapitalization(.none)
                         .font(.system(size: Constants.emailFontSize))
                         .keyboardType(.emailAddress)
                         .focused($focusedField, equals: .email)

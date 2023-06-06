@@ -4,6 +4,7 @@ import Combine
 extension OwnID.CoreSDK.CoreViewModel {
     struct IdCollectRequestBody: Encodable {
         let loginId: String
+        let supportsFido2: Bool
     }
 
     class IdCollectStep: BaseStep {
@@ -33,7 +34,7 @@ extension OwnID.CoreSDK.CoreViewModel {
             }
 
             let context = state.context
-            let requestBody = IdCollectRequestBody(loginId: loginId)
+            let requestBody = IdCollectRequestBody(loginId: loginId, supportsFido2: OwnID.CoreSDK.isPasskeysSupported)
             state.loginId = loginId
             let effect = state.session.perform(url: url,
                                                method: .post,
