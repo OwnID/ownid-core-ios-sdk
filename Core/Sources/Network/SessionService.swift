@@ -12,70 +12,74 @@ extension OwnID.CoreSDK {
 }
 
 extension OwnID.CoreSDK {
-    enum ServiceError: Swift.Error {
-        case encodeFailed(error: Swift.Error)
-        case networkFailed(underlying: URLError)
-        case responseIsEmpty
-        case decodeFailed(error: Swift.Error)
-    }
-    
     class SessionService {
         let provider: APIProvider
-        let supportedLanguages: OwnID.CoreSDK.Languages
+        let supportedLanguages: Languages?
         
         init(provider: APIProvider = URLSession.shared,
-             supportedLanguages: OwnID.CoreSDK.Languages) {
+             supportedLanguages: Languages? = nil) {
             self.provider = provider
             self.supportedLanguages = supportedLanguages
         }
         
-        func perform<Body: Encodable, Response: Decodable>(url: OwnID.CoreSDK.ServerURL,
+        func perform<Body: Encodable, Response: Decodable>(url: ServerURL,
                                                            method: HTTPMethod,
                                                            body: Body,
-                                                           with type: Response.Type) -> AnyPublisher<Response, ServiceError> {
-            performRequest(url: url, method: method, body: body)
+                                                           headers: [String: String] = [:],
+                                                           with type: Response.Type,
+                                                           queue: OperationQueue = OperationQueue()) -> AnyPublisher<Response, Error> {
+            performRequest(url: url, method: method, body: body, headers: headers, queue: queue)
                 .tryMap { [self] response -> Data in
-                    guard !response.data.isEmpty else { throw ServiceError.responseIsEmpty }
+                    guard !response.data.isEmpty else { throw OwnID.CoreSDK.Error.requestResponseIsEmpty }
                     self.printResponse(data: response.data)
                     return response.data
                 }
                 .eraseToAnyPublisher()
                 .decode(type: type, decoder: JSONDecoder())
-                .mapError { ServiceError.decodeFailed(error: $0) }
+                .mapError { .requestResponseDecodeFailed(underlying: $0) }
                 .eraseToAnyPublisher()
         }
         
-        func perform<Body: Encodable>(url: OwnID.CoreSDK.ServerURL,
+        func perform<Body: Encodable>(url: ServerURL,
                                       method: HTTPMethod,
-                                      body: Body) -> AnyPublisher<[String: Any], ServiceError> {
-            performRequest(url: url, method: method, body: body)
+                                      body: Body,
+                                      headers: [String: String] = [:],
+                                      queue: OperationQueue = OperationQueue()) -> AnyPublisher<[String: Any], Error> {
+            performRequest(url: url, method: method, body: body, headers: headers, queue: queue)
                 .tryMap { [self] response -> [String: Any] in
-                    guard !response.data.isEmpty else { throw ServiceError.responseIsEmpty }
+                    guard !response.data.isEmpty else { throw OwnID.CoreSDK.Error.requestResponseIsEmpty }
                     let json = try JSONSerialization.jsonObject(with: response.data, options: []) as? [String : Any]
                     self.printResponse(data: response.data)
                     return json ?? [:]
                 }
                 .eraseToAnyPublisher()
-                .mapError { ServiceError.decodeFailed(error: $0) }
+                .mapError { .requestResponseDecodeFailed(underlying: $0) }
                 .eraseToAnyPublisher()
         }
         
-        private func performRequest<Body: Encodable>(url: OwnID.CoreSDK.ServerURL,
+        private func performRequest<Body: Encodable>(url: ServerURL,
                                                      method: HTTPMethod,
-                                                     body: Body) -> AnyPublisher<URLSession.DataTaskPublisher.Output, ServiceError> {
+                                                     body: Body,
+                                                     headers: [String: String],
+                                                     queue: OperationQueue) -> AnyPublisher<URLSession.DataTaskPublisher.Output, Error> {
             Just(body)
-                .setFailureType(to: ServiceError.self)
+                .subscribe(on: queue)
+                .setFailureType(to: Error.self)
                 .eraseToAnyPublisher()
                 .encode(encoder: JSONEncoder())
-                .mapError { ServiceError.encodeFailed(error: $0) }
+                .mapError { .requestBodyEncodeFailed(underlying: $0) }
                 .map { [self] body -> URLRequest in
-                    let headers = URLRequest.defaultHeaders(supportedLanguages: supportedLanguages)
-                    return URLRequest.request(url: url, method: method, body: body, headers: headers)
+                    if let supportedLanguages {
+                        let headers = URLRequest.defaultHeaders(supportedLanguages: supportedLanguages)
+                        return URLRequest.request(url: url, method: method, body: body, headers: headers)
+                    } else {
+                        return URLRequest.request(url: url, method: method, body: body, headers: headers)
+                    }
                 }
                 .eraseToAnyPublisher()
-                .flatMap { [self] request -> AnyPublisher<URLSession.DataTaskPublisher.Output, ServiceError> in
+                .flatMap { [self] request -> AnyPublisher<URLSession.DataTaskPublisher.Output, Error> in
                     return provider.apiResponse(for: request)
-                        .mapError { ServiceError.networkFailed(underlying: $0) }
+                        .mapError { .requestNetworkFailed(underlying: $0) }
                         .eraseToAnyPublisher()
                 }
                 .eraseToAnyPublisher()

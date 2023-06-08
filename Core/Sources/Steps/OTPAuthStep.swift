@@ -54,24 +54,11 @@ extension OwnID.CoreSDK.CoreViewModel {
                 })
                 .map({ [self] response in
                     guard let step = response.step else {
-                        return Action.error(.coreLog(entry: .errorEntry(Self.self), error: .initRequestResponseIsEmpty))
+                        return Action.error(.coreLog(entry: .errorEntry(Self.self), error: .requestResponseIsEmpty))
                     }
                     return nextStepAction(step)
                 })
-                .catch { error in
-                    let coreError: OwnID.CoreSDK.Error
-                    switch error {
-                    case OwnID.CoreSDK.ServiceError.networkFailed(let error):
-                        coreError = .initRequestNetworkFailed(underlying: error)
-                    case OwnID.CoreSDK.ServiceError.encodeFailed(let error):
-                        coreError = .initRequestBodyEncodeFailed(underlying: error)
-                    case OwnID.CoreSDK.ServiceError.decodeFailed(let error):
-                        coreError = .initRequestResponseDecodeFailed(underlying: error)
-                    case OwnID.CoreSDK.ServiceError.responseIsEmpty:
-                        coreError = .initRequestResponseIsEmpty
-                    }
-                    return Just(Action.error(.coreLog(entry: .errorEntry(Self.self), error: coreError)))
-                }
+                .catch { Just(Action.error(.coreLog(entry: .errorEntry(Self.self), error: $0))) }
                 .eraseToEffect()
             return [effect]
         }
@@ -98,22 +85,9 @@ extension OwnID.CoreSDK.CoreViewModel {
                         return .nonTerminalError
                     }
                     
-                    return Action.error(.coreLog(entry: .errorEntry(Self.self), error: .initRequestResponseIsEmpty))
+                    return Action.error(.coreLog(entry: .errorEntry(Self.self), error: .requestResponseIsEmpty))
                 })
-                .catch { error in
-                    let coreError: OwnID.CoreSDK.Error
-                    switch error {
-                    case OwnID.CoreSDK.ServiceError.networkFailed(let error):
-                        coreError = .initRequestNetworkFailed(underlying: error)
-                    case OwnID.CoreSDK.ServiceError.encodeFailed(let error):
-                        coreError = .initRequestBodyEncodeFailed(underlying: error)
-                    case OwnID.CoreSDK.ServiceError.decodeFailed(let error):
-                        coreError = .initRequestResponseDecodeFailed(underlying: error)
-                    case OwnID.CoreSDK.ServiceError.responseIsEmpty:
-                        coreError = .initRequestResponseIsEmpty
-                    }
-                    return Just(Action.error(.coreLog(entry: .errorEntry(Self.self), error: coreError)))
-                }
+                .catch { Just(Action.error(.coreLog(entry: .errorEntry(Self.self), error: $0))) }
                 .eraseToEffect()
             return [effect]
         }
