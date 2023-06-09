@@ -46,7 +46,7 @@ extension OwnID.CoreSDK.CoreViewModel {
         
         override func run(state: inout State) -> [Effect<OwnID.CoreSDK.CoreViewModel.Action>] {
             guard let url = step.fidoData?.url else {
-                return errorEffect(.coreLog(entry: .errorEntry(Self.self), error: .urlIsMissing))
+                return errorEffect(.coreLog(entry: .errorEntry(Self.self), error: .dataIsMissing))
             }
             
             if #available(iOS 16, *),
@@ -84,20 +84,7 @@ extension OwnID.CoreSDK.CoreViewModel {
                     OwnID.CoreSDK.logger.logCore(.entry(context: context, message: "Auth Request Finished", Self.self))
                 })
                 .map { [self] in nextStepAction($0.step) }
-                .catch { error in
-                    let coreError: OwnID.CoreSDK.Error
-                    switch error {
-                    case OwnID.CoreSDK.ServiceError.networkFailed(let error):
-                        coreError = .authRequestNetworkFailed(underlying: error)
-                    case OwnID.CoreSDK.ServiceError.encodeFailed(let error):
-                        coreError = .authRequestBodyEncodeFailed(underlying: error)
-                    case OwnID.CoreSDK.ServiceError.decodeFailed(let error):
-                        coreError = .authRequestResponseDecodeFailed(underlying: error)
-                    case OwnID.CoreSDK.ServiceError.responseIsEmpty:
-                        coreError = .authRequestResponseIsEmpty
-                    }
-                    return Just(Action.error(.coreLog(entry: .errorEntry(Self.self), error: coreError)))
-                }
+                .catch { Just(Action.error(.coreLog(entry: .errorEntry(Self.self), error: $0))) }
                 .eraseToEffect()
             
             return [effect]
@@ -137,20 +124,7 @@ extension OwnID.CoreSDK.CoreViewModel {
                     OwnID.CoreSDK.logger.logCore(.entry(context: context, message: "Error Request Finished", Self.self))
                 })
                 .map { [self] in nextStepAction($0.step) }
-                .catch { error in
-                    let coreError: OwnID.CoreSDK.Error
-                    switch error {
-                    case OwnID.CoreSDK.ServiceError.networkFailed(let error):
-                        coreError = .authRequestNetworkFailed(underlying: error)
-                    case OwnID.CoreSDK.ServiceError.encodeFailed(let error):
-                        coreError = .authRequestBodyEncodeFailed(underlying: error)
-                    case OwnID.CoreSDK.ServiceError.decodeFailed(let error):
-                        coreError = .authRequestResponseDecodeFailed(underlying: error)
-                    case OwnID.CoreSDK.ServiceError.responseIsEmpty:
-                        coreError = .authRequestResponseIsEmpty
-                    }
-                    return Just(Action.error(.coreLog(entry: .errorEntry(Self.self), error: coreError)))
-                }
+                .catch { Just(Action.error(.coreLog(entry: .errorEntry(Self.self), error: $0))) }
                 .eraseToEffect()
             return [effect]
         }

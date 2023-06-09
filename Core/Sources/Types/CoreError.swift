@@ -9,44 +9,21 @@ public extension OwnID.CoreSDK {
         case unsecuredHttpPassed
         case redirectParameterFromURLCancelledOpeningSDK
         case notValidRedirectionURLOrNotMatchingFromConfiguration
+        
         case emailIsInvalid
         case phoneNumberIsInvalid
         case userNameIsInvalid
         case localConfigIsNotPresent
-        case urlIsMissing
         case dataIsMissing
-        case tokenDataIsMissing
-        case contextIsMissing
         case flowCancelled
         case emailMismatch
         case payloadMissing(underlying: String?)
         
-        case initRequestNetworkFailed(underlying: URLError)
-        case initRequestBodyEncodeFailed(underlying: Swift.Error)
-        case initRequestResponseDecodeFailed(underlying: Swift.Error)
-        case initRequestResponseIsEmpty
-        
-        case authRequestResponseIsEmpty
-        case authRequestTypeIsMissing
-        case authRequestResponseContextMismatch
-        case authRequestResponseDecodeFailed(underlying: Swift.Error)
-        case authRequestNetworkFailed(underlying: URLError)
-        case authRequestBodyEncodeFailed(underlying: Swift.Error)
-        
-        case settingRequestResponseNotCompliantResponse
-        case settingRequestResponseIsEmpty
-        case settingRequestResponseDecodeFailed(underlying: Swift.Error)
-        case settingRequestNetworkFailed(underlying: URLError)
-        case settingRequestBodyEncodeFailed(underlying: Swift.Error)
-        
-        case statusRequestNetworkFailed(underlying: URLError)
-        case statusRequestBodyEncodeFailed(underlying: Swift.Error)
-        case statusRequestResponseDecodeFailed(underlying: Swift.Error)
-        case statusRequestResponseIsEmpty
-        case statusRequestFail(underlying: Swift.Error)
-        
-        case statusRequestTypeIsMissing
-        case statusRequestResponseContextMismatch
+        case requestNetworkFailed(underlying: URLError)
+        case requestBodyEncodeFailed(underlying: Swift.Error)
+        case requestResponseDecodeFailed(underlying: Swift.Error)
+        case requestResponseIsEmpty
+
         case serverError(serverError: ServerError)
         case plugin(underlying: PluginError)
         
@@ -82,32 +59,13 @@ extension OwnID.CoreSDK.Error: LocalizedError {
         case .userNameIsInvalid:
             return "The user name is badly formatted"
             
-        case .initRequestBodyEncodeFailed,
-                .settingRequestResponseIsEmpty,
-                .initRequestResponseDecodeFailed,
-                .initRequestResponseIsEmpty,
-                .statusRequestBodyEncodeFailed,
-                .statusRequestResponseDecodeFailed,
-                .authRequestResponseDecodeFailed,
-                .statusRequestResponseIsEmpty,
-                .authRequestResponseIsEmpty,
-                .statusRequestFail,
-                .authRequestResponseContextMismatch,
-                .statusRequestResponseContextMismatch,
-                .tokenDataIsMissing,
-                .authRequestBodyEncodeFailed,
-                .localizationDownloader,
-                .statusRequestTypeIsMissing,
-                .authRequestTypeIsMissing,
-                .settingRequestResponseDecodeFailed,
-                .settingRequestNetworkFailed,
-                .settingRequestBodyEncodeFailed,
-                .settingRequestResponseNotCompliantResponse:
+        case .requestBodyEncodeFailed,
+                .requestResponseDecodeFailed,
+                .requestResponseIsEmpty,
+                .localizationDownloader:
             return "Error while performing request"
             
-        case .initRequestNetworkFailed(let underlying),
-                .statusRequestNetworkFailed(let underlying),
-                .authRequestNetworkFailed(let underlying):
+        case .requestNetworkFailed(let underlying):
             return underlying.localizedDescription
 
         case .plugin(let error):
@@ -115,12 +73,6 @@ extension OwnID.CoreSDK.Error: LocalizedError {
             
         case .serverError(let underlying):
             return underlying.error
-            
-        case .contextIsMissing:
-            return "Context is missing"
-            
-        case .urlIsMissing:
-            return "URL is missing"
             
         case .dataIsMissing:
             return "Data is missing"
@@ -163,79 +115,24 @@ extension OwnID.CoreSDK.Error: CustomDebugStringConvertible {
                 .authorizationManagerGeneralError,
                 .authorizationManagerDataMissing,
                 .authorizationManagerUnknownAuthType,
-                .contextIsMissing,
-                .urlIsMissing,
                 .dataIsMissing,
                 .flowCancelled,
                 .redirectParameterFromURLCancelledOpeningSDK,
-                .initRequestNetworkFailed,
-                .statusRequestNetworkFailed,
-                .authRequestNetworkFailed,
+                .requestNetworkFailed,
                 .plugin,
                 .serverError,
                 .emailMismatch,
                 .payloadMissing:
             return errorDescription ?? ""
             
-        case .tokenDataIsMissing:
-            return "tokenDataIsMissing"
+        case .requestBodyEncodeFailed(underlying: let underlying):
+            return "requestBodyEncodeFailed \(underlying)"
             
-        case .initRequestBodyEncodeFailed(underlying: let underlying):
-            return "initRequestBodyEncodeFailed \(underlying)"
+        case .requestResponseDecodeFailed(underlying: let underlying):
+            return "requestResponseDecodeFailed \(underlying)"
             
-        case .initRequestResponseDecodeFailed(underlying: let underlying):
-            return "initRequestResponseDecodeFailed \(underlying)"
-            
-        case .initRequestResponseIsEmpty:
-            return "initRequestResponseIsEmpty"
-            
-        case .authRequestResponseIsEmpty:
-            return "authRequestResponseIsEmpty"
-            
-        case .authRequestResponseDecodeFailed(underlying: let underlying):
-            return "authRequestResponseDecodeFailed \(underlying)"
-            
-        case .authRequestBodyEncodeFailed(underlying: let underlying):
-            return "authRequestBodyEncodeFailed \(underlying)"
-            
-        case .settingRequestResponseNotCompliantResponse:
-            return "settingRequestResponseNotCompliantResponse"
-            
-        case .settingRequestResponseIsEmpty:
-            return "settingRequestResponseIsEmpty"
-            
-        case .settingRequestResponseDecodeFailed(underlying: let underlying):
-            return "settingRequestResponseDecodeFailed \(underlying)"
-            
-        case .settingRequestNetworkFailed(underlying: let underlying):
-            return "settingRequestNetworkFailed \(underlying)"
-            
-        case .settingRequestBodyEncodeFailed(underlying: let underlying):
-            return "settingRequestBodyEncodeFailed \(underlying)"
-            
-        case .statusRequestBodyEncodeFailed(underlying: let underlying):
-            return "statusRequestBodyEncodeFailed \(underlying)"
-            
-        case .statusRequestResponseDecodeFailed(underlying: let underlying):
-            return "statusRequestResponseDecodeFailed \(underlying)"
-            
-        case .statusRequestResponseIsEmpty:
-            return "statusRequestResponseIsEmpty"
-            
-        case .statusRequestFail(underlying: let underlying):
-            return "statusRequestFail \(underlying)"
-            
-        case .statusRequestTypeIsMissing:
-            return "statusRequestTypeIsMissing"
-            
-        case .authRequestTypeIsMissing:
-            return "authRequestTypeIsMissing"
-            
-        case .statusRequestResponseContextMismatch:
-            return "statusRequestResponseContextMismatch"
-            
-        case .authRequestResponseContextMismatch:
-            return "authRequestResponseContextMismatch"
+        case .requestResponseIsEmpty:
+            return "requestResponseIsEmpty"
             
         case .authorizationManagerCredintialsNotFoundOrCanlelledByUser(let underlying):
             return "authorizationManagerCredintialsNotFoundOrCanlelledByUser \(underlying)"

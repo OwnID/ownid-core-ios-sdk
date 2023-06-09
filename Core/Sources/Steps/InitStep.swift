@@ -54,20 +54,7 @@ extension OwnID.CoreSDK.CoreViewModel {
                 OwnID.CoreSDK.logger.logCore(.entry(context: response.context, message: "Init Request Finished", Self.self))
             })
             .map { Action.initialRequestLoaded(response: $0) }
-            .catch { error in
-                let coreError: OwnID.CoreSDK.Error
-                switch error {
-                case OwnID.CoreSDK.ServiceError.networkFailed(let error):
-                    coreError = .initRequestNetworkFailed(underlying: error)
-                case OwnID.CoreSDK.ServiceError.encodeFailed(let error):
-                    coreError = .initRequestBodyEncodeFailed(underlying: error)
-                case OwnID.CoreSDK.ServiceError.decodeFailed(let error):
-                    coreError = .initRequestResponseDecodeFailed(underlying: error)
-                case OwnID.CoreSDK.ServiceError.responseIsEmpty:
-                    coreError = .initRequestResponseIsEmpty
-                }
-                return Just(Action.error(.coreLog(entry: .errorEntry(Self.self), error: coreError)))
-            }
+            .catch { Just(Action.error(.coreLog(entry: .errorEntry(Self.self), error: $0))) }
             .eraseToEffect()
         }
         

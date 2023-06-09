@@ -42,23 +42,10 @@ extension OwnID.CoreSDK.CoreViewModel {
                                                with: StepResponse.self)
                 .receive(on: DispatchQueue.main)
                 .handleEvents(receiveOutput: { response in
-                    OwnID.CoreSDK.logger.logCore(.entry(context: context, message: "Auth Request Finished", Self.self))
+                    OwnID.CoreSDK.logger.logCore(.entry(context: context, message: "Id Collect Request Finished", Self.self))
                 })
                 .map { [self] in nextStepAction($0.step) }
-                .catch { error in
-                    let coreError: OwnID.CoreSDK.Error
-                    switch error {
-                    case OwnID.CoreSDK.ServiceError.networkFailed(let error):
-                        coreError = .authRequestNetworkFailed(underlying: error)
-                    case OwnID.CoreSDK.ServiceError.encodeFailed(let error):
-                        coreError = .authRequestBodyEncodeFailed(underlying: error)
-                    case OwnID.CoreSDK.ServiceError.decodeFailed(let error):
-                        coreError = .authRequestResponseDecodeFailed(underlying: error)
-                    case OwnID.CoreSDK.ServiceError.responseIsEmpty:
-                        coreError = .authRequestResponseIsEmpty
-                    }
-                    return Just(Action.error(.coreLog(entry: .errorEntry(Self.self), error: coreError)))
-                }
+                .catch { Just(Action.error(.coreLog(entry: .errorEntry(Self.self), error: $0))) }
                 .eraseToEffect()
             
             return [effect]

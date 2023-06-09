@@ -187,7 +187,7 @@ final class CoreViewModelTests: XCTestCase {
                 
             case .failure(let error):
                 switch error.error {
-                case .initRequestResponseIsEmpty:
+                case .requestResponseIsEmpty:
                     exp.fulfill()
                 default:
                     break

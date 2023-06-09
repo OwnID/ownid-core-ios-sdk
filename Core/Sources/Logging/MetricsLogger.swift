@@ -5,6 +5,7 @@ public extension OwnID.CoreSDK {
     final class MetricsLogger: ExtensionLoggerProtocol {
         public let identifier = UUID()
         private let provider: APIProvider
+        private let sessionService: SessionService
         private var bag = Set<AnyCancellable>()
         
         private lazy var logQueue: OperationQueue = {
@@ -17,6 +18,7 @@ public extension OwnID.CoreSDK {
         
         init(provider: APIProvider = URLSession.loggerSession) {
             self.provider = provider
+            self.sessionService = SessionService(provider: provider)
         }
         
         public func log(_ entry: StandardMetricLogEntry) {
@@ -28,29 +30,16 @@ public extension OwnID.CoreSDK {
 private extension OwnID.CoreSDK.MetricsLogger {
     func sendEvent(for entry: OwnID.CoreSDK.StandardMetricLogEntry) {
         logQueue.addBarrierBlock {
-            Just(entry)
-                .subscribe(on: self.logQueue)
-                .map { entry -> OwnID.CoreSDK.StandardMetricLogEntry in
-                    entry.metadata[OwnID.CoreSDK.LoggerValues.correlationIDKey] = OwnID.CoreSDK.LoggerValues.instanceID.uuidString
-                    return entry
-                }
-                .eraseToAnyPublisher()
-                .encode(encoder: JSONEncoder())
-                .tryMap { body -> URLRequest in
-                    guard let url = OwnID.CoreSDK.shared.metricsURL else { throw OwnID.CoreSDK.Error.localConfigIsNotPresent }
-                    var request = URLRequest(url: url)
-                    request.httpMethod = "POST"
-                    request.httpBody = body
-                    request.addValue("application/json", forHTTPHeaderField: "Content-Type")
-                    return request
-                }
-                .flatMap { [self] request in
-                    provider.apiResponse(for: request).mapError { $0 as Swift.Error }
-                }
-                .eraseToAnyPublisher()
+            if let url = OwnID.CoreSDK.shared.metricsURL {
+                self.sessionService.perform(url: url,
+                                            method: .put,
+                                            body: entry,
+                                            headers: ["Content-Type": "application/json"],
+                                            queue: self.logQueue)
                 .ignoreOutput()
                 .sink(receiveCompletion: { _ in }, receiveValue: { _ in })
                 .store(in: &self.bag)
+            }
         }
     }
 }
