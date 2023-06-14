@@ -108,14 +108,8 @@ extension OwnID.CoreSDK.CoreViewModel {
                 return fidoStep?.sendAuthRequest(state: &state, fido2Payload: fido2LoginPayload, type: .login) ?? []
                 
             case .error(let error, _, _):
-                switch error {
-                case .authorizationManagerCredintialsNotFoundOrCanlelledByUser:
-                    let stopStep = StopStep()
-                    return stopStep.run(state: &state)
-                default:
-                    let fidoStep = state.fidoStep
-                    return fidoStep?.handleFidoError(state: &state, error: error) ?? []
-                }
+                let fidoStep = state.fidoStep
+                return fidoStep?.handleFidoError(state: &state, error: error) ?? []
             }
             
         case .oneTimePasswordView(let action):
