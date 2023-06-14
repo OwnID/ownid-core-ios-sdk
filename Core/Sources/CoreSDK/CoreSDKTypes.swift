@@ -21,6 +21,6 @@ public extension OwnID.CoreSDK {
 extension OwnID.CoreSDK {
     enum ConfigurationLoadingEvent {
         case loaded(LocalConfiguration)
-        case error
+        case error(Error)
     }
 }

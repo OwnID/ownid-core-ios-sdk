@@ -26,7 +26,7 @@ extension OwnID.CoreSDK.TranslationsSDK {
                 .eraseToAnyPublisher()
                 .flatMap { currentUserLanguages -> DownloaderPublisher in
                     let message = "Mapped user language to the server languages. serverLanguage: \(currentUserLanguages.serverLanguage), systemLanguage: \(currentUserLanguages.systemLanguage)"
-                    OwnID.CoreSDK.logger.logCore(.entry(message: message, OwnID.CoreSDK.TranslationsSDK.Downloader.self))
+                    OwnID.CoreSDK.logger.log(.entry(level: .debug, message: message, OwnID.CoreSDK.TranslationsSDK.Downloader.self))
                     return self.downloadCurrentLocalizationFile(for: currentUserLanguages.serverLanguage, correspondingSystemLanguage: currentUserLanguages.systemLanguage)
                         .eraseToAnyPublisher()
                 }

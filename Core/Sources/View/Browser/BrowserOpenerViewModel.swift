@@ -59,14 +59,14 @@ extension OwnID.CoreSDK {
                        case .canceledLogin = errorAuth.code {
                         self?.store.send(.viewCancelled)
                     } else {
-                        OwnID.CoreSDK.logger.logCore(.entry(message: "Session finish", Self.self))
+                        OwnID.CoreSDK.logger.log(.entry(level: .debug, message: "Session finish", Self.self))
                         OwnID.CoreSDK.shared.handle(url: schemeURL, sdkConfigurationName: configName)
                     }
                 }
                 cancellableSession = session
                 session.presentationContextProvider = authSessionContext
                 session.start()
-                OwnID.CoreSDK.logger.logCore(.entry(message: "Session start", Self.self))
+                OwnID.CoreSDK.logger.log(.entry(level: .debug, message: "Session start", Self.self))
             } else {
                 store.send(.viewCancelled)
             }

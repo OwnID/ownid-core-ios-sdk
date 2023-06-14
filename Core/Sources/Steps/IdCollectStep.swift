@@ -24,6 +24,14 @@ extension OwnID.CoreSDK.CoreViewModel {
                                           loginId: state.loginId,
                                           loginIdSettings: loginIdSettings)
             
+            if #available(iOS 15.0, *) {
+                let idCollectView = String(describing: OwnID.UISDK.IdCollect.IdCollectView.self)
+                let eventCategory: OwnID.CoreSDK.EventCategory = state.type == .login ? .login : .registration
+                OwnID.CoreSDK.eventService.sendMetric(.trackMetric(action: .screenShow(screen: idCollectView),
+                                                                   category: eventCategory,
+                                                                   context: state.context))
+            }
+            
             return []
         }
         
@@ -32,8 +40,10 @@ extension OwnID.CoreSDK.CoreViewModel {
             guard let urlString = step.startingData?.url, let url = URL(string: urlString) else {
                 return errorEffect(.coreLog(entry: .errorEntry(Self.self), error: .dataIsMissing))
             }
-
+            
             let context = state.context
+            OwnID.CoreSDK.eventService.sendMetric(.trackMetric(action: .loginId, category: .login, context: context))
+
             let requestBody = IdCollectRequestBody(loginId: loginId, supportsFido2: OwnID.CoreSDK.isPasskeysSupported)
             state.loginId = loginId
             let effect = state.session.perform(url: url,
@@ -42,7 +52,7 @@ extension OwnID.CoreSDK.CoreViewModel {
                                                with: StepResponse.self)
                 .receive(on: DispatchQueue.main)
                 .handleEvents(receiveOutput: { response in
-                    OwnID.CoreSDK.logger.logCore(.entry(context: context, message: "Id Collect Request Finished", Self.self))
+                    OwnID.CoreSDK.logger.log(.entry(context: context, level: .debug, message: "Id Collect Request Finished", Self.self))
                 })
                 .map { [self] in nextStepAction($0.step) }
                 .catch { Just(Action.error(.coreLog(entry: .errorEntry(Self.self), error: $0))) }

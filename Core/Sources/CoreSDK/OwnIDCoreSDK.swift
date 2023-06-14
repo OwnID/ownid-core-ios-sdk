@@ -6,21 +6,21 @@ public extension OwnID {
     
     /// Turns on logs to console app & console
     static func startDebugConsoleLogger(logLevel: OwnID.CoreSDK.LogLevel = .error) {
-        OwnID.CoreSDK.logger.add(OwnID.CoreSDK.OSLogger())
-        OwnID.CoreSDK.shared.enableLogging(logLevel: logLevel)
+        OwnID.CoreSDK.logger.add(OwnID.CoreSDK.OSLogger(level: logLevel))
+        OwnID.CoreSDK.shared.enableLogging()
     }
     
     final class CoreSDK {
         public var serverConfigurationURL: ServerURL? { store.value.firstConfiguration?.ownIDServerConfigurationURL }
         
-        func enableLogging(logLevel: OwnID.CoreSDK.LogLevel) {
-            store.send(.startDebugLogger(logLevel: logLevel))
+        func enableLogging() {
+            store.send(.startDebugLogger)
         }
         
         public static let shared = CoreSDK()
         public let translationsModule = TranslationsSDK.Manager()
         
-        public var currentMetricInformation = OwnID.CoreSDK.StandardMetricLogEntry.CurrentMetricInformation()
+        public var currentMetricInformation = OwnID.CoreSDK.CurrentMetricInformation()
         
         @ObservedObject var store: Store<SDKState, SDKAction>
         
@@ -41,6 +41,7 @@ public extension OwnID {
         public var isSDKConfigured: Bool { !store.value.configurations.isEmpty }
         
         public static var logger: LoggerProtocol { Logger.shared }
+        public static var eventService: EventService { EventService.shared }
         
         public func configureForTests() { store.send(.configureForTests) }
         
@@ -113,7 +114,7 @@ public extension OwnID {
         /// - Parameter url: URL returned from webapp after it has finished
         /// - Parameter sdkConfigurationName: Used to get proper data from configs in case of multiple SDKs
         public func handle(url: URL, sdkConfigurationName: String) {
-            OwnID.CoreSDK.logger.logCore(.entry(message: "\(url.absoluteString)", Self.self))
+            OwnID.CoreSDK.logger.log(.entry(level: .debug, message: "\(url.absoluteString)", Self.self))
             let redirectParamKey = "redirect"
             let components = URLComponents(url: url, resolvingAgainstBaseURL: false)?.queryItems
             let redirectParameterValue = components?.first(where: { $0.name == redirectParamKey })?.value

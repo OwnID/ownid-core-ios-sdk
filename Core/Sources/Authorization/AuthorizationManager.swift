@@ -203,6 +203,10 @@ extension OwnID.CoreSDK {
         @available(iOS 16.0, *)
         func authorizationController(controller: ASAuthorizationController, didCompleteWithError error: Swift.Error) {
             defer {
+                OwnID.CoreSDK.logger.log(.entry(level: .warning,
+                                                message: "Fido error \(error.localizedDescription)",
+                                                exception: (error as NSError).domain,
+                                                Self.self))
                 currentAuthController?.cancel()
                 controller.cancel()
             }

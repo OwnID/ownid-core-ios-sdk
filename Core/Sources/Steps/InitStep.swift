@@ -35,6 +35,13 @@ extension OwnID.CoreSDK.CoreViewModel {
             let sessionChallengeData = SHA256.hash(data: sessionVerifierData).data
             let sessionChallenge = sessionChallengeData.toBase64URL()
 
+            OwnID.CoreSDK.logger.log(.entry(level: .information,
+                                            message: "isFidoPossible \(OwnID.CoreSDK.isPasskeysSupported)",
+                                            Self.self))
+            let eventCategory: OwnID.CoreSDK.EventCategory = state.type == .login ? .login : .registration
+            OwnID.CoreSDK.eventService.sendMetric(.trackMetric(action: .fidoSupports(isFidoSupported: OwnID.CoreSDK.isPasskeysSupported),
+                                                               category: eventCategory))
+            
             let requestBody = InitRequestBody(sessionChallenge: sessionChallenge,
                                               type: state.type,
                                               loginId: state.loginId.isBlank ? nil : state.loginId,
@@ -51,7 +58,7 @@ extension OwnID.CoreSDK.CoreViewModel {
                             with: InitResponse.self)
             .receive(on: DispatchQueue.main)
             .handleEvents(receiveOutput: { response in
-                OwnID.CoreSDK.logger.logCore(.entry(context: response.context, message: "Init Request Finished", Self.self))
+                OwnID.CoreSDK.logger.log(.entry(context: response.context, level: .debug, message: "Init Request Finished", Self.self))
             })
             .map { Action.initialRequestLoaded(response: $0) }
             .catch { Just(Action.error(.coreLog(entry: .errorEntry(Self.self), error: $0))) }

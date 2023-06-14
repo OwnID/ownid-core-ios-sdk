@@ -5,8 +5,16 @@ extension OwnID.CoreSDK {
     final class OSLogger: ExtensionLoggerProtocol {
         var identifier = UUID()
         
-        func log(_ entry: OwnID.CoreSDK.StandardMetricLogEntry) {
-            os_log("Log 🪵 \n%{public}@", log: OSLog.OSLogging, type: entry.level?.osLogType ?? .debug, entry.debugDescription)
+        private let level: LogLevel
+        
+        init(level: LogLevel) {
+            self.level = level
+        }
+        
+        func log(_ entry: LogItem, level: LogLevel?) {
+            if entry.shouldLog(for: self.level) {
+                os_log("Log 🪵 \n%{public}@", log: OSLog.OSLogging, type: entry.level.osLogType, entry.debugDescription)
+            }
         }
     }
 }

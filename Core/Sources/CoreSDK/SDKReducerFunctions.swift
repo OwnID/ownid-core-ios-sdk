@@ -48,33 +48,39 @@ extension OwnID.CoreSDK {
         .fireAndForget {
             OwnID.CoreSDK.UserAgentManager.shared.registerUserFacingSDKName(userFacingSDK, underlyingSDKs: underlyingSDKs)
             if !isTestingEnvironment {
-                OwnID.CoreSDK.logger.add(OwnID.CoreSDK.MetricsLogger())
+                OwnID.CoreSDK.logger.add(OwnID.CoreSDK.eventService)
             }
-            OwnID.CoreSDK.logger.logCore(.entry(OwnID.CoreSDK.self))
+            OwnID.CoreSDK.logger.log(.entry(level: .debug, OwnID.CoreSDK.self))
         }
     }
     
     static func fetchServerConfiguration(config: LocalConfiguration,
-                                         apiEndpoint: APIEndpoint,
+                                             apiEndpoint: APIEndpoint,
                                          userFacingSDK: OwnID.CoreSDK.SDKInformation) -> Effect<SDKAction> {
         let effect = Deferred {
             apiEndpoint.serverConfiguration(config.ownIDServerConfigurationURL)
-                .replaceError(with: .mock(isFailed: true))
-                .eraseToAnyPublisher()
-                .flatMap { serverConfiguration -> AnyPublisher<SDKAction, Never> in
-                    if serverConfiguration.isFailed {
-                        return Just(.save(configurationLoadingEvent: .error, userFacingSDK: userFacingSDK)).eraseToAnyPublisher()
+                .map { serverConfiguration in
+                    if let logLevel = serverConfiguration.logLevel {
+                        Logger.shared.logLevel = logLevel
+                        Logger.shared.log(.entry(level: .information, message: "Log level set to \(logLevel)", Self.self))
+                    } else {
+                        Logger.shared.logLevel = .warning
+                        Logger.shared.forceLog(.entry(level: .warning, message: "Server configuration is not set", Self.self))
                     }
-                    Logger.shared.logLevel = serverConfiguration.logLevel
                     var local = config
                     local.serverURL = serverConfiguration.serverURL
                     local.redirectionURL = (serverConfiguration.platformSettings?.redirectUrlOverride ?? serverConfiguration.redirectURLString) ?? local.redirectionURL
                     local.passkeysAutofillEnabled = serverConfiguration.passkeysAutofillEnabled
                     local.supportedLocales = serverConfiguration.supportedLocales
                     local.loginIdSettings = serverConfiguration.loginIdSettings
-                    return Just(.save(configurationLoadingEvent: .loaded(local), userFacingSDK: userFacingSDK)).eraseToAnyPublisher()
+                    return SDKAction.save(configurationLoadingEvent: .loaded(local), userFacingSDK: userFacingSDK)
                 }
-                .eraseToAnyPublisher()
+                .catch { _ in
+                    Logger.shared.logLevel = .warning
+                    Logger.shared.forceLog(.entry(level: .warning, message: "Server configuration is not set", Self.self))
+                    return Just(SDKAction.save(configurationLoadingEvent: .error(.localConfigIsNotPresent),
+                                               userFacingSDK: userFacingSDK))
+                }
         }
         return effect.eraseToEffect()
     }
@@ -82,7 +88,7 @@ extension OwnID.CoreSDK {
     static func translationsDownloaderSDKConfigured(with supportedLanguages: OwnID.CoreSDK.Languages) -> Effect<SDKAction> {
         .fireAndForget {
             OwnID.CoreSDK.shared.translationsModule.SDKConfigured(supportedLanguages: supportedLanguages)
-            OwnID.CoreSDK.logger.logCore(.entry(OwnID.CoreSDK.self))
+            OwnID.CoreSDK.logger.log(.entry(level: .debug, OwnID.CoreSDK.self))
         }
     }
     

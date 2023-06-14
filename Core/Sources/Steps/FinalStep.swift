@@ -2,7 +2,7 @@ import Foundation
 import Combine
 
 extension OwnID.CoreSDK.CoreViewModel {
-    private struct Constants {
+    private enum Constants {
         static let contextKey = "context"
         static let payloadKey = "payload"
         static let loginIdKey = "loginId"
@@ -28,7 +28,7 @@ extension OwnID.CoreSDK.CoreViewModel {
                 .receive(on: DispatchQueue.main)
                 .handleEvents(receiveOutput: { response in
                     let context = response[Constants.contextKey] as? String ?? ""
-                    OwnID.CoreSDK.logger.logCore(.entry(context: context, message: "Final Request Finished", Self.self))
+                    OwnID.CoreSDK.logger.log(.entry(context: context, level: .debug, message: "Final Request Finished", Self.self))
                 })
                 .tryMap { response in
                     let context = response[Constants.contextKey] as? String ?? ""
