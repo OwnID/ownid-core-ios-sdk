@@ -115,6 +115,12 @@ extension OwnID.CoreSDK.CoreViewModel {
                                                                                    type: error.domain,
                                                                                    code: error.code,
                                                                                    message: error.localizedDescription)
+            case .authorizationManagerCredintialsNotFoundOrCanlelledByUser(let error):
+                let error = error as NSError
+                fidoError = OwnID.CoreSDK.CoreViewModel.FidoErrorRequestBody.Error(name: error.domain,
+                                                                                   type: error.domain,
+                                                                                   code: error.code,
+                                                                                   message: error.localizedDescription)
             default:
                 fidoError = OwnID.CoreSDK.CoreViewModel.FidoErrorRequestBody.Error(name: error.debugDescription,
                                                                                    type: error.debugDescription,
