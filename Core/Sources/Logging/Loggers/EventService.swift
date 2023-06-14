@@ -2,7 +2,7 @@ import Combine
 import Foundation
 
 public extension OwnID.CoreSDK {
-    final class MetricsLogger: ExtensionLoggerProtocol {
+    final class EventService: ExtensionLoggerProtocol {
         public let identifier = UUID()
         private let provider: APIProvider
         private let sessionService: SessionService
@@ -11,28 +11,36 @@ public extension OwnID.CoreSDK {
         private lazy var logQueue: OperationQueue = {
             var queue = OperationQueue()
             queue.qualityOfService = .utility
-            queue.name = "\(MetricsLogger.self) \(OperationQueue.self)"
+            queue.name = "\(EventService.self) \(OperationQueue.self)"
             queue.maxConcurrentOperationCount = 1
             return queue
         }()
+        
+        static let shared = EventService()
         
         init(provider: APIProvider = URLSession.loggerSession) {
             self.provider = provider
             self.sessionService = SessionService(provider: provider)
         }
         
-        public func log(_ entry: StandardMetricLogEntry) {
-            sendEvent(for: entry)
+        public func log(_ entry: LogItem, level: LogLevel?) {
+            if let level, entry.shouldLog(for: level) {
+                sendEvent(for: entry)
+            }
+        }
+        
+        public func sendMetric(_ metric: Metric) {
+            sendEvent(for: metric)
         }
     }
 }
 
-private extension OwnID.CoreSDK.MetricsLogger {
-    func sendEvent(for entry: OwnID.CoreSDK.StandardMetricLogEntry) {
+private extension OwnID.CoreSDK.EventService {
+    func sendEvent(for entry: Encodable) {
         logQueue.addBarrierBlock {
             if let url = OwnID.CoreSDK.shared.metricsURL {
                 self.sessionService.perform(url: url,
-                                            method: .put,
+                                            method: .post,
                                             body: entry,
                                             headers: ["Content-Type": "application/json"],
                                             queue: self.logQueue)

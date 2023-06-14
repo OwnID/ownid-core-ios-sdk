@@ -53,7 +53,7 @@ extension OwnID.CoreSDK {
                 reducer: { OwnID.UISDK.IdCollect.viewModelReducer(state: &$0, action: $1) }
             )
             let oneTimePasswordViewStore = self.store.view(
-                value: { OwnID.UISDK.OneTimePassword.ViewState(isLoggingEnabled: $0.isLoggingEnabled) },
+                value: { OwnID.UISDK.OneTimePassword.ViewState(isLoggingEnabled: $0.isLoggingEnabled, type: $0.type) },
                 action: { .oneTimePasswordView($0) },
                 action: { globalAction in
                     switch globalAction {
@@ -119,8 +119,8 @@ extension OwnID.CoreSDK {
                     case .loaded(let configuration):
                         store.send(.addToStateConfig(config: configuration))
                         
-                    case .error:
-                        store.send(.error(.coreLog(entry: .errorEntry(Self.self), error: .localConfigIsNotPresent)))
+                    case .error(let error):
+                        store.send(.error(.coreLog(entry: .errorEntry(Self.self), error: error)))
                     }
                 }
                 .store(in: &bag)
@@ -130,7 +130,7 @@ extension OwnID.CoreSDK {
         
         private func logInternalStates() {
             let states = internalStatesLog(states: internalStatesChange)
-            OwnID.CoreSDK.logger.logCore(.entry(message: states, Self.self))
+            OwnID.CoreSDK.logger.log(.entry(level: .debug, message: states, Self.self))
             internalStatesChange.removeAll()
         }
         

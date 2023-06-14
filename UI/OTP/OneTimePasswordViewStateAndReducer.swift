@@ -23,6 +23,7 @@ extension OwnID.UISDK.OneTimePassword {
     
     struct ViewState: LoggingEnabled {
         let isLoggingEnabled: Bool
+        let type: OwnID.CoreSDK.RequestType
         var isLoading = false
         var isDisplayingDidNotGetCode = false
         var isCodeEnteringStarted = false

@@ -43,7 +43,7 @@ public extension OwnID.FlowsSDK.LoginView {
         private var payload: OwnID.CoreSDK.Payload?
         private var loginId = ""
         var coreViewModel: OwnID.CoreSDK.CoreViewModel!
-        var currentMetadata: OwnID.CoreSDK.MetricLogEntry.CurrentMetricInformation?
+        var currentMetadata: OwnID.CoreSDK.CurrentMetricInformation?
         
         let sdkConfigurationName: String
         
@@ -68,7 +68,7 @@ public extension OwnID.FlowsSDK.LoginView {
             if let currentMetadata {
                 OwnID.CoreSDK.shared.currentMetricInformation = currentMetadata
             }
-            OwnID.CoreSDK.logger.logAnalytic(.loginTrackMetric(action: .loaded, context: payload?.context))
+            OwnID.CoreSDK.eventService.sendMetric(.trackMetric(action: .loaded, category: .login, context: payload?.context))
         }
         
         public func updateLoginIdPublisher(_ loginIdPublisher: OwnID.CoreSDK.LoginIdPublisher) {
@@ -147,7 +147,10 @@ public extension OwnID.FlowsSDK.LoginView {
                 .sink { _ in
                 } receiveValue: { [unowned self] event in
                     if state == .initial {
-                        OwnID.CoreSDK.logger.logAnalytic(.loginClickMetric(context: payload?.context, hasLoginId: !loginId.isEmpty))
+                        OwnID.CoreSDK.eventService.sendMetric(.clickMetric(action: .click,
+                                                                           category: .login,
+                                                                           context: payload?.context,
+                                                                           hasLoginId: !loginId.isEmpty))
                     }
                     skipPasswordTapped(loginId: loginId)
                 }
@@ -164,9 +167,14 @@ private extension OwnID.FlowsSDK.LoginView.ViewModel {
             .sink { [unowned self] completion in
                 if case .failure(let error) = completion {
                     handle(error)
+                    OwnID.CoreSDK.eventService.sendMetric(.errorMetric(action: .error,
+                                                                       category: .login,
+                                                                       context: payload.context,
+                                                                       errorMessage: error.error.errorDescription))
                 }
             } receiveValue: { [unowned self] loginResult in
-                OwnID.CoreSDK.logger.logAnalytic(.loginTrackMetric(action: .loggedIn,
+                OwnID.CoreSDK.eventService.sendMetric(.trackMetric(action: .loggedIn,
+                                                                   category: .login,
                                                                    context: payload.context,
                                                                    authType: payload.authType))
                 if let loginId = payload.loginId {

@@ -129,28 +129,28 @@ public extension OwnID.UISDK {
 }
 
 extension OwnID.UISDK.VisualLookConfig {
-    func convertToCurrentMetric() -> OwnID.CoreSDK.MetricLogEntry.CurrentMetricInformation {
-        var current = OwnID.CoreSDK.MetricLogEntry.CurrentMetricInformation()
+    func convertToCurrentMetric() -> OwnID.CoreSDK.CurrentMetricInformation {
+        var current = OwnID.CoreSDK.CurrentMetricInformation()
         switch self.widgetPosition {
         case .leading:
-            current.widgetPositionTypeMetric = .start
+            current.widgetPositionType = .start
             
         case .trailing:
-            current.widgetPositionTypeMetric = .end
+            current.widgetPositionType = .end
         }
         
         switch self.buttonViewConfig.variant {
         case .iconButton(let iconType):
             switch iconType {
             case .fingerprint:
-                current.widgetTypeMetric = .fingerprint
+                current.widgetType = .fingerprint
                 
             case .faceId:
-                current.widgetTypeMetric = .faceid
+                current.widgetType = .faceid
             }
             
         case .authButton:
-            current.widgetTypeMetric = .auth
+            current.widgetType = .auth
         }
         return current
     }

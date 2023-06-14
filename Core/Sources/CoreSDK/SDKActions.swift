@@ -20,7 +20,7 @@ extension OwnID.CoreSDK {
                                   userFacingSDK: OwnID.CoreSDK.SDKInformation,
                                   underlyingSDKs: [OwnID.CoreSDK.SDKInformation],
                                   isTestingEnvironment: Bool)
-        case startDebugLogger(logLevel: OwnID.CoreSDK.LogLevel)
+        case startDebugLogger
         case configureForTests
         case save(configurationLoadingEvent: OwnID.CoreSDK.ConfigurationLoadingEvent, userFacingSDK: OwnID.CoreSDK.SDKInformation)
         case fetchServerConfiguration

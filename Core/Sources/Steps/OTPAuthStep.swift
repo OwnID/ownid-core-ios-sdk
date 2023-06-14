@@ -2,7 +2,7 @@ import Foundation
 import Combine
 
 extension OwnID.CoreSDK.CoreViewModel {
-    private struct Constants {
+    private enum Constants {
         static let defaultOtpLenght = 4
     }
     
@@ -35,6 +35,13 @@ extension OwnID.CoreSDK.CoreViewModel {
                                     restartUrl: restartUrl,
                                     type: step.type,
                                     verificationType: otpData.verificationType)
+            
+            if #available(iOS 15.0, *) {
+                let otpView = String(describing: OwnID.UISDK.OneTimePassword.OneTimePasswordView.self)
+                let eventCategory: OwnID.CoreSDK.EventCategory = state.type == .login ? .login : .registration
+                OwnID.CoreSDK.eventService.sendMetric(.trackMetric(action: .screenShow(screen: otpView), category: eventCategory))
+            }
+            
             return []
         }
         
@@ -44,13 +51,16 @@ extension OwnID.CoreSDK.CoreViewModel {
             }
             
             let context = state.context
+            let eventCategory: OwnID.CoreSDK.EventCategory = state.type == .login ? .login : .registration
+            OwnID.CoreSDK.eventService.sendMetric(.clickMetric(action: .noOTP, category: eventCategory, context: context))
+            
             let effect = state.session.perform(url: restartUrl,
                                                method: .post,
                                                body: EmptyBody(),
                                                with: OTPAuthResponse.self)
                 .receive(on: DispatchQueue.main)
                 .handleEvents(receiveOutput: { response in
-                    OwnID.CoreSDK.logger.logCore(.entry(context: context, message: "Restart Code Request Finished", Self.self))
+                    OwnID.CoreSDK.logger.log(.entry(context: context, level: .debug, message: "Restart Code Request Finished", Self.self))
                 })
                 .map({ [self] response in
                     guard let step = response.step else {
@@ -69,6 +79,7 @@ extension OwnID.CoreSDK.CoreViewModel {
             }
             
             let context = state.context
+            let eventCategory: OwnID.CoreSDK.EventCategory = state.type == .login ? .login : .registration
             let requestBody = OTPAuthRequestBody(code: code)
             let effect = state.session.perform(url: url,
                                                method: .post,
@@ -76,12 +87,17 @@ extension OwnID.CoreSDK.CoreViewModel {
                                                with: OTPAuthResponse.self)
                 .receive(on: DispatchQueue.main)
                 .handleEvents(receiveOutput: { response in
-                    OwnID.CoreSDK.logger.logCore(.entry(context: context, message: "Send Code Request Finished", Self.self))
+                    OwnID.CoreSDK.logger.log(.entry(context: context, level: .debug, message: "Send Code Request Finished", Self.self))
                 })
                 .map({ [self] response in
                     if let step = response.step {
+                        OwnID.CoreSDK.eventService.sendMetric(.trackMetric(action: .correctOTP, category: eventCategory, context: context))
                         return nextStepAction(step)
-                    } else if let _ = response.error {
+                    } else if let error = response.error {
+                        OwnID.CoreSDK.eventService.sendMetric(.errorMetric(action: .wrongOTP,
+                                                                           category: eventCategory,
+                                                                           context: context,
+                                                                           errorMessage: error.message))
                         return .nonTerminalError
                     }
                     

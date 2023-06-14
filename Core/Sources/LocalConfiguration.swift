@@ -8,7 +8,6 @@ extension OwnID.CoreSDK.LocalConfiguration {
 }
 
 extension OwnID.CoreSDK {
-    
     struct LocalConfiguration: Decodable {
         init(appID: OwnID.CoreSDK.AppID, redirectionURL: OwnID.CoreSDK.RedirectionURLString, environment: String?) throws {
             self.environment = environment

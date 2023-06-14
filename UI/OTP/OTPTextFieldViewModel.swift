@@ -4,7 +4,7 @@ import Combine
 @available(iOS 15.0, *)
 extension OwnID.UISDK.OTPTextFieldView {
     final class ViewModel: ObservableObject {
-        private struct Constants {
+        private enum Constants {
             static let characterLimit = 1
             static let zeroWidthSpaceCharacter = "\u{200B}"
         }
@@ -134,6 +134,9 @@ private extension OwnID.UISDK.OTPTextFieldView.ViewModel {
     }
     
     func processPastedCode(_ actualValue: String) {
+        let eventCategory: OwnID.CoreSDK.EventCategory = store.value.type == .login ? .login : .registration
+        OwnID.CoreSDK.eventService.sendMetric(.trackMetric(action: .userPastedCode, category: eventCategory))
+        
         nextUpdateAction = .updatingFromPasteboard
         let fieldValue = actualValue
         for index in 0...codeLength - 1 {

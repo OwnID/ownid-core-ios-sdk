@@ -49,6 +49,10 @@ extension OwnID.CoreSDK.CoreViewModel {
                 return errorEffect(.coreLog(entry: .errorEntry(Self.self), error: .dataIsMissing))
             }
             
+            let eventCategory: OwnID.CoreSDK.EventCategory = state.type == .login ? .login : .registration
+            OwnID.CoreSDK.logger.log(.entry(context: state.context, level: .debug, message: "run Fido \(type.rawValue)", Self.self))
+            OwnID.CoreSDK.eventService.sendMetric(.trackMetric(action: .fidoRun(category: eventCategory), category: eventCategory, context: state.context))
+            
             if #available(iOS 16, *),
                let domain = step.fidoData?.relyingPartyId {
                 let authManager = state.createAccountManagerClosure(state.authManagerStore, domain, state.context, url)
@@ -73,6 +77,12 @@ extension OwnID.CoreSDK.CoreViewModel {
 
             self.type = type
             let context = state.context
+            let eventCategory: OwnID.CoreSDK.EventCategory = state.type == .login ? .login : .registration
+            
+            OwnID.CoreSDK.eventService.sendMetric(.trackMetric(action: .fidoFinished(category: eventCategory),
+                                                               category: eventCategory,
+                                                               context: context))
+            
             let requestBody = AuthRequestBody(type: type,
                                               fido2Payload: fido2Payload)
             let effect = state.session.perform(url: url,
@@ -81,7 +91,7 @@ extension OwnID.CoreSDK.CoreViewModel {
                                                with: StepResponse.self)
                 .receive(on: DispatchQueue.main)
                 .handleEvents(receiveOutput: { response in
-                    OwnID.CoreSDK.logger.logCore(.entry(context: context, message: "Auth Request Finished", Self.self))
+                    OwnID.CoreSDK.logger.log(.entry(context: context, level: .debug, message: "Auth Request Finished", Self.self))
                 })
                 .map { [self] in nextStepAction($0.step) }
                 .catch { Just(Action.error(.coreLog(entry: .errorEntry(Self.self), error: $0))) }
@@ -112,7 +122,13 @@ extension OwnID.CoreSDK.CoreViewModel {
                                                                                    message: error.errorDescription ?? "")
             }
             
+            let eventCategory: OwnID.CoreSDK.EventCategory = state.type == .login ? .login : .registration
             let context = state.context
+            OwnID.CoreSDK.eventService.sendMetric(.errorMetric(action: .fidoNotFinished(category: eventCategory),
+                                                               category: eventCategory,
+                                                               context: context,
+                                                               errorMessage: error.localizedDescription))
+            
             let requestBody = FidoErrorRequestBody(type: type,
                                                    error: fidoError)
             let effect = state.session.perform(url: url,
@@ -121,7 +137,7 @@ extension OwnID.CoreSDK.CoreViewModel {
                                                with: StepResponse.self)
                 .receive(on: DispatchQueue.main)
                 .handleEvents(receiveOutput: { response in
-                    OwnID.CoreSDK.logger.logCore(.entry(context: context, message: "Error Request Finished", Self.self))
+                    OwnID.CoreSDK.logger.log(.entry(context: context, level: .debug, message: "Error Request Finished", Self.self))
                 })
                 .map { [self] in nextStepAction($0.step) }
                 .catch { Just(Action.error(.coreLog(entry: .errorEntry(Self.self), error: $0))) }

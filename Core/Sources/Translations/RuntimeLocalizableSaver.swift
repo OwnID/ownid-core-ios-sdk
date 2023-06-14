@@ -111,6 +111,6 @@ private extension OwnID.CoreSDK.TranslationsSDK.RuntimeLocalizableSaver {
         let filePath = languageTablePath + "/\(tableName).strings"
         fileManager.createFile(atPath: filePath, contents: fileData)
         let message = "Wrote bundle strings to languageKey \(languageKey)"
-        OwnID.CoreSDK.logger.logCore(.entry(message: message, OwnID.CoreSDK.TranslationsSDK.RuntimeLocalizableSaver.self))
+        OwnID.CoreSDK.logger.log(.entry(level: .debug, message: message, OwnID.CoreSDK.TranslationsSDK.RuntimeLocalizableSaver.self))
     }
 }

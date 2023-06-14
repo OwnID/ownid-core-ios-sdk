@@ -65,7 +65,7 @@ public extension OwnID.FlowsSDK.RegisterView {
         private let loginPerformer: LoginPerformer
         private var loginId = ""
         var coreViewModel: OwnID.CoreSDK.CoreViewModel!
-        var currentMetadata: OwnID.CoreSDK.MetricLogEntry.CurrentMetricInformation?
+        var currentMetadata: OwnID.CoreSDK.CurrentMetricInformation?
         
         let sdkConfigurationName: String
         
@@ -99,7 +99,9 @@ public extension OwnID.FlowsSDK.RegisterView {
             if let currentMetadata {
                 OwnID.CoreSDK.shared.currentMetricInformation = currentMetadata
             }
-            OwnID.CoreSDK.logger.logAnalytic(.registerTrackMetric(action: .loaded, context: registrationData.payload?.context))
+            OwnID.CoreSDK.eventService.sendMetric(.trackMetric(action: .loaded,
+                                                               category: .registration,
+                                                               context: registrationData.payload?.context))
         }
         
         public func register(registerParameters: RegisterParameters = EmptyRegisterParameters()) {
@@ -117,11 +119,16 @@ public extension OwnID.FlowsSDK.RegisterView {
                 .sink { [unowned self] completion in
                     if case .failure(let error) = completion {
                         handle(error)
+                        OwnID.CoreSDK.eventService.sendMetric(.errorMetric(action: .error,
+                                                                           category: .registration,
+                                                                           context: payload.context,
+                                                                           errorMessage: error.error.errorDescription))
                     }
                 } receiveValue: { [unowned self] registrationResult in
-                    OwnID.CoreSDK.logger.logAnalytic(.registerTrackMetric(action: .registered,
-                                                                          context: payload.context,
-                                                                          authType: registrationResult.authType))
+                    OwnID.CoreSDK.eventService.sendMetric(.trackMetric(action: .registered,
+                                                                       category: .registration,
+                                                                       context: payload.context,
+                                                                       authType: registrationResult.authType))
                     if let loginId = payload.loginId {
                         OwnID.CoreSDK.DefaultsLoginIdSaver.save(loginId: loginId)
                     }
@@ -154,7 +161,9 @@ public extension OwnID.FlowsSDK.RegisterView {
                 return
             }
             if case .ownidCreated = state {
-                OwnID.CoreSDK.logger.logAnalytic(.registerClickMetric(action: .undo, context: registrationData.payload?.context))
+                OwnID.CoreSDK.eventService.sendMetric(.clickMetric(action: .undo,
+                                                                   category: .registration,
+                                                                   context: registrationData.payload?.context))
                 resetToInitialState()
                 resultPublisher.send(.success(.resetTapped))
                 return
@@ -188,7 +197,7 @@ public extension OwnID.FlowsSDK.RegisterView {
                 } receiveValue: { [unowned self] event in
                     switch event {
                     case .success(let payload):
-                        OwnID.CoreSDK.logger.logCore(.entry(context: payload.context, Self.self))
+                        OwnID.CoreSDK.logger.log(.entry(context: payload.context, level: .debug, Self.self))
                         switch payload.responseType {
                         case .registrationInfo:
                             self.registrationData.payload = payload
@@ -219,7 +228,10 @@ public extension OwnID.FlowsSDK.RegisterView {
             buttonEventPublisher
                 .sink { _ in
                 } receiveValue: { [unowned self] _ in
-                    OwnID.CoreSDK.logger.logAnalytic(.registerClickMetric(action: .click, context: registrationData.payload?.context, hasLoginId: !loginId.isEmpty))
+                    OwnID.CoreSDK.eventService.sendMetric(.clickMetric(action: .click,
+                                                                       category: .registration,
+                                                                       context: registrationData.payload?.context,
+                                                                       hasLoginId: !loginId.isEmpty))
                     skipPasswordTapped(loginId: loginId)
                 }
                 .store(in: &bag)
@@ -235,9 +247,16 @@ private extension OwnID.FlowsSDK.RegisterView.ViewModel {
             .sink { [unowned self] completion in
                 if case .failure(let error) = completion {
                     handle(error)
+                    OwnID.CoreSDK.eventService.sendMetric(.errorMetric(action: .error,
+                                                                       category: .registration,
+                                                                       context: payload.context,
+                                                                       errorMessage: error.error.errorDescription))
                 }
             } receiveValue: { [unowned self] registerResult in
-                OwnID.CoreSDK.logger.logAnalytic(.loginTrackMetric(action: .loggedIn, context: payload.context, authType: payload.authType))
+                OwnID.CoreSDK.eventService.sendMetric(.trackMetric(action: .loggedIn,
+                                                                   category: .login,
+                                                                   context: payload.context,
+                                                                   authType: payload.authType))
                 state = .ownidCreated
                 resultPublisher.send(.success(.userRegisteredAndLoggedIn(registrationResult: registerResult.operationResult, authType: registerResult.authType)))
                 resetDataAndState(isResettingToInitialState: false)

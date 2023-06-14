@@ -5,7 +5,7 @@ extension OwnID.CoreSDK {
     struct ServerConfiguration: Codable {
         var isFailed = false
         let supportedLocales: [String]?
-        let logLevel: LogLevel
+        let logLevel: LogLevel?
         let passkeysAutofillEnabled: Bool?
         let serverURL: ServerURL
         let redirectURLString: RedirectionURLString?
