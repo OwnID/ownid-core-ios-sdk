@@ -34,9 +34,9 @@ extension OwnID.CoreSDK {
         }
         
         let type: LoginIdType
-        let regex: String
+        let regex: String?
         
-        init(type: LoginIdType, regex: String) {
+        init(type: LoginIdType, regex: String?) {
             self.type = type
             self.regex = regex
         }

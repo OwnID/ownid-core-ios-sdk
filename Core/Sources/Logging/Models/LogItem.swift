@@ -55,7 +55,7 @@ public extension OwnID.CoreSDK {
             LogItem(context: context ?? LoggerConstants.noContext,
                     level: .error,
                     codeInitiator: String(describing: T.self),
-                    message: "\(message) \(function) \(file)",
+                    message: "\(message) \(function) \((file as NSString).lastPathComponent)",
                     exception: exception)
         }
     }
