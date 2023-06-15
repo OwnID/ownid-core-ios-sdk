@@ -97,6 +97,10 @@ public extension OwnID.CoreSDK {
     }
     
     struct LoginId {
+        private enum Constants {
+            static let defaultRegex = ".*"
+        }
+        
         let value: String
         let settings: LoginIdSettings
         
@@ -106,7 +110,7 @@ public extension OwnID.CoreSDK {
         }
         
         var isValid: Bool {
-            return NSPredicate(format:"SELF MATCHES %@", settings.regex).evaluate(with: value)
+            return NSPredicate(format:"SELF MATCHES %@", settings.regex ?? Constants.defaultRegex).evaluate(with: value)
         }
     }
 }
