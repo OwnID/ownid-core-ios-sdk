@@ -24,23 +24,34 @@ extension OwnID.UISDK {
 extension OwnID.UISDK {
     @available(iOS 15.0, *)
     struct PopupStackView: View {
+        private enum Constants {
+            static let contentCornerRadius: CGFloat = 10.0
+            static let animationResponse = 0.32
+            static let animationDampingFraction = 1.0
+            static let animationDuration = 0.32
+        }
+        
+        @Environment(\.colorScheme) var colorScheme
+        
         let popupContent: AnyPopup
         var body: some View {
             VStack(spacing: 0) {
                 Spacer()
                 ZStack(alignment: .bottom) {
                     popupContent.createContent()
-                        .background(OwnID.Colors.popupViewBackgroundColor
-                            .cornerRadius(9, corners: [.topLeft, .topRight])
-                            .ignoresSafeArea()
-                            .onTapGesture {
-                                //TODO: reimplement it using @FocusState
-                                UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
-                            })
+                        .background(colorScheme == .dark ? .regularMaterial : .thinMaterial)
+                        .containerShape(RoundedCorner(radius: Constants.contentCornerRadius, corners: [.topLeft, .topRight]))
+                        .onTapGesture {
+                            //TODO: reimplement it using @FocusState
+                            UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
+                        }
                         .transition(.move(edge: .top))
                 }
             }
-            .animation(.spring(response: 0.32, dampingFraction: 1, blendDuration: 0.32), value: popupContent)
+            .animation(.spring(response: Constants.animationResponse,
+                               dampingFraction: Constants.animationDampingFraction,
+                               blendDuration: Constants.animationDuration),
+                       value: popupContent)
         }
     }
 }
