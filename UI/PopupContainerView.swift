@@ -25,7 +25,7 @@ extension OwnID.UISDK {
     @available(iOS 15.0, *)
     struct PopupStackView: View {
         private enum Constants {
-            static let contentCornerRadius: CGFloat = 9
+            static let contentCornerRadius: CGFloat = 10.0
             static let animationResponse = 0.32
             static let animationDampingFraction = 1.0
             static let animationDuration = 0.32
@@ -39,21 +39,14 @@ extension OwnID.UISDK {
                 Spacer()
                 ZStack(alignment: .bottom) {
                     popupContent.createContent()
-                        .background(colorScheme == .dark ? .regularMaterial : .thinMaterial,
-                                    in: RoundedCorner(radius: Constants.contentCornerRadius, corners: [.topLeft, .topRight]))
+                        .background(colorScheme == .dark ? .regularMaterial : .thinMaterial)
+                        .containerShape(RoundedCorner(radius: Constants.contentCornerRadius, corners: [.topLeft, .topRight]))
                         .onTapGesture {
                             //TODO: reimplement it using @FocusState
                             UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
                         }
                         .transition(.move(edge: .top))
                 }
-                //To apply the thin material style on bottom safe area since ignoresSafeArea() doesn't work properly
-                ZStack {
-                    Color(.clear)
-                        .background(colorScheme == .dark ? .regularMaterial : .thinMaterial)
-                }
-                .frame(height: 0)
-                .ignoresSafeArea()
             }
             .animation(.spring(response: Constants.animationResponse,
                                dampingFraction: Constants.animationDampingFraction,
