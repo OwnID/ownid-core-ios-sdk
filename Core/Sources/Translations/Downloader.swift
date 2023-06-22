@@ -20,9 +20,10 @@ extension OwnID.CoreSDK.TranslationsSDK {
         }
         
         func downloadTranslations(supportedLanguages: OwnID.CoreSDK.Languages) -> DownloaderPublisher {
-            Just(OwnID.CoreSDK.shared.supportedLocales ?? []).setFailureType(to: OwnID.CoreSDK.CoreErrorLogWrapper.self)
+            Just(OwnID.CoreSDK.shared.supportedLocales ?? [])
+                .setFailureType(to: OwnID.CoreSDK.CoreErrorLogWrapper.self)
                 .eraseToAnyPublisher()
-                .map { serverLanguages in LanguageMapper().matchSystemLanguage(to: serverLanguages, userDefinedLanguages: supportedLanguages.rawValue) }
+                .map { serverLanguages in LanguageMapper.matchSystemLanguage(to: serverLanguages, userDefinedLanguages: supportedLanguages.rawValue) }
                 .eraseToAnyPublisher()
                 .flatMap { currentUserLanguages -> DownloaderPublisher in
                     let message = "Mapped user language to the server languages. serverLanguage: \(currentUserLanguages.serverLanguage), systemLanguage: \(currentUserLanguages.systemLanguage)"
@@ -37,9 +38,8 @@ extension OwnID.CoreSDK.TranslationsSDK {
 
 private extension OwnID.CoreSDK.TranslationsSDK.Downloader {
     var basei18nURL: URL {
-        if OwnID.CoreSDK.shared.environment != nil {
-            let dev_staging_uat_envMapper = "dev"
-            return URL(string: "https://i18n.\(dev_staging_uat_envMapper).ownid.com")!
+        if let env = OwnID.CoreSDK.shared.environment {
+            return URL(string: "https://i18n.\(env).ownid.com")!
         }
         return URL(string: "https://i18n.prod.ownid.com")!
     }
@@ -47,69 +47,11 @@ private extension OwnID.CoreSDK.TranslationsSDK.Downloader {
     func valuesURL(currentLanguage: String) -> URL {
         basei18nURL.appendingPathComponent(currentLanguage).appendingPathComponent("mobile-sdk.json")
     }
-    
-    #warning("⚠️ please replace server translations https://github.com/OwnID/localization")
+
     func downloadCurrentLocalizationFile(for currentBELanguage: String, correspondingSystemLanguage: String) -> DownloaderPublisher {
         return session.dataTaskPublisher(for: valuesURL(currentLanguage: currentBELanguage))
             .eraseToAnyPublisher()
             .map { $0.data }
-        
-        
-        
-        
-            .map {
-                
-                
-                
-                
-                
-                
-                """
-{
-  "skipPassword": "Skip Password",
-  "or": "or",
-  "tooltip-ios": "Login with Face ID",
-  "tooltip-android": "Login with Fingerprint",
-  "continue": "Continue",
-  "steps": {
-    "cancel": "Cancel",
-    "continue": "Continue",
-    "error": "Something went wrong. Please try again.",
-    "email-collect": {
-      "title-android": "Sign in with Fingerprint",
-      "title-ios": "Sign-in with Face ID",
-      "message": "Enter your email",
-      "error": "Enter a valid email"
-    },
-    "otp": {
-      "title-sign": "Use a One-time Code",
-      "title-verify": "Verify Your Email",
-      "message": "We have emailed you a %CODE_LENGTH%-digit code to\\n%LOGIN_ID%",
-      "description": "Enter the verification code",
-      "no-email": "I didn't get the email",
-      "error": "Invalid code. Please try again.",
-      "verify": "Verify"
-    }
-  }
-}
-"""
-                    .data(using: .utf8)!
-                
-                
-                
-                
-                
-                
-                
-                
-                
-                
-                
-            }
-            .delay(for: 2, scheduler: DispatchQueue.main)
-        
-        
-        
             .compactMap {
                 let result = try? JSONSerialization.jsonObject(with: $0, options: []) as? [String: Any]
                 return result

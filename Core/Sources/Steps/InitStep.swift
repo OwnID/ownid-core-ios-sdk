@@ -27,7 +27,9 @@ extension OwnID.CoreSDK.CoreViewModel {
                 return errorEffect(.coreLog(entry: .errorEntry(Self.self), error: .localConfigIsNotPresent))
             }
             
-            let session = OwnID.CoreSDK.SessionService(supportedLanguages: state.supportedLanguages)
+            let locales = OwnID.CoreSDK.TranslationsSDK.LanguageMapper.matchSystemLanguage(to: OwnID.CoreSDK.shared.supportedLocales ?? [],
+                                                                                           userDefinedLanguages: state.supportedLanguages.rawValue)
+            let session = OwnID.CoreSDK.SessionService(supportedLanguages: OwnID.CoreSDK.Languages(rawValue: [locales.serverLanguage]))
             state.session = session
             
             let sessionVerifierData = random()

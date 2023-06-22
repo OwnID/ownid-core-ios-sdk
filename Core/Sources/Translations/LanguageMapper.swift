@@ -2,13 +2,13 @@ import Foundation
 
 extension OwnID.CoreSDK.TranslationsSDK {
     final class LanguageMapper {
-        private let i18nToISO639LanguageMappings: [String: [String]] = [
+        private static let i18nToISO639LanguageMappings: [String: [String]] = [
             "no": ["nb"],
             "zh-CN": ["zh-Hant-MO"],
             "zh-TW": ["zh-Hant-TW", "zh-Hant-HK", "zh-Hant", "zh-Hans-TW", "zh-Hant-US"],
         ]
         
-        func matchSystemLanguage(to serverLanguages: [String], userDefinedLanguages: [String]) -> (serverLanguage: String, systemLanguage: String) {
+        static func matchSystemLanguage(to serverLanguages: [String], userDefinedLanguages: [String]) -> (serverLanguage: String, systemLanguage: String) {
             for userLanguage in userDefinedLanguages {
                 if serverLanguages.contains(userLanguage) {
                     return (userLanguage, userLanguage)

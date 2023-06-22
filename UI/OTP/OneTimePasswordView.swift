@@ -10,7 +10,7 @@ extension OwnID.UISDK {
                             type: OwnID.CoreSDK.CoreViewModel.Step.StepType,
                             verificationType: OwnID.CoreSDK.Verification.VerificationType) {
         if #available(iOS 15.0, *) {
-            let titleType: OwnID.UISDK.OneTimePassword.TitleType = type == .loginIDAuthorization ? .oneTimePasswordSignIn : .emailVerification
+            let titleType: OwnID.UISDK.OneTimePassword.TitleType = type == .loginIDAuthorization ? .oneTimePasswordSignIn : .verification
             let view = OwnID.UISDK.OneTimePassword.OneTimePasswordView(store: store,
                                                                        visualConfig: PopupManager.shared.visualLookConfig,
                                                                        loginId: loginId,
@@ -48,12 +48,12 @@ extension OwnID.UISDK.OneTimePassword {
         private let viewModel: OwnID.UISDK.OTPTextFieldView.ViewModel
         private var visualConfig: OwnID.UISDK.OTPViewConfig
         @ObservedObject var store: Store<ViewState, Action>
-        private let titleState = TitleType.emailVerification
+        private let titleState = TitleType.verification
         private let codeLength: Int
         private let titleType: TitleType
         private let restartURL: URL
-        
-        #warning("maybe move this translations approach to Property wrappers ?")
+        private let verificationType: OwnID.CoreSDK.Verification.VerificationType
+
         @State private var emailSentText: String
         private let emailSentTextChangedClosure: (() -> String)
         @State private var isTranslationChanged = false
@@ -70,11 +70,11 @@ extension OwnID.UISDK.OneTimePassword {
             self.codeLength = codeLength
             self.restartURL = restartURL
             self.viewModel = OwnID.UISDK.OTPTextFieldView.ViewModel(codeLength: codeLength, store: store)
-            
+            self.verificationType = verificationType
             self.titleType = titleType
             
             let emailSentTextChangedClosure = {
-                var text = OwnID.CoreSDK.TranslationsSDK.TranslationKey.otpSentEmail.localized()
+                var text = OwnID.CoreSDK.TranslationsSDK.TranslationKey.otpMessage(type: verificationType.rawValue).localized()
                 let codeLengthReplacement = Constants.codeLengthReplacement
                 let emailReplacement = Constants.emailReplacement
                 text = text.replacingOccurrences(of: codeLengthReplacement, with: String(codeLength))
@@ -91,7 +91,7 @@ extension OwnID.UISDK.OneTimePassword {
                 Button {
                     store.send(.emailIsNotRecieved)
                 } label: {
-                    Text(localizedKey: .didNotGetEmail)
+                    Text("I didn\'t get the email") //(localizedKey: .otpNo(type: verificationType.rawValue))
                         .font(.system(size: Constants.didNotGetEmailFontSize))
                         .foregroundColor(OwnID.Colors.otpDidNotGetEmail)
                 }
@@ -145,12 +145,12 @@ extension OwnID.UISDK.OneTimePassword {
         @available(iOS 15.0, *)
         private func topSection() -> some View {
             VStack {
-                Text(localizedKey: .signInWithOneTimeCode)
+                Text(localizedKey: titleType.localizationKey(verificationType: verificationType))
                     .font(.system(size: Constants.titleFontSize))
                     .bold()
+                    .multilineTextAlignment(.center)
                     .padding(.bottom)
-                    .padding(.trailing, Constants.titlePadding)
-                    .padding(.leading, Constants.titlePadding)
+                    .padding([.leading, .trailing], Constants.titlePadding)
                     .padding(.top, Constants.topPadding)
                 Text(verbatim: emailSentText)
                     .multilineTextAlignment(.center)

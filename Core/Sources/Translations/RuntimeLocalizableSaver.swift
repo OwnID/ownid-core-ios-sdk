@@ -2,14 +2,28 @@ import Foundation
 
 extension OwnID.CoreSDK.TranslationsSDK {
     final class RuntimeLocalizableSaver {
+        private enum Constants {
+            static let bundleFileExtension = "bundle"
+            static let currentLanguageKey = "currentLanguageKey"
+            static let defaultFileName = "Localizable"
+            static let localizableType = "strings"
+            static let enBundleName = "ModuleEN"
+        }
         
         typealias LanguageKey = String
         typealias Language = Dictionary<String, String>
         
-        var translationBundle: Bundle?
+        private var currentTranslationBundle: Bundle?
         
         private static let rootFolderName = "\(OwnID.CoreSDK.TranslationsSDK.self)"
         private let fileManager = FileManager.default
+        private var currentLanguageKey: LanguageKey? {
+            get {
+                UserDefaults.standard.string(forKey: Constants.currentLanguageKey)
+            } set {
+                UserDefaults.standard.set(newValue, forKey: Constants.currentLanguageKey)
+            }
+        }
         
         private lazy var rootFolderPath: String = {
             let documentsPath = NSSearchPathForDirectoriesInDomains(.documentDirectory, .userDomainMask, true).first!
@@ -20,27 +34,51 @@ extension OwnID.CoreSDK.TranslationsSDK {
         init() {
             try? createRootDirectoryIfNeeded()
             try? copyEnglishModuleTranslationsToDocuments()
-            translationBundle = Bundle(path: moduleEnglishBundlePath)
+            
+            if let key = currentLanguageKey {
+                currentTranslationBundle = Bundle(path: languageBundlePath(language: key))
+            } else {
+                currentTranslationBundle = Bundle(path: moduleEnglishBundlePath)
+            }
         }
         
-        private let bundleFileExtension = "bundle"
-        
-        func save(languageKey: LanguageKey, language: Language, tableName: String = "Localizable") throws {
+        func save(languageKey: LanguageKey, language: Language, tableName: String = Constants.defaultFileName) throws {
             try cleanRootContents()
             try write(languageKey: languageKey, language: language, tableName: tableName)
             
-            translationBundle = Bundle(path: languageBundlePath(language: languageKey))
+            currentLanguageKey = languageKey
+            currentTranslationBundle = Bundle(path: languageBundlePath(language: languageKey))
+        }
+        
+        func translationBundle(for key: String) -> Bundle? {
+            if let path = currentTranslationBundle?.path(forResource: Constants.defaultFileName, ofType: Constants.localizableType) {
+                let dictionary = NSDictionary(contentsOfFile: path) as? [String: Any]
+                if dictionary?[key] != nil {
+                    return currentTranslationBundle
+                } else {
+                    if let bundle = Bundle(path: moduleEnglishBundlePath) {
+                        return Bundle(path: moduleEnglishBundlePath)
+                    } else {
+                        try? createRootDirectoryIfNeeded()
+                        try? copyEnglishModuleTranslationsToDocuments()
+                        return Bundle(path: moduleEnglishBundlePath)
+                    }
+                    
+                }
+            }
+            
+            return Bundle(path: moduleEnglishBundlePath)
         }
     }
 }
 
 private extension OwnID.CoreSDK.TranslationsSDK.RuntimeLocalizableSaver {
     var moduleEnglishBundlePath: String {
-        languageBundlePath(language: "ModuleEN")
+        languageBundlePath(language: Constants.enBundleName)
     }
     
     func createLprojDirectoryIfNeeded(_ lprojFilePath: String) throws {
-        if fileManager.fileExists(atPath: lprojFilePath) == false {
+        if !fileManager.fileExists(atPath: lprojFilePath) {
             do {
                 try fileManager.createDirectory(atPath: lprojFilePath, withIntermediateDirectories: true)
             } catch let error {
@@ -51,7 +89,7 @@ private extension OwnID.CoreSDK.TranslationsSDK.RuntimeLocalizableSaver {
     
     func copyTranslatedFilesIfNeeded(_ lprojFilePath: String, _ moduleTranslations: String) throws {
         let localizableFilePath = lprojFilePath + "/Localizable.strings"
-        if fileManager.fileExists(atPath: localizableFilePath) == false {
+        if !fileManager.fileExists(atPath: localizableFilePath) {
             do {
                 try fileManager.copyItem(atPath: moduleTranslations, toPath: localizableFilePath)
             } catch let error {
@@ -62,20 +100,21 @@ private extension OwnID.CoreSDK.TranslationsSDK.RuntimeLocalizableSaver {
     
     func copyEnglishModuleTranslationsToDocuments() throws {
         let lprojFilePath = moduleEnglishBundlePath + "/en.lproj"
-        guard let moduleTranslations = Bundle.resourceBundle.path(forResource: "Localizable", ofType: "strings") else { return }
+        guard let moduleTranslations = Bundle.resourceBundle.path(forResource: Constants.defaultFileName,
+                                                                  ofType: Constants.localizableType) else { return }
         try createLprojDirectoryIfNeeded(lprojFilePath)
 
         try copyTranslatedFilesIfNeeded(lprojFilePath, moduleTranslations)
     }
     
     func languageBundlePath(language: String) -> String {
-        rootFolderPath + "/" + language + "Translations." + bundleFileExtension
+        rootFolderPath + "/" + language + "Translations." + Constants.bundleFileExtension
     }
     
     func cleanRootContents() throws {
         guard fileManager.fileExists(atPath: rootFolderPath) else { return }
         guard let filePaths = try? fileManager.contentsOfDirectory(atPath: rootFolderPath) else { return }
-        for filePath in filePaths where filePath.contains(".\(bundleFileExtension)") {
+        for filePath in filePaths where filePath.contains(".\(Constants.bundleFileExtension)") {
             let fullFilePath = rootFolderPath + "/" + filePath
             do {
                 try fileManager.removeItem(atPath: fullFilePath)
@@ -86,7 +125,7 @@ private extension OwnID.CoreSDK.TranslationsSDK.RuntimeLocalizableSaver {
     }
     
     func createRootDirectoryIfNeeded() throws {
-        if fileManager.fileExists(atPath: rootFolderPath) == false {
+        if !fileManager.fileExists(atPath: rootFolderPath) {
             do {
                 try fileManager.createDirectory(atPath: rootFolderPath, withIntermediateDirectories: true)
             } catch let error {
@@ -97,7 +136,7 @@ private extension OwnID.CoreSDK.TranslationsSDK.RuntimeLocalizableSaver {
     
     func write(languageKey: LanguageKey, language: Language, tableName: String) throws {
         let languageTablePath = languageBundlePath(language: languageKey) + "/\(languageKey).lproj"
-        if fileManager.fileExists(atPath: languageTablePath) == false {
+        if !fileManager.fileExists(atPath: languageTablePath) {
             do {
                 try fileManager.createDirectory(atPath: languageTablePath, withIntermediateDirectories: true)
             } catch let error {
