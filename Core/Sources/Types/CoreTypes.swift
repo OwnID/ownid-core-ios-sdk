@@ -114,16 +114,3 @@ public extension OwnID.CoreSDK {
         }
     }
 }
-
-extension OwnID.CoreSDK.LoginId {
-    var error: OwnID.CoreSDK.Error {
-        switch settings.type {
-        case .email:
-            return .emailIsInvalid
-        case .phoneNumber:
-            return .phoneNumberIsInvalid
-        case .userName:
-            return .userNameIsInvalid
-        }
-    }
-}

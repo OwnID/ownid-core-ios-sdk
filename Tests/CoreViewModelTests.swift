@@ -72,11 +72,11 @@ final class CoreViewModelTests: XCTestCase {
                 break
                 
             case .failure(let error):
-                if case .emailIsInvalid = error.error {
-                    exp.fulfill()
-                } else {
+//                if case .emailIsInvalid = error.error {
+//                    exp.fulfill()
+//                } else {
                     XCTFail()
-                }
+//                }
             }
         } receiveValue: { _ in }
             .store(in: &bag)

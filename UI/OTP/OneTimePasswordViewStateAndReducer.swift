@@ -7,16 +7,16 @@ extension OwnID.UISDK {
 
 extension OwnID.UISDK.OneTimePassword {
     enum TitleType {
-        case emailVerification
+        case verification
         case oneTimePasswordSignIn
         
-        var localizationKey: OwnID.CoreSDK.TranslationsSDK.TranslationKey {
+        func localizationKey(verificationType: OwnID.CoreSDK.Verification.VerificationType) -> OwnID.CoreSDK.TranslationsSDK.TranslationKey {
             switch self {
-            case .emailVerification:
-                return .verifyEmail
+            case .verification:
+                return .otpVerifyTitle(type: verificationType.rawValue)
                 
             case .oneTimePasswordSignIn:
-                return .signInWithOneTimeCode
+                return .otpSignTitle
             }
         }
     }

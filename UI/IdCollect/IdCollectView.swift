@@ -8,10 +8,10 @@ extension OwnID.UISDK {
                                   loginIdSettings: OwnID.CoreSDK.LoginIdSettings) {
         if #available(iOS 15.0, *) {
             let view = OwnID.UISDK.IdCollect.IdCollectView(store: store,
-                                                                visualConfig: OwnID.UISDK.VisualLookConfig(),
-                                                                loginId: loginId,
-                                                                loginIdSettings: loginIdSettings,
-                                                                closeClosure: {
+                                                           visualConfig: OwnID.UISDK.VisualLookConfig(),
+                                                           loginId: loginId,
+                                                           loginIdSettings: loginIdSettings,
+                                                           closeClosure: {
                 OwnID.UISDK.PopupManager.dismiss()
             })
             view.presentAsPopup()
@@ -29,6 +29,7 @@ extension OwnID.UISDK.IdCollect {
         private enum Constants {
             static let textFieldBorderWidth = 1.0
             static let titleFontSize = 20.0
+            static let titleSidePadding = 26.0
             static let messageFontSize = 16.0
             static let emailFontSize = 18.0
             static let emailPadding = 10.0
@@ -110,19 +111,21 @@ extension OwnID.UISDK.IdCollect {
         @ViewBuilder
         private func topSection() -> some View {
             HStack {
-                Text(localizedKey: .emailCollectTitle)
+                Text(localizedKey: viewModel.titleKey)
                     .font(.system(size: Constants.titleFontSize))
                     .bold()
+                    .multilineTextAlignment(.center)
             }
             .padding(.top)
+            .padding([.leading, .trailing], Constants.titleSidePadding)
             .padding(.bottom, Constants.bottomPadding)
         }
         
         @ViewBuilder
         private func errorView() -> some View {
-            if !viewModel.error.isEmpty {
+            if viewModel.isError {
                 HStack {
-                    Text(viewModel.error)
+                    Text(localizedKey: .idCollectError(type: loginIdSettings.type.rawValue))
                         .multilineTextAlignment(.leading)
                         .foregroundColor(OwnID.Colors.errorColor)
                         .padding(.bottom, Constants.bottomPadding)
@@ -135,14 +138,14 @@ extension OwnID.UISDK.IdCollect {
             VStack {
                 topSection()
                 VStack {
-                    Text(localizedKey: .emailCollectMessage)
+                    Text(localizedKey: viewModel.messageKey)
                         .font(.system(size: Constants.messageFontSize))
                         .foregroundColor(OwnID.Colors.otpContentMessageColor)
                         .padding(.bottom, Constants.bottomPadding)
                     errorView()
                     TextField("", text: $loginId)
                         .onChange(of: loginId) { _ in
-                            viewModel.error = ""
+                            viewModel.isError = false
                         }
                         .autocapitalization(.none)
                         .font(.system(size: Constants.emailFontSize))
@@ -161,7 +164,7 @@ extension OwnID.UISDK.IdCollect {
                                            actionHandler: { viewModel.postLoginId() },
                                            isLoading: $viewModel.isLoading,
                                            buttonState: $viewModel.buttonState,
-                                           translationKey: .stepsContinue)
+                                           translationKey: .idCollectContinue)
                 }
             }
             .padding()

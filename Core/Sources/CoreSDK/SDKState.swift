@@ -14,7 +14,7 @@ extension OwnID.CoreSDK {
 
 extension OwnID.CoreSDK.SDKState {
     struct ConfigurationRequestData {
-        let config:OwnID.CoreSDK.LocalConfiguration
+        let config: OwnID.CoreSDK.LocalConfiguration
         let userFacingSDK: OwnID.CoreSDK.SDKInformation
         var isLoading: Bool
     }

@@ -31,7 +31,6 @@ extension OwnID.CoreSDK {
                 startLoggerIfNeeded(userFacingSDK: userFacingSDK,
                                     underlyingSDKs: underlyingSDKs,
                                     isTestingEnvironment: isTestingEnvironment),
-                translationsDownloaderSDKConfigured(with: state.supportedLanguages)
             ]
             
         case .fetchServerConfiguration:
