@@ -23,7 +23,7 @@ public extension OwnID.CoreSDK {
 
         //created spearate serverErrorWithCode because serverError produced unexpected EXC_BAD_ACCESS error
         case serverErrorWithCode(message: String, code: String)
-        case serverError(serverError: String)
+        case serverError(serverError: ServerError)
         case plugin(underlying: PluginError)
         
         case authorizationManagerGeneralError(underlying: Swift.Error)
@@ -62,7 +62,7 @@ extension OwnID.CoreSDK.Error: LocalizedError {
             return error.localizedDescription
             
         case .serverError(let underlying):
-            return underlying
+            return underlying.error
             
         case .serverErrorWithCode(let message, _):
             return message
