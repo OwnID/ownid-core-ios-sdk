@@ -24,6 +24,7 @@ extension OwnID.UISDK.OneTimePassword {
     struct ViewState: LoggingEnabled {
         let isLoggingEnabled: Bool
         let type: OwnID.CoreSDK.RequestType
+        var error: Error?
         var isLoading = false
         var isDisplayingDidNotGetCode = false
         var isCodeEnteringStarted = false
@@ -37,12 +38,22 @@ extension OwnID.UISDK.OneTimePassword {
         case cancel
         case cancelCodeOperation
         case emailIsNotRecieved
-        case codeRestarted
+        case resendCode
         case displayDidNotGetCode
         case nonTerminalError
-        case error
+        case error(message: String, code: String)
         case success
         case stopLoading
+    }
+    
+    struct Error {
+        let code: ErrorCode
+        let message: String
+    }
+    
+    enum ErrorCode: String {
+        case general
+        case wrongCodeLimitReached = "WrongCodeLimitReached"
     }
 }
 
@@ -50,26 +61,34 @@ extension OwnID.UISDK.OneTimePassword {
     static func viewModelReducer(state: inout OwnID.UISDK.OneTimePassword.ViewState, action: OwnID.UISDK.OneTimePassword.Action) -> [Effect<OwnID.UISDK.OneTimePassword.Action>] {
         switch action {
         case .viewLoaded:
+            state.isLoading = false
+            state.isDisplayingDidNotGetCode = false
+            state.isCodeEnteringStarted = false
+            state.error = nil
+            
             return [Just(OwnID.UISDK.OneTimePassword.Action.displayDidNotGetCode)
                 .delay(for: 10, scheduler: DispatchQueue.main)
                 .eraseToEffect()]
         case .codeEnteringStarted:
             state.isCodeEnteringStarted = true
             return []
-        case .codeRestarted:
+        case .resendCode:
             return []
         case .codeEntered:
             if state.isLoading {
                 return [Just(.stopLoading).eraseToEffect(),
                         Just(OwnID.UISDK.OneTimePassword.Action.cancelCodeOperation).eraseToEffect()]
             }
+            state.error = nil
             state.isLoading = true
             return []
         case .cancel:
             return [Just(.stopLoading) .eraseToEffect()]
             
         case .emailIsNotRecieved:
-            return [Just(.stopLoading) .eraseToEffect()]
+            state.error = nil
+            state.isLoading = true
+            return []
             
         case .cancelCodeOperation:
             return []
@@ -80,9 +99,10 @@ extension OwnID.UISDK.OneTimePassword {
                 Just(.stopLoading)
                     .eraseToEffect()
             ]
-        case .error:
+        case .error(let messsage, let code):
+            let errorCode = ErrorCode(rawValue: code) ?? .general
+            state.error = Error(code: errorCode, message: messsage)
             state.isLoading = false
-            OwnID.UISDK.PopupManager.dismiss()
             return []
         case .success:
             state.isLoading = false
@@ -105,8 +125,8 @@ extension OwnID.UISDK.OneTimePassword.Action: CustomDebugStringConvertible {
         switch self {
         case .viewLoaded:
             return "viewLoaded"
-        case .codeRestarted:
-            return "codeRestarted"
+        case .resendCode:
+            return "resendCode"
         case .codeEnteringStarted:
             return "codeEnteringStarted"
         case .codeEntered(_):

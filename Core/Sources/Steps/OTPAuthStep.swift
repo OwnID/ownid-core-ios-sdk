@@ -73,6 +73,34 @@ extension OwnID.CoreSDK.CoreViewModel {
             return [effect]
         }
         
+        func resend(state: inout OwnID.CoreSDK.CoreViewModel.State) -> [Effect<Action>] {
+            guard let otpData = step.otpData, let resendUrl = URL(string: otpData.resendUrl) else {
+                return errorEffect(.coreLog(entry: .errorEntry(Self.self), error: .dataIsMissing))
+            }
+            
+            let context = state.context
+            let eventCategory: OwnID.CoreSDK.EventCategory = state.type == .login ? .login : .registration
+            OwnID.CoreSDK.eventService.sendMetric(.clickMetric(action: .noOTP, category: eventCategory, context: context))
+            
+            let effect = state.session.perform(url: resendUrl,
+                                               method: .post,
+                                               body: EmptyBody(),
+                                               with: OTPAuthResponse.self)
+                .receive(on: DispatchQueue.main)
+                .handleEvents(receiveOutput: { response in
+                    OwnID.CoreSDK.logger.log(.entry(context: context, level: .debug, message: "Resend Code Request Finished", Self.self))
+                })
+                .map({ response in
+                    guard response.step != nil else {
+                        return Action.error(.coreLog(entry: .errorEntry(Self.self), error: .requestResponseIsEmpty))
+                    }
+                    return Action.codeResent
+                })
+                .catch { Just(Action.error(.coreLog(entry: .errorEntry(Self.self), error: $0))) }
+                .eraseToEffect()
+            return [effect]
+        }
+        
         func sendCode(code: String, state: inout OwnID.CoreSDK.CoreViewModel.State) -> [Effect<Action>] {
             guard let otpData = step.otpData, let url = URL(string: otpData.url) else {
                 return errorEffect(.coreLog(entry: .errorEntry(Self.self), error: .dataIsMissing))

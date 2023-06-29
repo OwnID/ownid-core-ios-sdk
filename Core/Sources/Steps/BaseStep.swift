@@ -23,8 +23,11 @@ extension OwnID.CoreSDK.CoreViewModel {
             case .success:
                 return .success
             case .error:
-                let serverError = OwnID.CoreSDK.ServerError(error: step.errorData?.userMessage ?? "")
-                return .error(.coreLog(entry: .errorEntry(Self.self), error: .serverError(serverError: serverError)))
+                let message = step.errorData?.userMessage ?? ""
+                let code = step.errorData?.errorCode ?? ""
+                return .error(.coreLog(entry: .errorEntry(Self.self),
+                                       error: .serverErrorWithCode(message: message,
+                                                                   code: code)))
             }
         }
         

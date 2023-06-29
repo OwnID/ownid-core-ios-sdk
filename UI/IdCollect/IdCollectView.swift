@@ -27,14 +27,26 @@ extension OwnID.UISDK.IdCollect {
     @available(iOS 15.0, *)
     struct IdCollectView: Popup {
         private enum Constants {
-            static let textFieldBorderWidth = 1.0
-            static let titleFontSize = 20.0
+            static let padding = 22.0
+            static let closeTopPadding = 12.0
+            static let closeTrailingPadding = 10.0
+            static let titleTopPadding = 10.0
             static let titleSidePadding = 26.0
-            static let messageFontSize = 16.0
-            static let emailFontSize = 18.0
+            static let messageBottomPadding = 20.0
             static let emailPadding = 10.0
-            static let bottomPadding = 6.0
+            static let bottomPadding = 8.0
+            
+            static let textFieldBorderWidth = 1.0
+            static let errorViewHeight = 28.0
+            static let errorViewCornerRadius = 4.0
+            
+            static let titleFontSize = 20.0
+            static let messageFontSize = 16.0
+            static let emailFontSize = 16.0
+            static let errorFontSize = 12.0
+            
             static let publisherDebounce = 500
+            
             static let closeImageName = "closeImage"
         }
         
@@ -94,8 +106,8 @@ extension OwnID.UISDK.IdCollect {
                     } label: {
                         Image(Constants.closeImageName, bundle: .resourceBundle)
                     }
-                    .padding(.trailing)
-                    .padding(.top)
+                    .padding(.trailing, Constants.closeTrailingPadding)
+                    .padding(.top, Constants.closeTopPadding)
                 }
         }
         
@@ -116,16 +128,28 @@ extension OwnID.UISDK.IdCollect {
                     .bold()
                     .multilineTextAlignment(.center)
             }
-            .padding(.top)
+            .padding(.top, Constants.titleTopPadding)
             .padding([.leading, .trailing], Constants.titleSidePadding)
             .padding(.bottom, Constants.bottomPadding)
         }
         
         @ViewBuilder
         private func errorView() -> some View {
+            if store.value.isError {
+                Text(localizedKey: .stepsError)
+                    .font(.system(size: Constants.errorFontSize))
+                    .frame(maxWidth: .infinity)
+                    .frame(height: Constants.errorViewHeight)
+                    .foregroundColor(.white)
+                    .background(RoundedRectangle(cornerRadius: Constants.errorViewCornerRadius))
+            }
+        }
+        
+        @ViewBuilder
+        private func errorText() -> some View {
             if viewModel.isError {
                 HStack {
-                    Text(localizedKey: .idCollectError(type: loginIdSettings.type.rawValue))
+                    Text(localizedKey: .idCollectError(type: viewModel.loginIdType.rawValue))
                         .multilineTextAlignment(.leading)
                         .foregroundColor(OwnID.Colors.errorColor)
                         .padding(.bottom, Constants.bottomPadding)
@@ -140,9 +164,9 @@ extension OwnID.UISDK.IdCollect {
                 VStack {
                     Text(localizedKey: viewModel.messageKey)
                         .font(.system(size: Constants.messageFontSize))
-                        .foregroundColor(OwnID.Colors.otpContentMessageColor)
-                        .padding(.bottom, Constants.bottomPadding)
-                    errorView()
+                        .foregroundColor(OwnID.Colors.popupContentMessageColor)
+                        .padding(.bottom, Constants.messageBottomPadding)
+                    errorText()
                     TextField("", text: $loginId)
                         .onChange(of: loginId) { _ in
                             viewModel.isError = false
@@ -158,16 +182,17 @@ extension OwnID.UISDK.IdCollect {
                             RoundedRectangle(cornerRadius: cornerRadiusValue)
                                 .stroke(borderColor, lineWidth: Constants.textFieldBorderWidth)
                         )
-                        .padding(.bottom, Constants.bottomPadding)
-                        .padding(.top)
+                        .padding([.top, .bottom], Constants.bottomPadding)
                     OwnID.UISDK.AuthButton(visualConfig: visualConfig,
                                            actionHandler: { viewModel.postLoginId() },
                                            isLoading: $viewModel.isLoading,
                                            buttonState: $viewModel.buttonState,
                                            translationKey: .idCollectContinue)
+                    .padding(.bottom, Constants.bottomPadding)
+                    errorView()
                 }
             }
-            .padding()
+            .padding(.all, Constants.padding)
             .onAppear() {
                 focusedField = .email
             }

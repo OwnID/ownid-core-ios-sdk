@@ -1,4 +1,5 @@
 import Combine
+import SwiftUI
 
 extension OwnID.UISDK.IdCollect {
     final class ViewModel: ObservableObject {
@@ -10,15 +11,20 @@ extension OwnID.UISDK.IdCollect {
         private let store: Store<ViewState, Action>
         private let loginIdSettings: OwnID.CoreSDK.LoginIdSettings
         
+        private var storeCancellable: AnyCancellable?
         private var bag = Set<AnyCancellable>()
         
         var titleKey: OwnID.CoreSDK.TranslationsSDK.TranslationKey {
-            OwnID.CoreSDK.isPasskeysSupported ? .idCollectTitle : .idCollectNoBiometricsTitle(type: loginIdSettings.type.rawValue)
+            OwnID.CoreSDK.isPasskeysSupported ? .idCollectTitle : .idCollectNoBiometricsTitle(type: loginIdType.rawValue)
         }
         
         var messageKey: OwnID.CoreSDK.TranslationsSDK.TranslationKey {
-            let loginIdType = loginIdSettings.type.rawValue
-            return OwnID.CoreSDK.isPasskeysSupported ? .idCollectMessage(type: loginIdType) : .idCollectNoBiometricsMessage(type: loginIdType)
+            let type = loginIdType.rawValue
+            return OwnID.CoreSDK.isPasskeysSupported ? .idCollectMessage(type: type) : .idCollectNoBiometricsMessage(type: type)
+        }
+        
+        var loginIdType: OwnID.CoreSDK.LoginIdSettings.LoginIdType {
+            return loginIdSettings.type ?? .email
         }
         
         init(store: Store<ViewState, Action>,
@@ -27,6 +33,14 @@ extension OwnID.UISDK.IdCollect {
             self.store = store
             self.loginId = loginId
             self.loginIdSettings = loginIdSettings
+            
+            storeCancellable = store.$value
+                .map { $0.isLoading }
+                .sink { [weak self] isLoading in
+                    self?.isLoading = isLoading
+                }
+            
+            store.send(.viewLoaded)
         }
         
         func updateLoginIdPublisher(_ loginIdPublisher: OwnID.CoreSDK.LoginIdPublisher) {
@@ -40,8 +54,7 @@ extension OwnID.UISDK.IdCollect {
                 isError = true
                 return
             }
-            
-            isLoading = true
+
             store.send(.loginIdEntered(loginId: loginId.value))
         }
     }

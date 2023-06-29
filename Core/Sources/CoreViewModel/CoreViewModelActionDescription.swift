@@ -52,6 +52,8 @@ extension OwnID.CoreSDK.CoreViewModel.Action: CustomDebugStringConvertible {
             return "oneTimePasswordView"
         case .idCollectView:
             return "idCollectView"
+        case .codeResent:
+            return "codeResent"
         case .stopRequestLoaded:
             return "stopRequestLoaded"
         }

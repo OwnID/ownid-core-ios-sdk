@@ -61,6 +61,8 @@ extension OwnID.CoreSDK.CoreViewModel {
             return []
         case .stopRequestLoaded:
             return []
+        case .codeResent:
+            return []
             
         case .authManagerRequestFail:
             let stopStep = StopStep()
@@ -116,12 +118,14 @@ extension OwnID.CoreSDK.CoreViewModel {
             switch action {
             case .viewLoaded:
                 break
-            case .codeRestarted:
-                break
+            case .resendCode:
+                let otpStep = state.otpStep
+                return otpStep?.resend(state: &state) ?? []
+                
             case .codeEntered(let code):
                 let otpStep = state.otpStep
                 return otpStep?.sendCode(code: code, state: &state) ?? []
-                
+
             case .cancel:
                 let stopStep = StopStep()
                 return stopStep.run(state: &state)
@@ -157,6 +161,8 @@ extension OwnID.CoreSDK.CoreViewModel {
             
         case .idCollectView(let action):
             switch action {
+            case .viewLoaded:
+                return []
             case .cancel:
                 let stopStep = StopStep()
                 return stopStep.run(state: &state)

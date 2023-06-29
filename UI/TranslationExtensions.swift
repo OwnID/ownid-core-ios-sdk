@@ -2,6 +2,10 @@ import SwiftUI
 
 extension Text {
     init(localizedKey: OwnID.CoreSDK.TranslationsSDK.TranslationKey) {
-        self.init(.init(localizedKey.value), bundle: OwnID.CoreSDK.shared.translationsModule.localizationBundle(for: localizedKey.value))
+        if let string = OwnID.CoreSDK.shared.translationsModule.localizedString(for: localizedKey.value) {
+            self.init(string)
+        } else {
+            self.init(.init(localizedKey.value), bundle: Bundle.resourceBundle)
+        }
     }
 }

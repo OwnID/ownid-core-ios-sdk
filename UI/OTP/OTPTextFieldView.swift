@@ -9,7 +9,7 @@ extension OwnID.UISDK {
             static let spaceBetweenBoxes: CGFloat = 8.0
             static let textFieldBorderWidth = 1.0
             static let fontSize = 20.0
-            static let textFieldPadding = 12.0
+            static let textFieldPadding = 8.0
         }
         
         @ObservedObject var viewModel: ViewModel
@@ -20,16 +20,17 @@ extension OwnID.UISDK {
                 ForEach(0..<viewModel.codeLength, id: \.self) { index in
                     ZStack {
                         Rectangle()
-                            .foregroundColor(OwnID.Colors.otpTileBackgroundColor)
-                            .border(tileBorderColor(for: index))
+                            .foregroundColor(OwnID.Colors.otpTitleBackgroundColor)
+                            .border(titleBorderColor(for: index))
                             .cornerRadius(cornerRadiusValue)
                             .overlay(
                                 RoundedRectangle(cornerRadius: cornerRadiusValue)
-                                    .stroke(tileBorderColor(for: index), lineWidth: Constants.textFieldBorderWidth)
+                                    .stroke(titleBorderColor(for: index), lineWidth: Constants.textFieldBorderWidth)
                             )
                         
                         TextField("", text: $viewModel.codes[index])
-                            .font(.system(size: Constants.fontSize))
+                            .foregroundColor(OwnID.Colors.blue)
+                            .font(.system(size: Constants.fontSize, weight: .medium))
                             .multilineTextAlignment(.center)
                             .keyboardType(.numberPad)
                             .focused($focusedField, equals: index)
@@ -51,8 +52,8 @@ extension OwnID.UISDK {
             }
         }
         
-        private func tileBorderColor(for index: Int) -> Color {
-            focusedField == index ? OwnID.Colors.otpTileSelectedBorderColor : OwnID.Colors.otpTileBorderColor
+        private func titleBorderColor(for index: Int) -> Color {
+            focusedField == index ? OwnID.Colors.otpTitleSelectedBorderColor : OwnID.Colors.otpTitleBorderColor
         }
     }
 }

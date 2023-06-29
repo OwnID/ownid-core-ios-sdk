@@ -19,11 +19,12 @@ extension OwnID.CoreSDK.TranslationsSDK {
         case idCollectNoBiometricsTitle(type: String)
         case idCollectNoBiometricsMessage(type: String)
         
-        case otpVerifyTitle(type: String)
-        case otpDescription
-        case otpMessage(type: String)
-        case otpNo(type: String)
         case otpSignTitle
+        case otpVerifyTitle(type: String)
+        case otpMessage(type: String)
+        case otpDescription
+        case otpResend(type: String)
+        case otpNotYou
 
         var value: String {
             switch self {
@@ -50,25 +51,26 @@ extension OwnID.CoreSDK.TranslationsSDK {
             case .idCollectError(let loginId):
                 return "steps.login-id-collect.\(loginId).error"
             case .idCollectNoBiometricsTitle(let loginId):
-                return "steps.login-id-collect.\(loginId).no-biometrics.title"
+                return "steps.login-id-collect.\(loginId).no-biometrics.title-ios"
             case .idCollectNoBiometricsMessage(let loginId):
                 return "steps.login-id-collect.\(loginId).no-biometrics.message"
+            case .otpSignTitle:
+                return "steps.otp.sign.title-ios"
             case .otpVerifyTitle(let type):
-                return "steps.otp.verify.\(type).title"
-            case .otpDescription:
-                return "steps.otp.description"
+                return "steps.otp.verify.\(type).title-ios"
             case .otpMessage(let type):
                 return "steps.otp.\(type).message"
-            case .otpNo(let type):
-                return "steps.otp.\(type).no"
-            case .otpSignTitle:
-                return "steps.otp.sign.title"
+            case .otpDescription:
+                return "steps.otp.description"
+            case .otpResend(let type):
+                return "steps.otp.\(type).resend"
+            case .otpNotYou:
+                return "steps.otp.not-you"
             }
         }
 
         public func localized() -> String {
-            if let bundle = OwnID.CoreSDK.shared.translationsModule.localizationBundle(for: self.value) {
-                let localizedString = bundle.localizedString(forKey: value, value: value, table: nil)
+            if let localizedString = OwnID.CoreSDK.shared.translationsModule.localizedString(for: self.value) {
                 return localizedString
             }
             return value
@@ -118,7 +120,7 @@ extension OwnID.CoreSDK.TranslationsSDK {
                 .eraseToAnyPublisher()
         }
         
-        private let bundleManager = RuntimeLocalizableSaver()
+        private let localizableSaver = RuntimeLocalizableSaver()
         private let downloader = Downloader()
         private var notificationCenterCancellable: AnyCancellable?
         private var downloaderCancellable: AnyCancellable?
@@ -135,12 +137,12 @@ extension OwnID.CoreSDK.TranslationsSDK {
                 }
         }
         
-        public func localizationBundle(for key: String) -> Bundle? {
+        public func localizedString(for key: String) -> String? {
             if CacheManager.isExpired() {
                 initializeLanguagesIfNeeded(supportedLanguages: .init(rawValue: Locale.preferredLanguages), shouldNotify: false)
             }
             
-            return bundleManager.translationBundle(for: key)
+            return localizableSaver.localizedString(for: key)
         }
         
         func SDKConfigured(supportedLanguages: OwnID.CoreSDK.Languages) {
@@ -155,7 +157,7 @@ extension OwnID.CoreSDK.TranslationsSDK {
             requestsTagsInProgress.insert(supportedLanguages.rawValue.first ?? "")
             
             downloaderCancellable = downloader.downloadTranslations(supportedLanguages: supportedLanguages)
-                .tryMap { try self.bundleManager.save(languageKey: $0.systemLanguage, language: $0.language) }
+                .tryMap { try self.localizableSaver.save(languageKey: $0.systemLanguage, language: $0.language) }
                 .sink { completion in
                     switch completion {
                     case .finished:

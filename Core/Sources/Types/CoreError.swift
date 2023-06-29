@@ -21,6 +21,8 @@ public extension OwnID.CoreSDK {
         case requestResponseDecodeFailed(underlying: Swift.Error)
         case requestResponseIsEmpty
 
+        //created spearate serverErrorWithCode because serverError produced unexpected EXC_BAD_ACCESS error
+        case serverErrorWithCode(message: String, code: String)
         case serverError(serverError: ServerError)
         case plugin(underlying: PluginError)
         
@@ -61,6 +63,9 @@ extension OwnID.CoreSDK.Error: LocalizedError {
             
         case .serverError(let underlying):
             return underlying.error
+            
+        case .serverErrorWithCode(let message, _):
+            return message
             
         case .dataIsMissing:
             return "Data is missing"
@@ -106,6 +111,7 @@ extension OwnID.CoreSDK.Error: CustomDebugStringConvertible {
                 .requestNetworkFailed,
                 .plugin,
                 .serverError,
+                .serverErrorWithCode,
                 .emailMismatch,
                 .payloadMissing:
             return errorDescription ?? ""

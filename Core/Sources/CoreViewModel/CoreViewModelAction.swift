@@ -29,6 +29,7 @@ extension OwnID.CoreSDK.CoreViewModel {
         case idCollectView(OwnID.UISDK.IdCollect.Action)
         case oneTimePasswordView(OwnID.UISDK.OneTimePassword.Action)
         case authManager(OwnID.CoreSDK.AccountManager.Action)
+        case codeResent
         case stopRequestLoaded
     }
 }
