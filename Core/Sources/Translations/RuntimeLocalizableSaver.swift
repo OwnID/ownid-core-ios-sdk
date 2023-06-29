@@ -12,9 +12,7 @@ extension OwnID.CoreSDK.TranslationsSDK {
         
         typealias LanguageKey = String
         typealias Language = Dictionary<String, String>
-        
-        private var currentTranslationBundle: Bundle?
-        
+
         private static let rootFolderName = "\(OwnID.CoreSDK.TranslationsSDK.self)"
         private let fileManager = FileManager.default
         private var currentLanguageKey: LanguageKey? {
@@ -33,41 +31,25 @@ extension OwnID.CoreSDK.TranslationsSDK {
         
         init() {
             try? createRootDirectoryIfNeeded()
-            try? copyEnglishModuleTranslationsToDocuments()
-            
-            if let key = currentLanguageKey {
-                currentTranslationBundle = Bundle(path: languageBundlePath(language: key))
-            } else {
-                currentTranslationBundle = Bundle(path: moduleEnglishBundlePath)
-            }
         }
         
         func save(languageKey: LanguageKey, language: Language, tableName: String = Constants.defaultFileName) throws {
             try cleanRootContents()
-            try write(languageKey: languageKey, language: language, tableName: tableName)
+            try write(languageKey: languageKey, language: language)
             
             currentLanguageKey = languageKey
-            currentTranslationBundle = Bundle(path: languageBundlePath(language: languageKey))
         }
         
-        func translationBundle(for key: String) -> Bundle? {
-            if let path = currentTranslationBundle?.path(forResource: Constants.defaultFileName, ofType: Constants.localizableType) {
-                let dictionary = NSDictionary(contentsOfFile: path) as? [String: Any]
-                if dictionary?[key] != nil {
-                    return currentTranslationBundle
-                } else {
-                    if let bundle = Bundle(path: moduleEnglishBundlePath) {
-                        return Bundle(path: moduleEnglishBundlePath)
-                    } else {
-                        try? createRootDirectoryIfNeeded()
-                        try? copyEnglishModuleTranslationsToDocuments()
-                        return Bundle(path: moduleEnglishBundlePath)
-                    }
-                    
+        func localizedString(for key: String) -> String? {
+            if let currentLanguageKey {
+                let filePath = rootFolderPath + "/\(currentLanguageKey).strings"
+                let dictionary = NSDictionary(contentsOfFile: filePath) as? [String: String]
+                if let string = dictionary?[key] {
+                    return string
                 }
             }
-            
-            return Bundle(path: moduleEnglishBundlePath)
+
+            return nil
         }
     }
 }
@@ -98,15 +80,6 @@ private extension OwnID.CoreSDK.TranslationsSDK.RuntimeLocalizableSaver {
         }
     }
     
-    func copyEnglishModuleTranslationsToDocuments() throws {
-        let lprojFilePath = moduleEnglishBundlePath + "/en.lproj"
-        guard let moduleTranslations = Bundle.resourceBundle.path(forResource: Constants.defaultFileName,
-                                                                  ofType: Constants.localizableType) else { return }
-        try createLprojDirectoryIfNeeded(lprojFilePath)
-
-        try copyTranslatedFilesIfNeeded(lprojFilePath, moduleTranslations)
-    }
-    
     func languageBundlePath(language: String) -> String {
         rootFolderPath + "/" + language + "Translations." + Constants.bundleFileExtension
     }
@@ -134,20 +107,11 @@ private extension OwnID.CoreSDK.TranslationsSDK.RuntimeLocalizableSaver {
         }
     }
     
-    func write(languageKey: LanguageKey, language: Language, tableName: String) throws {
-        let languageTablePath = languageBundlePath(language: languageKey) + "/\(languageKey).lproj"
-        if !fileManager.fileExists(atPath: languageTablePath) {
-            do {
-                try fileManager.createDirectory(atPath: languageTablePath, withIntermediateDirectories: true)
-            } catch let error {
-                throw OwnID.CoreSDK.CoreErrorLogWrapper.coreLog(entry: .errorEntry(Self.self), error: .localizationManager(underlying: error))
-            }
-        }
-        
+    func write(languageKey: LanguageKey, language: Language) throws {
         let fileContentsString = language.reduce("", { $0 + "\"\($1.key)\" = \"\($1.value)\";\n" })
         
         let fileData = fileContentsString.data(using: .utf32)
-        let filePath = languageTablePath + "/\(tableName).strings"
+        let filePath = rootFolderPath + "/\(languageKey).strings"
         fileManager.createFile(atPath: filePath, contents: fileData)
         let message = "Wrote bundle strings to languageKey \(languageKey)"
         OwnID.CoreSDK.logger.log(.entry(level: .debug, message: message, OwnID.CoreSDK.TranslationsSDK.RuntimeLocalizableSaver.self))

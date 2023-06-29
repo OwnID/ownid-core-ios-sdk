@@ -37,7 +37,7 @@ extension OwnID.CoreSDK.CoreViewModel {
                     if let serverError = responsePayload[Constants.errorKey] as? String {
                         let serverError = OwnID.CoreSDK.ServerError(error: serverError)
                         throw OwnID.CoreSDK.CoreErrorLogWrapper.coreLog(entry: .errorEntry(context: context, Self.self),
-                                                                        error: .serverError(serverError: serverError))
+                                                                        error: .serverError(serverError: "serverError"))
                     }
                     let loginId = responsePayload[Constants.loginIdKey] as? String ?? ""
                     let data = responsePayload[Constants.dataKey]

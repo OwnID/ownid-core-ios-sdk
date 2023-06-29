@@ -31,13 +31,25 @@ extension OwnID.UISDK.OneTimePassword {
         }
         
         private enum Constants {
-            static let topPadding = 24.0
-            static let titleFontSize = 20.0
-            static let titlePadding = 18.0
-            static let messageFontSize = 16.0
-            static let didNotGetEmailFontSize = 14.0
+            static let padding = 26.0
+            static let closeTopPadding = 12.0
+            static let closeTrailingPadding = 10.0
+            static let titleTopPadding = 8.0
+            static let titleBottomPadding = 16.0
+            static let messageBottomPadding = 20.0
+            static let descriptionBottomPadding = 12.0
+            static let notYouPadding = 8.0
+            
             static let spinnerSize = 28.0
-            static let bottomViewHeight = 40.0
+            static let resendLoadingSize = 32.0
+            static let errorViewHeight = 28.0
+            static let errorViewCornerRadius = 4.0
+            
+            static let titleFontSize = 20.0
+            static let messageFontSize = 16.0
+            static let buttonFontSize = 14.0
+            static let errorFontSize = 12.0
+            
             static let closeImageName = "closeImage"
             static let codeLengthReplacement = "%CODE_LENGTH%"
             static let emailReplacement = "%LOGIN_ID%"
@@ -86,14 +98,50 @@ extension OwnID.UISDK.OneTimePassword {
         }
         
         @ViewBuilder
-        private func didNotGetEmail() -> some View {
-            if store.value.isDisplayingDidNotGetCode && !store.value.isCodeEnteringStarted {
+        private func resendView() -> some View {
+            if store.value.isDisplayingDidNotGetCode && !store.value.isCodeEnteringStarted && !store.value.isLoading {
                 Button {
-                    store.send(.emailIsNotRecieved)
+                    store.send(.resendCode)
                 } label: {
-                    Text("I didn\'t get the email") //(localizedKey: .otpNo(type: verificationType.rawValue))
-                        .font(.system(size: Constants.didNotGetEmailFontSize))
-                        .foregroundColor(OwnID.Colors.otpDidNotGetEmail)
+                    Text(localizedKey: .otpResend(type: verificationType.rawValue))
+                        .font(.system(size: Constants.buttonFontSize))
+                        .bold()
+                        .foregroundColor(OwnID.Colors.blue)
+                }
+            }
+        }
+        
+        private func notYouView() -> some View {
+            Button {
+                store.send(.emailIsNotRecieved)
+            } label: {
+                Text(localizedKey: .otpNotYou)
+                    .font(.system(size: Constants.buttonFontSize))
+                    .bold()
+                    .foregroundColor(OwnID.Colors.blue)
+            }
+        }
+        
+        @ViewBuilder
+        private func errorView() -> some View {
+            if store.value.error?.code == .general {
+                Text(localizedKey: .stepsError)
+                    .font(.system(size: Constants.errorFontSize))
+                    .frame(maxWidth: .infinity)
+                    .frame(height: Constants.errorViewHeight)
+                    .foregroundColor(.white)
+                    .background(RoundedRectangle(cornerRadius: Constants.errorViewCornerRadius))
+            }
+        }
+        
+        @ViewBuilder
+        private func errorText() -> some View {
+            if store.value.error?.code == .wrongCodeLimitReached, let message = store.value.error?.message {
+                HStack {
+                    Text(message)
+                        .font(.system(size: Constants.errorFontSize))
+                        .multilineTextAlignment(.leading)
+                        .foregroundColor(OwnID.Colors.errorColor)
                 }
             }
         }
@@ -113,19 +161,24 @@ extension OwnID.UISDK.OneTimePassword {
                                                       viewBackgroundColor: .clear)
                         .frame(width: Constants.spinnerSize, height: Constants.spinnerSize)
                     }
-                    didNotGetEmail()
+                    resendView()
+                    errorText()
                 }
-                .frame(height: Constants.bottomViewHeight)
+                .frame(height: Constants.resendLoadingSize)
+                notYouView()
+                    .padding([.top, .bottom], Constants.notYouPadding)
+                errorView()
             }
             .frame(minWidth: 0, maxWidth: .infinity)
+            .padding(.all, Constants.padding)
             .overlay(alignment: .topTrailing) {
                 Button {
                     dismiss()
                 } label: {
                     Image(Constants.closeImageName, bundle: .resourceBundle)
                 }
-                .padding(.trailing)
-                .padding(.top)
+                .padding(.trailing, Constants.closeTrailingPadding)
+                .padding(.top, Constants.closeTopPadding)
             }
             .onReceive(OwnID.CoreSDK.shared.translationsModule.translationsChangePublisher) {
                 emailSentText = emailSentTextChangedClosure()
@@ -149,19 +202,17 @@ extension OwnID.UISDK.OneTimePassword {
                     .font(.system(size: Constants.titleFontSize))
                     .bold()
                     .multilineTextAlignment(.center)
-                    .padding(.bottom)
-                    .padding([.leading, .trailing], Constants.titlePadding)
-                    .padding(.top, Constants.topPadding)
+                    .padding(.top, Constants.titleTopPadding)
+                    .padding(.bottom, Constants.titleBottomPadding)
                 Text(verbatim: emailSentText)
                     .multilineTextAlignment(.center)
-                    .foregroundColor(OwnID.Colors.otpContentMessageColor)
+                    .foregroundColor(OwnID.Colors.popupContentMessageColor)
                     .font(.system(size: Constants.messageFontSize))
-                    .padding(.bottom)
-                
+                    .padding(.bottom, Constants.messageBottomPadding)
                 Text(localizedKey: .otpDescription)
                     .font(.system(size: Constants.messageFontSize))
+                    .padding(.bottom, Constants.descriptionBottomPadding)
             }
-            .padding()
             .overlay {
                 if isTranslationChanged {
                     EmptyView()

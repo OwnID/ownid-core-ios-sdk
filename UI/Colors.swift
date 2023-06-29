@@ -58,24 +58,24 @@ public extension OwnID {
             Color("\(OwnID.UISDK.IdCollect.IdCollectView.self)LoginFieldBackgroundColor", bundle: .resourceBundle)
         }
         
-        public static var otpContentMessageColor: Color {
-            Color("\(OwnID.UISDK.OneTimePassword.self)contentMessage", bundle: .resourceBundle)
+        public static var popupContentMessageColor: Color {
+            Color("PopupContentMessage", bundle: .resourceBundle)
         }
         
         public static var errorColor: Color {
             Color("errorColor", bundle: .resourceBundle)
         }
         
-        public static var otpTileBackgroundColor: Color {
-            Color("\(OwnID.UISDK.OneTimePassword.self)TileBackgroundColor", bundle: .resourceBundle)
+        public static var otpTitleBackgroundColor: Color {
+            Color("\(OwnID.UISDK.OneTimePassword.self)TitleBackgroundColor", bundle: .resourceBundle)
         }
         
-        public static var otpTileBorderColor: Color {
-            Color("\(OwnID.UISDK.OneTimePassword.self)TileBorderColor", bundle: .resourceBundle)
+        public static var otpTitleBorderColor: Color {
+            Color("\(OwnID.UISDK.OneTimePassword.self)TitleBorderColor", bundle: .resourceBundle)
         }
         
-        public static var otpTileSelectedBorderColor: Color {
-            Color("\(OwnID.UISDK.OneTimePassword.self)TileSelectedBorderColor", bundle: .resourceBundle)
+        public static var otpTitleSelectedBorderColor: Color {
+            Color("\(OwnID.UISDK.OneTimePassword.self)TitleSelectedBorderColor", bundle: .resourceBundle)
         }
         
         public static var otpDidNotGetEmail: Color {

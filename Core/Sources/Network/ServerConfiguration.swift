@@ -10,7 +10,7 @@ extension OwnID.CoreSDK {
         let serverURL: ServerURL
         let redirectURLString: RedirectionURLString?
         let platformSettings: PlatformSettings?
-        let loginIdSettings: LoginIdSettings
+        let loginIdSettings: LoginIdSettings?
         let verification: Verification?
 
         enum CodingKeys: String, CodingKey {
@@ -33,7 +33,7 @@ extension OwnID.CoreSDK {
             case email, phoneNumber, userName
         }
         
-        let type: LoginIdType
+        let type: LoginIdType?
         let regex: String?
         
         init(type: LoginIdType, regex: String?) {

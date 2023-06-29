@@ -47,7 +47,7 @@ extension OwnID.CoreSDK {
         var serverURL: ServerURL!
         var passkeysAutofillEnabled: Bool!
         var supportedLocales: [String]?
-        var loginIdSettings: LoginIdSettings!
+        var loginIdSettings: LoginIdSettings?
         
         var finalStatusURL: ServerURL {
             var url = serverURL!

@@ -57,8 +57,14 @@ extension OwnID.CoreSDK {
                 action: { .oneTimePasswordView($0) },
                 action: { globalAction in
                     switch globalAction {
-                    case .error:
-                        return .error
+                    case .error(let wrapper):
+                        let error = wrapper.error
+                        switch error {
+                        case .serverErrorWithCode(let message, let code):
+                            return .error(message: message, code: code)
+                        default:
+                            return .error(message: "", code: "")
+                        }
                     case .nonTerminalError:
                         return .nonTerminalError
                     case .success:
@@ -163,6 +169,7 @@ extension OwnID.CoreSDK {
                             .browserVM,
                             .webApp,
                             .success,
+                            .codeResent,
                             .nonTerminalError:
                         internalStatesChange.append(action.debugDescription)
                         
