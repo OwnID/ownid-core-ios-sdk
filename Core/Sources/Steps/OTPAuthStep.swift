@@ -39,7 +39,9 @@ extension OwnID.CoreSDK.CoreViewModel {
             if #available(iOS 15.0, *) {
                 let otpView = String(describing: OwnID.UISDK.OneTimePassword.OneTimePasswordView.self)
                 let eventCategory: OwnID.CoreSDK.EventCategory = state.type == .login ? .login : .registration
-                OwnID.CoreSDK.eventService.sendMetric(.trackMetric(action: .screenShow(screen: otpView), category: eventCategory))
+                OwnID.CoreSDK.eventService.sendMetric(.trackMetric(action: .screenShow(screen: otpView),
+                                                                   category: eventCategory,
+                                                                   loginId: state.loginId))
             }
             
             return []
@@ -52,7 +54,7 @@ extension OwnID.CoreSDK.CoreViewModel {
             
             let context = state.context
             let eventCategory: OwnID.CoreSDK.EventCategory = state.type == .login ? .login : .registration
-            OwnID.CoreSDK.eventService.sendMetric(.clickMetric(action: .noOTP, category: eventCategory, context: context))
+            OwnID.CoreSDK.eventService.sendMetric(.clickMetric(action: .noOTP, category: eventCategory, context: context, loginId: state.loginId))
             
             let effect = state.session.perform(url: restartUrl,
                                                method: .post,
@@ -80,7 +82,7 @@ extension OwnID.CoreSDK.CoreViewModel {
             
             let context = state.context
             let eventCategory: OwnID.CoreSDK.EventCategory = state.type == .login ? .login : .registration
-            OwnID.CoreSDK.eventService.sendMetric(.clickMetric(action: .noOTP, category: eventCategory, context: context))
+            OwnID.CoreSDK.eventService.sendMetric(.clickMetric(action: .noOTP, category: eventCategory, context: context, loginId: state.loginId))
             
             let effect = state.session.perform(url: resendUrl,
                                                method: .post,
@@ -109,6 +111,7 @@ extension OwnID.CoreSDK.CoreViewModel {
             let context = state.context
             let eventCategory: OwnID.CoreSDK.EventCategory = state.type == .login ? .login : .registration
             let requestBody = OTPAuthRequestBody(code: code)
+            let loginId = state.loginId
             let effect = state.session.perform(url: url,
                                                method: .post,
                                                body: requestBody,
@@ -119,12 +122,16 @@ extension OwnID.CoreSDK.CoreViewModel {
                 })
                 .map({ [self] response in
                     if let step = response.step {
-                        OwnID.CoreSDK.eventService.sendMetric(.trackMetric(action: .correctOTP, category: eventCategory, context: context))
+                        OwnID.CoreSDK.eventService.sendMetric(.trackMetric(action: .correctOTP,
+                                                                           category: eventCategory,
+                                                                           context: context,
+                                                                           loginId: state.loginId))
                         return nextStepAction(step)
                     } else if let error = response.error {
                         OwnID.CoreSDK.eventService.sendMetric(.errorMetric(action: .wrongOTP,
                                                                            category: eventCategory,
                                                                            context: context,
+                                                                           loginId: loginId,
                                                                            errorMessage: error.message))
                         return .nonTerminalError
                     }

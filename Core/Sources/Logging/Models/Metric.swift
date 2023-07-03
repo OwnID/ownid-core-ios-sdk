@@ -1,4 +1,5 @@
 import Foundation
+import CryptoKit
 
 public extension OwnID.CoreSDK {
     enum EventType: String, Encodable {
@@ -113,6 +114,7 @@ public extension OwnID.CoreSDK {
         let type: EventType
         let action: String?
         public var metadata: Metadata?
+        let loginId: String?
         let errorMessage: String?
         public var userAgent = UserAgentManager.shared.SDKUserAgent
         public var version = UserAgentManager.shared.userFacingSDKVersion
@@ -123,46 +125,61 @@ public extension OwnID.CoreSDK {
              type: EventType,
              action: String?,
              metadata: Metadata? = nil,
+             loginId: String? = nil,
              errorMessage: String? = nil) {
             self.context = context ?? LoggerConstants.noContext
             self.category = category
             self.type = type
             self.action = action
             self.metadata = metadata
+            self.loginId = loginId
             self.errorMessage = errorMessage
+        }
+        
+        private static func metricloginId(_ loginId: String?) -> String? {
+            if let loginId {
+                return SHA256.hash(data: Data((loginId).utf8)).data.toBase64URL()
+            }
+            return nil
         }
         
         public static func trackMetric(action: AnalyticActionType,
                                        category: EventCategory,
                                        context: String? = LoggerConstants.noContext,
+                                       loginId: String? = nil,
                                        authType: String? = nil) -> Metric {
             Metric(context: context ?? LoggerConstants.noContext,
                    category: category,
                    type: .track,
                    action: action.actionValue,
-                   metadata: Metadata.metadata(authType: authType, actionType: action))
+                   metadata: Metadata.metadata(authType: authType, actionType: action),
+                   loginId: metricloginId(loginId))
         }
         
         public static func clickMetric(action: AnalyticActionType,
                                        category: EventCategory,
                                        context: String? = LoggerConstants.noContext,
+                                       loginId: String? = nil,
                                        hasLoginId: Bool? = nil) -> Metric {
             Metric(context: context ?? LoggerConstants.noContext,
                    category: category,
                    type: .click,
                    action: action.actionValue,
-                   metadata: Metadata.metadata(actionType: action, hasLoginId: hasLoginId))
+                   metadata: Metadata.metadata(actionType: action, hasLoginId: hasLoginId),
+                   loginId: metricloginId(loginId))
         }
         
         public static func errorMetric(action: AnalyticActionType,
                                        category: EventCategory,
                                        context: String? = LoggerConstants.noContext,
+                                       loginId: String? = nil,
                                        errorMessage: String?) -> Metric {
             Metric(context: context ?? LoggerConstants.noContext,
                    category: category,
                    type: .error,
                    action: action.actionValue,
                    metadata: Metadata.metadata(actionType: action),
+                   loginId: metricloginId(loginId),
                    errorMessage: errorMessage)
         }
     }

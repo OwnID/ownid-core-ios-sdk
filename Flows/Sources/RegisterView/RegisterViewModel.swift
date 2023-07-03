@@ -101,7 +101,8 @@ public extension OwnID.FlowsSDK.RegisterView {
             }
             OwnID.CoreSDK.eventService.sendMetric(.trackMetric(action: .loaded,
                                                                category: .registration,
-                                                               context: registrationData.payload?.context))
+                                                               context: registrationData.payload?.context,
+                                                               loginId: loginId))
         }
         
         public func register(registerParameters: RegisterParameters = EmptyRegisterParameters()) {
@@ -122,12 +123,14 @@ public extension OwnID.FlowsSDK.RegisterView {
                         OwnID.CoreSDK.eventService.sendMetric(.errorMetric(action: .error,
                                                                            category: .registration,
                                                                            context: payload.context,
+                                                                           loginId: loginId,
                                                                            errorMessage: error.error.errorDescription))
                     }
                 } receiveValue: { [unowned self] registrationResult in
                     OwnID.CoreSDK.eventService.sendMetric(.trackMetric(action: .registered,
                                                                        category: .registration,
                                                                        context: payload.context,
+                                                                       loginId: loginId,
                                                                        authType: registrationResult.authType))
                     if let loginId = payload.loginId {
                         OwnID.CoreSDK.DefaultsLoginIdSaver.save(loginId: loginId)
@@ -163,7 +166,8 @@ public extension OwnID.FlowsSDK.RegisterView {
             if case .ownidCreated = state {
                 OwnID.CoreSDK.eventService.sendMetric(.clickMetric(action: .undo,
                                                                    category: .registration,
-                                                                   context: registrationData.payload?.context))
+                                                                   context: registrationData.payload?.context,
+                                                                   loginId: loginId))
                 resetToInitialState()
                 resultPublisher.send(.success(.resetTapped))
                 return
@@ -250,12 +254,14 @@ private extension OwnID.FlowsSDK.RegisterView.ViewModel {
                     OwnID.CoreSDK.eventService.sendMetric(.errorMetric(action: .error,
                                                                        category: .registration,
                                                                        context: payload.context,
+                                                                       loginId: loginId,
                                                                        errorMessage: error.error.errorDescription))
                 }
             } receiveValue: { [unowned self] registerResult in
                 OwnID.CoreSDK.eventService.sendMetric(.trackMetric(action: .loggedIn,
                                                                    category: .login,
                                                                    context: payload.context,
+                                                                   loginId: loginId,
                                                                    authType: payload.authType))
                 state = .ownidCreated
                 resultPublisher.send(.success(.userRegisteredAndLoggedIn(registrationResult: registerResult.operationResult, authType: registerResult.authType)))

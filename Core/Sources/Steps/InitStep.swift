@@ -42,7 +42,8 @@ extension OwnID.CoreSDK.CoreViewModel {
                                             Self.self))
             let eventCategory: OwnID.CoreSDK.EventCategory = state.type == .login ? .login : .registration
             OwnID.CoreSDK.eventService.sendMetric(.trackMetric(action: .fidoSupports(isFidoSupported: OwnID.CoreSDK.isPasskeysSupported),
-                                                               category: eventCategory))
+                                                               category: eventCategory,
+                                                               loginId: state.loginId))
             
             let requestBody = InitRequestBody(sessionChallenge: sessionChallenge,
                                               type: state.type,
@@ -80,12 +81,12 @@ extension OwnID.CoreSDK.CoreViewModel {
     }
 }
 
-private extension Digest {
+extension Digest {
     var bytes: [UInt8] { Array(makeIterator()) }
     var data: Data { Data(bytes) }
 }
 
-private extension Data {
+extension Data {
     func toBase64URL() -> String {
         var encoded = base64EncodedString()
         encoded = encoded.replacingOccurrences(of: "+", with: "-")
