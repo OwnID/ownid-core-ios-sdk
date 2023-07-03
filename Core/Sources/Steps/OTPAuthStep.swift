@@ -125,7 +125,7 @@ extension OwnID.CoreSDK.CoreViewModel {
                         OwnID.CoreSDK.eventService.sendMetric(.trackMetric(action: .correctOTP,
                                                                            category: eventCategory,
                                                                            context: context,
-                                                                           loginId: state.loginId))
+                                                                           loginId: loginId))
                         return nextStepAction(step)
                     } else if let error = response.error {
                         OwnID.CoreSDK.eventService.sendMetric(.errorMetric(action: .wrongOTP,
