@@ -68,7 +68,10 @@ public extension OwnID.FlowsSDK.LoginView {
             if let currentMetadata {
                 OwnID.CoreSDK.shared.currentMetricInformation = currentMetadata
             }
-            OwnID.CoreSDK.eventService.sendMetric(.trackMetric(action: .loaded, category: .login, context: payload?.context))
+            OwnID.CoreSDK.eventService.sendMetric(.trackMetric(action: .loaded,
+                                                               category: .login,
+                                                               context: payload?.context,
+                                                               loginId: loginId))
         }
         
         public func updateLoginIdPublisher(_ loginIdPublisher: OwnID.CoreSDK.LoginIdPublisher) {
@@ -176,6 +179,7 @@ private extension OwnID.FlowsSDK.LoginView.ViewModel {
                 OwnID.CoreSDK.eventService.sendMetric(.trackMetric(action: .loggedIn,
                                                                    category: .login,
                                                                    context: payload.context,
+                                                                   loginId: loginId,
                                                                    authType: payload.authType))
                 if let loginId = payload.loginId {
                     OwnID.CoreSDK.DefaultsLoginIdSaver.save(loginId: loginId)

@@ -29,7 +29,8 @@ extension OwnID.CoreSDK.CoreViewModel {
                 let eventCategory: OwnID.CoreSDK.EventCategory = state.type == .login ? .login : .registration
                 OwnID.CoreSDK.eventService.sendMetric(.trackMetric(action: .screenShow(screen: idCollectView),
                                                                    category: eventCategory,
-                                                                   context: state.context))
+                                                                   context: state.context,
+                                                                   loginId: state.loginId))
             }
             
             return []
@@ -42,7 +43,7 @@ extension OwnID.CoreSDK.CoreViewModel {
             }
             
             let context = state.context
-            OwnID.CoreSDK.eventService.sendMetric(.trackMetric(action: .loginId, category: .login, context: context))
+            OwnID.CoreSDK.eventService.sendMetric(.trackMetric(action: .loginId, category: .login, context: context, loginId: state.loginId))
 
             let requestBody = IdCollectRequestBody(loginId: loginId, supportsFido2: OwnID.CoreSDK.isPasskeysSupported)
             state.loginId = loginId

@@ -51,8 +51,10 @@ extension OwnID.CoreSDK.CoreViewModel {
             
             let eventCategory: OwnID.CoreSDK.EventCategory = state.type == .login ? .login : .registration
             OwnID.CoreSDK.logger.log(.entry(context: state.context, level: .debug, message: "run Fido \(type.rawValue)", Self.self))
-            OwnID.CoreSDK.eventService.sendMetric(.trackMetric(action: .fidoRun(category: eventCategory), category: eventCategory, context: state.context))
-            
+            OwnID.CoreSDK.eventService.sendMetric(.trackMetric(action: .fidoRun(category: eventCategory),
+                                                               category: eventCategory,
+                                                               context: state.context,
+                                                               loginId: state.loginId))
             if #available(iOS 16, *),
                let domain = step.fidoData?.relyingPartyId {
                 let authManager = state.createAccountManagerClosure(state.authManagerStore, domain, state.context, url)
@@ -81,7 +83,8 @@ extension OwnID.CoreSDK.CoreViewModel {
             
             OwnID.CoreSDK.eventService.sendMetric(.trackMetric(action: .fidoFinished(category: eventCategory),
                                                                category: eventCategory,
-                                                               context: context))
+                                                               context: context,
+                                                               loginId: state.loginId))
             
             let requestBody = AuthRequestBody(type: type,
                                               fido2Payload: fido2Payload)
@@ -133,6 +136,7 @@ extension OwnID.CoreSDK.CoreViewModel {
             OwnID.CoreSDK.eventService.sendMetric(.errorMetric(action: .fidoNotFinished(category: eventCategory),
                                                                category: eventCategory,
                                                                context: context,
+                                                               loginId: state.loginId,
                                                                errorMessage: error.localizedDescription))
             
             let requestBody = FidoErrorRequestBody(type: type,

@@ -11,7 +11,8 @@ extension OwnID.CoreSDK.CoreViewModel {
             OwnID.CoreSDK.logger.log(.entry(level: .information, message: "Cancel Flow", Self.self))
             OwnID.CoreSDK.eventService.sendMetric(.trackMetric(action: .cancel,
                                                                category: state.type == .login ? .login : .registration,
-                                                               context: context))
+                                                               context: context,
+                                                               loginId: state.loginId))
             
             let effect = state.session.perform(url: state.stopUrl,
                                                method: .post,
