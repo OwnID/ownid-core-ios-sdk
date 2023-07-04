@@ -27,7 +27,6 @@ extension OwnID.UISDK.OneTimePassword {
         var error: Error?
         var isLoading = false
         var isDisplayingDidNotGetCode = false
-        var isCodeEnteringStarted = false
         var attempts = 0
     }
     
@@ -58,19 +57,21 @@ extension OwnID.UISDK.OneTimePassword {
 }
 
 extension OwnID.UISDK.OneTimePassword {
+    private enum Constants {
+        static let didNotGetCodeDelay = 15.0
+    }
+    
     static func viewModelReducer(state: inout OwnID.UISDK.OneTimePassword.ViewState, action: OwnID.UISDK.OneTimePassword.Action) -> [Effect<OwnID.UISDK.OneTimePassword.Action>] {
         switch action {
         case .viewLoaded:
             state.isLoading = false
             state.isDisplayingDidNotGetCode = false
-            state.isCodeEnteringStarted = false
             state.error = nil
             
             return [Just(OwnID.UISDK.OneTimePassword.Action.displayDidNotGetCode)
-                .delay(for: 10, scheduler: DispatchQueue.main)
+                .delay(for: .seconds(Constants.didNotGetCodeDelay), scheduler: DispatchQueue.main)
                 .eraseToEffect()]
         case .codeEnteringStarted:
-            state.isCodeEnteringStarted = true
             return []
         case .resendCode:
             return []

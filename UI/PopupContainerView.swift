@@ -41,10 +41,6 @@ extension OwnID.UISDK {
                     popupContent.createContent()
                         .background(colorScheme == .dark ? .regularMaterial : .thinMaterial)
                         .containerShape(RoundedCorner(radius: Constants.contentCornerRadius, corners: [.topLeft, .topRight]))
-                        .onTapGesture {
-                            //TODO: reimplement it using @FocusState
-                            UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
-                        }
                         .transition(.move(edge: .top))
                 }
             }

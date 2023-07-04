@@ -208,6 +208,7 @@ public extension OwnID.FlowsSDK.RegisterView {
                             state = .ownidCreated
                             if let loginId = registrationData.payload?.loginId {
                                 registrationData.persistedLoginId = loginId
+                                self.loginId = loginId
                             }
                             resultPublisher.send(.success(.readyToRegister(usersEmailFromWebApp: registrationData.payload?.loginId, authType: registrationData.payload?.authType)))
                             

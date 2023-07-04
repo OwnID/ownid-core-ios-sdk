@@ -99,7 +99,7 @@ extension OwnID.UISDK.OneTimePassword {
         
         @ViewBuilder
         private func resendView() -> some View {
-            if store.value.isDisplayingDidNotGetCode && !store.value.isCodeEnteringStarted && !store.value.isLoading {
+            if store.value.isDisplayingDidNotGetCode && !store.value.isLoading && store.value.error == nil {
                 Button {
                     store.send(.resendCode)
                 } label: {
