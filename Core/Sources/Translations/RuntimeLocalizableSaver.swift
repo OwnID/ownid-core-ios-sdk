@@ -3,16 +3,16 @@ import Foundation
 extension OwnID.CoreSDK.TranslationsSDK {
     final class RuntimeLocalizableSaver {
         private enum Constants {
-            static let bundleFileExtension = "bundle"
             static let currentLanguageKey = "currentLanguageKey"
             static let defaultFileName = "Localizable"
-            static let localizableType = "strings"
-            static let enBundleName = "ModuleEN"
+            static let slash = "/"
+            static let jsonExtension = ".json"
+            static let platformSuffix = "-ios"
         }
         
         typealias LanguageKey = String
-        typealias Language = Dictionary<String, String>
-
+        typealias LanguageJson = Dictionary<String, Any>
+        
         private static let rootFolderName = "\(OwnID.CoreSDK.TranslationsSDK.self)"
         private let fileManager = FileManager.default
         private var currentLanguageKey: LanguageKey? {
@@ -25,7 +25,7 @@ extension OwnID.CoreSDK.TranslationsSDK {
         
         private lazy var rootFolderPath: String = {
             let documentsPath = NSSearchPathForDirectoriesInDomains(.documentDirectory, .userDomainMask, true).first!
-            let bundlePath = documentsPath + "/" + RuntimeLocalizableSaver.rootFolderName
+            let bundlePath = documentsPath + Constants.slash + RuntimeLocalizableSaver.rootFolderName
             return bundlePath
         }()
         
@@ -33,70 +33,63 @@ extension OwnID.CoreSDK.TranslationsSDK {
             try? createRootDirectoryIfNeeded()
         }
         
-        func save(languageKey: LanguageKey, language: Language, tableName: String = Constants.defaultFileName) throws {
-            try cleanRootContents()
-            try write(languageKey: languageKey, language: language)
+        func save(languageKey: LanguageKey, languageJson: LanguageJson) throws {
+            try write(languageKey: languageKey, languageJson: languageJson)
             
             currentLanguageKey = languageKey
         }
-        
-        func localizedString(for key: String) -> String? {
+        func localizedString(for keys: [String]) -> String? {
             if let currentLanguageKey {
-                let filePath = rootFolderPath + "/\(currentLanguageKey).strings"
-                let dictionary = NSDictionary(contentsOfFile: filePath) as? [String: String]
-                if let string = dictionary?[key] {
-                    return string
+                do {
+                    let filePath = rootFolderPath + "\(Constants.slash)\(currentLanguageKey)\(Constants.jsonExtension)"
+                    let fileURL = URL(fileURLWithPath: filePath)
+                    let fileData = try Data(contentsOf: fileURL)
+                    let jsonObject = try JSONSerialization.jsonObject(with: fileData, options: [])
+                    if let json = jsonObject as? [String: Any] {
+                        var currentObject: Any? = json
+                        var keys = keys
+                        let targetKey = keys.removeLast()
+                        
+                        for key in keys {
+                            if let subJson = currentObject as? [String: Any], let value = subJson[key] {
+                                currentObject = value
+                            } else {
+                                return findInUpperLevel(keys: keys)
+                            }
+                        }
+                        
+                        if let subJson = currentObject as? [String: Any] {
+                            if let value = subJson[targetKey] as? String {
+                                return value
+                            } else if let value = subJson[targetKey + Constants.platformSuffix] as? String {
+                                return value
+                            } else {
+                                return findInUpperLevel(keys: keys)
+                            }
+                        } else {
+                            return findInUpperLevel(keys: keys)
+                        }
+                        
+                        func findInUpperLevel(keys: [String]) -> String? {
+                            var shorterKeys = Array(keys.dropLast())
+                            shorterKeys.append(targetKey)
+                            if shorterKeys.count > 1 {
+                                return localizedString(for: shorterKeys)
+                            }
+                            return nil
+                        }
+                    }
+                } catch {
+                    print(error)
                 }
             }
-
+            
             return nil
         }
     }
 }
 
 private extension OwnID.CoreSDK.TranslationsSDK.RuntimeLocalizableSaver {
-    var moduleEnglishBundlePath: String {
-        languageBundlePath(language: Constants.enBundleName)
-    }
-    
-    func createLprojDirectoryIfNeeded(_ lprojFilePath: String) throws {
-        if !fileManager.fileExists(atPath: lprojFilePath) {
-            do {
-                try fileManager.createDirectory(atPath: lprojFilePath, withIntermediateDirectories: true)
-            } catch let error {
-                throw OwnID.CoreSDK.CoreErrorLogWrapper.coreLog(entry: .errorEntry(Self.self), error: .localizationManager(underlying: error))
-            }
-        }
-    }
-    
-    func copyTranslatedFilesIfNeeded(_ lprojFilePath: String, _ moduleTranslations: String) throws {
-        let localizableFilePath = lprojFilePath + "/Localizable.strings"
-        if !fileManager.fileExists(atPath: localizableFilePath) {
-            do {
-                try fileManager.copyItem(atPath: moduleTranslations, toPath: localizableFilePath)
-            } catch let error {
-                throw OwnID.CoreSDK.CoreErrorLogWrapper.coreLog(entry: .errorEntry(Self.self), error: .localizationManager(underlying: error))
-            }
-        }
-    }
-    
-    func languageBundlePath(language: String) -> String {
-        rootFolderPath + "/" + language + "Translations." + Constants.bundleFileExtension
-    }
-    
-    func cleanRootContents() throws {
-        guard fileManager.fileExists(atPath: rootFolderPath) else { return }
-        guard let filePaths = try? fileManager.contentsOfDirectory(atPath: rootFolderPath) else { return }
-        for filePath in filePaths where filePath.contains(".\(Constants.bundleFileExtension)") {
-            let fullFilePath = rootFolderPath + "/" + filePath
-            do {
-                try fileManager.removeItem(atPath: fullFilePath)
-            } catch let error {
-                throw OwnID.CoreSDK.CoreErrorLogWrapper.coreLog(entry: .errorEntry(Self.self), error: .localizationManager(underlying: error))
-            }
-        }
-    }
-    
     func createRootDirectoryIfNeeded() throws {
         if !fileManager.fileExists(atPath: rootFolderPath) {
             do {
@@ -107,12 +100,14 @@ private extension OwnID.CoreSDK.TranslationsSDK.RuntimeLocalizableSaver {
         }
     }
     
-    func write(languageKey: LanguageKey, language: Language) throws {
-        let fileContentsString = language.reduce("", { $0 + "\"\($1.key)\" = \"\($1.value)\";\n" })
+    func write(languageKey: LanguageKey, languageJson: LanguageJson) throws {
+        let jsonData = try JSONSerialization.data(withJSONObject: languageJson, options: .prettyPrinted)
+        let filePath = rootFolderPath + "/\(languageKey)\(Constants.jsonExtension)"
+        if fileManager.fileExists(atPath: filePath) {
+            try? fileManager.removeItem(atPath: filePath)
+        }
+        fileManager.createFile(atPath: filePath, contents: jsonData)
         
-        let fileData = fileContentsString.data(using: .utf32)
-        let filePath = rootFolderPath + "/\(languageKey).strings"
-        fileManager.createFile(atPath: filePath, contents: fileData)
         let message = "Wrote bundle strings to languageKey \(languageKey)"
         OwnID.CoreSDK.logger.log(.entry(level: .debug, message: message, OwnID.CoreSDK.TranslationsSDK.RuntimeLocalizableSaver.self))
     }

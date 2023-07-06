@@ -18,6 +18,10 @@ public extension OwnID.UISDK {
                 .eraseToAnyPublisher()
         }
         
+        private var skipPassword: String {
+            OwnID.CoreSDK.TranslationsSDK.TranslationKey.skipPassword.localized()
+        }
+        
         public init(viewState: Binding<ButtonState>,
                     visualConfig: VisualLookConfig,
                     shouldShowTooltip: Binding<Bool>,
@@ -44,6 +48,7 @@ public extension OwnID.UISDK {
                            isTooltipPresented: $isTooltipPresented,
                            isLoading: $isLoading,
                            buttonState: $buttonState)
+                .modifier(AccessibilityLabelModifier(accessibilityLabel: skipPassword))
             }
         }
     }

@@ -6,21 +6,6 @@ extension OwnID.UISDK {
 }
 
 extension OwnID.UISDK.OneTimePassword {
-    enum TitleType {
-        case verification
-        case oneTimePasswordSignIn
-        
-        func localizationKey(verificationType: OwnID.CoreSDK.Verification.VerificationType) -> OwnID.CoreSDK.TranslationsSDK.TranslationKey {
-            switch self {
-            case .verification:
-                return .otpVerifyTitle(type: verificationType.rawValue)
-                
-            case .oneTimePasswordSignIn:
-                return .otpSignTitle
-            }
-        }
-    }
-    
     struct ViewState: LoggingEnabled {
         let isLoggingEnabled: Bool
         let type: OwnID.CoreSDK.RequestType

@@ -10,13 +10,13 @@ extension OwnID.UISDK {
                             type: OwnID.CoreSDK.CoreViewModel.Step.StepType,
                             verificationType: OwnID.CoreSDK.Verification.VerificationType) {
         if #available(iOS 15.0, *) {
-            let titleType: OwnID.UISDK.OneTimePassword.TitleType = type == .loginIDAuthorization ? .oneTimePasswordSignIn : .verification
+            let operationType: OwnID.UISDK.OneTimePassword.OperationType = type == .loginIDAuthorization ? .oneTimePasswordSignIn : .verification
             let view = OwnID.UISDK.OneTimePassword.OneTimePasswordView(store: store,
                                                                        visualConfig: PopupManager.shared.visualLookConfig,
                                                                        loginId: loginId,
                                                                        codeLength: otpLength,
                                                                        restartURL: restartUrl,
-                                                                       titleType: titleType,
+                                                                       operationType: operationType,
                                                                        verificationType: verificationType)
             view.presentAsPopup()
         }
@@ -24,6 +24,11 @@ extension OwnID.UISDK {
 }
 
 extension OwnID.UISDK.OneTimePassword {
+    enum OperationType: String {
+        case verification = "verify"
+        case oneTimePasswordSignIn = "sign"
+    }
+    
     @available(iOS 15.0, *)
     struct OneTimePasswordView: Popup {
         static func == (lhs: OwnID.UISDK.OneTimePassword.OneTimePasswordView, rhs: OwnID.UISDK.OneTimePassword.OneTimePasswordView) -> Bool {
@@ -60,9 +65,8 @@ extension OwnID.UISDK.OneTimePassword {
         private let viewModel: OwnID.UISDK.OTPTextFieldView.ViewModel
         private var visualConfig: OwnID.UISDK.OTPViewConfig
         @ObservedObject var store: Store<ViewState, Action>
-        private let titleState = TitleType.verification
         private let codeLength: Int
-        private let titleType: TitleType
+        private let operationType: OperationType
         private let restartURL: URL
         private let verificationType: OwnID.CoreSDK.Verification.VerificationType
 
@@ -70,12 +74,16 @@ extension OwnID.UISDK.OneTimePassword {
         private let emailSentTextChangedClosure: (() -> String)
         @State private var isTranslationChanged = false
         
+        private var cancel: String {
+            OwnID.CoreSDK.TranslationsSDK.TranslationKey.stepsCancel.localized()
+        }
+        
         init(store: Store<ViewState, Action>,
              visualConfig: OwnID.UISDK.OTPViewConfig,
              loginId: String,
              codeLength: Int,
              restartURL: URL,
-             titleType: TitleType = .oneTimePasswordSignIn,
+             operationType: OperationType = .oneTimePasswordSignIn,
              verificationType: OwnID.CoreSDK.Verification.VerificationType) {
             self.visualConfig = visualConfig
             self.store = store
@@ -83,10 +91,11 @@ extension OwnID.UISDK.OneTimePassword {
             self.restartURL = restartURL
             self.viewModel = OwnID.UISDK.OTPTextFieldView.ViewModel(codeLength: codeLength, store: store)
             self.verificationType = verificationType
-            self.titleType = titleType
+            self.operationType = operationType
             
             let emailSentTextChangedClosure = {
-                var text = OwnID.CoreSDK.TranslationsSDK.TranslationKey.otpMessage(type: verificationType.rawValue).localized()
+                var text = OwnID.CoreSDK.TranslationsSDK.TranslationKey.otpMessage(operationType: operationType.rawValue,
+                                                                                   verificationType: verificationType.rawValue).localized()
                 let codeLengthReplacement = Constants.codeLengthReplacement
                 let emailReplacement = Constants.emailReplacement
                 text = text.replacingOccurrences(of: codeLengthReplacement, with: String(codeLength))
@@ -103,7 +112,7 @@ extension OwnID.UISDK.OneTimePassword {
                 Button {
                     store.send(.resendCode)
                 } label: {
-                    Text(localizedKey: .otpResend(type: verificationType.rawValue))
+                    Text(localizedKey: .otpResend(operationType: operationType.rawValue, verificationType: verificationType.rawValue))
                         .font(.system(size: Constants.buttonFontSize))
                         .bold()
                         .foregroundColor(OwnID.Colors.blue)
@@ -115,7 +124,7 @@ extension OwnID.UISDK.OneTimePassword {
             Button {
                 store.send(.emailIsNotRecieved)
             } label: {
-                Text(localizedKey: .otpNotYou)
+                Text(localizedKey: .otpNotYou(operationType: operationType.rawValue, verificationType: verificationType.rawValue))
                     .font(.system(size: Constants.buttonFontSize))
                     .bold()
                     .foregroundColor(OwnID.Colors.blue)
@@ -177,6 +186,7 @@ extension OwnID.UISDK.OneTimePassword {
                 } label: {
                     Image(Constants.closeImageName, bundle: .resourceBundle)
                 }
+                .modifier(AccessibilityLabelModifier(accessibilityLabel: cancel))
                 .padding(.trailing, Constants.closeTrailingPadding)
                 .padding(.top, Constants.closeTopPadding)
             }
@@ -198,7 +208,7 @@ extension OwnID.UISDK.OneTimePassword {
         @available(iOS 15.0, *)
         private func topSection() -> some View {
             VStack {
-                Text(localizedKey: titleType.localizationKey(verificationType: verificationType))
+                Text(localizedKey: .otpTitle(operationType: operationType.rawValue, verificationType: verificationType.rawValue))
                     .font(.system(size: Constants.titleFontSize))
                     .bold()
                     .multilineTextAlignment(.center)
@@ -209,7 +219,7 @@ extension OwnID.UISDK.OneTimePassword {
                     .foregroundColor(OwnID.Colors.popupContentMessageColor)
                     .font(.system(size: Constants.messageFontSize))
                     .padding(.bottom, Constants.messageBottomPadding)
-                Text(localizedKey: .otpDescription)
+                Text(localizedKey: .otpDescription(operationType: operationType.rawValue, verificationType: verificationType.rawValue))
                     .font(.system(size: Constants.messageFontSize))
                     .padding(.bottom, Constants.descriptionBottomPadding)
             }

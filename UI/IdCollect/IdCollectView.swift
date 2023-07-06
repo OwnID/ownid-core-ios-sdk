@@ -74,6 +74,14 @@ extension OwnID.UISDK.IdCollect {
         
         @State private var isTranslationChanged = false
         
+        private var placeholder: String {
+            OwnID.CoreSDK.TranslationsSDK.TranslationKey.idCollectPlaceholder(type: viewModel.loginIdType.rawValue).localized()
+        }
+        
+        private var cancel: String {
+            OwnID.CoreSDK.TranslationsSDK.TranslationKey.stepsCancel.localized()
+        }
+        
         init(store: Store<ViewState, Action>,
              visualConfig: OwnID.UISDK.VisualLookConfig,
              loginId: String,
@@ -106,6 +114,7 @@ extension OwnID.UISDK.IdCollect {
                     } label: {
                         Image(Constants.closeImageName, bundle: .resourceBundle)
                     }
+                    .modifier(AccessibilityLabelModifier(accessibilityLabel: cancel))
                     .padding(.trailing, Constants.closeTrailingPadding)
                     .padding(.top, Constants.closeTopPadding)
                 }
@@ -167,7 +176,7 @@ extension OwnID.UISDK.IdCollect {
                         .foregroundColor(OwnID.Colors.popupContentMessageColor)
                         .padding(.bottom, Constants.messageBottomPadding)
                     errorText()
-                    TextField("", text: $loginId)
+                    TextField(placeholder, text: $loginId)
                         .onChange(of: loginId) { _ in
                             viewModel.isError = false
                         }
@@ -187,7 +196,7 @@ extension OwnID.UISDK.IdCollect {
                                            actionHandler: { viewModel.postLoginId() },
                                            isLoading: $viewModel.isLoading,
                                            buttonState: $viewModel.buttonState,
-                                           translationKey: .idCollectContinue)
+                                           translationKey: .idCollectContinue(type: viewModel.loginIdType.rawValue))
                     .padding(.bottom, Constants.bottomPadding)
                     errorView()
                 }
