@@ -12,21 +12,21 @@ extension OwnID.CoreSDK.TranslationsSDK {
         case stepsCancel
         case stepsError
 
-        case idCollectTitle
-        case idCollectContinue
+        case idCollectTitle(type: String)
+        case idCollectContinue(type: String)
         case idCollectMessage(type: String)
         case idCollectError(type: String)
+        case idCollectPlaceholder(type: String)
         case idCollectNoBiometricsTitle(type: String)
         case idCollectNoBiometricsMessage(type: String)
         
-        case otpSignTitle
-        case otpVerifyTitle(type: String)
-        case otpMessage(type: String)
-        case otpDescription
-        case otpResend(type: String)
-        case otpNotYou
+        case otpTitle(operationType: String, verificationType: String)
+        case otpMessage(operationType: String, verificationType: String)
+        case otpDescription(operationType: String, verificationType: String)
+        case otpResend(operationType: String, verificationType: String)
+        case otpNotYou(operationType: String, verificationType: String)
 
-        var value: String {
+        var defaultValue: String {
             switch self {
             case .skipPassword:
                 return "widgets.sbs-button.skipPassword"
@@ -50,30 +50,76 @@ extension OwnID.CoreSDK.TranslationsSDK {
                 return "steps.login-id-collect.\(loginId).message"
             case .idCollectError(let loginId):
                 return "steps.login-id-collect.\(loginId).error"
+            case .idCollectPlaceholder(let loginId):
+                return "steps.login-id-collect.\(loginId).placeholder"
             case .idCollectNoBiometricsTitle(let loginId):
                 return "steps.login-id-collect.\(loginId).no-biometrics.title-ios"
             case .idCollectNoBiometricsMessage(let loginId):
                 return "steps.login-id-collect.\(loginId).no-biometrics.message"
-            case .otpSignTitle:
-                return "steps.otp.sign.title-ios"
-            case .otpVerifyTitle(let type):
-                return "steps.otp.verify.\(type).title-ios"
-            case .otpMessage(let type):
+            case .otpTitle(let operationType, let verificationType):
+                if operationType == "sign" {
+                    return "steps.otp.sign.title-ios"
+                }
+                return "steps.otp.verify.\(verificationType).title-ios"
+            case .otpMessage(_, let type):
                 return "steps.otp.\(type).message"
             case .otpDescription:
                 return "steps.otp.description"
-            case .otpResend(let type):
+            case .otpResend(_, let type):
                 return "steps.otp.\(type).resend"
             case .otpNotYou:
                 return "steps.otp.not-you"
             }
         }
+        
+        var value: String? {
+            switch self {
+            case .skipPassword:
+                return OwnID.CoreSDK.shared.translationsModule.localizedString(for: "widgets", "sbs-button", "skipPassword")
+            case .tooltip:
+                return OwnID.CoreSDK.shared.translationsModule.localizedString(for: "widgets", "sbs-button", "tooltip")
+            case .or:
+                return OwnID.CoreSDK.shared.translationsModule.localizedString(for: "widgets", "sbs-button", "or")
+            case .`continue`:
+                return OwnID.CoreSDK.shared.translationsModule.localizedString(for: "widgets", "auth-button", "message")
+            case .stepsContinue:
+                return OwnID.CoreSDK.shared.translationsModule.localizedString(for: "steps", "continue")
+            case .stepsCancel:
+                return OwnID.CoreSDK.shared.translationsModule.localizedString(for: "steps", "cancel")
+            case .stepsError:
+                return OwnID.CoreSDK.shared.translationsModule.localizedString(for: "steps", "error")
+            case .idCollectTitle(let loginId):
+                return OwnID.CoreSDK.shared.translationsModule.localizedString(for: "steps", "login-id-collect", loginId, "title")
+            case .idCollectContinue(let loginId):
+                return OwnID.CoreSDK.shared.translationsModule.localizedString(for: "steps", "login-id-collect", loginId, "cta")
+            case .idCollectMessage(let loginId):
+                return OwnID.CoreSDK.shared.translationsModule.localizedString(for: "steps", "login-id-collect", loginId, "message")
+            case .idCollectError(let loginId):
+                return OwnID.CoreSDK.shared.translationsModule.localizedString(for: "steps", "login-id-collect", loginId, "error")
+            case .idCollectPlaceholder(let loginId):
+                return OwnID.CoreSDK.shared.translationsModule.localizedString(for: "steps", "login-id-collect", loginId, "no-biometrics", "placeholder")
+            case .idCollectNoBiometricsTitle(let loginId):
+                return OwnID.CoreSDK.shared.translationsModule.localizedString(for: "steps", "login-id-collect", loginId, "no-biometrics", "title")
+            case .idCollectNoBiometricsMessage(let loginId):
+                return OwnID.CoreSDK.shared.translationsModule.localizedString(for: "steps", "login-id-collect", loginId, "no-biometrics", "message")
+            case .otpTitle(let operationType, let verificationType):
+                return OwnID.CoreSDK.shared.translationsModule.localizedString(for: "steps", "otp", operationType, verificationType, "title")
+            case .otpMessage(let operationType, let verificationType):
+                return OwnID.CoreSDK.shared.translationsModule.localizedString(for: "steps", "otp", verificationType, operationType, "message")
+            case .otpDescription(let operationType, let verificationType):
+                return OwnID.CoreSDK.shared.translationsModule.localizedString(for: "steps", "otp", verificationType, operationType, "description")
+            case .otpResend(let operationType, let verificationType):
+                return OwnID.CoreSDK.shared.translationsModule.localizedString(for: "steps", "otp", verificationType, operationType, "resend")
+            case .otpNotYou(let operationType, let verificationType):
+                return OwnID.CoreSDK.shared.translationsModule.localizedString(for: "steps", "otp", verificationType, operationType, "not-you")
+            }
+        }
 
         public func localized() -> String {
-            if let localizedString = OwnID.CoreSDK.shared.translationsModule.localizedString(for: self.value) {
+            if let localizedString = value {
                 return localizedString
             }
-            return value
+            return NSLocalizedString(defaultValue, bundle: Bundle.resourceBundle, comment: "")
         }
     }
 }
@@ -137,12 +183,12 @@ extension OwnID.CoreSDK.TranslationsSDK {
                 }
         }
         
-        public func localizedString(for key: String) -> String? {
+        public func localizedString(for keys: String...) -> String? {
             if CacheManager.isExpired() {
                 initializeLanguagesIfNeeded(supportedLanguages: .init(rawValue: Locale.preferredLanguages), shouldNotify: false)
             }
-            
-            return localizableSaver.localizedString(for: key)
+
+            return localizableSaver.localizedString(for: keys)
         }
         
         func SDKConfigured(supportedLanguages: OwnID.CoreSDK.Languages) {
@@ -157,7 +203,7 @@ extension OwnID.CoreSDK.TranslationsSDK {
             requestsTagsInProgress.insert(supportedLanguages.rawValue.first ?? "")
             
             downloaderCancellable = downloader.downloadTranslations(supportedLanguages: supportedLanguages)
-                .tryMap { try self.localizableSaver.save(languageKey: $0.systemLanguage, language: $0.language) }
+                .tryMap { try self.localizableSaver.save(languageKey: $0.systemLanguage, languageJson: $0.languageJson) }
                 .sink { completion in
                     switch completion {
                     case .finished:

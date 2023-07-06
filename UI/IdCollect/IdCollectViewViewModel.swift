@@ -15,7 +15,7 @@ extension OwnID.UISDK.IdCollect {
         private var bag = Set<AnyCancellable>()
         
         var titleKey: OwnID.CoreSDK.TranslationsSDK.TranslationKey {
-            OwnID.CoreSDK.isPasskeysSupported ? .idCollectTitle : .idCollectNoBiometricsTitle(type: loginIdType.rawValue)
+            OwnID.CoreSDK.isPasskeysSupported ? .idCollectTitle(type: loginIdType.rawValue) : .idCollectNoBiometricsTitle(type: loginIdType.rawValue)
         }
         
         var messageKey: OwnID.CoreSDK.TranslationsSDK.TranslationKey {
