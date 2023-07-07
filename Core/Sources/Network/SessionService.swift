@@ -92,8 +92,8 @@ extension OwnID.CoreSDK {
             json?.forEach({ key, value in
                 bodyFields.append("     \(key): \(value)\n")
             })
-            print("Response")
-            print("----------------\n Body:\n\(bodyFields)----------------\n")
+//            print("Response")
+//            print("----------------\n Body:\n\(bodyFields)----------------\n")
         }
     }
 }

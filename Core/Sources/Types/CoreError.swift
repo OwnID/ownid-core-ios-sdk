@@ -5,14 +5,26 @@ import AuthenticationServices
 public protocol PluginError: Swift.Error { }
 
 public extension OwnID.CoreSDK {
+    enum FlowType: String {
+        case instantConnect = "InstantConnect"
+        case idCollect = "IdCollect"
+        case fidoRegister = "FIDORegister"
+        case fidoLogin = "FIDOLogin"
+        case otp = "OTP"
+        case webApp = "WebApp"
+    }
+}
+
+public extension OwnID.CoreSDK {
     enum Error: Swift.Error {
+        case flowCancelled(flow: FlowType)
+        
         case unsecuredHttpPassed
         case redirectParameterFromURLCancelledOpeningSDK
         case notValidRedirectionURLOrNotMatchingFromConfiguration
         
         case localConfigIsNotPresent
         case dataIsMissing
-        case flowCancelled
         case emailMismatch
         case payloadMissing(underlying: String?)
         
@@ -70,8 +82,8 @@ extension OwnID.CoreSDK.Error: LocalizedError {
         case .dataIsMissing:
             return "Data is missing"
             
-        case .flowCancelled:
-            return "Flow cancelled"
+        case .flowCancelled(let flow):
+            return "User canceled OwnID flow \(flow)"
             
         case let .payloadMissing(underlying):
             return "Payload missing \(String(describing: underlying))"

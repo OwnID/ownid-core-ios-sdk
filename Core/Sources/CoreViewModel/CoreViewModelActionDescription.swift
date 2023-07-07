@@ -23,8 +23,6 @@ extension OwnID.CoreSDK.CoreViewModel.Action: CustomDebugStringConvertible {
             return "nonTerminalError"
         case .sendStatusRequest:
             return "sendStatusRequest"
-        case .browserCancelled:
-            return "browserCancelled"
         case .statusRequestLoaded:
             return "statusRequestLoaded"
         case .browserVM:
@@ -46,8 +44,6 @@ extension OwnID.CoreSDK.CoreViewModel.Action: CustomDebugStringConvertible {
             return message
         case .authManagerRequestFail(let error, _):
             return "authManagerRequestFail \(error.error.localizedDescription)"
-        case .oneTimePasswordCancelled:
-            return "oneTimePasswordCancelled"
         case .oneTimePasswordView:
             return "oneTimePasswordView"
         case .idCollectView:

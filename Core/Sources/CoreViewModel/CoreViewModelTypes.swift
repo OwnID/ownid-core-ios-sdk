@@ -7,6 +7,6 @@ extension OwnID.CoreSDK.CoreViewModel {
     enum Event {
         case loading
         case success(OwnID.CoreSDK.Payload)
-        case cancelled
+        case cancelled(flow: OwnID.CoreSDK.FlowType)
     }
 }

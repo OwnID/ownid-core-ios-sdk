@@ -216,8 +216,8 @@ public extension OwnID.FlowsSDK.RegisterView {
                             processLogin(payload: payload)
                         }
                         
-                    case .cancelled:
-                        handle(.coreLog(entry: .errorEntry(context: registrationData.payload?.context, Self.self), error: .flowCancelled))
+                    case .cancelled(let flow):
+                        handle(.coreLog(entry: .errorEntry(context: registrationData.payload?.context, Self.self), error: .flowCancelled(flow: flow)))
                         
                     case .loading:
                         resultPublisher.send(.success(.loading))
