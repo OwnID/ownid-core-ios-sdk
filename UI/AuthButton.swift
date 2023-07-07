@@ -47,35 +47,18 @@ extension OwnID.UISDK {
 
 private extension OwnID.UISDK.AuthButton {
     @ViewBuilder
-    func imageWithLoader() -> some View {
+    func contents() -> some View {
         ZStack {
-            variantImage()
-                .layoutPriority(1)
-                .opacity(isLoading ? 0 : 1)
             OwnID.UISDK.SpinnerLoaderView(spinnerColor: visualConfig.loaderViewConfig.color,
                                           spinnerBackgroundColor: visualConfig.loaderViewConfig.backgroundColor,
                                           viewBackgroundColor: visualConfig.authButtonConfig.backgroundColor)
+            .frame(width: visualConfig.authButtonConfig.loaderHeight, height: visualConfig.authButtonConfig.loaderHeight)
             .opacity(isLoading ? 1 : 0)
-        }
-    }
-    
-    @ViewBuilder
-    func contents() -> some View {
-        HStack(alignment: .center, spacing: Constants.contentsSpacing) {
-            imageWithLoader()
             Text(localizedKey: translationKey)
                 .fontWithLineHeight(font: .systemFont(ofSize: visualConfig.authButtonConfig.textSize, weight: .medium), lineHeight: visualConfig.authButtonConfig.lineHeight)
                 .foregroundColor(visualConfig.authButtonConfig.textColor)
+                .opacity(isLoading ? 0 : 1)
         }
         .frame(maxWidth: .infinity)
-    }
-    
-    func variantImage() -> some View {
-        let image = Image(OwnID.UISDK.IconButtonVariant.faceId.rawValue, bundle: .resourceBundle)
-            .resizable()
-            .renderingMode(.template)
-            .frame(width: visualConfig.authButtonConfig.imageHeight, height: visualConfig.authButtonConfig.imageHeight)
-            .foregroundColor(visualConfig.authButtonConfig.iconColor)
-        return image
     }
 }

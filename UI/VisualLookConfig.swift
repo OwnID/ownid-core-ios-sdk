@@ -39,7 +39,7 @@ public extension OwnID.UISDK {
     struct AuthButtonViewConfig: Equatable {
         public init(textSize: CGFloat = 14.0,
                     height: CGFloat = 44.0,
-                    imageHeight: CGFloat = 30.0,
+                    loaderHeight: CGFloat = 30.0,
                     lineHeight: CGFloat = 30.0,
                     textColor: Color = .white,
                     iconColor: Color = .white,
@@ -50,13 +50,13 @@ public extension OwnID.UISDK {
             self.iconColor = iconColor
             self.backgroundColor = backgroundColor
             self.height = height
-            self.imageHeight = imageHeight
+            self.loaderHeight = loaderHeight
         }
         
         public var iconColor: Color
         public var textSize: CGFloat
         public var height: CGFloat
-        public var imageHeight: CGFloat
+        public var loaderHeight: CGFloat
         public var lineHeight: CGFloat
         public var textColor: Color
         public var backgroundColor: Color
