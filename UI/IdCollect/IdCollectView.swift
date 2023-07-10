@@ -32,7 +32,7 @@ extension OwnID.UISDK.IdCollect {
             static let closeTrailingPadding = 10.0
             static let titleTopPadding = 10.0
             static let titleSidePadding = 26.0
-            static let messageBottomPadding = 20.0
+            static let textFieldTopPadding = 20.0
             static let emailPadding = 10.0
             static let bottomPadding = 8.0
             
@@ -174,7 +174,7 @@ extension OwnID.UISDK.IdCollect {
                     Text(localizedKey: viewModel.messageKey)
                         .font(.system(size: Constants.messageFontSize))
                         .foregroundColor(OwnID.Colors.popupContentMessageColor)
-                        .padding(.bottom, Constants.messageBottomPadding)
+                        .padding(.bottom, Constants.bottomPadding)
                     errorText()
                     TextField(placeholder, text: $loginId)
                         .onChange(of: loginId) { _ in
@@ -191,7 +191,8 @@ extension OwnID.UISDK.IdCollect {
                             RoundedRectangle(cornerRadius: cornerRadiusValue)
                                 .stroke(borderColor, lineWidth: Constants.textFieldBorderWidth)
                         )
-                        .padding([.top, .bottom], Constants.bottomPadding)
+                        .padding(.top, Constants.textFieldTopPadding)
+                        .padding(.bottom, Constants.bottomPadding)
                     OwnID.UISDK.AuthButton(visualConfig: visualConfig,
                                            actionHandler: { viewModel.postLoginId() },
                                            isLoading: $viewModel.isLoading,

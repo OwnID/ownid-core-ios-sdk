@@ -42,7 +42,7 @@ extension URLRequest {
             })
         }
 
-        print("----------------\n URL: \(url)\n\n Method: \(method.rawValue)\n\n Headers:\n\(headersFields)\n Body:\n\(bodyFields)----------------\n")
+//        print("----------------\n URL: \(url)\n\n Method: \(method.rawValue)\n\n Headers:\n\(headersFields)\n Body:\n\(bodyFields)----------------\n")
     }
 }
 

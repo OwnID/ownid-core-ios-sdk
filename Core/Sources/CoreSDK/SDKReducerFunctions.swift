@@ -78,7 +78,8 @@ extension OwnID.CoreSDK {
                 .catch { _ in
                     Logger.shared.logLevel = .warning
                     Logger.shared.forceLog(.entry(level: .warning, message: "Server configuration is not set", Self.self))
-                    return Just(SDKAction.save(configurationLoadingEvent: .error(.localConfigIsNotPresent),
+                    let message = OwnID.CoreSDK.ErrorMessage.noServerConfig
+                    return Just(SDKAction.save(configurationLoadingEvent: .error(.internalError(message: message)),
                                                userFacingSDK: userFacingSDK))
                 }
         }

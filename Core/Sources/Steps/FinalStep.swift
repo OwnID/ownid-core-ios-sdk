@@ -32,7 +32,11 @@ extension OwnID.CoreSDK.CoreViewModel {
                 })
                 .tryMap { response in
                     let context = response[Constants.contextKey] as? String ?? ""
-                    guard let responsePayload = response[Constants.payloadKey] as? [String: Any] else { throw OwnID.CoreSDK.Error.requestResponseIsEmpty }
+                    
+                    guard let responsePayload = response[Constants.payloadKey] as? [String: Any] else {
+                        let message = OwnID.CoreSDK.ErrorMessage.requestError
+                        throw OwnID.CoreSDK.Error.internalError(message: message)
+                    }
                     
                     if let serverError = responsePayload[Constants.errorKey] as? String {
                         let serverError = OwnID.CoreSDK.ServerError(error: serverError)
@@ -60,7 +64,7 @@ extension OwnID.CoreSDK.CoreViewModel {
                     if let error = error as? OwnID.CoreSDK.Error {
                         return error
                     }
-                    return .requestResponseIsEmpty
+                    return .internalError(message: OwnID.CoreSDK.ErrorMessage.requestError)
                 })
                 .map { Action.statusRequestLoaded(response: $0) }
                 .catch({ error in

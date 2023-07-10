@@ -28,7 +28,7 @@ public extension OwnID {
 
 public extension OwnID.FlowsSDK {
     
-    enum RegisterError: PluginError {
+    enum RegisterError {
         case emailMismatch
     }
     

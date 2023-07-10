@@ -95,7 +95,8 @@ private extension OwnID.CoreSDK.TranslationsSDK.RuntimeLocalizableSaver {
             do {
                 try fileManager.createDirectory(atPath: rootFolderPath, withIntermediateDirectories: true)
             } catch let error {
-                throw OwnID.CoreSDK.CoreErrorLogWrapper.coreLog(entry: .errorEntry(Self.self), error: .localizationManager(underlying: error))
+                throw OwnID.CoreSDK.CoreErrorLogWrapper.coreLog(entry: .errorEntry(Self.self),
+                                                                error: .internalError(message: error.localizedDescription))
             }
         }
     }

@@ -19,8 +19,6 @@ extension OwnID.CoreSDK.CoreViewModel {
         case webApp(step: Step)
         case authManagerRequestFail(error: OwnID.CoreSDK.CoreErrorLogWrapper, browserBaseURL: String)
         case sendStatusRequest
-        case browserCancelled
-        case oneTimePasswordCancelled
         case authManagerCancelled
         case success
         case oneTimePassword(step: Step)
@@ -30,6 +28,6 @@ extension OwnID.CoreSDK.CoreViewModel {
         case oneTimePasswordView(OwnID.UISDK.OneTimePassword.Action)
         case authManager(OwnID.CoreSDK.AccountManager.Action)
         case codeResent
-        case stopRequestLoaded
+        case stopRequestLoaded(flow: OwnID.CoreSDK.FlowType)
     }
 }

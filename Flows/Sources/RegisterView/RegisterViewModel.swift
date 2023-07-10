@@ -107,11 +107,14 @@ public extension OwnID.FlowsSDK.RegisterView {
         
         public func register(registerParameters: RegisterParameters = EmptyRegisterParameters()) {
             if !loginId.isEmpty, !registrationData.persistedLoginId.isEmpty, loginId != registrationData.persistedLoginId {
-                handle(.coreLog(entry: .errorEntry(context: registrationData.payload?.context, Self.self), error: .plugin(underlying: OwnID.FlowsSDK.RegisterError.emailMismatch)))
+                handle(.coreLog(entry: .errorEntry(context: registrationData.payload?.context, Self.self),
+                                error: .internalError(message: OwnID.FlowsSDK.RegisterError.emailMismatch.errorDescription ?? "")))
                 return
             }
             guard let payload = registrationData.payload else {
-                handle(.coreLog(entry: .errorEntry(context: registrationData.payload?.context, Self.self), error: .payloadMissing(underlying: .none)))
+                let message = OwnID.CoreSDK.ErrorMessage.payloadMissing
+                handle(.coreLog(entry: .errorEntry(context: registrationData.payload?.context, Self.self),
+                                error: .internalError(message: message)))
                 return
             }
             let config = OwnID.FlowsSDK.RegistrationConfiguration(payload: payload,
@@ -216,8 +219,8 @@ public extension OwnID.FlowsSDK.RegisterView {
                             processLogin(payload: payload)
                         }
                         
-                    case .cancelled:
-                        handle(.coreLog(entry: .errorEntry(context: registrationData.payload?.context, Self.self), error: .flowCancelled))
+                    case .cancelled(let flow):
+                        handle(.coreLog(entry: .errorEntry(context: registrationData.payload?.context, Self.self), error: .flowCancelled(flow: flow)))
                         
                     case .loading:
                         resultPublisher.send(.success(.loading))

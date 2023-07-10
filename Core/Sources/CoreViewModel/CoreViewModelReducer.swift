@@ -33,12 +33,7 @@ extension OwnID.CoreSDK.CoreViewModel {
             state.browserViewModel = .none
             let finalStep = FinalStep()
             return finalStep.run(state: &state)
-            
-        case .browserCancelled:
-            state.browserViewModel = .none
-            let stopStep = StopStep()
-            return stopStep.run(state: &state)
-            
+
         case .cancelled:
             state.browserViewModel = .none
             state.authManager = .none
@@ -65,7 +60,7 @@ extension OwnID.CoreSDK.CoreViewModel {
             return []
             
         case .authManagerRequestFail:
-            let stopStep = StopStep()
+            let stopStep = StopStep(flow: .fidoLogin)
             return stopStep.run(state: &state)
             
         case .webApp(let step):
@@ -82,7 +77,9 @@ extension OwnID.CoreSDK.CoreViewModel {
         case let .browserVM(browserVMAction):
             switch browserVMAction {
             case .viewCancelled:
-                return [Just(.browserCancelled).eraseToEffect()]
+                state.browserViewModel = .none
+                let stopStep = StopStep(flow: .webApp)
+                return stopStep.run(state: &state)
             }
             
         case let .addToStateConfig(clientConfig):
@@ -127,7 +124,7 @@ extension OwnID.CoreSDK.CoreViewModel {
                 return otpStep?.sendCode(code: code, state: &state) ?? []
 
             case .cancel:
-                let stopStep = StopStep()
+                let stopStep = StopStep(flow: .otp)
                 return stopStep.run(state: &state)
                 
             case .emailIsNotRecieved:
@@ -154,17 +151,13 @@ extension OwnID.CoreSDK.CoreViewModel {
                 break
             }
             return []
-            
-        case .oneTimePasswordCancelled:
-            let stopStep = StopStep()
-            return stopStep.run(state: &state)
-            
+
         case .idCollectView(let action):
             switch action {
             case .viewLoaded:
                 return []
             case .cancel:
-                let stopStep = StopStep()
+                let stopStep = StopStep(flow: .idCollect)
                 return stopStep.run(state: &state)
             case .loginIdEntered(let loginId):
                 let idCollectStep = state.idCollectStep

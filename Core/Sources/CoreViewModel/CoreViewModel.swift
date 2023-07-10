@@ -170,7 +170,9 @@ extension OwnID.CoreSDK {
                             .webApp,
                             .success,
                             .codeResent,
-                            .nonTerminalError:
+                            .nonTerminalError,
+                            .authManagerCancelled,
+                            .cancelled:
                         internalStatesChange.append(action.debugDescription)
                         
                     case let .statusRequestLoaded(payload):
@@ -182,15 +184,11 @@ extension OwnID.CoreSDK {
                         error.entry.message += " " + internalStatesLog(states: internalStatesChange)
                         flowsFinished()
                         resultPublisher.send(completion: .failure(error))
-                        
-                    case .browserCancelled,
-                            .authManagerCancelled,
-                            .oneTimePasswordCancelled,
-                            .cancelled,
-                            .stopRequestLoaded:
+
+                    case .stopRequestLoaded(let flow):
                         internalStatesChange.append(String(describing: action))
                         flowsFinished()
-                        resultPublisher.send(.cancelled)
+                        resultPublisher.send(.cancelled(flow: flow))
                     }
                 }
                 .store(in: &bag)

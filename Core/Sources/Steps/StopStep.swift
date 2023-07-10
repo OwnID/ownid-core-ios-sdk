@@ -5,6 +5,12 @@ extension OwnID.CoreSDK.CoreViewModel {
     struct EmptyBody: Codable { }
     
     class StopStep: BaseStep {
+        let flow: OwnID.CoreSDK.FlowType
+        
+        init(flow: OwnID.CoreSDK.FlowType) {
+            self.flow = flow
+        }
+        
         override func run(state: inout State) -> [Effect<OwnID.CoreSDK.CoreViewModel.Action>] {
             let context = state.context
             
@@ -22,8 +28,8 @@ extension OwnID.CoreSDK.CoreViewModel {
                 .handleEvents(receiveOutput: { response in
                     OwnID.CoreSDK.logger.log(.entry(context: context, level: .debug, message: "Stop Request Finished", Self.self))
                 })
-                .map { _ in Action.stopRequestLoaded }
-                .catch { _ in Just(Action.stopRequestLoaded) }
+                .map { _ in Action.stopRequestLoaded(flow: self.flow) }
+                .catch { _ in Just(Action.stopRequestLoaded(flow: self.flow)) }
                 .eraseToEffect()
             return [effect]
         }

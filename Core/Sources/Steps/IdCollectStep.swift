@@ -16,7 +16,8 @@ extension OwnID.CoreSDK.CoreViewModel {
         
         override func run(state: inout OwnID.CoreSDK.CoreViewModel.State) -> [Effect<OwnID.CoreSDK.CoreViewModel.Action>] {
             guard let loginIdSettings = state.configuration?.loginIdSettings else {
-                return errorEffect(.coreLog(entry: .errorEntry(Self.self), error: .localConfigIsNotPresent))
+                let message = OwnID.CoreSDK.ErrorMessage.noLocalConfig
+                return errorEffect(.coreLog(entry: .errorEntry(Self.self), error: .internalError(message: message)))
             }
             
             OwnID.UISDK.PopupManager.dismiss()
@@ -39,7 +40,8 @@ extension OwnID.CoreSDK.CoreViewModel {
         func sendAuthRequest(state: inout OwnID.CoreSDK.CoreViewModel.State,
                              loginId: String) -> [Effect<Action>] {
             guard let urlString = step.startingData?.url, let url = URL(string: urlString) else {
-                return errorEffect(.coreLog(entry: .errorEntry(Self.self), error: .dataIsMissing))
+                let message = OwnID.CoreSDK.ErrorMessage.dataIsMissing
+                return errorEffect(.coreLog(entry: .errorEntry(Self.self), error: .internalError(message: message)))
             }
             
             let context = state.context

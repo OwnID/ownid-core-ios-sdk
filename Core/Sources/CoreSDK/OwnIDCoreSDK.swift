@@ -119,14 +119,16 @@ public extension OwnID {
             let components = URLComponents(url: url, resolvingAgainstBaseURL: false)?.queryItems
             let redirectParameterValue = components?.first(where: { $0.name == redirectParamKey })?.value
             if redirectParameterValue == "false" {
-                urlPublisher.send(completion: .failure(.coreLog(entry: .errorEntry(Self.self), error: .redirectParameterFromURLCancelledOpeningSDK)))
+                let message = OwnID.CoreSDK.ErrorMessage.redirectParameterFromURLCancelledOpeningSDK
+                urlPublisher.send(completion: .failure(.coreLog(entry: .errorEntry(Self.self), error: .internalError(message: message))))
                 return
             }
             
             guard let redirection = store.value.getOptionalConfiguration(for: sdkConfigurationName),
                   url.absoluteString.lowercased().starts(with: redirection.redirectionURL.lowercased())
             else {
-                urlPublisher.send(completion: .failure(.coreLog(entry: .errorEntry(Self.self), error: .notValidRedirectionURLOrNotMatchingFromConfiguration)))
+                let message = OwnID.CoreSDK.ErrorMessage.notValidRedirectionURLOrNotMatchingFromConfiguration
+                urlPublisher.send(completion: .failure(.coreLog(entry: .errorEntry(Self.self), error: .internalError(message: message))))
                 return
             }
             urlPublisher.send(())
