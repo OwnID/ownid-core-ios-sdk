@@ -30,13 +30,16 @@ extension OwnID.CoreSDK {
                                                            queue: OperationQueue = OperationQueue()) -> AnyPublisher<Response, Error> {
             performRequest(url: url, method: method, body: body, headers: headers, queue: queue)
                 .tryMap { [self] response -> Data in
-                    guard !response.data.isEmpty else { throw OwnID.CoreSDK.Error.requestResponseIsEmpty }
+                    guard !response.data.isEmpty else {
+                        let message = ErrorMessage.emptyResponseData
+                        throw OwnID.CoreSDK.Error.internalError(message: message)
+                    }
                     self.printResponse(data: response.data)
                     return response.data
                 }
                 .eraseToAnyPublisher()
                 .decode(type: type, decoder: JSONDecoder())
-                .mapError { .requestResponseDecodeFailed(underlying: $0) }
+                .mapError { .internalError(message: OwnID.CoreSDK.ErrorMessage.decodingError(description: $0.localizedDescription)) }
                 .eraseToAnyPublisher()
         }
         
@@ -47,13 +50,16 @@ extension OwnID.CoreSDK {
                                       queue: OperationQueue = OperationQueue()) -> AnyPublisher<[String: Any], Error> {
             performRequest(url: url, method: method, body: body, headers: headers, queue: queue)
                 .tryMap { [self] response -> [String: Any] in
-                    guard !response.data.isEmpty else { throw OwnID.CoreSDK.Error.requestResponseIsEmpty }
+                    guard !response.data.isEmpty else {
+                        let message = ErrorMessage.emptyResponseData
+                        throw OwnID.CoreSDK.Error.internalError(message: message)
+                    }
                     let json = try JSONSerialization.jsonObject(with: response.data, options: []) as? [String : Any]
                     self.printResponse(data: response.data)
                     return json ?? [:]
                 }
                 .eraseToAnyPublisher()
-                .mapError { .requestResponseDecodeFailed(underlying: $0) }
+                .mapError { .internalError(message: OwnID.CoreSDK.ErrorMessage.decodingError(description: $0.localizedDescription)) }
                 .eraseToAnyPublisher()
         }
         
@@ -67,7 +73,7 @@ extension OwnID.CoreSDK {
                 .setFailureType(to: Error.self)
                 .eraseToAnyPublisher()
                 .encode(encoder: JSONEncoder())
-                .mapError { .requestBodyEncodeFailed(underlying: $0) }
+                .mapError { .internalError(message: OwnID.CoreSDK.ErrorMessage.encodingError(description: $0.localizedDescription)) }
                 .map { [self] body -> URLRequest in
                     if let supportedLanguages {
                         let headers = URLRequest.defaultHeaders(supportedLanguages: supportedLanguages)
@@ -79,7 +85,7 @@ extension OwnID.CoreSDK {
                 .eraseToAnyPublisher()
                 .flatMap { [self] request -> AnyPublisher<URLSession.DataTaskPublisher.Output, Error> in
                     return provider.apiResponse(for: request)
-                        .mapError { .requestNetworkFailed(underlying: $0) }
+                        .mapError { .internalError(message: $0.localizedDescription) }
                         .eraseToAnyPublisher()
                 }
                 .eraseToAnyPublisher()

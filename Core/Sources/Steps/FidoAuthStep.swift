@@ -46,7 +46,8 @@ extension OwnID.CoreSDK.CoreViewModel {
         
         override func run(state: inout State) -> [Effect<OwnID.CoreSDK.CoreViewModel.Action>] {
             guard let url = step.fidoData?.url else {
-                return errorEffect(.coreLog(entry: .errorEntry(Self.self), error: .dataIsMissing))
+                let message = OwnID.CoreSDK.ErrorMessage.dataIsMissing
+                return errorEffect(.coreLog(entry: .errorEntry(Self.self), error: .internalError(message: message)))
             }
             
             let eventCategory: OwnID.CoreSDK.EventCategory = state.type == .login ? .login : .registration
@@ -74,7 +75,8 @@ extension OwnID.CoreSDK.CoreViewModel {
                              fido2Payload: Encodable,
                              type: OwnID.CoreSDK.RequestType) -> [Effect<Action>] {
             guard let urlString = step.fidoData?.url, let url = URL(string: urlString) else {
-                return errorEffect(.coreLog(entry: .errorEntry(Self.self), error: .dataIsMissing))
+                let message = OwnID.CoreSDK.ErrorMessage.dataIsMissing
+                return errorEffect(.coreLog(entry: .errorEntry(Self.self), error: .internalError(message: message)))
             }
 
             self.type = type
@@ -104,9 +106,10 @@ extension OwnID.CoreSDK.CoreViewModel {
         }
         
         func handleFidoError(state: inout OwnID.CoreSDK.CoreViewModel.State,
-                             error: OwnID.CoreSDK.Error) -> [Effect<Action>] {
+                             error: OwnID.CoreSDK.AccountManager.AuthManagerError) -> [Effect<Action>] {
             guard let urlString = step.fidoData?.url, let url = URL(string: urlString) else {
-                return errorEffect(.coreLog(entry: .errorEntry(Self.self), error: .dataIsMissing))
+                let message = OwnID.CoreSDK.ErrorMessage.dataIsMissing
+                return errorEffect(.coreLog(entry: .errorEntry(Self.self), error: .internalError(message: message)))
             }
             
             let fidoError: OwnID.CoreSDK.CoreViewModel.FidoErrorRequestBody.Error
@@ -125,10 +128,10 @@ extension OwnID.CoreSDK.CoreViewModel {
                                                                                    code: error.code,
                                                                                    message: error.localizedDescription)
             default:
-                fidoError = OwnID.CoreSDK.CoreViewModel.FidoErrorRequestBody.Error(name: error.debugDescription,
-                                                                                   type: error.debugDescription,
+                fidoError = OwnID.CoreSDK.CoreViewModel.FidoErrorRequestBody.Error(name: error.errorDescription,
+                                                                                   type: error.errorDescription,
                                                                                    code: 0,
-                                                                                   message: error.errorDescription ?? "")
+                                                                                   message: error.errorDescription)
             }
             
             let eventCategory: OwnID.CoreSDK.EventCategory = state.type == .login ? .login : .registration

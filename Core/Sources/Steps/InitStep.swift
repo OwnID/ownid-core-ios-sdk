@@ -24,7 +24,8 @@ extension OwnID.CoreSDK.CoreViewModel {
     class InitStep: BaseStep {
         override func run(state: inout State) -> [Effect<Action>] {
             guard let configuration = state.configuration else {
-                return errorEffect(.coreLog(entry: .errorEntry(Self.self), error: .localConfigIsNotPresent))
+                let message = OwnID.CoreSDK.ErrorMessage.noLocalConfig
+                return errorEffect(.coreLog(entry: .errorEntry(Self.self), error: .internalError(message: message)))
             }
             
             let locales = OwnID.CoreSDK.TranslationsSDK.LanguageMapper.matchSystemLanguage(to: OwnID.CoreSDK.shared.supportedLocales ?? [],

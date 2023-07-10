@@ -24,7 +24,8 @@ extension OwnID.CoreSDK.CoreViewModel {
         
         override func run(state: inout OwnID.CoreSDK.CoreViewModel.State) -> [Effect<OwnID.CoreSDK.CoreViewModel.Action>] {
             guard let otpData = step.otpData, let restartUrl = URL(string: otpData.restartUrl) else {
-                return errorEffect(.coreLog(entry: .errorEntry(Self.self), error: .dataIsMissing))
+                let message = OwnID.CoreSDK.ErrorMessage.dataIsMissing
+                return errorEffect(.coreLog(entry: .errorEntry(Self.self), error: .internalError(message: message)))
             }
             
             let otpLength = otpData.otpLength ?? Constants.defaultOtpLenght
@@ -49,7 +50,8 @@ extension OwnID.CoreSDK.CoreViewModel {
         
         func restart(state: inout OwnID.CoreSDK.CoreViewModel.State) -> [Effect<Action>] {
             guard let otpData = step.otpData, let restartUrl = URL(string: otpData.restartUrl) else {
-                return errorEffect(.coreLog(entry: .errorEntry(Self.self), error: .dataIsMissing))
+                let message = OwnID.CoreSDK.ErrorMessage.dataIsMissing
+                return errorEffect(.coreLog(entry: .errorEntry(Self.self), error: .internalError(message: message)))
             }
             
             let context = state.context
@@ -66,7 +68,8 @@ extension OwnID.CoreSDK.CoreViewModel {
                 })
                 .map({ [self] response in
                     guard let step = response.step else {
-                        return Action.error(.coreLog(entry: .errorEntry(Self.self), error: .requestResponseIsEmpty))
+                        let message = OwnID.CoreSDK.ErrorMessage.requestError
+                        return Action.error(.coreLog(entry: .errorEntry(Self.self), error: .internalError(message: message)))
                     }
                     return nextStepAction(step)
                 })
@@ -77,7 +80,8 @@ extension OwnID.CoreSDK.CoreViewModel {
         
         func resend(state: inout OwnID.CoreSDK.CoreViewModel.State) -> [Effect<Action>] {
             guard let otpData = step.otpData, let resendUrl = URL(string: otpData.resendUrl) else {
-                return errorEffect(.coreLog(entry: .errorEntry(Self.self), error: .dataIsMissing))
+                let message = OwnID.CoreSDK.ErrorMessage.dataIsMissing
+                return errorEffect(.coreLog(entry: .errorEntry(Self.self), error: .internalError(message: message)))
             }
             
             let context = state.context
@@ -94,7 +98,8 @@ extension OwnID.CoreSDK.CoreViewModel {
                 })
                 .map({ response in
                     guard response.step != nil else {
-                        return Action.error(.coreLog(entry: .errorEntry(Self.self), error: .requestResponseIsEmpty))
+                        let message = OwnID.CoreSDK.ErrorMessage.requestError
+                        return Action.error(.coreLog(entry: .errorEntry(Self.self), error: .internalError(message: message)))
                     }
                     return Action.codeResent
                 })
@@ -105,7 +110,8 @@ extension OwnID.CoreSDK.CoreViewModel {
         
         func sendCode(code: String, state: inout OwnID.CoreSDK.CoreViewModel.State) -> [Effect<Action>] {
             guard let otpData = step.otpData, let url = URL(string: otpData.url) else {
-                return errorEffect(.coreLog(entry: .errorEntry(Self.self), error: .dataIsMissing))
+                let message = OwnID.CoreSDK.ErrorMessage.dataIsMissing
+                return errorEffect(.coreLog(entry: .errorEntry(Self.self), error: .internalError(message: message)))
             }
             
             let context = state.context
@@ -136,7 +142,8 @@ extension OwnID.CoreSDK.CoreViewModel {
                         return .nonTerminalError
                     }
                     
-                    return Action.error(.coreLog(entry: .errorEntry(Self.self), error: .requestResponseIsEmpty))
+                    let message = OwnID.CoreSDK.ErrorMessage.requestError
+                    return Action.error(.coreLog(entry: .errorEntry(Self.self), error: .internalError(message: message)))
                 })
                 .catch { Just(Action.error(.coreLog(entry: .errorEntry(Self.self), error: $0))) }
                 .eraseToEffect()

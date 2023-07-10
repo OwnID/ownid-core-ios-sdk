@@ -22,7 +22,7 @@ extension OwnID.CoreSDK {
                                   isTestingEnvironment: Bool)
         case startDebugLogger
         case configureForTests
-        case save(configurationLoadingEvent: OwnID.CoreSDK.ConfigurationLoadingEvent, userFacingSDK: OwnID.CoreSDK.SDKInformation)
+        case save(configurationLoadingEvent: OwnID.CoreSDK.ConfigurationLoadingEvent, userFacingSDK: OwnID.CoreSDK.SDKInformation?)
         case fetchServerConfiguration
     }
 }

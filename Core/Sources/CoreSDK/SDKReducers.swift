@@ -34,7 +34,12 @@ extension OwnID.CoreSDK {
             ]
             
         case .fetchServerConfiguration:
-            guard let configurationRequestData = state.configurationRequestData else { return [] }
+            guard let configurationRequestData = state.configurationRequestData else {
+                let message = OwnID.CoreSDK.ErrorMessage.SDKConfigurationError
+                let action = Just(SDKAction.save(configurationLoadingEvent: .error(.usageError(message: message)),
+                                                 userFacingSDK: nil))
+                return [action.eraseToEffect()]
+            }
             if configurationRequestData.isLoading { return [] }
             state.configurationRequestData?.isLoading = true
             return [fetchServerConfiguration(config: configurationRequestData.config,
@@ -69,7 +74,7 @@ extension OwnID.CoreSDK {
             switch configurationLoadingEvent {
             case .loaded(let config):
                 state.configurationRequestData = .none
-                state.configurations[userFacingSDK.name] = config
+                state.configurations[userFacingSDK?.name ?? ""] = config
                 state.configurationLoadingEventPublisher.send(configurationLoadingEvent)
                 return [
                     translationsDownloaderSDKConfigured(with: state.supportedLanguages),

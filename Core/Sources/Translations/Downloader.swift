@@ -58,7 +58,8 @@ private extension OwnID.CoreSDK.TranslationsSDK.Downloader {
             }
             .map { (correspondingSystemLanguage, $0) }
             .mapError {
-                OwnID.CoreSDK.CoreErrorLogWrapper.coreLog(entry: .errorEntry(Self.self), error: .localizationDownloader(underlying: $0))
+                OwnID.CoreSDK.CoreErrorLogWrapper.coreLog(entry: .errorEntry(Self.self),
+                                                          error: .internalError(message: $0.localizedDescription))
             }
             .eraseToAnyPublisher()
     }

@@ -52,7 +52,19 @@ extension OwnID.CoreSDK.AccountManager {
     enum Action {
         case didFinishRegistration(fido2RegisterPayload: OwnID.CoreSDK.Fido2RegisterPayload, browserBaseURL: String)
         case didFinishLogin(fido2LoginPayload: OwnID.CoreSDK.Fido2LoginPayload, browserBaseURL: String)
-        case error(error: OwnID.CoreSDK.Error, context: OwnID.CoreSDK.Context, browserBaseURL: String)
+        case error(error: AuthManagerError, context: OwnID.CoreSDK.Context, browserBaseURL: String)
+    }
+    
+    enum AuthManagerError: Error {
+        case authorizationManagerGeneralError(underlying: Swift.Error)
+        case authorizationManagerCredintialsNotFoundOrCanlelledByUser(underlying: ASAuthorizationError)
+        case authorizationManagerAuthError(underlying: Swift.Error)
+        case authorizationManagerDataMissing
+        case authorizationManagerUnknownAuthType
+        
+        public var errorDescription: String {
+            return "Error while performing action"
+        }
     }
 }
 
