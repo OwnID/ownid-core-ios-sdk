@@ -10,12 +10,12 @@ extension OwnID.CoreSDK.APIEndpoint {
     static let live = Self { url in
         URLSession.shared.dataTaskPublisher(for: url)
             .eraseToAnyPublisher()
-            .mapError { OwnID.CoreSDK.Error.internalError(message: $0.localizedDescription) }
+            .mapError { OwnID.CoreSDK.Error.userError(errorModel: OwnID.CoreSDK.UserErrorModel(message: $0.localizedDescription)) }
             .retry(2)
             .map { data, _ in return data }
             .eraseToAnyPublisher()
             .decode(type: OwnID.CoreSDK.ServerConfiguration.self, decoder: JSONDecoder())
-            .mapError { OwnID.CoreSDK.Error.internalError(message: $0.localizedDescription) }
+            .mapError { OwnID.CoreSDK.Error.userError(errorModel: OwnID.CoreSDK.UserErrorModel(message: $0.localizedDescription)) }
             .eraseToAnyPublisher()
     }
 }

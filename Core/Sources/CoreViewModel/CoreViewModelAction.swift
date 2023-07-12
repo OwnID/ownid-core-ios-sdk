@@ -2,7 +2,6 @@ extension OwnID.CoreSDK.CoreViewModel {
     enum Action {
         case cancelled
         case error(OwnID.CoreSDK.CoreErrorLogWrapper)
-        case nonTerminalError
         case addErrorToInternalStates(OwnID.CoreSDK.Error) // this is needed for flows when error is thrown and flow does not immitiately goes to error. If auth manager throws error, we continue to next steps and log error to our states only
         
         case addToState(browserViewModelStore: Store<OwnID.CoreSDK.BrowserOpenerViewModel.State, OwnID.CoreSDK.BrowserOpenerViewModel.Action>,

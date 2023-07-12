@@ -2,8 +2,9 @@ import Foundation
 import Combine
 
 extension OwnID.CoreSDK.CoreViewModel {
-    class StepResponse: Decodable {
-        let step: Step
+    struct StepResponse: Decodable {
+        let step: Step?
+        let error: ErrorData?
     }
     
     class BaseStep {
@@ -22,17 +23,27 @@ extension OwnID.CoreSDK.CoreViewModel {
                 return .webApp(step: step)
             case .success:
                 return .success
-            case .error:
-                let message = step.errorData?.userMessage ?? ""
-                let code = step.errorData?.errorCode ?? ""
-                return .error(.coreLog(entry: .errorEntry(Self.self),
-                                       error: .serverErrorWithCode(message: message,
-                                                                   code: code)))
             }
         }
         
         func errorEffect(_ error: OwnID.CoreSDK.CoreErrorLogWrapper) -> [Effect<Action>] {
             [Just(.error(error)).eraseToEffect()]
+        }
+        
+        func handleResponse(response: StepResponse, isOnUI: Bool) -> Action {
+            if let step = response.step {
+                return nextStepAction(step)
+            } else if let error = response.error {
+                let model = OwnID.CoreSDK.UserErrorModel(code: error.errorCode, message: error.message, userMessage: error.userMessage)
+                return .error(.coreLog(entry: .errorEntry(Self.self),
+                                       error: .userError(errorModel: model),
+                                       isOnUI: isOnUI,
+                                       flowFinished: error.flowFinished ?? true))
+            }
+            let message = OwnID.CoreSDK.ErrorMessage.requestError
+            return Action.error(.coreLog(entry: .errorEntry(Self.self),
+                                         error: .userError(errorModel: OwnID.CoreSDK.UserErrorModel(message: message)),
+                                         isOnUI: isOnUI))
         }
     }
 }

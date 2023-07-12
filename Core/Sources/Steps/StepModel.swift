@@ -10,7 +10,6 @@ extension OwnID.CoreSDK.CoreViewModel {
             case verifyLoginID
             case showQr
             case success
-            case error
         }
         
         let type: StepType
@@ -18,7 +17,6 @@ extension OwnID.CoreSDK.CoreViewModel {
         private(set) var fidoData: FidoStepData?
         private(set) var otpData: OTPStepData?
         private(set) var webAppData: WebAppStepData?
-        private(set) var errorData: ErrorStepData?
         
         enum CodingKeys: CodingKey {
             case type
@@ -38,8 +36,6 @@ extension OwnID.CoreSDK.CoreViewModel {
                 self.otpData = try container.decodeIfPresent(OTPStepData.self, forKey: .data)
             case .showQr:
                 self.webAppData = try container.decodeIfPresent(WebAppStepData.self, forKey: .data)
-            case .error:
-                self.errorData = try container.decodeIfPresent(ErrorStepData.self, forKey: .data)
             case .success:
                 break
             }
@@ -71,9 +67,17 @@ extension OwnID.CoreSDK.CoreViewModel {
         let url: String
     }
     
-    struct ErrorStepData: Decodable {
+    struct ErrorData: Decodable {
         let errorCode: String?
         let message: String?
         let userMessage: String?
+        let flowFinished: Bool?
+        
+        init(errorCode: String?, message: String?, userMessage: String?, flowFinished: Bool?) {
+            self.errorCode = errorCode
+            self.message = message
+            self.userMessage = userMessage
+            self.flowFinished = flowFinished
+        }
     }
 }

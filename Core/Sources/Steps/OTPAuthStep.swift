@@ -9,12 +9,7 @@ extension OwnID.CoreSDK.CoreViewModel {
     struct OTPAuthRequestBody: Encodable {
         let code: String
     }
-    
-    struct OTPAuthResponse: Decodable {
-        let step: Step?
-        let error: ErrorStepData?
-    }
-    
+
     class OTPAuthStep: BaseStep {
         private let step: Step
         
@@ -25,7 +20,9 @@ extension OwnID.CoreSDK.CoreViewModel {
         override func run(state: inout OwnID.CoreSDK.CoreViewModel.State) -> [Effect<OwnID.CoreSDK.CoreViewModel.Action>] {
             guard let otpData = step.otpData, let restartUrl = URL(string: otpData.restartUrl) else {
                 let message = OwnID.CoreSDK.ErrorMessage.dataIsMissing
-                return errorEffect(.coreLog(entry: .errorEntry(Self.self), error: .internalError(message: message)))
+                return errorEffect(.coreLog(entry: .errorEntry(Self.self),
+                                            error: .userError(errorModel: OwnID.CoreSDK.UserErrorModel(message: message)),
+                                            isOnUI: true))
             }
             
             let otpLength = otpData.otpLength ?? Constants.defaultOtpLenght
@@ -51,7 +48,9 @@ extension OwnID.CoreSDK.CoreViewModel {
         func restart(state: inout OwnID.CoreSDK.CoreViewModel.State) -> [Effect<Action>] {
             guard let otpData = step.otpData, let restartUrl = URL(string: otpData.restartUrl) else {
                 let message = OwnID.CoreSDK.ErrorMessage.dataIsMissing
-                return errorEffect(.coreLog(entry: .errorEntry(Self.self), error: .internalError(message: message)))
+                return errorEffect(.coreLog(entry: .errorEntry(Self.self),
+                                            error: .userError(errorModel: OwnID.CoreSDK.UserErrorModel(message: message)),
+                                            isOnUI: true))
             }
             
             let context = state.context
@@ -61,19 +60,13 @@ extension OwnID.CoreSDK.CoreViewModel {
             let effect = state.session.perform(url: restartUrl,
                                                method: .post,
                                                body: EmptyBody(),
-                                               with: OTPAuthResponse.self)
+                                               with: StepResponse.self)
                 .receive(on: DispatchQueue.main)
                 .handleEvents(receiveOutput: { response in
                     OwnID.CoreSDK.logger.log(.entry(context: context, level: .debug, message: "Restart Code Request Finished", Self.self))
                 })
-                .map({ [self] response in
-                    guard let step = response.step else {
-                        let message = OwnID.CoreSDK.ErrorMessage.requestError
-                        return Action.error(.coreLog(entry: .errorEntry(Self.self), error: .internalError(message: message)))
-                    }
-                    return nextStepAction(step)
-                })
-                .catch { Just(Action.error(.coreLog(entry: .errorEntry(Self.self), error: $0))) }
+                .map { [self] in handleResponse(response: $0, isOnUI: true) }
+                .catch { Just(Action.error(.coreLog(entry: .errorEntry(Self.self), error: $0, isOnUI: true))) }
                 .eraseToEffect()
             return [effect]
         }
@@ -81,7 +74,9 @@ extension OwnID.CoreSDK.CoreViewModel {
         func resend(state: inout OwnID.CoreSDK.CoreViewModel.State) -> [Effect<Action>] {
             guard let otpData = step.otpData, let resendUrl = URL(string: otpData.resendUrl) else {
                 let message = OwnID.CoreSDK.ErrorMessage.dataIsMissing
-                return errorEffect(.coreLog(entry: .errorEntry(Self.self), error: .internalError(message: message)))
+                return errorEffect(.coreLog(entry: .errorEntry(Self.self),
+                                            error: .userError(errorModel: OwnID.CoreSDK.UserErrorModel(message: message)),
+                                            isOnUI: true))
             }
             
             let context = state.context
@@ -91,19 +86,13 @@ extension OwnID.CoreSDK.CoreViewModel {
             let effect = state.session.perform(url: resendUrl,
                                                method: .post,
                                                body: EmptyBody(),
-                                               with: OTPAuthResponse.self)
+                                               with: StepResponse.self)
                 .receive(on: DispatchQueue.main)
                 .handleEvents(receiveOutput: { response in
                     OwnID.CoreSDK.logger.log(.entry(context: context, level: .debug, message: "Resend Code Request Finished", Self.self))
                 })
-                .map({ response in
-                    guard response.step != nil else {
-                        let message = OwnID.CoreSDK.ErrorMessage.requestError
-                        return Action.error(.coreLog(entry: .errorEntry(Self.self), error: .internalError(message: message)))
-                    }
-                    return Action.codeResent
-                })
-                .catch { Just(Action.error(.coreLog(entry: .errorEntry(Self.self), error: $0))) }
+                .map { [self] in handleResponse(response: $0, isOnUI: true) }
+                .catch { Just(Action.error(.coreLog(entry: .errorEntry(Self.self), error: $0, isOnUI: true))) }
                 .eraseToEffect()
             return [effect]
         }
@@ -111,7 +100,9 @@ extension OwnID.CoreSDK.CoreViewModel {
         func sendCode(code: String, state: inout OwnID.CoreSDK.CoreViewModel.State) -> [Effect<Action>] {
             guard let otpData = step.otpData, let url = URL(string: otpData.url) else {
                 let message = OwnID.CoreSDK.ErrorMessage.dataIsMissing
-                return errorEffect(.coreLog(entry: .errorEntry(Self.self), error: .internalError(message: message)))
+                return errorEffect(.coreLog(entry: .errorEntry(Self.self),
+                                            error: .userError(errorModel: OwnID.CoreSDK.UserErrorModel(message: message)),
+                                            isOnUI: true))
             }
             
             let context = state.context
@@ -121,31 +112,31 @@ extension OwnID.CoreSDK.CoreViewModel {
             let effect = state.session.perform(url: url,
                                                method: .post,
                                                body: requestBody,
-                                               with: OTPAuthResponse.self)
+                                               with: StepResponse.self)
                 .receive(on: DispatchQueue.main)
                 .handleEvents(receiveOutput: { response in
                     OwnID.CoreSDK.logger.log(.entry(context: context, level: .debug, message: "Send Code Request Finished", Self.self))
                 })
                 .map({ [self] response in
-                    if let step = response.step {
+                    if response.step != nil {
                         OwnID.CoreSDK.eventService.sendMetric(.trackMetric(action: .correctOTP,
                                                                            category: eventCategory,
                                                                            context: context,
                                                                            loginId: loginId))
-                        return nextStepAction(step)
                     } else if let error = response.error {
-                        OwnID.CoreSDK.eventService.sendMetric(.errorMetric(action: .wrongOTP,
-                                                                           category: eventCategory,
-                                                                           context: context,
-                                                                           loginId: loginId,
-                                                                           errorMessage: error.message))
-                        return .nonTerminalError
+                        let model = OwnID.CoreSDK.UserErrorModel(code: error.errorCode, message: error.message, userMessage: error.userMessage)
+                        if model.code == .invalidCode {
+                            OwnID.CoreSDK.eventService.sendMetric(.errorMetric(action: .wrongOTP,
+                                                                               category: eventCategory,
+                                                                               context: context,
+                                                                               loginId: loginId,
+                                                                               errorMessage: error.message))
+                        }
                     }
-                    
-                    let message = OwnID.CoreSDK.ErrorMessage.requestError
-                    return Action.error(.coreLog(entry: .errorEntry(Self.self), error: .internalError(message: message)))
+
+                    return handleResponse(response: response, isOnUI: true)
                 })
-                .catch { Just(Action.error(.coreLog(entry: .errorEntry(Self.self), error: $0))) }
+                .catch { Just(Action.error(.coreLog(entry: .errorEntry(Self.self), error: $0, isOnUI: true))) }
                 .eraseToEffect()
             return [effect]
         }

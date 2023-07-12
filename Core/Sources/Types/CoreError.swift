@@ -37,14 +37,43 @@ extension OwnID.CoreSDK {
 public extension OwnID.CoreSDK {
     enum Error: Swift.Error {
         case flowCancelled(flow: FlowType)
-        case internalError(message: String)
-        case usageError(message: String)
         case integrationError(underlying: Swift.Error)
-
-        //created spearate serverErrorWithCode because serverError produced unexpected EXC_BAD_ACCESS error
-        //TODO: change it in scope of KYIV-2356
-        case serverErrorWithCode(message: String, code: String)
-        case serverError(serverError: ServerError)
+        case userError(errorModel: UserErrorModel)
+    }
+    
+    struct UserErrorModel {
+        public let code: ErrorTypeCode
+        public let message: String
+        public let userMessage: String
+    
+        public init(code: String?, message: String?, userMessage: String?) {
+            self.code = ErrorTypeCode(rawValue: code ?? "") ?? .unknown
+            self.message = message ?? ""
+            self.userMessage = userMessage ?? ""
+        }
+        
+        public init(message: String) {
+            self.message = message
+            self.code = .unknown
+            self.userMessage = OwnID.CoreSDK.TranslationsSDK.TranslationKey.stepsError.localized()
+        }
+        
+        var isGeneralError: Bool {
+            code == .unknown || code == .userAlreadyExists || code == .flowIsFinished
+        }
+    }
+    
+    enum ErrorTypeCode: String {
+        case accountNotFound = "AccountNotFound"
+        case requiresBiometricInput = "RequiresBiometricInput"
+        case accountIsBlocked = "AccountIsBlocked"
+        case userAlreadyExists = "UserAlreadyExists"
+        case userNotFound = "UserNotFound"
+        case wrongCodeLimitReached = "WrongCodeLimitReached"
+        case flowIsFinished = "FlowIsFinished"
+        case invalidCode = "WrongCodeEntered"
+        case sendCodeLimitReached = "SendCodeLimitReached"
+        case unknown
     }
 }
 
@@ -53,22 +82,12 @@ extension OwnID.CoreSDK.Error: LocalizedError {
         switch self {
         case .flowCancelled(let flow):
             return "User canceled OwnID flow \(flow)"
-            
-        case .internalError(let message):
-            return message
-            
-        case .usageError(let message):
-            return message
 
         case .integrationError(let error):
             return error.localizedDescription
             
-        case .serverError(let underlying):
-            return underlying.error
-            
-        case .serverErrorWithCode(let message, _):
-            return message
-            
+        case .userError(let model):
+            return model.userMessage
         }
     }
 }
@@ -77,11 +96,8 @@ extension OwnID.CoreSDK.Error: CustomDebugStringConvertible {
     public var debugDescription: String {
         switch self {
         case .flowCancelled,
-                .internalError,
-                .usageError,
                 .integrationError,
-                .serverError,
-                .serverErrorWithCode:
+                .userError:
             return errorDescription ?? ""
         }
     }

@@ -47,7 +47,7 @@ extension OwnID.CoreSDK.CoreViewModel {
         override func run(state: inout State) -> [Effect<OwnID.CoreSDK.CoreViewModel.Action>] {
             guard let url = step.fidoData?.url else {
                 let message = OwnID.CoreSDK.ErrorMessage.dataIsMissing
-                return errorEffect(.coreLog(entry: .errorEntry(Self.self), error: .internalError(message: message)))
+                return errorEffect(.coreLog(entry: .errorEntry(Self.self), error: .userError(errorModel: OwnID.CoreSDK.UserErrorModel(message: message))))
             }
             
             let eventCategory: OwnID.CoreSDK.EventCategory = state.type == .login ? .login : .registration
@@ -76,7 +76,7 @@ extension OwnID.CoreSDK.CoreViewModel {
                              type: OwnID.CoreSDK.RequestType) -> [Effect<Action>] {
             guard let urlString = step.fidoData?.url, let url = URL(string: urlString) else {
                 let message = OwnID.CoreSDK.ErrorMessage.dataIsMissing
-                return errorEffect(.coreLog(entry: .errorEntry(Self.self), error: .internalError(message: message)))
+                return errorEffect(.coreLog(entry: .errorEntry(Self.self), error: .userError(errorModel: OwnID.CoreSDK.UserErrorModel(message: message))))
             }
 
             self.type = type
@@ -98,7 +98,7 @@ extension OwnID.CoreSDK.CoreViewModel {
                 .handleEvents(receiveOutput: { response in
                     OwnID.CoreSDK.logger.log(.entry(context: context, level: .debug, message: "Auth Request Finished", Self.self))
                 })
-                .map { [self] in nextStepAction($0.step) }
+                .map { [self] in handleResponse(response: $0, isOnUI: false) }
                 .catch { Just(Action.error(.coreLog(entry: .errorEntry(Self.self), error: $0))) }
                 .eraseToEffect()
             
@@ -109,7 +109,7 @@ extension OwnID.CoreSDK.CoreViewModel {
                              error: OwnID.CoreSDK.AccountManager.AuthManagerError) -> [Effect<Action>] {
             guard let urlString = step.fidoData?.url, let url = URL(string: urlString) else {
                 let message = OwnID.CoreSDK.ErrorMessage.dataIsMissing
-                return errorEffect(.coreLog(entry: .errorEntry(Self.self), error: .internalError(message: message)))
+                return errorEffect(.coreLog(entry: .errorEntry(Self.self), error: .userError(errorModel: OwnID.CoreSDK.UserErrorModel(message: message))))
             }
             
             let fidoError: OwnID.CoreSDK.CoreViewModel.FidoErrorRequestBody.Error
@@ -152,7 +152,7 @@ extension OwnID.CoreSDK.CoreViewModel {
                 .handleEvents(receiveOutput: { response in
                     OwnID.CoreSDK.logger.log(.entry(context: context, level: .debug, message: "Error Request Finished", Self.self))
                 })
-                .map { [self] in nextStepAction($0.step) }
+                .map { [self] in handleResponse(response: $0, isOnUI: false) }
                 .catch { Just(Action.error(.coreLog(entry: .errorEntry(Self.self), error: $0))) }
                 .eraseToEffect()
             return [effect]

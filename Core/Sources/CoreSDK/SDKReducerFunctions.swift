@@ -79,7 +79,7 @@ extension OwnID.CoreSDK {
                     Logger.shared.logLevel = .warning
                     Logger.shared.forceLog(.entry(level: .warning, message: "Server configuration is not set", Self.self))
                     let message = OwnID.CoreSDK.ErrorMessage.noServerConfig
-                    return Just(SDKAction.save(configurationLoadingEvent: .error(.internalError(message: message)),
+                    return Just(SDKAction.save(configurationLoadingEvent: .error(.userError(errorModel: UserErrorModel(message: message))),
                                                userFacingSDK: userFacingSDK))
                 }
         }

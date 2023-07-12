@@ -13,9 +13,11 @@ extension OwnID.CoreSDK.CoreViewModel {
             state.context = response.context
             
             let baseStep = BaseStep()
-            let action = baseStep.nextStepAction(response.step)
-            
-            return [Just(action).eraseToEffect()]
+            if let step = response.step {
+                let action = baseStep.nextStepAction(step)
+                return [Just(action).eraseToEffect()]
+            }
+            return []
         case .idCollect(let step):
             let idCollectStep = IdCollectStep(step: step)
             state.idCollectStep = idCollectStep
@@ -26,9 +28,6 @@ extension OwnID.CoreSDK.CoreViewModel {
             return fidoStep.run(state: &state)
         case .error:
             return []
-        case .nonTerminalError:
-            return []
-            
         case .sendStatusRequest:
             state.browserViewModel = .none
             let finalStep = FinalStep()
@@ -136,10 +135,7 @@ extension OwnID.CoreSDK.CoreViewModel {
                 
             case .success:
                 break
-                
-            case .nonTerminalError:
-                break
-                
+
             case .cancelCodeOperation:
                 break
                 

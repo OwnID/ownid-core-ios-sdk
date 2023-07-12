@@ -1,16 +1,6 @@
 import Combine
 import Foundation
 
-extension OwnID.FlowsSDK.RegisterError: LocalizedError {
-    public var errorDescription: String? {
-        switch self {
-            
-        case .emailMismatch:
-            return "Email changed before registration"
-        }
-    }
-}
-
 public extension OwnID {
     typealias RegistrationPublisher = AnyPublisher<Result<OwnID.FlowsSDK.RegistrationEvent, OwnID.CoreSDK.Error>, Never>
     typealias RegistrationResultPublisher = AnyPublisher<OwnID.RegisterResult, OwnID.CoreSDK.CoreErrorLogWrapper>
@@ -27,11 +17,6 @@ public extension OwnID {
 }
 
 public extension OwnID.FlowsSDK {
-    
-    enum RegisterError {
-        case emailMismatch
-    }
-    
     enum RegistrationEvent {
         case loading
         case resetTapped
