@@ -42,7 +42,7 @@ private extension OwnID.UISDK.IconButton {
     
     @ViewBuilder
     func buttonAndTooltipView() -> some View {
-        if isTooltipPresented, buttonState.isTooltipShown, #available(iOS 16.0, *) {
+        if isTooltipPresented, buttonState.isTooltipShown, !isLoading, #available(iOS 16.0, *) {
             tooltipOnTopOfButtonView()
                 .zIndex(1)
         } else {
