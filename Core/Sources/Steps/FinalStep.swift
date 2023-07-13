@@ -35,13 +35,12 @@ extension OwnID.CoreSDK.CoreViewModel {
                     
                     guard let responsePayload = response[Constants.payloadKey] as? [String: Any] else {
                         let message = OwnID.CoreSDK.ErrorMessage.requestError
-                        throw OwnID.CoreSDK.Error.internalError(message: message)
+                        throw OwnID.CoreSDK.Error.userError(errorModel: OwnID.CoreSDK.UserErrorModel(message: message))
                     }
                     
                     if let serverError = responsePayload[Constants.errorKey] as? String {
-                        let serverError = OwnID.CoreSDK.ServerError(error: serverError)
                         throw OwnID.CoreSDK.CoreErrorLogWrapper.coreLog(entry: .errorEntry(context: context, Self.self),
-                                                                        error: .serverError(serverError: serverError))
+                                                                        error: .userError(errorModel: OwnID.CoreSDK.UserErrorModel(message: serverError)))
                     }
                     let loginId = responsePayload[Constants.loginIdKey] as? String ?? ""
                     let data = responsePayload[Constants.dataKey]
@@ -64,7 +63,7 @@ extension OwnID.CoreSDK.CoreViewModel {
                     if let error = error as? OwnID.CoreSDK.Error {
                         return error
                     }
-                    return .internalError(message: OwnID.CoreSDK.ErrorMessage.requestError)
+                    return .userError(errorModel: OwnID.CoreSDK.UserErrorModel(message: OwnID.CoreSDK.ErrorMessage.requestError))
                 })
                 .map { Action.statusRequestLoaded(response: $0) }
                 .catch({ error in

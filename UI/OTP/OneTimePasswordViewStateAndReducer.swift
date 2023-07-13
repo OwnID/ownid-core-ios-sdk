@@ -9,9 +9,10 @@ extension OwnID.UISDK.OneTimePassword {
     struct ViewState: LoggingEnabled {
         let isLoggingEnabled: Bool
         let type: OwnID.CoreSDK.RequestType
-        var error: Error?
+        var error: OwnID.CoreSDK.UserErrorModel?
         var isLoading = false
         var isDisplayingDidNotGetCode = false
+        var isFlowFinished = false
         var attempts = 0
     }
     
@@ -24,20 +25,9 @@ extension OwnID.UISDK.OneTimePassword {
         case emailIsNotRecieved
         case resendCode
         case displayDidNotGetCode
-        case nonTerminalError
-        case error(message: String, code: String)
+        case error(OwnID.CoreSDK.UserErrorModel, flowFinished: Bool)
         case success
         case stopLoading
-    }
-    
-    struct Error {
-        let code: ErrorCode
-        let message: String
-    }
-    
-    enum ErrorCode: String {
-        case general
-        case wrongCodeLimitReached = "WrongCodeLimitReached"
     }
 }
 
@@ -78,17 +68,15 @@ extension OwnID.UISDK.OneTimePassword {
             
         case .cancelCodeOperation:
             return []
-        case .nonTerminalError:
-            UINotificationFeedbackGenerator().notificationOccurred(.error)
-            state.attempts += 1
-            return [
-                Just(.stopLoading)
-                    .eraseToEffect()
-            ]
-        case .error(let messsage, let code):
-            let errorCode = ErrorCode(rawValue: code) ?? .general
-            state.error = Error(code: errorCode, message: messsage)
+        case .error(let errorModel, let flowFinished):
             state.isLoading = false
+            state.isFlowFinished = flowFinished
+            if errorModel.code == .invalidCode {
+                UINotificationFeedbackGenerator().notificationOccurred(.error)
+                state.attempts += 1
+            } else {
+                state.error = errorModel
+            }
             return []
         case .success:
             state.isLoading = false
@@ -121,8 +109,6 @@ extension OwnID.UISDK.OneTimePassword.Action: CustomDebugStringConvertible {
             return "cancel"
         case .emailIsNotRecieved:
             return "emailIsNotRecieved"
-        case .nonTerminalError:
-            return "nonTerminalError"
         case .error:
             return "error"
         case .success:

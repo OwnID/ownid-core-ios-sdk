@@ -144,7 +144,7 @@ extension OwnID.UISDK.IdCollect {
         
         @ViewBuilder
         private func errorView() -> some View {
-            if store.value.isError {
+            if store.value.error != nil {
                 Text(localizedKey: .stepsError)
                     .font(.system(size: Constants.errorFontSize))
                     .frame(maxWidth: .infinity)
@@ -163,6 +163,17 @@ extension OwnID.UISDK.IdCollect {
                         .foregroundColor(OwnID.Colors.errorColor)
                         .padding(.bottom, Constants.bottomPadding)
                 }
+            }
+        }
+        
+        @ViewBuilder
+        private func continueButton() -> some View {
+            if !store.value.isFlowFinished {
+                OwnID.UISDK.AuthButton(visualConfig: visualConfig,
+                                       actionHandler: { viewModel.postLoginId() },
+                                       isLoading: $viewModel.isLoading,
+                                       buttonState: $viewModel.buttonState,
+                                       translationKey: .idCollectContinue(type: viewModel.loginIdType.rawValue))
             }
         }
         
@@ -193,11 +204,7 @@ extension OwnID.UISDK.IdCollect {
                         )
                         .padding(.top, Constants.textFieldTopPadding)
                         .padding(.bottom, Constants.bottomPadding)
-                    OwnID.UISDK.AuthButton(visualConfig: visualConfig,
-                                           actionHandler: { viewModel.postLoginId() },
-                                           isLoading: $viewModel.isLoading,
-                                           buttonState: $viewModel.buttonState,
-                                           translationKey: .idCollectContinue(type: viewModel.loginIdType.rawValue))
+                        continueButton()
                     .padding(.bottom, Constants.bottomPadding)
                     errorView()
                 }

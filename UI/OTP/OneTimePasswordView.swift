@@ -120,20 +120,26 @@ extension OwnID.UISDK.OneTimePassword {
             }
         }
         
+        @ViewBuilder
         private func notYouView() -> some View {
-            Button {
-                store.send(.emailIsNotRecieved)
-            } label: {
-                Text(localizedKey: .otpNotYou(operationType: operationType.rawValue, verificationType: verificationType.rawValue))
-                    .font(.system(size: Constants.buttonFontSize))
-                    .bold()
-                    .foregroundColor(OwnID.Colors.blue)
+            ZStack {
+                if !store.value.isFlowFinished {
+                    Button {
+                        store.send(.emailIsNotRecieved)
+                    } label: {
+                        Text(localizedKey: .otpNotYou(operationType: operationType.rawValue, verificationType: verificationType.rawValue))
+                            .font(.system(size: Constants.buttonFontSize))
+                            .bold()
+                            .foregroundColor(OwnID.Colors.blue)
+                    }
+                }
             }
+            .frame(height: Constants.errorViewHeight)
         }
         
         @ViewBuilder
         private func errorView() -> some View {
-            if store.value.error?.code == .general {
+            if let error = store.value.error, error.isGeneralError {
                 Text(localizedKey: .stepsError)
                     .font(.system(size: Constants.errorFontSize))
                     .frame(maxWidth: .infinity)
@@ -145,9 +151,9 @@ extension OwnID.UISDK.OneTimePassword {
         
         @ViewBuilder
         private func errorText() -> some View {
-            if store.value.error?.code == .wrongCodeLimitReached, let message = store.value.error?.message {
+            if let error = store.value.error, !error.isGeneralError {
                 HStack {
-                    Text(message)
+                    Text(error.userMessage)
                         .font(.system(size: Constants.errorFontSize))
                         .multilineTextAlignment(.leading)
                         .foregroundColor(OwnID.Colors.errorColor)

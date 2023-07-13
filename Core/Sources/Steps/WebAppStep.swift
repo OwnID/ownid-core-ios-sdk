@@ -12,12 +12,14 @@ extension OwnID.CoreSDK.CoreViewModel {
         override func run(state: inout OwnID.CoreSDK.CoreViewModel.State) -> [Effect<OwnID.CoreSDK.CoreViewModel.Action>] {
             guard let urlString = step.webAppData?.url else {
                 let message = OwnID.CoreSDK.ErrorMessage.dataIsMissing
-                return errorEffect(.coreLog(entry: .errorEntry(Self.self), error: .internalError(message: message)))
+                return errorEffect(.coreLog(entry: .errorEntry(Self.self),
+                                            error: .userError(errorModel: OwnID.CoreSDK.UserErrorModel(message: message))))
             }
             
             guard let loginIdSettings = state.configuration?.loginIdSettings else {
                 let message = OwnID.CoreSDK.ErrorMessage.noLocalConfig
-                return errorEffect(.coreLog(entry: .errorEntry(Self.self), error: .internalError(message: message)))
+                return errorEffect(.coreLog(entry: .errorEntry(Self.self),
+                                            error: .userError(errorModel: OwnID.CoreSDK.UserErrorModel(message: message))))
             }
             
             let viewModel = createBrowserVM(for: state.context,

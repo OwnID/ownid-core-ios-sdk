@@ -18,14 +18,15 @@ extension OwnID.CoreSDK.CoreViewModel {
         let stopUrl: String
         let finalStatusUrl: String
         
-        let step: Step
+        let step: Step?
+        let error: ErrorData?
     }
     
     class InitStep: BaseStep {
         override func run(state: inout State) -> [Effect<Action>] {
             guard let configuration = state.configuration else {
                 let message = OwnID.CoreSDK.ErrorMessage.noLocalConfig
-                return errorEffect(.coreLog(entry: .errorEntry(Self.self), error: .internalError(message: message)))
+                return errorEffect(.coreLog(entry: .errorEntry(Self.self), error: .userError(errorModel: OwnID.CoreSDK.UserErrorModel(message: message))))
             }
             
             let locales = OwnID.CoreSDK.TranslationsSDK.LanguageMapper.matchSystemLanguage(to: OwnID.CoreSDK.shared.supportedLocales ?? [],
@@ -64,7 +65,14 @@ extension OwnID.CoreSDK.CoreViewModel {
             .handleEvents(receiveOutput: { response in
                 OwnID.CoreSDK.logger.log(.entry(context: response.context, level: .debug, message: "Init Request Finished", Self.self))
             })
-            .map { Action.initialRequestLoaded(response: $0) }
+            .map({ response in
+                if let error = response.error {
+                    let model = OwnID.CoreSDK.UserErrorModel(code: error.errorCode, message: error.message, userMessage: error.userMessage)
+                    return .error(.coreLog(entry: .errorEntry(Self.self), error: .userError(errorModel: model)))
+                } else {
+                    return .initialRequestLoaded(response: response)
+                }
+            })
             .catch { Just(Action.error(.coreLog(entry: .errorEntry(Self.self), error: $0))) }
             .eraseToEffect()
         }

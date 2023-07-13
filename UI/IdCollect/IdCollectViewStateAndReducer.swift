@@ -5,14 +5,15 @@ extension OwnID.UISDK.IdCollect {
     struct ViewState: LoggingEnabled {
         var isLoggingEnabled: Bool
         var isLoading = false
-        var isError = false
+        var isFlowFinished = false
+        var error: OwnID.CoreSDK.UserErrorModel?
     }
     
     enum Action {
         case viewLoaded
         case cancel
         case loginIdEntered(loginId: String)
-        case error
+        case error(OwnID.CoreSDK.UserErrorModel, flowFinished: Bool)
     }
 }
 
@@ -20,18 +21,19 @@ extension OwnID.UISDK.IdCollect {
     static func viewModelReducer(state: inout ViewState, action: Action) -> [Effect<Action>] {
         switch action {
         case .viewLoaded:
-            state.isError = false
+            state.error = nil
             state.isLoading = false
             return []
         case .cancel:
             return []
         case .loginIdEntered:
             state.isLoading = true
-            state.isError = false
+            state.error = nil
             return []
-        case .error:
-            state.isError = true
+        case .error(let errorModel, let flowFinished):
+            state.error = errorModel
             state.isLoading = false
+            state.isFlowFinished = flowFinished
             return []
         }
     }

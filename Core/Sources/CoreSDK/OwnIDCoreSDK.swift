@@ -120,7 +120,8 @@ public extension OwnID {
             let redirectParameterValue = components?.first(where: { $0.name == redirectParamKey })?.value
             if redirectParameterValue == "false" {
                 let message = OwnID.CoreSDK.ErrorMessage.redirectParameterFromURLCancelledOpeningSDK
-                urlPublisher.send(completion: .failure(.coreLog(entry: .errorEntry(Self.self), error: .internalError(message: message))))
+                urlPublisher.send(completion: .failure(.coreLog(entry: .errorEntry(Self.self),
+                                                                error: .userError(errorModel: UserErrorModel(message: message)))))
                 return
             }
             
@@ -128,7 +129,8 @@ public extension OwnID {
                   url.absoluteString.lowercased().starts(with: redirection.redirectionURL.lowercased())
             else {
                 let message = OwnID.CoreSDK.ErrorMessage.notValidRedirectionURLOrNotMatchingFromConfiguration
-                urlPublisher.send(completion: .failure(.coreLog(entry: .errorEntry(Self.self), error: .internalError(message: message))))
+                urlPublisher.send(completion: .failure(.coreLog(entry: .errorEntry(Self.self),
+                                                                error: .userError(errorModel: UserErrorModel(message: message)))))
                 return
             }
             urlPublisher.send(())

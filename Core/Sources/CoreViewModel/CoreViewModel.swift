@@ -43,8 +43,14 @@ extension OwnID.CoreSDK {
                 action: { .idCollectView($0) },
                 action: { globalAction in
                     switch globalAction {
-                    case .error:
-                        return .error
+                    case .error(let wrapper):
+                        let error = wrapper.error
+                        switch error {
+                        case .userError(let errorModel):
+                            return .error(errorModel, flowFinished: wrapper.flowFinished)
+                        default:
+                            return .error(OwnID.CoreSDK.UserErrorModel(message: ""), flowFinished: wrapper.flowFinished)
+                        }
                     default:
                         break
                     }
@@ -60,13 +66,11 @@ extension OwnID.CoreSDK {
                     case .error(let wrapper):
                         let error = wrapper.error
                         switch error {
-                        case .serverErrorWithCode(let message, let code):
-                            return .error(message: message, code: code)
+                        case .userError(let errorModel):
+                            return .error(errorModel, flowFinished: wrapper.flowFinished)
                         default:
-                            return .error(message: "", code: "")
+                            return .error(OwnID.CoreSDK.UserErrorModel(message: ""), flowFinished: wrapper.flowFinished)
                         }
-                    case .nonTerminalError:
-                        return .nonTerminalError
                     case .success:
                         return .success
                     default:
@@ -170,9 +174,9 @@ extension OwnID.CoreSDK {
                             .webApp,
                             .success,
                             .codeResent,
-                            .nonTerminalError,
                             .authManagerCancelled,
-                            .cancelled:
+                            .cancelled,
+                            .sameStep:
                         internalStatesChange.append(action.debugDescription)
                         
                     case let .statusRequestLoaded(payload):
@@ -182,9 +186,10 @@ extension OwnID.CoreSDK {
                     case .error(let error):
                         internalStatesChange.append(String(describing: action))
                         error.entry.message += " " + internalStatesLog(states: internalStatesChange)
-                        flowsFinished()
-                        resultPublisher.send(completion: .failure(error))
-
+                        if !error.isOnUI {
+                            flowsFinished()
+                            resultPublisher.send(completion: .failure(error))
+                        }
                     case .stopRequestLoaded(let flow):
                         internalStatesChange.append(String(describing: action))
                         flowsFinished()

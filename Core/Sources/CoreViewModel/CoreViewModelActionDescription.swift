@@ -19,8 +19,6 @@ extension OwnID.CoreSDK.CoreViewModel.Action: CustomDebugStringConvertible {
             return "fido2Authorize"
         case .error(let error):
             return "error \(error.localizedDescription)"
-        case .nonTerminalError:
-            return "nonTerminalError"
         case .sendStatusRequest:
             return "sendStatusRequest"
         case .statusRequestLoaded:
@@ -52,6 +50,8 @@ extension OwnID.CoreSDK.CoreViewModel.Action: CustomDebugStringConvertible {
             return "codeResent"
         case .stopRequestLoaded:
             return "stopRequestLoaded"
+        case .sameStep:
+            return "sameStep"
         }
     }
 }

@@ -36,7 +36,7 @@ extension OwnID.CoreSDK {
         case .fetchServerConfiguration:
             guard let configurationRequestData = state.configurationRequestData else {
                 let message = OwnID.CoreSDK.ErrorMessage.SDKConfigurationError
-                let action = Just(SDKAction.save(configurationLoadingEvent: .error(.usageError(message: message)),
+                let action = Just(SDKAction.save(configurationLoadingEvent: .error(.userError(errorModel: UserErrorModel(message: message))),
                                                  userFacingSDK: nil))
                 return [action.eraseToEffect()]
             }
