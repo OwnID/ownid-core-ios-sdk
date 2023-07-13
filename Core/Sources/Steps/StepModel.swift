@@ -72,12 +72,5 @@ extension OwnID.CoreSDK.CoreViewModel {
         let message: String?
         let userMessage: String?
         let flowFinished: Bool?
-        
-        init(errorCode: String?, message: String?, userMessage: String?, flowFinished: Bool?) {
-            self.errorCode = errorCode
-            self.message = message
-            self.userMessage = userMessage
-            self.flowFinished = flowFinished
-        }
     }
 }
