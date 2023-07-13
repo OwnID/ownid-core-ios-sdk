@@ -28,5 +28,6 @@ extension OwnID.CoreSDK.CoreViewModel {
         case authManager(OwnID.CoreSDK.AccountManager.Action)
         case codeResent
         case stopRequestLoaded(flow: OwnID.CoreSDK.FlowType)
+        case sameStep
     }
 }

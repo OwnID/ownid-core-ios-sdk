@@ -175,7 +175,8 @@ extension OwnID.CoreSDK {
                             .success,
                             .codeResent,
                             .authManagerCancelled,
-                            .cancelled:
+                            .cancelled,
+                            .sameStep:
                         internalStatesChange.append(action.debugDescription)
                         
                     case let .statusRequestLoaded(payload):

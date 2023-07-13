@@ -50,6 +50,8 @@ extension OwnID.CoreSDK.CoreViewModel.Action: CustomDebugStringConvertible {
             return "codeResent"
         case .stopRequestLoaded:
             return "stopRequestLoaded"
+        case .sameStep:
+            return "sameStep"
         }
     }
 }

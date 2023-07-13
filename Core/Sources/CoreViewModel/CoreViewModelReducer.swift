@@ -73,6 +73,9 @@ extension OwnID.CoreSDK.CoreViewModel {
             state.idCollectViewStore = idCollectViewStore
             return []
             
+        case .sameStep:
+            return []
+            
         case let .browserVM(browserVMAction):
             switch browserVMAction {
             case .viewCancelled:
