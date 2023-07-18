@@ -17,7 +17,7 @@ extension OwnID.CoreSDK.CoreViewModel {
         override func run(state: inout OwnID.CoreSDK.CoreViewModel.State) -> [Effect<OwnID.CoreSDK.CoreViewModel.Action>] {
             guard let loginIdSettings = state.configuration?.loginIdSettings else {
                 let message = OwnID.CoreSDK.ErrorMessage.noLocalConfig
-                return errorEffect(.coreLog(entry: .errorEntry(Self.self), error: .userError(errorModel: OwnID.CoreSDK.UserErrorModel(message: message))))
+                return errorEffect(.coreLog(error: .userError(errorModel: OwnID.CoreSDK.UserErrorModel(message: message)), type: Self.self))
             }
             
             OwnID.UISDK.PopupManager.dismiss()
@@ -41,9 +41,9 @@ extension OwnID.CoreSDK.CoreViewModel {
                              loginId: String) -> [Effect<Action>] {
             guard let urlString = step.startingData?.url, let url = URL(string: urlString) else {
                 let message = OwnID.CoreSDK.ErrorMessage.dataIsMissing
-                return errorEffect(.coreLog(entry: .errorEntry(Self.self),
-                                            error: .userError(errorModel: OwnID.CoreSDK.UserErrorModel(message: message)),
-                                            isOnUI: true))
+                return errorEffect(.coreLog(error: .userError(errorModel: OwnID.CoreSDK.UserErrorModel(message: message)),
+                                            isOnUI: true,
+                                            type: Self.self))
             }
             
             let context = state.context
@@ -57,10 +57,10 @@ extension OwnID.CoreSDK.CoreViewModel {
                                                with: StepResponse.self)
                 .receive(on: DispatchQueue.main)
                 .handleEvents(receiveOutput: { response in
-                    OwnID.CoreSDK.logger.log(.entry(context: context, level: .debug, message: "Id Collect Request Finished", Self.self))
+                    OwnID.CoreSDK.logger.log(level: .debug, message: "Id Collect Request Finished", Self.self)
                 })
                 .map { [self] in handleResponse(response: $0, isOnUI: true) }
-                .catch { Just(.error(.coreLog(entry: .errorEntry(Self.self), error: $0, isOnUI: true))) }
+                .catch { Just(.error(.coreLog(error: $0, isOnUI: true, type: Self.self))) }
                 .eraseToEffect()
             
             return [effect]

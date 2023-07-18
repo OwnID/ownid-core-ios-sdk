@@ -22,7 +22,7 @@ extension OwnID.CoreSDK {
             let env = try container.decodeIfPresent(String.self, forKey: .env)
             self.appID = appID
             self.environment = env
-            self.redirectionURL = try container.decode(String.self, forKey: .redirectionURL)
+            self.redirectionURL = try container.decodeIfPresent(String.self, forKey: .redirectionURL)
             
             try buildURLFrom(appID, env)
         }
@@ -41,7 +41,7 @@ extension OwnID.CoreSDK {
         }
         
         private(set) var ownIDServerConfigurationURL: ServerURL = ServerURL(string: "ownid.com")!
-        var redirectionURL: RedirectionURLString
+        var redirectionURL: RedirectionURLString?
         let appID: OwnID.CoreSDK.AppID
         let environment: String?
         var serverURL: ServerURL!
@@ -140,6 +140,8 @@ private extension OwnID.CoreSDK.LocalConfiguration {
     
     func performPropertyChecks() throws {
         try check(ownIDServerURL: ownIDServerConfigurationURL)
-        try check(redirectionURL: redirectionURL)
+        if let redirectionURL {
+            try check(redirectionURL: redirectionURL)
+        }
     }
 }

@@ -2,12 +2,11 @@ import Combine
 import Foundation
 
 public extension OwnID.CoreSDK {
-    final class EventService: ExtensionLoggerProtocol {
-        public let identifier = UUID()
+    final class EventService {
         private let provider: APIProvider
         private let sessionService: SessionService
         private var bag = Set<AnyCancellable>()
-        
+
         private lazy var logQueue: OperationQueue = {
             var queue = OperationQueue()
             queue.qualityOfService = .utility
@@ -23,10 +22,8 @@ public extension OwnID.CoreSDK {
             self.sessionService = SessionService(provider: provider)
         }
         
-        public func log(_ entry: LogItem, level: LogLevel?) {
-            if let level, entry.shouldLog(for: level) {
-                sendEvent(for: entry)
-            }
+        public func log(_ entry: LogItem) {
+            sendEvent(for: entry)
         }
         
         public func sendMetric(_ metric: Metric) {

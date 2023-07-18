@@ -20,9 +20,9 @@ extension OwnID.CoreSDK.CoreViewModel {
         override func run(state: inout OwnID.CoreSDK.CoreViewModel.State) -> [Effect<OwnID.CoreSDK.CoreViewModel.Action>] {
             guard let otpData = step.otpData, let restartUrl = URL(string: otpData.restartUrl) else {
                 let message = OwnID.CoreSDK.ErrorMessage.dataIsMissing
-                return errorEffect(.coreLog(entry: .errorEntry(Self.self),
-                                            error: .userError(errorModel: OwnID.CoreSDK.UserErrorModel(message: message)),
-                                            isOnUI: true))
+                return errorEffect(.coreLog(error: .userError(errorModel: OwnID.CoreSDK.UserErrorModel(message: message)),
+                                            isOnUI: true,
+                                            type: Self.self))
             }
             
             let otpLength = otpData.otpLength ?? Constants.defaultOtpLenght
@@ -48,9 +48,9 @@ extension OwnID.CoreSDK.CoreViewModel {
         func restart(state: inout OwnID.CoreSDK.CoreViewModel.State) -> [Effect<Action>] {
             guard let otpData = step.otpData, let restartUrl = URL(string: otpData.restartUrl) else {
                 let message = OwnID.CoreSDK.ErrorMessage.dataIsMissing
-                return errorEffect(.coreLog(entry: .errorEntry(Self.self),
-                                            error: .userError(errorModel: OwnID.CoreSDK.UserErrorModel(message: message)),
-                                            isOnUI: true))
+                return errorEffect(.coreLog(error: .userError(errorModel: OwnID.CoreSDK.UserErrorModel(message: message)),
+                                            isOnUI: true,
+                                            type: Self.self))
             }
             
             let context = state.context
@@ -63,10 +63,10 @@ extension OwnID.CoreSDK.CoreViewModel {
                                                with: StepResponse.self)
                 .receive(on: DispatchQueue.main)
                 .handleEvents(receiveOutput: { response in
-                    OwnID.CoreSDK.logger.log(.entry(context: context, level: .debug, message: "Restart Code Request Finished", Self.self))
+                    OwnID.CoreSDK.logger.log(level: .debug, message: "Restart Code Request Finished", Self.self)
                 })
                 .map { [self] in handleResponse(response: $0, isOnUI: true) }
-                .catch { Just(Action.error(.coreLog(entry: .errorEntry(Self.self), error: $0, isOnUI: true))) }
+                .catch { Just(Action.error(.coreLog(error: $0, isOnUI: true, type: Self.self))) }
                 .eraseToEffect()
             return [effect]
         }
@@ -74,9 +74,9 @@ extension OwnID.CoreSDK.CoreViewModel {
         func resend(state: inout OwnID.CoreSDK.CoreViewModel.State) -> [Effect<Action>] {
             guard let otpData = step.otpData, let resendUrl = URL(string: otpData.resendUrl) else {
                 let message = OwnID.CoreSDK.ErrorMessage.dataIsMissing
-                return errorEffect(.coreLog(entry: .errorEntry(Self.self),
-                                            error: .userError(errorModel: OwnID.CoreSDK.UserErrorModel(message: message)),
-                                            isOnUI: true))
+                return errorEffect(.coreLog(error: .userError(errorModel: OwnID.CoreSDK.UserErrorModel(message: message)),
+                                            isOnUI: true,
+                                            type: Self.self))
             }
             
             let context = state.context
@@ -89,10 +89,10 @@ extension OwnID.CoreSDK.CoreViewModel {
                                                with: StepResponse.self)
                 .receive(on: DispatchQueue.main)
                 .handleEvents(receiveOutput: { response in
-                    OwnID.CoreSDK.logger.log(.entry(context: context, level: .debug, message: "Resend Code Request Finished", Self.self))
+                    OwnID.CoreSDK.logger.log(level: .debug, message: "Resend Code Request Finished", Self.self)
                 })
                 .map { [self] in handleResponse(response: $0, isOnUI: true) }
-                .catch { Just(Action.error(.coreLog(entry: .errorEntry(Self.self), error: $0, isOnUI: true))) }
+                .catch { Just(Action.error(.coreLog(error: $0, isOnUI: true, type: Self.self))) }
                 .eraseToEffect()
             return [effect]
         }
@@ -100,9 +100,9 @@ extension OwnID.CoreSDK.CoreViewModel {
         func sendCode(code: String, state: inout OwnID.CoreSDK.CoreViewModel.State) -> [Effect<Action>] {
             guard let otpData = step.otpData, let url = URL(string: otpData.url) else {
                 let message = OwnID.CoreSDK.ErrorMessage.dataIsMissing
-                return errorEffect(.coreLog(entry: .errorEntry(Self.self),
-                                            error: .userError(errorModel: OwnID.CoreSDK.UserErrorModel(message: message)),
-                                            isOnUI: true))
+                return errorEffect(.coreLog(error: .userError(errorModel: OwnID.CoreSDK.UserErrorModel(message: message)),
+                                            isOnUI: true,
+                                            type: Self.self))
             }
             
             let context = state.context
@@ -115,7 +115,7 @@ extension OwnID.CoreSDK.CoreViewModel {
                                                with: StepResponse.self)
                 .receive(on: DispatchQueue.main)
                 .handleEvents(receiveOutput: { response in
-                    OwnID.CoreSDK.logger.log(.entry(context: context, level: .debug, message: "Send Code Request Finished", Self.self))
+                    OwnID.CoreSDK.logger.log(level: .debug, message: "Send Code Request Finished", Self.self)
                 })
                 .map({ [self] response in
                     if response.step != nil {
@@ -136,7 +136,7 @@ extension OwnID.CoreSDK.CoreViewModel {
 
                     return handleResponse(response: response, isOnUI: true)
                 })
-                .catch { Just(Action.error(.coreLog(entry: .errorEntry(Self.self), error: $0, isOnUI: true))) }
+                .catch { Just(Action.error(.coreLog(error: $0, isOnUI: true, type: Self.self))) }
                 .eraseToEffect()
             return [effect]
         }

@@ -2,37 +2,22 @@ import Foundation
 import os.log
 
 extension OwnID.CoreSDK {
-    final class OSLogger: ExtensionLoggerProtocol {
-        var identifier = UUID()
-        
-        private let level: LogLevel
-        
-        init(level: LogLevel) {
-            self.level = level
+    final class OSLogger: LoggerProtocol {
+        func log(priority: Int, codeInitiator: String, message: String, exception: String?) {
+            os_log("Log 🪵 \n%{public}@", log: OSLog.OSLogging, type: osLogType(priority: priority), message)
         }
         
-        func log(_ entry: LogItem, level: LogLevel?) {
-            if entry.shouldLog(for: self.level) {
-                os_log("Log 🪵 \n%{public}@", log: OSLog.OSLogging, type: entry.level.osLogType, entry.debugDescription)
+        func osLogType(priority: Int) -> OSLogType {
+            switch priority {
+            case 0:
+                return .debug
+            case 1, 2:
+                return .info
+            case 3:
+                return .error
+            default:
+                return .debug
             }
-        }
-    }
-}
-
-extension OwnID.CoreSDK.LogLevel {
-    var osLogType: OSLogType {
-        switch self {
-        case .debug:
-            return .debug
-            
-        case .information:
-            return .info
-            
-        case .warning:
-            return .info
-            
-        case .error:
-            return .error
         }
     }
 }
