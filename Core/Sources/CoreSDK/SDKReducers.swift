@@ -12,9 +12,7 @@ extension OwnID.CoreSDK {
                             environment,
                             supportedLanguages):
             state.supportedLanguages = supportedLanguages
-            OwnID.CoreSDK.logger.log(.entry(level: .information,
-                                            message: "Configuration created",
-                                            Self.self))
+            OwnID.CoreSDK.logger.log(level: .information, message: "Configuration created", Self.self)
 
             return [createConfiguration(appID: appID,
                                         redirectionURL: redirectionURL,
@@ -52,7 +50,7 @@ extension OwnID.CoreSDK {
             
         case .configureForTests:
             state.apiEndpoint = .testMock
-            OwnID.startDebugConsoleLogger()
+            OwnID.CoreSDK.shared.enableLogging()
             return [testConfiguration()]
             
         case let .configureFromDefaultConfiguration(userFacingSDK, underlyingSDKs, supportedLanguages):
@@ -60,9 +58,7 @@ extension OwnID.CoreSDK {
             return [Just(.configureFrom(plistUrl: url, userFacingSDK: userFacingSDK, underlyingSDKs: underlyingSDKs, supportedLanguages: supportedLanguages)).eraseToEffect()]
             
         case let .configureFrom(plistUrl, userFacingSDK, underlyingSDKs, supportedLanguages):
-            OwnID.CoreSDK.logger.log(.entry(level: .information,
-                                            message: "Configuration created from plist",
-                                            Self.self))
+            OwnID.CoreSDK.logger.log(level: .information, message: "Configuration created from plist", Self.self)
             
             state.supportedLanguages = supportedLanguages
             return [getDataFrom(plistUrl: plistUrl,

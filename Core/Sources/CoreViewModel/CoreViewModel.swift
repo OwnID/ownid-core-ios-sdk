@@ -130,7 +130,7 @@ extension OwnID.CoreSDK {
                         store.send(.addToStateConfig(config: configuration))
                         
                     case .error(let error):
-                        store.send(.error(.coreLog(entry: .errorEntry(Self.self), error: error)))
+                        store.send(.error(.coreLog(error: error, type: Self.self)))
                     }
                 }
                 .store(in: &bag)
@@ -140,7 +140,7 @@ extension OwnID.CoreSDK {
         
         private func logInternalStates() {
             let states = internalStatesLog(states: internalStatesChange)
-            OwnID.CoreSDK.logger.log(.entry(level: .debug, message: states, Self.self))
+            OwnID.CoreSDK.logger.log(level: .debug, message: states, Self.self)
             internalStatesChange.removeAll()
         }
         
@@ -185,7 +185,6 @@ extension OwnID.CoreSDK {
                         
                     case .error(let error):
                         internalStatesChange.append(String(describing: action))
-                        error.entry.message += " " + internalStatesLog(states: internalStatesChange)
                         if !error.isOnUI {
                             flowsFinished()
                             resultPublisher.send(completion: .failure(error))

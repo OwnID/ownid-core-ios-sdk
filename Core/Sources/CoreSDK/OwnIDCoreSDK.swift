@@ -2,18 +2,12 @@ import SwiftUI
 import Combine
 
 /// OwnID class represents core part of SDK. It performs initialization and creates views. It reads OwnIDConfiguration from disk, parses it and loads to memory for later usage. It is a singleton, so the URL returned from outside can be linked to corresponding flow.
-public extension OwnID {
-    
-    /// Turns on logs to console app & console
-    static func startDebugConsoleLogger(logLevel: OwnID.CoreSDK.LogLevel = .error) {
-        OwnID.CoreSDK.logger.add(OwnID.CoreSDK.OSLogger(level: logLevel))
-        OwnID.CoreSDK.shared.enableLogging()
-    }
-    
+public extension OwnID {    
     final class CoreSDK {
         public var serverConfigurationURL: ServerURL? { store.value.firstConfiguration?.ownIDServerConfigurationURL }
         
-        func enableLogging() {
+        public func enableLogging() {
+            OwnID.CoreSDK.logger.isEnabled = true
             store.send(.startDebugLogger)
         }
         
@@ -40,7 +34,7 @@ public extension OwnID {
         
         public var isSDKConfigured: Bool { !store.value.configurations.isEmpty }
         
-        public static var logger: LoggerProtocol { Logger.shared }
+        public static var logger = InternalLogger.shared
         public static var eventService: EventService { EventService.shared }
         
         public func configureForTests() { store.send(.configureForTests) }
@@ -114,14 +108,13 @@ public extension OwnID {
         /// - Parameter url: URL returned from webapp after it has finished
         /// - Parameter sdkConfigurationName: Used to get proper data from configs in case of multiple SDKs
         public func handle(url: URL, sdkConfigurationName: String) {
-            OwnID.CoreSDK.logger.log(.entry(level: .debug, message: "\(url.absoluteString)", Self.self))
+            OwnID.CoreSDK.logger.log(level: .debug, message: "\(url.absoluteString)", Self.self)
             let redirectParamKey = "redirect"
             let components = URLComponents(url: url, resolvingAgainstBaseURL: false)?.queryItems
             let redirectParameterValue = components?.first(where: { $0.name == redirectParamKey })?.value
             if redirectParameterValue == "false" {
                 let message = OwnID.CoreSDK.ErrorMessage.redirectParameterFromURLCancelledOpeningSDK
-                urlPublisher.send(completion: .failure(.coreLog(entry: .errorEntry(Self.self),
-                                                                error: .userError(errorModel: UserErrorModel(message: message)))))
+                urlPublisher.send(completion: .failure(.coreLog(error: .userError(errorModel: UserErrorModel(message: message)), type: Self.self)))
                 return
             }
             
@@ -129,8 +122,7 @@ public extension OwnID {
                   url.absoluteString.lowercased().starts(with: redirection.redirectionURL.lowercased())
             else {
                 let message = OwnID.CoreSDK.ErrorMessage.notValidRedirectionURLOrNotMatchingFromConfiguration
-                urlPublisher.send(completion: .failure(.coreLog(entry: .errorEntry(Self.self),
-                                                                error: .userError(errorModel: UserErrorModel(message: message)))))
+                urlPublisher.send(completion: .failure(.coreLog(error: .userError(errorModel: UserErrorModel(message: message)), type: Self.self)))
                 return
             }
             urlPublisher.send(())

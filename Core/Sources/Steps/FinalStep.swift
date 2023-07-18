@@ -28,7 +28,7 @@ extension OwnID.CoreSDK.CoreViewModel {
                 .receive(on: DispatchQueue.main)
                 .handleEvents(receiveOutput: { response in
                     let context = response[Constants.contextKey] as? String ?? ""
-                    OwnID.CoreSDK.logger.log(.entry(context: context, level: .debug, message: "Final Request Finished", Self.self))
+                    OwnID.CoreSDK.logger.log(level: .debug, message: "Final Request Finished", Self.self)
                 })
                 .tryMap { response in
                     let context = response[Constants.contextKey] as? String ?? ""
@@ -39,8 +39,8 @@ extension OwnID.CoreSDK.CoreViewModel {
                     }
                     
                     if let serverError = responsePayload[Constants.errorKey] as? String {
-                        throw OwnID.CoreSDK.CoreErrorLogWrapper.coreLog(entry: .errorEntry(context: context, Self.self),
-                                                                        error: .userError(errorModel: OwnID.CoreSDK.UserErrorModel(message: serverError)))
+                        throw OwnID.CoreSDK.CoreErrorLogWrapper.coreLog(error: .userError(errorModel: OwnID.CoreSDK.UserErrorModel(message: serverError)),
+                                                                        type: Self.self)
                     }
                     let loginId = responsePayload[Constants.loginIdKey] as? String ?? ""
                     let data = responsePayload[Constants.dataKey]
@@ -67,7 +67,7 @@ extension OwnID.CoreSDK.CoreViewModel {
                 })
                 .map { Action.statusRequestLoaded(response: $0) }
                 .catch({ error in
-                    return Just(Action.error(.coreLog(entry: .errorEntry(Self.self), error: error)))
+                    return Just(Action.error(.coreLog(error: error, type: Self.self)))
                 })
                 .eraseToEffect()
             return [action]

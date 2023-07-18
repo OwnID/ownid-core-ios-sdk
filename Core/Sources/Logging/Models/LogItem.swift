@@ -27,37 +27,6 @@ public extension OwnID.CoreSDK {
             self.exception = exception
             self.metadata = metadata
         }
-        
-        func shouldLog(for logLevel: LogLevel) -> Bool {
-            return level.shouldLog(for: logLevel.priority)
-        }
-        
-        public static func entry<T>(context: String? = LoggerConstants.noContext,
-                             level: LogLevel,
-                             function: String = #function,
-                             file: String = #file,
-                             message: String = "",
-                             exception: String? = nil,
-                             _: T.Type = T.self) -> LogItem {
-            LogItem(context: context ?? LoggerConstants.noContext,
-                    level: level,
-                    codeInitiator: String(describing: T.self),
-                    message: "\(message) \(function) \(file)",
-                    exception: exception)
-        }
-        
-        public static func errorEntry<T>(context: String? = LoggerConstants.noContext,
-                                         function: String = #function,
-                                         file: String = #file,
-                                         message: String = "",
-                                         exception: String? = nil,
-                                         _: T.Type = T.self) -> LogItem {
-            LogItem(context: context ?? LoggerConstants.noContext,
-                    level: .error,
-                    codeInitiator: String(describing: T.self),
-                    message: "\(message) \(function) \((file as NSString).lastPathComponent)",
-                    exception: exception)
-        }
     }
 }
 

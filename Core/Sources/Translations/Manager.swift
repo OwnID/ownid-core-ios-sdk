@@ -176,7 +176,7 @@ extension OwnID.CoreSDK.TranslationsSDK {
             notificationCenterCancellable = NotificationCenter.default.publisher(for: NSLocale.currentLocaleDidChangeNotification)
                 .sink { [weak self] notification in
                     let message = "Recieve notification about language change \(notification)"
-                    OwnID.CoreSDK.logger.log(.entry(level: .debug, message: message, OwnID.CoreSDK.TranslationsSDK.Downloader.self))
+                    OwnID.CoreSDK.logger.log(level: .debug, message: message, OwnID.CoreSDK.TranslationsSDK.Downloader.self)
                     if let value = self?.supportedLanguages.shouldChangeLanguageOnSystemLanguageChange, value {
                         self?.initializeLanguagesIfNeeded(supportedLanguages: .init(rawValue: Locale.preferredLanguages), shouldNotify: true)
                     }
@@ -210,14 +210,14 @@ extension OwnID.CoreSDK.TranslationsSDK {
                         self.requestsTagsInProgress.removeAll()
                         break
                     case .failure(let error):
-                        OwnID.CoreSDK.logger.log(.entry(level: .error, message: error.localizedDescription, OwnID.CoreSDK.TranslationsSDK.Manager.self))
+                        OwnID.CoreSDK.logger.log(level: .error, message: error.localizedDescription, OwnID.CoreSDK.TranslationsSDK.Manager.self)
                     }
                 } receiveValue: {
                     if shouldNotify {
                         self.translationsChange.send(())
                     }
                     let message = "Translations downloaded and saved"
-                    OwnID.CoreSDK.logger.log(.entry(level: .debug, message: message, OwnID.CoreSDK.TranslationsSDK.Manager.self))
+                    OwnID.CoreSDK.logger.log(level: .debug, message: message, OwnID.CoreSDK.TranslationsSDK.Manager.self)
                 }
         }
     }

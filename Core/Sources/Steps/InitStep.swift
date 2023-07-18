@@ -26,7 +26,7 @@ extension OwnID.CoreSDK.CoreViewModel {
         override func run(state: inout State) -> [Effect<Action>] {
             guard let configuration = state.configuration else {
                 let message = OwnID.CoreSDK.ErrorMessage.noLocalConfig
-                return errorEffect(.coreLog(entry: .errorEntry(Self.self), error: .userError(errorModel: OwnID.CoreSDK.UserErrorModel(message: message))))
+                return errorEffect(.coreLog(error: .userError(errorModel: OwnID.CoreSDK.UserErrorModel(message: message)), type: Self.self))
             }
             
             let locales = OwnID.CoreSDK.TranslationsSDK.LanguageMapper.matchSystemLanguage(to: OwnID.CoreSDK.shared.supportedLocales ?? [],
@@ -39,9 +39,9 @@ extension OwnID.CoreSDK.CoreViewModel {
             let sessionChallengeData = SHA256.hash(data: sessionVerifierData).data
             let sessionChallenge = sessionChallengeData.toBase64URL()
 
-            OwnID.CoreSDK.logger.log(.entry(level: .information,
-                                            message: "isFidoPossible \(OwnID.CoreSDK.isPasskeysSupported)",
-                                            Self.self))
+            OwnID.CoreSDK.logger.log(level: .information,
+                                     message: "isFidoPossible \(OwnID.CoreSDK.isPasskeysSupported)",
+                                     Self.self)
             let eventCategory: OwnID.CoreSDK.EventCategory = state.type == .login ? .login : .registration
             OwnID.CoreSDK.eventService.sendMetric(.trackMetric(action: .fidoSupports(isFidoSupported: OwnID.CoreSDK.isPasskeysSupported),
                                                                category: eventCategory,
@@ -63,17 +63,18 @@ extension OwnID.CoreSDK.CoreViewModel {
                             with: InitResponse.self)
             .receive(on: DispatchQueue.main)
             .handleEvents(receiveOutput: { response in
-                OwnID.CoreSDK.logger.log(.entry(context: response.context, level: .debug, message: "Init Request Finished", Self.self))
+                OwnID.CoreSDK.logger.updateContext(context: response.context)
+                OwnID.CoreSDK.logger.log(level: .debug, message: "Init Request Finished", Self.self)
             })
             .map({ response in
                 if let error = response.error {
                     let model = OwnID.CoreSDK.UserErrorModel(code: error.errorCode, message: error.message, userMessage: error.userMessage)
-                    return .error(.coreLog(entry: .errorEntry(Self.self), error: .userError(errorModel: model)))
+                    return .error(.coreLog(error: .userError(errorModel: model), type: Self.self))
                 } else {
                     return .initialRequestLoaded(response: response)
                 }
             })
-            .catch { Just(Action.error(.coreLog(entry: .errorEntry(Self.self), error: $0))) }
+            .catch { Just(Action.error(.coreLog(error: $0, type: Self.self))) }
             .eraseToEffect()
         }
         

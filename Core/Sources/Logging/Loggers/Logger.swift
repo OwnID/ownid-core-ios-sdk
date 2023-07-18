@@ -1,49 +1,89 @@
 import Foundation
 
 public protocol LoggerProtocol {
-    func add(_ logger: ExtensionLoggerProtocol)
-    func remove(_ logger: ExtensionLoggerProtocol)
-    func log(_ entry: OwnID.CoreSDK.LogItem)
-    func sdkConfigured()
+    func log(priority: Int, codeInitiator: String, message: String, exception: String?)
 }
 
-public extension String {
-    var logValue: String {
-        if isEmpty {
-            return self
+public extension OwnID.CoreSDK {
+    class Logger {
+        public var isEnabled = true
+        
+        private var tag: String = "OwnID-SDK"
+        private var logger: LoggerProtocol = OSLogger()
+        
+        func setLogger(_ logger: LoggerProtocol = OSLogger(), customTag: String) {
+            self.logger = logger
+            tag = customTag
         }
-        var prefixCount = count - 3
-        if prefixCount <= 3 {
-            prefixCount = 2
+        
+        public func log(priority: Int, codeInitiator: String, message: String, exception: String?) {
+            if isEnabled {
+                logger.log(priority: priority, codeInitiator: codeInitiator, message: message, exception: exception)
+            }
         }
-        return String(self.prefix(prefixCount))
     }
 }
 
-public protocol ExtensionLoggerProtocol {
-    var identifier: UUID { get }
-    
-    func log(_ entry: OwnID.CoreSDK.LogItem, level: OwnID.CoreSDK.LogLevel?)
+
+public extension OwnID.CoreSDK {
+    final class InternalLogger {
+        static let shared = InternalLogger()
+        private init() { }
+        
+        var isEnabled = true {
+            didSet {
+                logger.updateIsEnabled(isEnabled: isEnabled)
+            }
+        }
+        let logger = PrivateLogger()
+        
+        public func setLogger(_ logger: LoggerProtocol, customTag: String) {
+            self.logger.setLogger(logger, customTag: customTag)
+        }
+        
+        public func log<T>(level: LogLevel,
+                           function: String = #function,
+                           file: String = #file,
+                           message: String = "",
+                           exception: String? = nil,
+                           force: Bool = false,
+                           _: T.Type = T.self) {
+            let message = "\(message) \(function) \((file as NSString).lastPathComponent)"
+            if force {
+                logger.forceLog(level: level, codeInitiator: String(describing: T.self), message: message, exception: exception)
+            } else {
+                logger.log(level: level, codeInitiator: String(describing: T.self), message: message, exception: exception)
+            }
+        }
+        
+        func updateContext(context: String?) {
+            logger.context = context
+        }
+        
+        func updateLogLevel(logLevel: LogLevel) {
+            logger.logLevel = logLevel
+        }
+        
+        func sdkConfigured() {
+            logger.sdkConfigured()
+        }
+    }
 }
 
 extension OwnID.CoreSDK {
-    final class Logger: LoggerProtocol {
-        static let shared = Logger()
-        private init() { }
+    final class PrivateLogger {
+        init() { }
+        
+        var context: String?
+        var logLevel = LogLevel.error
+        
+        private var logger = Logger()
+        
         private var sessionRequestSequenceNumber: UInt = 0
         private var sdkNotConfiguredLogs = [LogItem]()
-        var logLevel: LogLevel = .error
-        
-        private var extendedLoggers = [ExtensionLoggerProtocol]()
-        
-        func add(_ logger: ExtensionLoggerProtocol) {
-            extendedLoggers.append(logger)
-        }
-        
-        func remove(_ logger: ExtensionLoggerProtocol) {
-            if let index = extendedLoggers.firstIndex(where: { $0.identifier == logger.identifier }) {
-                extendedLoggers.remove(at: index)
-            }
+
+        func setLogger(_ logger: LoggerProtocol, customTag: String) {
+            self.logger.setLogger(logger, customTag: customTag)
         }
         
         func sdkConfigured() {
@@ -51,20 +91,34 @@ extension OwnID.CoreSDK {
             sdkNotConfiguredLogs.removeAll()
         }
         
-        func forceLog(_ entry: LogItem) {
-            let entry = setupLog(entry)
-        
-            sendToLoggers(entry)
-        }
-        
-        func log(_ entry: LogItem) {
-            let entry = setupLog(entry)
+        func log(level: LogLevel, codeInitiator: String, message: String, exception: String?) {
+            var entry = LogItem(context: context ?? LoggerConstants.noContext,
+                                level: level,
+                                codeInitiator: codeInitiator,
+                                message: message,
+                                exception: exception)
+            entry = setupLog(entry)
             
             if !OwnID.CoreSDK.shared.isSDKConfigured {
                 sdkNotConfiguredLogs.append(entry)
             } else {
                 sendToLoggers(entry)
             }
+        }
+        
+        func forceLog(level: LogLevel, codeInitiator: String, message: String, exception: String?) {
+            var entry = LogItem(context: context ?? LoggerConstants.noContext,
+                                level: level,
+                                codeInitiator: codeInitiator,
+                                message: message,
+                                exception: exception)
+            entry = setupLog(entry)
+            
+            sendToLoggers(entry)
+        }
+        
+        func updateIsEnabled(isEnabled: Bool) {
+            logger.isEnabled = isEnabled
         }
         
         private func setupLog(_ entry: LogItem) -> LogItem {
@@ -83,9 +137,24 @@ extension OwnID.CoreSDK {
         }
 
         private func sendToLoggers(_ entry: LogItem) {
-            extendedLoggers.forEach { logger in
-                logger.log(entry, level: logLevel)
+            logger.log(priority: logLevel.priority, codeInitiator: entry.codeInitiator ?? "", message: entry.message, exception: entry.exception)
+            
+            if entry.level.shouldLog(for: logLevel.priority) {
+                OwnID.CoreSDK.eventService.log(entry)
             }
         }
+    }
+}
+
+public extension String {
+    var logValue: String {
+        if isEmpty {
+            return self
+        }
+        var prefixCount = count - 3
+        if prefixCount <= 3 {
+            prefixCount = 2
+        }
+        return String(self.prefix(prefixCount))
     }
 }

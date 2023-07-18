@@ -108,8 +108,7 @@ public extension OwnID.FlowsSDK.RegisterView {
         public func register(registerParameters: RegisterParameters = EmptyRegisterParameters()) {
             guard let payload = registrationData.payload else {
                 let message = OwnID.CoreSDK.ErrorMessage.payloadMissing
-                handle(.coreLog(entry: .errorEntry(context: registrationData.payload?.context, Self.self),
-                                error: .userError(errorModel: OwnID.CoreSDK.UserErrorModel(message: message))))
+                handle(.coreLog(error: .userError(errorModel: OwnID.CoreSDK.UserErrorModel(message: message)), type: Self.self))
                 return
             }
             let config = OwnID.FlowsSDK.RegistrationConfiguration(payload: payload,
@@ -199,7 +198,7 @@ public extension OwnID.FlowsSDK.RegisterView {
                 } receiveValue: { [unowned self] event in
                     switch event {
                     case .success(let payload):
-                        OwnID.CoreSDK.logger.log(.entry(context: payload.context, level: .debug, Self.self))
+                        OwnID.CoreSDK.logger.log(level: .debug, Self.self)
                         switch payload.responseType {
                         case .registrationInfo:
                             self.registrationData.payload = payload
@@ -215,7 +214,7 @@ public extension OwnID.FlowsSDK.RegisterView {
                         }
                         
                     case .cancelled(let flow):
-                        handle(.coreLog(entry: .errorEntry(context: registrationData.payload?.context, Self.self), error: .flowCancelled(flow: flow)))
+                        handle(.coreLog(error: .flowCancelled(flow: flow), type: Self.self))
                         
                     case .loading:
                         resultPublisher.send(.success(.loading))
@@ -271,7 +270,6 @@ private extension OwnID.FlowsSDK.RegisterView.ViewModel {
     
     func handle(_ error: OwnID.CoreSDK.CoreErrorLogWrapper) {
         resetToInitialState()
-        OwnID.FlowsSDK.ErrorLogSender.sendLog(error: error)
         resultPublisher.send(.failure(error.error))
     }
 }

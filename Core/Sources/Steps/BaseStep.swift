@@ -35,15 +35,15 @@ extension OwnID.CoreSDK.CoreViewModel {
                 return nextStepAction(step)
             } else if let error = response.error {
                 let model = OwnID.CoreSDK.UserErrorModel(code: error.errorCode, message: error.message, userMessage: error.userMessage)
-                return .error(.coreLog(entry: .errorEntry(Self.self),
-                                       error: .userError(errorModel: model),
+                return .error(.coreLog(error: .userError(errorModel: model),
                                        isOnUI: isOnUI,
-                                       flowFinished: error.flowFinished ?? true))
+                                       flowFinished: error.flowFinished ?? true,
+                                       type: Self.self))
             }
             let message = OwnID.CoreSDK.ErrorMessage.requestError
-            return Action.error(.coreLog(entry: .errorEntry(Self.self),
-                                         error: .userError(errorModel: OwnID.CoreSDK.UserErrorModel(message: message)),
-                                         isOnUI: isOnUI))
+            return .error(.coreLog(error: .userError(errorModel: OwnID.CoreSDK.UserErrorModel(message: message)),
+                                   isOnUI: isOnUI,
+                                   type: Self.self))
         }
     }
 }
