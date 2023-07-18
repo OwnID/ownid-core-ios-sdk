@@ -119,7 +119,8 @@ public extension OwnID {
             }
             
             guard let redirection = store.value.getOptionalConfiguration(for: sdkConfigurationName),
-                  url.absoluteString.lowercased().starts(with: redirection.redirectionURL.lowercased())
+                  let redirectionUrl = redirection.redirectionURL?.lowercased(),
+                  url.absoluteString.lowercased().starts(with: redirectionUrl)
             else {
                 let message = OwnID.CoreSDK.ErrorMessage.notValidRedirectionURLOrNotMatchingFromConfiguration
                 urlPublisher.send(completion: .failure(.coreLog(error: .userError(errorModel: UserErrorModel(message: message)), type: Self.self)))
