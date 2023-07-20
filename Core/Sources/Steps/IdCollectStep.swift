@@ -20,10 +20,13 @@ extension OwnID.CoreSDK.CoreViewModel {
                 return errorEffect(.coreLog(error: .userError(errorModel: OwnID.CoreSDK.UserErrorModel(message: message)), type: Self.self))
             }
             
-            OwnID.UISDK.PopupManager.dismiss()
-            OwnID.UISDK.showIdCollectView(store: state.idCollectViewStore,
-                                          loginId: state.loginId,
-                                          loginIdSettings: loginIdSettings)
+            let idCollectViewStore = state.idCollectViewStore!
+            let loginId = state.loginId
+            OwnID.UISDK.PopupManager.dismissPopup(completion: {
+                OwnID.UISDK.showIdCollectView(store: idCollectViewStore,
+                                              loginId: loginId,
+                                              loginIdSettings: loginIdSettings)
+            })
             
             if #available(iOS 15.0, *) {
                 let idCollectView = String(describing: OwnID.UISDK.IdCollect.IdCollectView.self)

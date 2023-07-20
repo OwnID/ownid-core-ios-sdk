@@ -44,11 +44,6 @@ public extension OwnID {
         }
         
         @available(iOS 15.0, *)
-        public static var popupViewBackgroundColor: Color {
-            Color("\(OwnID.UISDK.PopupView.self)BackgroundColor", bundle: .resourceBundle)
-        }
-        
-        @available(iOS 15.0, *)
         public static var idCollectViewLoginFieldBorderColor: Color {
             Color("\(OwnID.UISDK.IdCollect.IdCollectView.self)LoginFieldBorderColor", bundle: .resourceBundle)
         }

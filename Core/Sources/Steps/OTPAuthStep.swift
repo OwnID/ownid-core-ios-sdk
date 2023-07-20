@@ -26,13 +26,16 @@ extension OwnID.CoreSDK.CoreViewModel {
             }
             
             let otpLength = otpData.otpLength ?? Constants.defaultOtpLenght
-            OwnID.UISDK.PopupManager.dismiss()
-            OwnID.UISDK.showOTPView(store: state.oneTimePasswordStore,
-                                    loginId: state.loginId,
-                                    otpLength: otpLength,
-                                    restartUrl: restartUrl,
-                                    type: step.type,
-                                    verificationType: otpData.verificationType)
+            let oneTimePasswordStore = state.oneTimePasswordStore!
+            let loginId = state.loginId
+            OwnID.UISDK.PopupManager.dismissPopup(completion: {
+                OwnID.UISDK.showOTPView(store: oneTimePasswordStore,
+                                        loginId: loginId,
+                                        otpLength: otpLength,
+                                        restartUrl: restartUrl,
+                                        type: self.step.type,
+                                        verificationType: otpData.verificationType)
+            })
             
             if #available(iOS 15.0, *) {
                 let otpView = String(describing: OwnID.UISDK.OneTimePassword.OneTimePasswordView.self)
