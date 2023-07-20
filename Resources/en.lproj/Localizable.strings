@@ -12,7 +12,7 @@
 
 "steps.cancel" = "Cancel";
 "steps.continue" = "Continue";
-"steps.error" = "Something went wrong. Please try again.";
+"steps.error" = "Something went wrong. Try again.";
 
 "steps.instant-connect.title-ios" = "Sign In";
 "steps.instant-connect.description-ios" = "Face ID";
@@ -20,13 +20,13 @@
 "steps.instant-connect.description-android" = "Use your fingerprint to sign in";
 "steps.instant-connect.not-you" = "Not you?";
 "steps.instant-connect.known-user.title-android" = "Sign in as %LOGIN_ID%";
-"steps.instant-connect.known-user.cta-ios" = "Sign in as %LOGIN_ID%";
-"steps.instant-connect.unknown-user.title-android" = "Sign In with Fingerprint";
-"steps.instant-connect.unknown-user.cta-ios" = "Sign in with Face ID";
+"steps.instant-connect.known-user.cta-ios" = "Use %LOGIN_ID%";
+"steps.instant-connect.unknown-user.title-android" = "Sign in with fingerprint";
+"steps.instant-connect.unknown-user.cta-ios" = "Sign In with Face ID";
 
 "steps.login-id-collect.cta" = "Continue";
-"steps.login-id-collect.title-android" = "Sign In with Fingerprint";
-"steps.login-id-collect.title-ios" = "Sign-in with Face ID";
+"steps.login-id-collect.title-android" = "Sign in with fingerprint";
+"steps.login-id-collect.title-ios" = "Sign In with Face ID";
 "steps.login-id-collect.email.error" = "Enter a valid email";
 "steps.login-id-collect.email.message" = "Enter your email";
 "steps.login-id-collect.email.placeholder" = "Email";
@@ -52,8 +52,8 @@
 "steps.otp.email.resend" = "Resend email";
 "steps.otp.sms.message" = "An SMS with a %CODE_LENGTH%-digit code was just sent to\n%LOGIN_ID%";
 "steps.otp.sms.resend" = "Resend SMS";
-"steps.otp.sign.title-android" = "Use a one-time code";
-"steps.otp.sign.title-ios" = "Use a One-Time Code";
+"steps.otp.sign.title-android" = "Use one-time code";
+"steps.otp.sign.title-ios" = "Use One-Time Code";
 "steps.otp.verify.email.title-android" = "Verify your email";
 "steps.otp.verify.email.title-ios" = "Verify Your Email";
 "steps.otp.verify.sms.title-android" = "Verify your phone number";
