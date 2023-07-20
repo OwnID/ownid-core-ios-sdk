@@ -12,7 +12,7 @@ extension OwnID.UISDK {
         if #available(iOS 15.0, *) {
             let operationType: OwnID.UISDK.OneTimePassword.OperationType = type == .loginIDAuthorization ? .oneTimePasswordSignIn : .verification
             let view = OwnID.UISDK.OneTimePassword.OneTimePasswordView(store: store,
-                                                                       visualConfig: PopupManager.shared.visualLookConfig,
+                                                                       visualConfig: OwnID.UISDK.OTPViewConfig(),
                                                                        loginId: loginId,
                                                                        codeLength: otpLength,
                                                                        restartURL: restartUrl,
@@ -207,7 +207,7 @@ extension OwnID.UISDK.OneTimePassword {
         }
         
         private func dismiss() {
-            OwnID.UISDK.PopupManager.dismiss()
+            OwnID.UISDK.PopupManager.dismissPopup()
             store.send(.cancel)
         }
         

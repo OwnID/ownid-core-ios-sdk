@@ -80,7 +80,7 @@ extension OwnID.UISDK.OneTimePassword {
             return []
         case .success:
             state.isLoading = false
-            OwnID.UISDK.PopupManager.dismiss()
+            OwnID.UISDK.PopupManager.dismissPopup()
             return []
         case .stopLoading:
             state.isLoading = false

@@ -2,119 +2,28 @@ import SwiftUI
 import UIKit
 import Combine
 
-extension OwnID.UISDK {
-    @available(iOS 15.0, *)
-    struct PopupView: View {
-        @StateObject private var stack: PopupManager = .shared
-        
-        var body: some View {
-            if let view = stack.views.first {
-                PopupStackView(popupContent: view)
-                    .background(createOverlay()
-                        .onTapGesture {
-                            view.backgroundOverlayTapped()
-                        })
-            } else {
-                EmptyView()
-            }
-        }
-    }
-}
-
-extension OwnID.UISDK {
-    @available(iOS 15.0, *)
-    struct PopupStackView: View {
-        private enum Constants {
-            static let contentCornerRadius: CGFloat = 10.0
-            static let animationResponse = 0.32
-            static let animationDampingFraction = 1.0
-            static let animationDuration = 0.32
-        }
-        
-        @Environment(\.colorScheme) var colorScheme
-        
-        let popupContent: AnyPopup
-        var body: some View {
-            VStack(spacing: 0) {
-                Spacer()
-                ZStack(alignment: .bottom) {
-                    popupContent.createContent()
-                        .background(colorScheme == .dark ? .regularMaterial : .thinMaterial)
-                        .containerShape(RoundedCorner(radius: Constants.contentCornerRadius, corners: [.topLeft, .topRight]))
-                        .transition(.move(edge: .top))
-                }
-            }
-            .animation(.spring(response: Constants.animationResponse,
-                               dampingFraction: Constants.animationDampingFraction,
-                               blendDuration: Constants.animationDuration),
-                       value: popupContent)
-        }
-    }
-}
-
-@available(iOS 15.0, *)
-public extension View {
-    func addInstantOverlayView() -> some View {
-        overlay(OwnID.UISDK.PopupView())
-    }
-}
-
-@available(iOS 15.0, *)
-extension UIScreen {
-    static let width: CGFloat = main.bounds.size.width
-    static let height: CGFloat = main.bounds.size.height
-    static let safeArea: UIEdgeInsets = {
-        UIApplication.shared.connectedScenes
-            .filter({ $0.activationState == .foregroundActive })
-            .map({ $0 as? UIWindowScene })
-            .compactMap({ $0 })
-            .first?.windows
-            .filter({ $0.isKeyWindow })
-            .first?
-            .safeAreaInsets ?? .zero
-    }()
-}
-
-public extension OwnID.UISDK {
-    final class PopupManager: ObservableObject {
-        @Published var views = [OwnID.UISDK.AnyPopup]()
-        
-        public var visualLookConfig = OTPViewConfig()
-        public static let shared: PopupManager = .init()
-        private init() {}
-    }
-}
-
-public protocol Popup: View, Hashable, Equatable {
+protocol Popup: View {
     associatedtype V: View
-
-    var id: String { get }
 
     func createContent() -> V
     func backgroundOverlayTapped()
 }
 
-public extension Popup {
-    func presentAsPopup() { OwnID.UISDK.PopupManager.present(OwnID.UISDK.AnyPopup(self)) }
-    func dismiss() { OwnID.UISDK.PopupManager.dismiss() }
-
-    static func ==(lhs: Self, rhs: Self) -> Bool { lhs.id == rhs.id }
-    func hash(into hasher: inout Hasher) { hasher.combine(id) }
+extension Popup {
+    func presentAsPopup() { OwnID.UISDK.PopupManager.presentPopup(OwnID.UISDK.AnyPopup(self)) }
+    func dismiss() { OwnID.UISDK.PopupManager.dismissPopup() }
 
     var body: V { createContent() }
-    var id: String { String(describing: type(of: self)) }
 }
 
 extension OwnID.UISDK {
     struct AnyPopup: Popup {
-        let id: String
         private let popup: any Popup
-        
+
         init(_ popup: some Popup) {
             self.popup = popup
-            self.id = popup.id
         }
-        
+
         func backgroundOverlayTapped() {
             popup.backgroundOverlayTapped()
         }
@@ -127,29 +36,68 @@ extension OwnID.UISDK.AnyPopup {
     }
 }
 
-extension OwnID.UISDK.PopupManager {
-    static func present(_ popup: OwnID.UISDK.AnyPopup) {
-        DispatchQueue.main.async {
-            withAnimation(nil) {
-                shared.views.append(popup)
+extension OwnID.UISDK {
+    private enum PopupViewContants {
+        static let contentCornerRadius: CGFloat = 10.0
+        static let animationResponse = 0.32
+        static let animationDampingFraction = 1.0
+        static let animationDuration = 0.32
+        static let backgroundOpacity = 0.05
+    }
+    
+    final class PopupManager {
+        private static var currentController: UIViewController?
+        
+        static func presentPopup(_ popup: AnyPopup) {
+            if #available(iOS 15.0, *) {
+                let controller = UIHostingController(rootView: PopupView(content: popup))
+                controller.view.backgroundColor = .clear
+                controller.modalPresentationStyle = .overCurrentContext
+                currentController = controller
+                UIApplication.topViewController()?.present(controller, animated: false)
+            }
+        }
+        
+        static func dismissPopup(completion: (() -> Void)? = nil) {
+            if currentController != nil {
+                currentController?.dismiss(animated: false, completion: completion)
+                currentController = nil
+            } else {
+                completion?()
             }
         }
     }
     
-    public static func dismiss() { shared.views.removeAll() }
-}
-
-@available(iOS 15.0, *)
-private extension OwnID.UISDK.PopupView {
-    var overlayColour: Color { .black.opacity(0.05) }
-    var overlayAnimation: Animation { .easeInOut }
-}
-
-@available(iOS 15.0, *)
-private extension OwnID.UISDK.PopupView {
-    func createOverlay() -> some View {
-        overlayColour
-            .ignoresSafeArea()
-            .animation(overlayAnimation, value: true)
+    
+    @available(iOS 15.0, *)
+    struct PopupView<Content: Popup>: View {
+        let content: Content
+        
+        private var overlayColour: Color { .black.opacity(PopupViewContants.backgroundOpacity) }
+        private var overlayAnimation: Animation { .easeInOut }
+        
+        @Environment(\.colorScheme) var colorScheme
+        
+        var body: some View {
+            ZStack {
+                createOverlay()
+                    .onTapGesture {
+                        content.backgroundOverlayTapped()
+                    }
+                VStack(spacing: 0) {
+                    Spacer()
+                    content
+                        .background(colorScheme == .dark ? .regularMaterial : .thinMaterial)
+                        .containerShape(RoundedCorner(radius: PopupViewContants.contentCornerRadius, corners: [.topLeft, .topRight]))
+                        .transition(.move(edge: .top))
+                }
+            }
+        }
+        
+        func createOverlay() -> some View {
+            overlayColour
+                .ignoresSafeArea()
+                .animation(overlayAnimation, value: true)
+        }
     }
 }

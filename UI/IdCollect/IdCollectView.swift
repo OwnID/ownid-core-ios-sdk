@@ -12,7 +12,7 @@ extension OwnID.UISDK {
                                                            loginId: loginId,
                                                            loginIdSettings: loginIdSettings,
                                                            closeClosure: {
-                OwnID.UISDK.PopupManager.dismiss()
+                OwnID.UISDK.PopupManager.dismissPopup()
             })
             view.presentAsPopup()
         }
