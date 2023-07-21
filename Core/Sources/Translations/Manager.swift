@@ -183,6 +183,10 @@ extension OwnID.CoreSDK.TranslationsSDK {
                 }
         }
         
+        var isRTLLanguage: Bool {
+            localizableSaver.isRTLLanguage
+        }
+        
         public func localizedString(for keys: String...) -> String? {
             if CacheManager.isExpired() {
                 initializeLanguagesIfNeeded(supportedLanguages: .init(rawValue: Locale.preferredLanguages), shouldNotify: false)

@@ -98,26 +98,29 @@ extension OwnID.UISDK.IdCollect {
         }
         
         public func createContent() -> some View {
-            viewContent()
-                .onChange(of: loginId) { newValue in loginIdPublisher.send(newValue) }
-                .onReceive(OwnID.CoreSDK.shared.translationsModule.translationsChangePublisher) {
-                    isTranslationChanged.toggle()
-                }
-                .overlay {
-                    if isTranslationChanged {
-                        EmptyView()
+            Group {
+                viewContent()
+                    .onChange(of: loginId) { newValue in loginIdPublisher.send(newValue) }
+                    .onReceive(OwnID.CoreSDK.shared.translationsModule.translationsChangePublisher) {
+                        isTranslationChanged.toggle()
                     }
-                }
-                .overlay(alignment: .topTrailing) {
-                    Button {
-                        dismiss()
-                    } label: {
-                        Image(Constants.closeImageName, bundle: .resourceBundle)
+                    .overlay {
+                        if isTranslationChanged {
+                            EmptyView()
+                        }
                     }
-                    .modifier(AccessibilityLabelModifier(accessibilityLabel: cancel))
-                    .padding(.trailing, Constants.closeTrailingPadding)
-                    .padding(.top, Constants.closeTopPadding)
-                }
+                    .overlay(alignment: .topTrailing) {
+                        Button {
+                            dismiss()
+                        } label: {
+                            Image(Constants.closeImageName, bundle: .resourceBundle)
+                        }
+                        .modifier(AccessibilityLabelModifier(accessibilityLabel: cancel))
+                        .padding(.trailing, Constants.closeTrailingPadding)
+                        .padding(.top, Constants.closeTopPadding)
+                    }
+            }
+            .environment(\.layoutDirection, OwnID.CoreSDK.shared.translationsModule.isRTLLanguage ? .rightToLeft : .leftToRight)
         }
         
         public func backgroundOverlayTapped() {
@@ -159,7 +162,7 @@ extension OwnID.UISDK.IdCollect {
             if viewModel.isError {
                 HStack {
                     Text(localizedKey: .idCollectError(type: viewModel.loginIdType.rawValue))
-                        .multilineTextAlignment(.leading)
+                        .multilineTextAlignment(.center)
                         .foregroundColor(OwnID.Colors.errorColor)
                         .padding(.bottom, Constants.bottomPadding)
                 }
