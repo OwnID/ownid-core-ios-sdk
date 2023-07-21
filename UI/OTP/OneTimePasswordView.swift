@@ -162,44 +162,47 @@ extension OwnID.UISDK.OneTimePassword {
         }
         
         func createContent() -> some View {
-            return VStack {
-                topSection()
-                OwnID.UISDK.OTPTextFieldView(viewModel: viewModel)
-                    .shake(animatableData: store.value.attempts)
-                    .onChange(of: store.value.attempts) { newValue in
-                        viewModel.resetCode()
+            Group {
+                VStack {
+                    topSection()
+                    OwnID.UISDK.OTPTextFieldView(viewModel: viewModel)
+                        .shake(animatableData: store.value.attempts)
+                        .onChange(of: store.value.attempts) { newValue in
+                            viewModel.resetCode()
+                        }
+                    ZStack {
+                        if store.value.isLoading {
+                            OwnID.UISDK.SpinnerLoaderView(spinnerColor: visualConfig.loaderViewConfig.color,
+                                                          spinnerBackgroundColor: visualConfig.loaderViewConfig.backgroundColor,
+                                                          viewBackgroundColor: .clear)
+                            .frame(width: Constants.spinnerSize, height: Constants.spinnerSize)
+                        }
+                        resendView()
+                        errorText()
                     }
-                ZStack {
-                    if store.value.isLoading {
-                        OwnID.UISDK.SpinnerLoaderView(spinnerColor: visualConfig.loaderViewConfig.color,
-                                                      spinnerBackgroundColor: visualConfig.loaderViewConfig.backgroundColor,
-                                                      viewBackgroundColor: .clear)
-                        .frame(width: Constants.spinnerSize, height: Constants.spinnerSize)
+                    .frame(height: Constants.resendLoadingSize)
+                    notYouView()
+                        .padding([.top, .bottom], Constants.notYouPadding)
+                    errorView()
+                }
+                .frame(minWidth: 0, maxWidth: .infinity)
+                .padding(.all, Constants.padding)
+                .overlay(alignment: .topTrailing) {
+                    Button {
+                        dismiss()
+                    } label: {
+                        Image(Constants.closeImageName, bundle: .resourceBundle)
                     }
-                    resendView()
-                    errorText()
+                    .modifier(AccessibilityLabelModifier(accessibilityLabel: cancel))
+                    .padding(.trailing, Constants.closeTrailingPadding)
+                    .padding(.top, Constants.closeTopPadding)
                 }
-                .frame(height: Constants.resendLoadingSize)
-                notYouView()
-                    .padding([.top, .bottom], Constants.notYouPadding)
-                errorView()
-            }
-            .frame(minWidth: 0, maxWidth: .infinity)
-            .padding(.all, Constants.padding)
-            .overlay(alignment: .topTrailing) {
-                Button {
-                    dismiss()
-                } label: {
-                    Image(Constants.closeImageName, bundle: .resourceBundle)
+                .onReceive(OwnID.CoreSDK.shared.translationsModule.translationsChangePublisher) {
+                    emailSentText = emailSentTextChangedClosure()
+                    isTranslationChanged.toggle()
                 }
-                .modifier(AccessibilityLabelModifier(accessibilityLabel: cancel))
-                .padding(.trailing, Constants.closeTrailingPadding)
-                .padding(.top, Constants.closeTopPadding)
             }
-            .onReceive(OwnID.CoreSDK.shared.translationsModule.translationsChangePublisher) {
-                emailSentText = emailSentTextChangedClosure()
-                isTranslationChanged.toggle()
-            }
+            .environment(\.layoutDirection, OwnID.CoreSDK.shared.translationsModule.isRTLLanguage ? .rightToLeft : .leftToRight)
         }
         
         func backgroundOverlayTapped() {
