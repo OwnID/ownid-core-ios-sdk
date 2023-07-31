@@ -37,6 +37,61 @@ extension OwnID.UISDK.AnyPopup {
 }
 
 extension OwnID.UISDK {
+    //this was created to support landscape mode since UIHostingController itself doesn't redraw the UI correctly
+    final class SliderViewController: UIViewController {
+        var popup: AnyPopup!
+        
+        private var hostingController: UIViewController!
+        
+        override func viewDidLoad() {
+            super.viewDidLoad()
+
+            if #available(iOS 15.0, *) {
+                let hostingController = UIHostingController(rootView: PopupView(content: popup))
+                hostingController.view.backgroundColor = .clear
+                addChild(hostingController)
+                view.addSubview(hostingController.view)
+                hostingController.view.frame = view.bounds
+                hostingController.didMove(toParent: self)
+                self.hostingController = hostingController
+            }
+        }
+        
+        override func viewWillLayoutSubviews() {
+            super.viewWillLayoutSubviews()
+            
+            hostingController.view.frame = view.bounds
+        }
+
+        override var supportedInterfaceOrientations: UIInterfaceOrientationMask {
+            return .allButUpsideDown
+        }
+    }
+    
+    final class PopupManager {
+        private static var currentViewController: UIViewController?
+        
+        static func presentPopup(_ popup: AnyPopup) {
+            if #available(iOS 15.0, *) {
+                let viewController = SliderViewController()
+                viewController.popup = popup
+                viewController.view.backgroundColor = .clear
+                viewController.modalPresentationStyle = .overCurrentContext
+                currentViewController = viewController
+                UIApplication.topViewController()?.present(viewController, animated: false)
+            }
+        }
+        
+        static func dismissPopup(completion: (() -> Void)? = nil) {
+            if currentViewController != nil {
+                currentViewController?.dismiss(animated: false, completion: completion)
+                currentViewController = nil
+            } else {
+                completion?()
+            }
+        }
+    }
+    
     private enum PopupViewContants {
         static let contentCornerRadius: CGFloat = 10.0
         static let animationResponse = 0.32
@@ -44,30 +99,6 @@ extension OwnID.UISDK {
         static let animationDuration = 0.32
         static let backgroundOpacity = 0.05
     }
-    
-    final class PopupManager {
-        private static var currentController: UIViewController?
-        
-        static func presentPopup(_ popup: AnyPopup) {
-            if #available(iOS 15.0, *) {
-                let controller = UIHostingController(rootView: PopupView(content: popup))
-                controller.view.backgroundColor = .clear
-                controller.modalPresentationStyle = .overCurrentContext
-                currentController = controller
-                UIApplication.topViewController()?.present(controller, animated: false)
-            }
-        }
-        
-        static func dismissPopup(completion: (() -> Void)? = nil) {
-            if currentController != nil {
-                currentController?.dismiss(animated: false, completion: completion)
-                currentController = nil
-            } else {
-                completion?()
-            }
-        }
-    }
-    
     
     @available(iOS 15.0, *)
     struct PopupView<Content: Popup>: View {
