@@ -52,6 +52,8 @@ extension OwnID.CoreSDK.CoreViewModel.Action: CustomDebugStringConvertible {
             return "stopRequestLoaded"
         case .sameStep:
             return "sameStep"
+        case .notYouCancel:
+            return "notYouCancel"
         }
     }
 }

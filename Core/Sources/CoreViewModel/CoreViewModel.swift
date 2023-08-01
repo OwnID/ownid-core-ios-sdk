@@ -71,6 +71,10 @@ extension OwnID.CoreSDK {
                         default:
                             return .error(OwnID.CoreSDK.UserErrorModel(message: ""), flowFinished: wrapper.flowFinished)
                         }
+                    case .sameStep:
+                        return .stopLoading
+                    case .notYouCancel:
+                        return .notYouCancel
                     case .success:
                         return .success
                     default:
@@ -176,7 +180,8 @@ extension OwnID.CoreSDK {
                             .codeResent,
                             .authManagerCancelled,
                             .cancelled,
-                            .sameStep:
+                            .sameStep,
+                            .notYouCancel:
                         internalStatesChange.append(action.debugDescription)
                         
                     case let .statusRequestLoaded(payload):

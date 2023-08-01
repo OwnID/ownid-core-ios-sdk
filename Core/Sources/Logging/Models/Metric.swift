@@ -28,6 +28,7 @@ public extension OwnID.CoreSDK {
         case wrongOTP
         case correctOTP
         case noOTP
+        case notYou
         case screenShow(screen: String)
         case fidoSupports(isFidoSupported: Bool)
         case userPastedCode
@@ -61,6 +62,8 @@ public extension OwnID.CoreSDK {
                 return "Entered Correct Verification Code"
             case .noOTP:
                 return "User select: No OTP"
+            case .notYou:
+                return "Clicked Not You"
             case .screenShow(let screen):
                 return "Screen show: \(screen)"
             case .fidoSupports(let isFidoSupported):
@@ -85,6 +88,7 @@ public extension OwnID.CoreSDK {
                     .wrongOTP,
                     .correctOTP,
                     .noOTP,
+                    .notYou,
                     .screenShow,
                     .fidoSupports,
                     .userPastedCode,

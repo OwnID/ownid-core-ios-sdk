@@ -128,10 +128,11 @@ extension OwnID.CoreSDK.CoreViewModel {
             case .cancel:
                 let stopStep = StopStep(flow: .otp)
                 return stopStep.run(state: &state)
-                
-            case .emailIsNotRecieved:
+            case .notYouCancel:
+                break
+            case .emailIsNotRecieved(let flowFinished):
                 let otpStep = state.otpStep
-                return otpStep?.restart(state: &state) ?? []
+                return otpStep?.restart(state: &state, isFlowFinished: flowFinished) ?? []
                 
             case .error:
                 break
@@ -139,9 +140,6 @@ extension OwnID.CoreSDK.CoreViewModel {
             case .success:
                 break
 
-            case .cancelCodeOperation:
-                break
-                
             case .displayDidNotGetCode:
                 break
             case .stopLoading:
@@ -164,6 +162,9 @@ extension OwnID.CoreSDK.CoreViewModel {
             case .error:
                 return []
             }
+        case .notYouCancel:
+            let stopStep = StopStep(flow: .otp)
+            return stopStep.run(state: &state)
         }
     }
 }
