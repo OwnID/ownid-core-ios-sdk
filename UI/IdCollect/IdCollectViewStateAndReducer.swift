@@ -23,6 +23,7 @@ extension OwnID.UISDK.IdCollect {
         case .viewLoaded:
             state.error = nil
             state.isLoading = false
+            state.isFlowFinished = false
             return []
         case .cancel:
             return []

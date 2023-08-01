@@ -21,8 +21,8 @@ extension OwnID.UISDK.OneTimePassword {
         case codeEnteringStarted
         case codeEntered(String)
         case cancel
-        case cancelCodeOperation
-        case emailIsNotRecieved
+        case notYouCancel
+        case emailIsNotRecieved(flowFinished: Bool)
         case resendCode
         case displayDidNotGetCode
         case error(OwnID.CoreSDK.UserErrorModel, flowFinished: Bool)
@@ -42,6 +42,7 @@ extension OwnID.UISDK.OneTimePassword {
             state.isLoading = false
             state.isDisplayingDidNotGetCode = false
             state.error = nil
+            state.isFlowFinished = false
             
             return [Just(OwnID.UISDK.OneTimePassword.Action.displayDidNotGetCode)
                 .delay(for: .seconds(Constants.didNotGetCodeDelay), scheduler: DispatchQueue.main)
@@ -49,24 +50,27 @@ extension OwnID.UISDK.OneTimePassword {
         case .codeEnteringStarted:
             return []
         case .resendCode:
-            return []
+            state.isDisplayingDidNotGetCode = false
+            state.isLoading = true
+            return [Just(OwnID.UISDK.OneTimePassword.Action.displayDidNotGetCode)
+                .delay(for: .seconds(Constants.didNotGetCodeDelay), scheduler: DispatchQueue.main)
+                .eraseToEffect()]
         case .codeEntered:
             if state.isLoading {
-                return [Just(.stopLoading).eraseToEffect(),
-                        Just(OwnID.UISDK.OneTimePassword.Action.cancelCodeOperation).eraseToEffect()]
+                return [Just(.stopLoading).eraseToEffect()]
             }
             state.error = nil
             state.isLoading = true
             return []
         case .cancel:
             return [Just(.stopLoading) .eraseToEffect()]
-            
+        case .notYouCancel:
+            state.isLoading = false
+            OwnID.UISDK.PopupManager.dismissPopup()
+            return []
         case .emailIsNotRecieved:
             state.error = nil
             state.isLoading = true
-            return []
-            
-        case .cancelCodeOperation:
             return []
         case .error(let errorModel, let flowFinished):
             state.isLoading = false
@@ -107,14 +111,14 @@ extension OwnID.UISDK.OneTimePassword.Action: CustomDebugStringConvertible {
             return "codeEntered"
         case .cancel:
             return "cancel"
+        case .notYouCancel:
+            return "notYouCancel"
         case .emailIsNotRecieved:
             return "emailIsNotRecieved"
         case .error:
             return "error"
         case .success:
             return "success"
-        case .cancelCodeOperation:
-            return "cancelCodeOperation"
         case .displayDidNotGetCode:
             return "displayDidNotGetCode"
         case .stopLoading:
