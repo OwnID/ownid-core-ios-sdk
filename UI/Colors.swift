@@ -43,6 +43,14 @@ public extension OwnID {
             Color("spinnerBackgroundStrokeColor", bundle: .resourceBundle)
         }
         
+        public static var authButtonSpinnerColor: Color {
+            Color("authButtonSpinnerStrokeColor", bundle: .resourceBundle)
+        }
+        
+        public static var authButtonSpinnerBackgroundColor: Color {
+            Color("authButtonSpinnerBackgroundStrokeColor", bundle: .resourceBundle)
+        }
+        
         @available(iOS 15.0, *)
         public static var idCollectViewLoginFieldBorderColor: Color {
             Color("\(OwnID.UISDK.IdCollect.IdCollectView.self)LoginFieldBorderColor", bundle: .resourceBundle)
