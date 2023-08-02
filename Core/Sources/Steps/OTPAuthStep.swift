@@ -64,11 +64,6 @@ extension OwnID.CoreSDK.CoreViewModel {
         }
         
         func restart(state: inout OwnID.CoreSDK.CoreViewModel.State, isFlowFinished: Bool) -> [Effect<Action>] {
-            guard !isFlowFinished else {
-                state.loginId = ""
-                return stop(state: &state)
-            }
-            
             guard let otpData = step.otpData, let restartUrl = URL(string: otpData.restartUrl) else {
                 let message = OwnID.CoreSDK.ErrorMessage.dataIsMissing
                 return errorEffect(.coreLog(error: .userError(errorModel: OwnID.CoreSDK.UserErrorModel(message: message)),
@@ -81,6 +76,11 @@ extension OwnID.CoreSDK.CoreViewModel {
             OwnID.CoreSDK.eventService.sendMetric(.clickMetric(action: .notYou, category: eventCategory, context: context, loginId: state.loginId))
             
             if let enableRegistrationFromLogin = state.configuration?.enableRegistrationFromLogin, enableRegistrationFromLogin {
+                guard !isFlowFinished else {
+                    state.loginId = ""
+                    return stop(state: &state)
+                }
+                
                 let effect = state.session.perform(url: restartUrl,
                                                    method: .post,
                                                    body: EmptyBody(),
