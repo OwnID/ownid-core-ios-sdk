@@ -22,6 +22,7 @@ extension OwnID.CoreSDK.CoreViewModel {
         var idCollectViewStore: Store<OwnID.UISDK.IdCollect.ViewState, OwnID.UISDK.IdCollect.Action>!
         
         var shouldStartFlowOnConfigurationReceive = true
+        var shouldIgnoreLoginIdOnInit = false
         
         var sessionVerifier: OwnID.CoreSDK.SessionVerifier!
         var session: OwnID.CoreSDK.SessionService!

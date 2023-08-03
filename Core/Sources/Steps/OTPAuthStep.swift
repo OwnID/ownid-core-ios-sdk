@@ -48,7 +48,7 @@ extension OwnID.CoreSDK.CoreViewModel {
             return []
         }
         
-        private func stop(state: inout OwnID.CoreSDK.CoreViewModel.State) -> [Effect<Action>] {
+        private func stopAndInit(state: inout OwnID.CoreSDK.CoreViewModel.State) -> [Effect<Action>] {
             let effect = state.session.perform(url: state.stopUrl,
                                                method: .post,
                                                body: EmptyBody(),
@@ -77,8 +77,8 @@ extension OwnID.CoreSDK.CoreViewModel {
             
             if let enableRegistrationFromLogin = state.configuration?.enableRegistrationFromLogin, enableRegistrationFromLogin {
                 guard !isFlowFinished else {
-                    state.loginId = ""
-                    return stop(state: &state)
+                    state.shouldIgnoreLoginIdOnInit = true
+                    return stopAndInit(state: &state)
                 }
                 
                 let effect = state.session.perform(url: restartUrl,
