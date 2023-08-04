@@ -2,7 +2,7 @@
 ## OwnID Core iOS SDK
 The [OwnID](https://ownid.com/) iOS SDK is a client library written in Swift that provides a passwordless login alternative for your iOS application by using cryptographic keys to replace the traditional password. Integrating the SDK with your app adds a Skip Password option to its registration and login screens.
 
-The OwnID iOS SDK consists of a **Core** module along with modules that are specific to an identity platform like Firebase. The Core module provides core functionality like setting up an OwnID configuration, performing network calls to the OwnID server, interacting with iOS, and checking and returning results to the iOS application. The following modules extend the Core module for a specific identify management system:
+The OwnID iOS SDK consists of a **Core** module along with modules that are specific to an identity platform like Firebase. The Core module provides core functionality like setting up an OwnID configuration, performing network calls to the OwnID server, interacting with a browser, handling a redirect URI, and checking and returning results to the iOS application. The following modules extend the Core module for a specific identify management system:
 - **[OwnID Firebase-iOS SDK](https://github.com/OwnID/ownid-firebase-ios-sdk)** - Extends **Core** functionality by providing integration with Email/Password-based [Firebase Authentication](https://firebase.google.com/docs/auth).
 
 - **[OwnID Gigya-iOS SDK](https://github.com/OwnID/ownid-gigya-ios-sdk)** - Extends **Core** functionality by providing integration with Email/Password-based [Gigya Authentication](https://github.com/SAP/gigya-ios-sdk). In addition, the OwnID Gigya-iOS SDK has a **[Gigya-Screen-Sets](https://github.com/OwnID/ownid-demo-ios-sdk/tree/master/ScreensetsDemo)** integration.
@@ -15,9 +15,11 @@ This repository contains only core. Please refer to [demos](https://github.com/O
 ## Supported Languages
 The OwnID SDK has built-in support for multiple languages. The SDK loads translations in runtime and selects the best language available. The list of currently supported languages can be found [here](https://i18n.prod.ownid.com/langs.json).
 
-The SDK will also make the RTL adjustments if needed. If the user's mobile device uses a language that is not supported, the SDK displays the UI in English.
+The SDK will also make the RTL adjustments if needed. If the user's mobile device uses a language that is not supported, the SDK displays the Skip Password feature in English.
 
 ## Data Privacy
+The OwnID SDK does not store any data on the user's iOS device.
+
 The OwnID SDK collects data and information about events inside the SDK using Log Data. This Log Data does not include any personal data that can be used to identify the user such as username, email, and password. It does include general information like the device Internet Protocol (“IP”) address, device model, operating system version, time and date of events, and other statistics.
 
 Log Data is sent to the OwnID server using an encrypted process so it can be used to collect OwnID service statistics and improve service quality. OwnID does not share Log Data with any third party services.
