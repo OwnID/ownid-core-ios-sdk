@@ -34,6 +34,7 @@ extension OwnID.UISDK {
                             .multilineTextAlignment(.center)
                             .keyboardType(.numberPad)
                             .focused($focusedField, equals: index)
+                            .disabled(viewModel.isDisabled)
                             .padding(Constants.textFieldPadding)
                     }
                     .aspectRatio(1, contentMode: .fit)

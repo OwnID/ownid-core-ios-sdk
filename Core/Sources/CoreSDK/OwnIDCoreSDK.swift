@@ -53,6 +53,10 @@ public extension OwnID {
             coreViewModel.subscribeToURL(publisher: urlPublisher.eraseToAnyPublisher())
         }
         
+        public static func setSupportedLanguages(_ supportedLanguages: [String]) {
+            shared.translationsModule.setSupportedLanguages(supportedLanguages)
+        }
+        
         public func configure(appID: OwnID.CoreSDK.AppID,
                               redirectionURL: RedirectionURLString,
                               userFacingSDK: SDKInformation,

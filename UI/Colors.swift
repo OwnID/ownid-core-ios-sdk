@@ -43,9 +43,12 @@ public extension OwnID {
             Color("spinnerBackgroundStrokeColor", bundle: .resourceBundle)
         }
         
-        @available(iOS 15.0, *)
-        public static var popupViewBackgroundColor: Color {
-            Color("\(OwnID.UISDK.PopupView.self)BackgroundColor", bundle: .resourceBundle)
+        public static var authButtonSpinnerColor: Color {
+            Color("authButtonSpinnerStrokeColor", bundle: .resourceBundle)
+        }
+        
+        public static var authButtonSpinnerBackgroundColor: Color {
+            Color("authButtonSpinnerBackgroundStrokeColor", bundle: .resourceBundle)
         }
         
         @available(iOS 15.0, *)

@@ -41,7 +41,7 @@ public extension OwnID.CoreSDK {
         case userError(errorModel: UserErrorModel)
     }
     
-    struct UserErrorModel {
+    struct UserErrorModel: Equatable {
         public let code: ErrorTypeCode
         public let message: String
         public let userMessage: String

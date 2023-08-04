@@ -12,7 +12,7 @@ extension OwnID.UISDK {
         if #available(iOS 15.0, *) {
             let operationType: OwnID.UISDK.OneTimePassword.OperationType = type == .loginIDAuthorization ? .oneTimePasswordSignIn : .verification
             let view = OwnID.UISDK.OneTimePassword.OneTimePasswordView(store: store,
-                                                                       visualConfig: PopupManager.shared.visualLookConfig,
+                                                                       visualConfig: OwnID.UISDK.OTPViewConfig(),
                                                                        loginId: loginId,
                                                                        codeLength: otpLength,
                                                                        restartURL: restartUrl,
@@ -120,18 +120,15 @@ extension OwnID.UISDK.OneTimePassword {
             }
         }
         
-        @ViewBuilder
         private func notYouView() -> some View {
             ZStack {
-                if !store.value.isFlowFinished {
-                    Button {
-                        store.send(.emailIsNotRecieved)
-                    } label: {
-                        Text(localizedKey: .otpNotYou(operationType: operationType.rawValue, verificationType: verificationType.rawValue))
-                            .font(.system(size: Constants.buttonFontSize))
-                            .bold()
-                            .foregroundColor(OwnID.Colors.blue)
-                    }
+                Button {
+                    store.send(.emailIsNotRecieved(flowFinished: store.value.isFlowFinished))
+                } label: {
+                    Text(localizedKey: .otpNotYou(operationType: operationType.rawValue, verificationType: verificationType.rawValue))
+                        .font(.system(size: Constants.buttonFontSize))
+                        .bold()
+                        .foregroundColor(OwnID.Colors.blue)
                 }
             }
             .frame(height: Constants.errorViewHeight)
@@ -162,44 +159,52 @@ extension OwnID.UISDK.OneTimePassword {
         }
         
         func createContent() -> some View {
-            return VStack {
-                topSection()
-                OwnID.UISDK.OTPTextFieldView(viewModel: viewModel)
-                    .shake(animatableData: store.value.attempts)
-                    .onChange(of: store.value.attempts) { newValue in
-                        viewModel.resetCode()
+            Group {
+                VStack {
+                    topSection()
+                    OwnID.UISDK.OTPTextFieldView(viewModel: viewModel)
+                        .shake(animatableData: store.value.attempts)
+                        .onChange(of: store.value.attempts) { newValue in
+                            viewModel.resetCode()
+                        }
+                        .onChange(of: store.value.error) { newValue in
+                            if newValue != nil {
+                                viewModel.disableCodes()
+                            }
+                        }
+                    ZStack {
+                        if store.value.isLoading {
+                            OwnID.UISDK.SpinnerLoaderView(spinnerColor: visualConfig.loaderViewConfig.color,
+                                                          spinnerBackgroundColor: visualConfig.loaderViewConfig.backgroundColor,
+                                                          viewBackgroundColor: .clear)
+                            .frame(width: Constants.spinnerSize, height: Constants.spinnerSize)
+                        }
+                        resendView()
+                        errorText()
                     }
-                ZStack {
-                    if store.value.isLoading {
-                        OwnID.UISDK.SpinnerLoaderView(spinnerColor: visualConfig.loaderViewConfig.color,
-                                                      spinnerBackgroundColor: visualConfig.loaderViewConfig.backgroundColor,
-                                                      viewBackgroundColor: .clear)
-                        .frame(width: Constants.spinnerSize, height: Constants.spinnerSize)
+                    .frame(height: Constants.resendLoadingSize)
+                    notYouView()
+                        .padding([.top, .bottom], Constants.notYouPadding)
+                    errorView()
+                }
+                .frame(minWidth: 0, maxWidth: .infinity)
+                .padding(.all, Constants.padding)
+                .overlay(alignment: .topTrailing) {
+                    Button {
+                        dismiss()
+                    } label: {
+                        Image(Constants.closeImageName, bundle: .resourceBundle)
                     }
-                    resendView()
-                    errorText()
+                    .modifier(AccessibilityLabelModifier(accessibilityLabel: cancel))
+                    .padding(.trailing, Constants.closeTrailingPadding)
+                    .padding(.top, Constants.closeTopPadding)
                 }
-                .frame(height: Constants.resendLoadingSize)
-                notYouView()
-                    .padding([.top, .bottom], Constants.notYouPadding)
-                errorView()
-            }
-            .frame(minWidth: 0, maxWidth: .infinity)
-            .padding(.all, Constants.padding)
-            .overlay(alignment: .topTrailing) {
-                Button {
-                    dismiss()
-                } label: {
-                    Image(Constants.closeImageName, bundle: .resourceBundle)
+                .onReceive(OwnID.CoreSDK.shared.translationsModule.translationsChangePublisher) {
+                    emailSentText = emailSentTextChangedClosure()
+                    isTranslationChanged.toggle()
                 }
-                .modifier(AccessibilityLabelModifier(accessibilityLabel: cancel))
-                .padding(.trailing, Constants.closeTrailingPadding)
-                .padding(.top, Constants.closeTopPadding)
             }
-            .onReceive(OwnID.CoreSDK.shared.translationsModule.translationsChangePublisher) {
-                emailSentText = emailSentTextChangedClosure()
-                isTranslationChanged.toggle()
-            }
+            .environment(\.layoutDirection, OwnID.CoreSDK.shared.translationsModule.isRTLLanguage ? .rightToLeft : .leftToRight)
         }
         
         func backgroundOverlayTapped() {
@@ -207,7 +212,7 @@ extension OwnID.UISDK.OneTimePassword {
         }
         
         private func dismiss() {
-            OwnID.UISDK.PopupManager.dismiss()
+            OwnID.UISDK.PopupManager.dismissPopup()
             store.send(.cancel)
         }
         

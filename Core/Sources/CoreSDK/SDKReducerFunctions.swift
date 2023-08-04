@@ -70,6 +70,7 @@ extension OwnID.CoreSDK {
                     local.passkeysAutofillEnabled = serverConfiguration.passkeysAutofillEnabled
                     local.supportedLocales = serverConfiguration.supportedLocales
                     local.loginIdSettings = serverConfiguration.loginIdSettings
+                    local.enableRegistrationFromLogin = serverConfiguration.enableRegistrationFromLogin
                     return SDKAction.save(configurationLoadingEvent: .loaded(local), userFacingSDK: userFacingSDK)
                 }
                 .catch { _ in

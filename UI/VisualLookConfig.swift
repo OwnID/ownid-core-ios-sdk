@@ -43,7 +43,9 @@ public extension OwnID.UISDK {
                     lineHeight: CGFloat = 30.0,
                     textColor: Color = .white,
                     iconColor: Color = .white,
-                    backgroundColor: Color = OwnID.Colors.blue) {
+                    backgroundColor: Color = OwnID.Colors.blue,
+                    loaderViewConfig: LoaderViewConfig = LoaderViewConfig(color: OwnID.Colors.authButtonSpinnerColor,
+                                                                          backgroundColor: OwnID.Colors.authButtonSpinnerBackgroundColor)) {
             self.textSize = textSize
             self.lineHeight = lineHeight
             self.textColor = textColor
@@ -51,6 +53,7 @@ public extension OwnID.UISDK {
             self.backgroundColor = backgroundColor
             self.height = height
             self.loaderHeight = loaderHeight
+            self.loaderViewConfig = loaderViewConfig
         }
         
         public var iconColor: Color
@@ -60,6 +63,7 @@ public extension OwnID.UISDK {
         public var lineHeight: CGFloat
         public var textColor: Color
         public var backgroundColor: Color
+        public var loaderViewConfig: LoaderViewConfig
     }
     
     enum WidgetPosition: String {

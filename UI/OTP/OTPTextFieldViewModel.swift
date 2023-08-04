@@ -26,6 +26,7 @@ extension OwnID.UISDK.OTPTextFieldView {
         
         @Published var codes: [String]
         @Published var nextUpdateAction: NextUpdateAcion?
+        @Published var isDisabled = false
         private var disableTextFields = false
         
         @Published var currentFocusedFieldIndex: Int?
@@ -111,6 +112,10 @@ extension OwnID.UISDK.OTPTextFieldView {
                 codes[i] = Constants.zeroWidthSpaceCharacter
             }
             storage = Array(repeating: "", count: codeLength + 1)
+        }
+        
+        func disableCodes() {
+            isDisabled = true
         }
     }
 }

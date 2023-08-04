@@ -23,6 +23,10 @@ extension OwnID.CoreSDK.TranslationsSDK {
             }
         }
         
+        var isRTLLanguage: Bool {
+            (currentLanguageKey == "he" || currentLanguageKey == "ar") ? true : false
+        }
+        
         private lazy var rootFolderPath: String = {
             let documentsPath = NSSearchPathForDirectoriesInDomains(.documentDirectory, .userDomainMask, true).first!
             let bundlePath = documentsPath + Constants.slash + RuntimeLocalizableSaver.rootFolderName
@@ -38,6 +42,7 @@ extension OwnID.CoreSDK.TranslationsSDK {
             
             currentLanguageKey = languageKey
         }
+        
         func localizedString(for keys: [String]) -> String? {
             if let currentLanguageKey {
                 do {

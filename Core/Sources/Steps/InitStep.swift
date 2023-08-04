@@ -49,8 +49,9 @@ extension OwnID.CoreSDK.CoreViewModel {
             
             let requestBody = InitRequestBody(sessionChallenge: sessionChallenge,
                                               type: state.type,
-                                              loginId: state.loginId.isBlank ? nil : state.loginId,
+                                              loginId: (state.loginId.isBlank || state.shouldIgnoreLoginIdOnInit) ? nil : state.loginId,
                                               supportsFido2: OwnID.CoreSDK.isPasskeysSupported)
+            state.shouldIgnoreLoginIdOnInit = false
             return [sendInitialRequest(requestBody: requestBody, session: session, configuration: configuration)]
         }
         

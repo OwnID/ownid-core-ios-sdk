@@ -29,5 +29,6 @@ extension OwnID.CoreSDK.CoreViewModel {
         case codeResent
         case stopRequestLoaded(flow: OwnID.CoreSDK.FlowType)
         case sameStep
+        case notYouCancel
     }
 }

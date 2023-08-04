@@ -177,18 +177,27 @@ extension OwnID.CoreSDK.TranslationsSDK {
                 .sink { [weak self] notification in
                     let message = "Recieve notification about language change \(notification)"
                     OwnID.CoreSDK.logger.log(level: .debug, message: message, OwnID.CoreSDK.TranslationsSDK.Downloader.self)
-                    if let value = self?.supportedLanguages.shouldChangeLanguageOnSystemLanguageChange, value {
-                        self?.initializeLanguagesIfNeeded(supportedLanguages: .init(rawValue: Locale.preferredLanguages), shouldNotify: true)
+                    if let supportedLanguages = self?.supportedLanguages, supportedLanguages.shouldChangeLanguageOnSystemLanguageChange {
+                        self?.initializeLanguagesIfNeeded(supportedLanguages: supportedLanguages, shouldNotify: true)
                     }
                 }
         }
         
+        var isRTLLanguage: Bool {
+            localizableSaver.isRTLLanguage
+        }
+        
         public func localizedString(for keys: String...) -> String? {
             if CacheManager.isExpired() {
-                initializeLanguagesIfNeeded(supportedLanguages: .init(rawValue: Locale.preferredLanguages), shouldNotify: false)
+                initializeLanguagesIfNeeded(supportedLanguages: supportedLanguages, shouldNotify: false)
             }
 
             return localizableSaver.localizedString(for: keys)
+        }
+        
+        func setSupportedLanguages(_ supportedLanguages: [String]) {
+            self.supportedLanguages = .init(rawValue: supportedLanguages)
+            initializeLanguagesIfNeeded(supportedLanguages: self.supportedLanguages, shouldNotify: true)
         }
         
         func SDKConfigured(supportedLanguages: OwnID.CoreSDK.Languages) {
