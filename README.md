@@ -5,7 +5,7 @@ The [OwnID](https://ownid.com/) iOS SDK is a client library written in Swift tha
 The OwnID iOS SDK consists of a **Core** module along with modules that are specific to an identity platform like Firebase. The Core module provides core functionality like setting up an OwnID configuration, performing network calls to the OwnID server, interacting with iOS, and checking and returning results to the iOS application. The following modules extend the Core module for a specific identify management system:
 - **[OwnID Firebase-iOS SDK](https://github.com/OwnID/ownid-firebase-ios-sdk)** - Extends **Core** functionality by providing integration with Email/Password-based [Firebase Authentication](https://firebase.google.com/docs/auth).
 
-- **[OwnID Gigya-iOS SDK](https://github.com/OwnID/ownid-gigya-ios-sdk)** - Extends **Core** functionality by providing integration with Email/Password-based [Gigya Authentication](https://github.com/SAP/gigya-ios-sdk). In addition, the OwnID Gigya-iOS SDK has a **[Gigya-Screen-Sets](https://github.com/OwnID/ownid-demo-ios-sdk/tree/master/ScreensetsDemo)** integration.
+- **[OwnID Gigya-iOS SDK](https://github.com/OwnID/ownid-gigya-ios-sdk)** - Extends **Core** functionality by providing integration with Email/Password-based [Gigya Authentication](https://github.com/SAP/gigya-swift-sdk). In addition, the OwnID Gigya-iOS SDK has a **[Gigya-Screen-Sets](https://github.com/OwnID/ownid-ios-sdk-demo/tree/master/ScreensetsDemo)** integration.
 
 The OwnID iOS SDK supports Swift >= 5.1, and works with iOS 13 and above.
 
