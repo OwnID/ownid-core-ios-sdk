@@ -12,6 +12,9 @@ The OwnID iOS SDK supports Swift >= 5.1, and works with iOS 13 and above.
 ## Demo applications
 This repository contains only core. Please refer to [demos](https://github.com/OwnID/ownid-ios-sdk-demo).
 
+ ## Registration and Login Flows
+  Use the following diagrams to better understand the registration and login flows provided by the OwnID iOS SDK. The LinkAndLogin flow occurs when an existing user who has traditional account credentials uses the login screen to tap Skip Password for the first time.
+
 ## Supported Languages
 The OwnID SDK has built-in support for multiple languages. The SDK loads translations in runtime and selects the best language available. The list of currently supported languages can be found [here](https://i18n.prod.ownid.com/langs.json).
 
