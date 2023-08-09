@@ -23,7 +23,7 @@ public extension OwnID.UISDK {
                     orLineHeight: CGFloat = 24.0,
                     orTextColor: Color = OwnID.Colors.textGrey,
                     tooltipVisualLookConfig: TooltipVisualLookConfig = TooltipVisualLookConfig(),
-                    variant: ButtonVariant = .fingerprint,
+                    variant: ButtonVariant = .faceId,
                     widgetPosition: WidgetPosition = .start) {
             self.iconColor = iconColor
             self.backgroundColor = backgroundColor
