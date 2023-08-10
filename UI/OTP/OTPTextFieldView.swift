@@ -49,7 +49,13 @@ extension OwnID.UISDK {
                 viewModel.processTextChange(for: index, binding: $viewModel.codes[index])
             })
             .onAppear() {
-                focusedField = 0
+                if #available(iOS 16.0, *) {
+                    focusedField = 0
+                } else {
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                        focusedField = 0
+                    }
+                }
             }
         }
         

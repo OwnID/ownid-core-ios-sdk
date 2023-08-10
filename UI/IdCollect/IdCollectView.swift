@@ -214,7 +214,13 @@ extension OwnID.UISDK.IdCollect {
             }
             .padding(.all, Constants.padding)
             .onAppear() {
-                focusedField = .email
+                if #available(iOS 16.0, *) {
+                    focusedField = .email
+                } else {
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                        focusedField = .email
+                    }
+                }
             }
         }
         

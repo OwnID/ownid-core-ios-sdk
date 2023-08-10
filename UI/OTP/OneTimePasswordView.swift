@@ -36,12 +36,13 @@ extension OwnID.UISDK.OneTimePassword {
         }
         
         private enum Constants {
-            static let padding = 26.0
+            static let iPhoneSE1Height = 1136.0
+            static let padding = UIScreen.main.nativeBounds.height == iPhoneSE1Height ? 8.0 : 26.0
             static let closeTopPadding = 12.0
             static let closeTrailingPadding = 10.0
             static let titleTopPadding = 8.0
-            static let titleBottomPadding = 16.0
-            static let messageBottomPadding = 20.0
+            static let titleBottomPadding = UIScreen.main.nativeBounds.height == iPhoneSE1Height ? 10.0 : 16.0
+            static let messageBottomPadding = UIScreen.main.nativeBounds.height == iPhoneSE1Height ? 10.0 : 20.0
             static let descriptionBottomPadding = 12.0
             static let notYouPadding = 8.0
             
