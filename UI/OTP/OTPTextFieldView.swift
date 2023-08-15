@@ -2,7 +2,6 @@ import SwiftUI
 import Combine
 
 extension OwnID.UISDK {
-    @available(iOS 15.0, *)
     public struct OTPTextFieldView: View {
         private enum Constants {
             static let boxSideSize: CGFloat = 50.0
@@ -13,7 +12,7 @@ extension OwnID.UISDK {
         }
         
         @ObservedObject var viewModel: ViewModel
-        @FocusState private var focusedField: Int?
+        @State private var focusedField: Int?
         
         public var body: some View {
             HStack(spacing: Constants.spaceBetweenBoxes) {
@@ -49,13 +48,7 @@ extension OwnID.UISDK {
                 viewModel.processTextChange(for: index, binding: $viewModel.codes[index])
             })
             .onAppear() {
-                if #available(iOS 16.0, *) {
-                    focusedField = 0
-                } else {
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-                        focusedField = 0
-                    }
-                }
+                focusedField = 0
             }
         }
         

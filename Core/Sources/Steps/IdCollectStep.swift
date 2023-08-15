@@ -28,14 +28,12 @@ extension OwnID.CoreSDK.CoreViewModel {
                                               loginIdSettings: loginIdSettings)
             })
             
-            if #available(iOS 15.0, *) {
-                let idCollectView = String(describing: OwnID.UISDK.IdCollect.IdCollectView.self)
-                let eventCategory: OwnID.CoreSDK.EventCategory = state.type == .login ? .login : .registration
-                OwnID.CoreSDK.eventService.sendMetric(.trackMetric(action: .screenShow(screen: idCollectView),
-                                                                   category: eventCategory,
-                                                                   context: state.context,
-                                                                   loginId: state.loginId))
-            }
+            let idCollectView = String(describing: OwnID.UISDK.IdCollect.IdCollectView.self)
+            let eventCategory: OwnID.CoreSDK.EventCategory = state.type == .login ? .login : .registration
+            OwnID.CoreSDK.eventService.sendMetric(.trackMetric(action: .screenShow(screen: idCollectView),
+                                                               category: eventCategory,
+                                                               context: state.context,
+                                                               loginId: state.loginId))
             
             return []
         }

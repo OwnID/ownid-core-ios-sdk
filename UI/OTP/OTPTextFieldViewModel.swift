@@ -1,7 +1,6 @@
 import SwiftUI
 import Combine
 
-@available(iOS 15.0, *)
 extension OwnID.UISDK.OTPTextFieldView {
     final class ViewModel: ObservableObject {
         private enum Constants {
@@ -120,7 +119,6 @@ extension OwnID.UISDK.OTPTextFieldView {
     }
 }
 
-@available(iOS 15.0, *)
 private extension OwnID.UISDK.OTPTextFieldView.ViewModel {
     func moveFocusAndSubmitCodeIfNeeded(_ index: Int, _ actualValue: String) {
         if actualValue.isEmpty {
@@ -162,7 +160,6 @@ private extension OwnID.UISDK.OTPTextFieldView.ViewModel {
     }
 }
 
-@available(iOS 15.0, *)
 extension OwnID.UISDK.OTPTextFieldView.ViewModel {
     enum NextUpdateAcion: Equatable {
         case update(String)

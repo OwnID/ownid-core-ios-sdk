@@ -1,9 +1,3 @@
-//
-//  UIApplicationExtensions.swift
-//  ownid-core-ios-sdk
-//
-//  Created by user on 19.07.2023.
-//
 
 import UIKit
 

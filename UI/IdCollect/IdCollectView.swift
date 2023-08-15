@@ -6,16 +6,14 @@ extension OwnID.UISDK {
     static func showIdCollectView(store: Store<OwnID.UISDK.IdCollect.ViewState, OwnID.UISDK.IdCollect.Action>,
                                   loginId: String,
                                   loginIdSettings: OwnID.CoreSDK.LoginIdSettings) {
-        if #available(iOS 15.0, *) {
-            let view = OwnID.UISDK.IdCollect.IdCollectView(store: store,
-                                                           visualConfig: OwnID.UISDK.VisualLookConfig(),
-                                                           loginId: loginId,
-                                                           loginIdSettings: loginIdSettings,
-                                                           closeClosure: {
-                OwnID.UISDK.PopupManager.dismissPopup()
-            })
-            view.presentAsPopup()
-        }
+        let view = OwnID.UISDK.IdCollect.IdCollectView(store: store,
+                                                       visualConfig: OwnID.UISDK.VisualLookConfig(),
+                                                       loginId: loginId,
+                                                       loginIdSettings: loginIdSettings,
+                                                       closeClosure: {
+            OwnID.UISDK.PopupManager.dismissPopup()
+        })
+        view.presentAsPopup()
     }
 }
 
@@ -24,7 +22,6 @@ extension OwnID.UISDK {
 }
 
 extension OwnID.UISDK.IdCollect {
-    @available(iOS 15.0, *)
     struct IdCollectView: Popup {
         private enum Constants {
             static let padding = 22.0
@@ -36,6 +33,7 @@ extension OwnID.UISDK.IdCollect {
             static let emailPadding = 10.0
             static let bottomPadding = 8.0
             
+            static let textFieldHeight = 22.0
             static let textFieldBorderWidth = 1.0
             static let errorViewHeight = 28.0
             static let errorViewCornerRadius = 4.0
@@ -66,7 +64,7 @@ extension OwnID.UISDK.IdCollect {
         
         @ObservedObject var store: Store<ViewState, Action>
         @ObservedObject private var viewModel: ViewModel
-        @FocusState private var focusedField: FocusField?
+        @State private var focusedField: FocusField?
         @State private var loginId = ""
         private let loginIdSettings: OwnID.CoreSDK.LoginIdSettings
 
@@ -97,6 +95,24 @@ extension OwnID.UISDK.IdCollect {
             viewModel.updateLoginIdPublisher(loginIdPublisher.eraseToAnyPublisher())
         }
         
+        private func closeButton() -> some View {
+            Button {
+                dismiss()
+            } label: {
+                Image(Constants.closeImageName, bundle: .resourceBundle)
+            }
+            .modifier(AccessibilityLabelModifier(accessibilityLabel: cancel))
+            .padding(.trailing, Constants.closeTrailingPadding)
+            .padding(.top, Constants.closeTopPadding)
+        }
+        
+        @ViewBuilder
+        private func emptyTranslationView() -> some View {
+            if isTranslationChanged {
+                EmptyView()
+            }
+        }
+        
         public func createContent() -> some View {
             Group {
                 viewContent()
@@ -104,21 +120,8 @@ extension OwnID.UISDK.IdCollect {
                     .onReceive(OwnID.CoreSDK.shared.translationsModule.translationsChangePublisher) {
                         isTranslationChanged.toggle()
                     }
-                    .overlay {
-                        if isTranslationChanged {
-                            EmptyView()
-                        }
-                    }
-                    .overlay(alignment: .topTrailing) {
-                        Button {
-                            dismiss()
-                        } label: {
-                            Image(Constants.closeImageName, bundle: .resourceBundle)
-                        }
-                        .modifier(AccessibilityLabelModifier(accessibilityLabel: cancel))
-                        .padding(.trailing, Constants.closeTrailingPadding)
-                        .padding(.top, Constants.closeTopPadding)
-                    }
+                    .modifier(Overlay(view: emptyTranslationView()))
+                    .modifier(Overlay(view: closeButton(), alignment: .topTrailing))
             }
             .environment(\.layoutDirection, OwnID.CoreSDK.shared.translationsModule.isRTLLanguage ? .rightToLeft : .leftToRight)
         }
@@ -190,14 +193,17 @@ extension OwnID.UISDK.IdCollect {
                         .foregroundColor(OwnID.Colors.popupContentMessageColor)
                         .padding(.bottom, Constants.bottomPadding)
                     errorText()
-                    TextField(placeholder, text: $loginId)
+                    FocusedTextField(text: $loginId, focusedField: $focusedField, equals: .email, configuration: { textField in
+                        textField.placeholder = placeholder
+                        textField.keyboardType = .emailAddress
+                        textField.autocapitalizationType = .none
+                        textField.autocorrectionType = .no
+                        textField.font = UIFont.systemFont(ofSize: Constants.emailFontSize)
+                    })
+                    .frame(height: Constants.textFieldHeight)
                         .onChange(of: loginId) { _ in
                             viewModel.isError = false
                         }
-                        .autocapitalization(.none)
-                        .font(.system(size: Constants.emailFontSize))
-                        .keyboardType(.emailAddress)
-                        .focused($focusedField, equals: .email)
                         .padding(Constants.emailPadding)
                         .background(Rectangle().fill(OwnID.Colors.idCollectViewLoginFieldBackgroundColor))
                         .cornerRadius(cornerRadiusValue)
@@ -214,13 +220,7 @@ extension OwnID.UISDK.IdCollect {
             }
             .padding(.all, Constants.padding)
             .onAppear() {
-                if #available(iOS 16.0, *) {
-                    focusedField = .email
-                } else {
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-                        focusedField = .email
-                    }
-                }
+                focusedField = .email
             }
         }
         

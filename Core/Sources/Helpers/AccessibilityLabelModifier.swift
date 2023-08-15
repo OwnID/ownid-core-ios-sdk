@@ -1,9 +1,3 @@
-//
-//  AccessibilityLabelModifier.swift
-//  ownid-core-ios-sdk
-//
-//  Created by user on 06.07.2023.
-//
 
 import SwiftUI
 

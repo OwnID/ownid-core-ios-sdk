@@ -46,15 +46,13 @@ extension OwnID.UISDK {
         override func viewDidLoad() {
             super.viewDidLoad()
 
-            if #available(iOS 15.0, *) {
-                let hostingController = UIHostingController(rootView: PopupView(content: popup))
-                hostingController.view.backgroundColor = .clear
-                addChild(hostingController)
-                view.addSubview(hostingController.view)
-                hostingController.view.frame = view.bounds
-                hostingController.didMove(toParent: self)
-                self.hostingController = hostingController
-            }
+            let hostingController = UIHostingController(rootView: PopupView(content: popup))
+            hostingController.view.backgroundColor = .clear
+            addChild(hostingController)
+            view.addSubview(hostingController.view)
+            hostingController.view.frame = view.bounds
+            hostingController.didMove(toParent: self)
+            self.hostingController = hostingController
         }
         
         override func viewWillLayoutSubviews() {
@@ -72,14 +70,12 @@ extension OwnID.UISDK {
         private static var currentViewController: UIViewController?
         
         static func presentPopup(_ popup: AnyPopup) {
-            if #available(iOS 15.0, *) {
-                let viewController = SliderViewController()
-                viewController.popup = popup
-                viewController.view.backgroundColor = .clear
-                viewController.modalPresentationStyle = .overCurrentContext
-                currentViewController = viewController
-                UIApplication.topViewController()?.present(viewController, animated: false)
-            }
+            let viewController = SliderViewController()
+            viewController.popup = popup
+            viewController.view.backgroundColor = .clear
+            viewController.modalPresentationStyle = .overCurrentContext
+            currentViewController = viewController
+            UIApplication.topViewController()?.present(viewController, animated: false)
         }
         
         static func dismissPopup(completion: (() -> Void)? = nil) {
@@ -100,7 +96,23 @@ extension OwnID.UISDK {
         static let backgroundOpacity = 0.05
     }
     
-    @available(iOS 15.0, *)
+    struct SliderBackground: ViewModifier {
+        let colorScheme: ColorScheme
+
+        func body(content: Content) -> some View {
+            if #available(iOS 15.0, *) {
+                content
+                    .background(colorScheme == .dark ? .regularMaterial : .thinMaterial)
+                    .containerShape(RoundedCorner(radius: PopupViewContants.contentCornerRadius, corners: [.topLeft, .topRight]))
+            } else {
+                content
+                    .background(Blur(style: colorScheme == .dark ? .dark : .light)
+                        .cornerRadius(PopupViewContants.contentCornerRadius, corners: [.topLeft, .topRight])
+                        .ignoresSafeArea())
+            }
+        }
+    }
+    
     struct PopupView<Content: Popup>: View {
         let content: Content
         
@@ -118,8 +130,7 @@ extension OwnID.UISDK {
                 VStack(spacing: 0) {
                     Spacer()
                     content
-                        .background(colorScheme == .dark ? .regularMaterial : .thinMaterial)
-                        .containerShape(RoundedCorner(radius: PopupViewContants.contentCornerRadius, corners: [.topLeft, .topRight]))
+                        .sliderBackground(colorScheme: colorScheme)
                         .transition(.move(edge: .top))
                 }
             }
@@ -130,5 +141,11 @@ extension OwnID.UISDK {
                 .ignoresSafeArea()
                 .animation(overlayAnimation, value: true)
         }
+    }
+}
+
+private extension View {
+    func sliderBackground(colorScheme: ColorScheme) -> some View {
+        modifier(OwnID.UISDK.SliderBackground(colorScheme: colorScheme))
     }
 }
