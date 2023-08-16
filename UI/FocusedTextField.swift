@@ -1,82 +1,64 @@
 
 import SwiftUI
 
-@available(iOS 15.0, *)
-private struct FocusedTextField: ViewModifier {
-    
-    @FocusState private var focused: Bool
-    @Binding private var externalFocused: Bool
-    
-    init(externalFocused: Binding<Bool>) {
-        self._externalFocused = externalFocused
-        self.focused = externalFocused.wrappedValue
-    }
-    
-    func body(content: Content) -> some View {
-        content
-            .focused($focused)
-            .onChange(of: externalFocused) { newValue in
-                focused = newValue
-            }
-            .onAppear {
-                if #available(iOS 16.0, *) {
-                    focused = externalFocused
-                } else {
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-                        focused = externalFocused
-                    }
-                }
-            }
-    }
-}
+struct FocusedTextField<Value: Hashable>: UIViewRepresentable {
 
-@available(iOS 15.0, *)
-private struct MultipleFocusedTextField<Value: Hashable>: ViewModifier {
-    @FocusState private var focused: Bool
-    @Binding private var externalFocused: Value
-    private var equalsValue: Value
+    @Binding var focusedField: Value?
+    @Binding var text: String
     
-    init(externalFocused: Binding<Value>, equalsValue: Value) {
-        self._externalFocused = externalFocused
-        self.equalsValue = equalsValue
-        self.focused = externalFocused.wrappedValue == equalsValue
-    }
-    
-    func body(content: Content) -> some View {
-        content
-            .focused($focused)
-            .onChange(of: externalFocused) { newValue in
-                print("onChange \(externalFocused) --- \(equalsValue)")
-                focused = newValue == equalsValue
-            }
-            .onAppear {
-                print("\(externalFocused) --- \(equalsValue)")
-                if #available(iOS 16.0, *) {
-                    focused = externalFocused == equalsValue
-                } else {
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-                        focused = externalFocused == equalsValue
-                    }
-                }
-            }
-    }
-}
+    let equals: Value
 
-extension View {
-    @ViewBuilder
-    func focused(_ value: Binding<Bool>) -> some View {
-        if #available(iOS 15.0, *) {
-            self.modifier(FocusedTextField(externalFocused: value))
-        } else {
-            self
+    public var configuration = { (view: UITextField) in }
+
+    public init(text: Binding<String>, focusedField: Binding<Value?>, equals: Value, configuration: @escaping (UITextField) -> () = { _ in }) {
+        self.configuration = configuration
+        self._text = text
+        self._focusedField = focusedField
+        self.equals = equals
+    }
+
+    public func makeUIView(context: Context) -> UITextField {
+        let view = UITextField()
+        view.addTarget(context.coordinator, action: #selector(Coordinator.textViewDidChange), for: .editingChanged)
+        view.delegate = context.coordinator
+        return view
+    }
+
+    public func updateUIView(_ uiView: UITextField, context: Context) {
+        uiView.text = text
+        configuration(uiView)
+        switch focusedField == equals {
+        case true: uiView.becomeFirstResponder()
+        case false: uiView.resignFirstResponder()
         }
     }
-    
-    func focused<Value>(_ value: Binding<Value>, equals: Value) -> some View where Value: Hashable {
-        if #available(iOS 15.0, *) {
-            return self.modifier(MultipleFocusedTextField(externalFocused: value, equalsValue: equals))
-        } else {
-            return self
+
+    public func makeCoordinator() -> Coordinator {
+        Coordinator($text, focusedField: $focusedField, equals: equals)
+    }
+
+    public class Coordinator: NSObject, UITextFieldDelegate {
+        var text: Binding<String>
+        var focusedField: Binding<Value?>
+        
+        let equals: Value
+
+        init(_ text: Binding<String>, focusedField: Binding<Value?>, equals: Value) {
+            self.text = text
+            self.focusedField = focusedField
+            self.equals = equals
+        }
+
+        @objc public func textViewDidChange(_ textField: UITextField) {
+            self.text.wrappedValue = textField.text ?? ""
+        }
+
+        public func textFieldDidBeginEditing(_ textField: UITextField) {
+            self.focusedField.wrappedValue = equals
+        }
+
+        public func textFieldDidEndEditing(_ textField: UITextField) {
+            self.focusedField.wrappedValue = nil
         }
     }
 }

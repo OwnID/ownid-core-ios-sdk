@@ -2,8 +2,7 @@ import SwiftUI
 import Combine
 
 extension OwnID.UISDK {
-    @available(iOS 15.0, *)
-    public struct OTPTextFieldView: View {
+    public struct LegacyOTPTextFieldView: View {
         private enum Constants {
             static let boxSideSize: CGFloat = 50.0
             static let spaceBetweenBoxes: CGFloat = 8.0
@@ -13,7 +12,7 @@ extension OwnID.UISDK {
         }
         
         @ObservedObject var viewModel: OneTimePassword.ViewModel
-        @FocusState private var focusedField: Int?
+        @State private var focusedField: Int?
         
         public var body: some View {
             HStack(spacing: Constants.spaceBetweenBoxes) {
@@ -27,13 +26,16 @@ extension OwnID.UISDK {
                                 RoundedRectangle(cornerRadius: cornerRadiusValue)
                                     .stroke(titleBorderColor(for: index), lineWidth: Constants.textFieldBorderWidth)
                             )
-                        
-                        TextField("", text: $viewModel.codes[index])
-                            .foregroundColor(OwnID.Colors.blue)
-                            .font(.system(size: Constants.fontSize, weight: .medium))
-                            .multilineTextAlignment(.center)
-                            .keyboardType(.numberPad)
-                            .focused($focusedField, equals: index)
+                        FocusedTextField(text: $viewModel.codes[index], focusedField: $focusedField, equals: index, configuration: { textField in
+                            textField.keyboardType = .numberPad
+                            textField.textAlignment = .center
+                            textField.tag = index
+                            textField.textColor = UIColor(OwnID.Colors.blue)
+                            textField.font = UIFont.systemFont(ofSize: Constants.fontSize, weight: .medium)
+                        })
+                        .onTapGesture(perform: {
+                            focusedField = index
+                        })
                             .disabled(viewModel.isDisabled)
                             .padding(Constants.textFieldPadding)
                     }

@@ -60,7 +60,7 @@ extension OwnID.UISDK.OneTimePassword {
         
         private let uuid = UUID().uuidString
         
-        private let viewModel: OwnID.UISDK.OTPTextFieldView.ViewModel
+        private let viewModel: ViewModel
         private var visualConfig: OwnID.UISDK.OTPViewConfig
         @ObservedObject var store: Store<ViewState, Action>
         private let codeLength: Int
@@ -87,7 +87,7 @@ extension OwnID.UISDK.OneTimePassword {
             self.store = store
             self.codeLength = codeLength
             self.restartURL = restartURL
-            self.viewModel = OwnID.UISDK.OTPTextFieldView.ViewModel(codeLength: codeLength, store: store)
+            self.viewModel = ViewModel(codeLength: codeLength, store: store)
             self.verificationType = verificationType
             self.operationType = operationType
             
@@ -167,11 +167,19 @@ extension OwnID.UISDK.OneTimePassword {
             .padding(.top, Constants.closeTopPadding)
         }
         
+        private func otpTextFieldView() -> some View {
+            if #available(iOS 15.0, *) {
+                return OwnID.UISDK.OTPTextFieldView(viewModel: viewModel)
+            } else {
+                return  OwnID.UISDK.LegacyOTPTextFieldView(viewModel: viewModel)
+            }
+        }
+        
         func createContent() -> some View {
             Group {
                 VStack {
                     topSection()
-                    OwnID.UISDK.OTPTextFieldView(viewModel: viewModel)
+                    otpTextFieldView()
                         .shake(animatableData: store.value.attempts)
                         .onChange(of: store.value.attempts) { newValue in
                             viewModel.resetCode()

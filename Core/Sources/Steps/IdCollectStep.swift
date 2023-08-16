@@ -8,6 +8,10 @@ extension OwnID.CoreSDK.CoreViewModel {
     }
 
     class IdCollectStep: BaseStep {
+        private enum Constants {
+            static let idCollectViewName = "IdCollectView"
+        }
+        
         private let step: Step
         
         init(step: Step) {
@@ -27,10 +31,9 @@ extension OwnID.CoreSDK.CoreViewModel {
                                               loginId: loginId,
                                               loginIdSettings: loginIdSettings)
             })
-            
-            let idCollectView = String(describing: OwnID.UISDK.IdCollect.IdCollectView.self)
+
             let eventCategory: OwnID.CoreSDK.EventCategory = state.type == .login ? .login : .registration
-            OwnID.CoreSDK.eventService.sendMetric(.trackMetric(action: .screenShow(screen: idCollectView),
+            OwnID.CoreSDK.eventService.sendMetric(.trackMetric(action: .screenShow(screen: Constants.idCollectViewName),
                                                                category: eventCategory,
                                                                context: state.context,
                                                                loginId: state.loginId))
