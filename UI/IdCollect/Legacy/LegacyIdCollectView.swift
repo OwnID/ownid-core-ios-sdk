@@ -1,40 +1,9 @@
+
 import SwiftUI
-import UIKit
 import Combine
 
-extension OwnID.UISDK {
-    static func showIdCollectView(store: Store<OwnID.UISDK.IdCollect.ViewState, OwnID.UISDK.IdCollect.Action>,
-                                  loginId: String,
-                                  loginIdSettings: OwnID.CoreSDK.LoginIdSettings) {
-        if #available(iOS 15.0, *) {
-            let view = OwnID.UISDK.IdCollect.IdCollectView(store: store,
-                                                           visualConfig: OwnID.UISDK.VisualLookConfig(),
-                                                           loginId: loginId,
-                                                           loginIdSettings: loginIdSettings,
-                                                           closeClosure: {
-                OwnID.UISDK.PopupManager.dismissPopup()
-            })
-            view.presentAsPopup()
-        } else {
-            let view = OwnID.UISDK.IdCollect.LegacyIdCollectView(store: store,
-                                                                 visualConfig: OwnID.UISDK.VisualLookConfig(),
-                                                                 loginId: loginId,
-                                                                 loginIdSettings: loginIdSettings,
-                                                                 closeClosure: {
-                OwnID.UISDK.PopupManager.dismissPopup()
-            })
-            view.presentAsPopup()
-        }
-    }
-}
-
-extension OwnID.UISDK {
-    enum IdCollect { }
-}
-
 extension OwnID.UISDK.IdCollect {
-    @available(iOS 15.0, *)
-    struct IdCollectView: Popup {
+    struct LegacyIdCollectView: Popup {
         private enum Constants {
             static let padding = 22.0
             static let closeTopPadding = 12.0
@@ -45,6 +14,7 @@ extension OwnID.UISDK.IdCollect {
             static let emailPadding = 10.0
             static let bottomPadding = 8.0
             
+            static let textFieldHeight = 22.0
             static let textFieldBorderWidth = 1.0
             static let errorViewHeight = 28.0
             static let errorViewCornerRadius = 4.0
@@ -63,8 +33,8 @@ extension OwnID.UISDK.IdCollect {
             case email
         }
         
-        public static func == (lhs: OwnID.UISDK.IdCollect.IdCollectView,
-                               rhs: OwnID.UISDK.IdCollect.IdCollectView) -> Bool {
+        public static func == (lhs: OwnID.UISDK.IdCollect.LegacyIdCollectView,
+                               rhs: OwnID.UISDK.IdCollect.LegacyIdCollectView) -> Bool {
             lhs.uuid == rhs.uuid
         }
         private let uuid = UUID().uuidString
@@ -75,7 +45,7 @@ extension OwnID.UISDK.IdCollect {
         
         @ObservedObject var store: Store<ViewState, Action>
         @ObservedObject private var viewModel: ViewModel
-        @FocusState private var focusedField: FocusField?
+        @State private var focusedField: FocusField?
         @State private var loginId = ""
         private let loginIdSettings: OwnID.CoreSDK.LoginIdSettings
 
@@ -204,14 +174,17 @@ extension OwnID.UISDK.IdCollect {
                         .foregroundColor(OwnID.Colors.popupContentMessageColor)
                         .padding(.bottom, Constants.bottomPadding)
                     errorText()
-                    TextField(placeholder, text: $loginId)
+                    FocusedTextField(text: $loginId, focusedField: $focusedField, equals: .email, configuration: { textField in
+                        textField.placeholder = placeholder
+                        textField.keyboardType = .emailAddress
+                        textField.autocapitalizationType = .none
+                        textField.autocorrectionType = .no
+                        textField.font = UIFont.systemFont(ofSize: Constants.emailFontSize)
+                    })
+                    .frame(height: Constants.textFieldHeight)
                         .onChange(of: loginId) { _ in
                             viewModel.isError = false
                         }
-                        .autocapitalization(.none)
-                        .font(.system(size: Constants.emailFontSize))
-                        .keyboardType(.emailAddress)
-                        .focused($focusedField, equals: .email)
                         .padding(Constants.emailPadding)
                         .background(Rectangle().fill(OwnID.Colors.idCollectViewLoginFieldBackgroundColor))
                         .cornerRadius(cornerRadiusValue)

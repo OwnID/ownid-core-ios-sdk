@@ -37,13 +37,11 @@ extension OwnID.CoreSDK.CoreViewModel {
                                         verificationType: otpData.verificationType)
             })
             
-            if #available(iOS 15.0, *) {
-                let otpView = String(describing: OwnID.UISDK.OneTimePassword.OneTimePasswordView.self)
-                let eventCategory: OwnID.CoreSDK.EventCategory = state.type == .login ? .login : .registration
-                OwnID.CoreSDK.eventService.sendMetric(.trackMetric(action: .screenShow(screen: otpView),
-                                                                   category: eventCategory,
-                                                                   loginId: state.loginId))
-            }
+            let otpView = String(describing: OwnID.UISDK.OneTimePassword.OneTimePasswordView.self)
+            let eventCategory: OwnID.CoreSDK.EventCategory = state.type == .login ? .login : .registration
+            OwnID.CoreSDK.eventService.sendMetric(.trackMetric(action: .screenShow(screen: otpView),
+                                                               category: eventCategory,
+                                                               loginId: state.loginId))
             
             return []
         }

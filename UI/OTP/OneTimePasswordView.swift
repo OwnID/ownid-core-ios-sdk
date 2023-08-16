@@ -9,17 +9,15 @@ extension OwnID.UISDK {
                             restartUrl: URL,
                             type: OwnID.CoreSDK.CoreViewModel.Step.StepType,
                             verificationType: OwnID.CoreSDK.Verification.VerificationType) {
-        if #available(iOS 15.0, *) {
-            let operationType: OwnID.UISDK.OneTimePassword.OperationType = type == .loginIDAuthorization ? .oneTimePasswordSignIn : .verification
-            let view = OwnID.UISDK.OneTimePassword.OneTimePasswordView(store: store,
-                                                                       visualConfig: OwnID.UISDK.OTPViewConfig(),
-                                                                       loginId: loginId,
-                                                                       codeLength: otpLength,
-                                                                       restartURL: restartUrl,
-                                                                       operationType: operationType,
-                                                                       verificationType: verificationType)
-            view.presentAsPopup()
-        }
+        let operationType: OwnID.UISDK.OneTimePassword.OperationType = type == .loginIDAuthorization ? .oneTimePasswordSignIn : .verification
+        let view = OwnID.UISDK.OneTimePassword.OneTimePasswordView(store: store,
+                                                                   visualConfig: OwnID.UISDK.OTPViewConfig(),
+                                                                   loginId: loginId,
+                                                                   codeLength: otpLength,
+                                                                   restartURL: restartUrl,
+                                                                   operationType: operationType,
+                                                                   verificationType: verificationType)
+        view.presentAsPopup()
     }
 }
 
@@ -29,19 +27,19 @@ extension OwnID.UISDK.OneTimePassword {
         case oneTimePasswordSignIn = "sign"
     }
     
-    @available(iOS 15.0, *)
     struct OneTimePasswordView: Popup {
         static func == (lhs: OwnID.UISDK.OneTimePassword.OneTimePasswordView, rhs: OwnID.UISDK.OneTimePassword.OneTimePasswordView) -> Bool {
             lhs.uuid == rhs.uuid
         }
         
         private enum Constants {
-            static let padding = 26.0
+            static let iPhoneSE1Height = 1136.0
+            static let padding = UIScreen.main.nativeBounds.height == iPhoneSE1Height ? 8.0 : 26.0
             static let closeTopPadding = 12.0
             static let closeTrailingPadding = 10.0
             static let titleTopPadding = 8.0
-            static let titleBottomPadding = 16.0
-            static let messageBottomPadding = 20.0
+            static let titleBottomPadding = UIScreen.main.nativeBounds.height == iPhoneSE1Height ? 10.0 : 16.0
+            static let messageBottomPadding = UIScreen.main.nativeBounds.height == iPhoneSE1Height ? 10.0 : 20.0
             static let descriptionBottomPadding = 12.0
             static let notYouPadding = 8.0
             
@@ -62,7 +60,7 @@ extension OwnID.UISDK.OneTimePassword {
         
         private let uuid = UUID().uuidString
         
-        private let viewModel: OwnID.UISDK.OTPTextFieldView.ViewModel
+        private let viewModel: ViewModel
         private var visualConfig: OwnID.UISDK.OTPViewConfig
         @ObservedObject var store: Store<ViewState, Action>
         private let codeLength: Int
@@ -89,7 +87,7 @@ extension OwnID.UISDK.OneTimePassword {
             self.store = store
             self.codeLength = codeLength
             self.restartURL = restartURL
-            self.viewModel = OwnID.UISDK.OTPTextFieldView.ViewModel(codeLength: codeLength, store: store)
+            self.viewModel = ViewModel(codeLength: codeLength, store: store)
             self.verificationType = verificationType
             self.operationType = operationType
             
@@ -158,11 +156,30 @@ extension OwnID.UISDK.OneTimePassword {
             }
         }
         
+        private func closeButton() -> some View {
+            Button {
+                dismiss()
+            } label: {
+                Image(Constants.closeImageName, bundle: .resourceBundle)
+            }
+            .modifier(AccessibilityLabelModifier(accessibilityLabel: cancel))
+            .padding(.trailing, Constants.closeTrailingPadding)
+            .padding(.top, Constants.closeTopPadding)
+        }
+        
+        private func otpTextFieldView() -> some View {
+            if #available(iOS 15.0, *) {
+                return OwnID.UISDK.OTPTextFieldView(viewModel: viewModel)
+            } else {
+                return  OwnID.UISDK.LegacyOTPTextFieldView(viewModel: viewModel)
+            }
+        }
+        
         func createContent() -> some View {
             Group {
                 VStack {
                     topSection()
-                    OwnID.UISDK.OTPTextFieldView(viewModel: viewModel)
+                    otpTextFieldView()
                         .shake(animatableData: store.value.attempts)
                         .onChange(of: store.value.attempts) { newValue in
                             viewModel.resetCode()
@@ -189,16 +206,7 @@ extension OwnID.UISDK.OneTimePassword {
                 }
                 .frame(minWidth: 0, maxWidth: .infinity)
                 .padding(.all, Constants.padding)
-                .overlay(alignment: .topTrailing) {
-                    Button {
-                        dismiss()
-                    } label: {
-                        Image(Constants.closeImageName, bundle: .resourceBundle)
-                    }
-                    .modifier(AccessibilityLabelModifier(accessibilityLabel: cancel))
-                    .padding(.trailing, Constants.closeTrailingPadding)
-                    .padding(.top, Constants.closeTopPadding)
-                }
+                .modifier(Overlay(view: closeButton(), alignment: .topTrailing))
                 .onReceive(OwnID.CoreSDK.shared.translationsModule.translationsChangePublisher) {
                     emailSentText = emailSentTextChangedClosure()
                     isTranslationChanged.toggle()
@@ -216,7 +224,13 @@ extension OwnID.UISDK.OneTimePassword {
             store.send(.cancel)
         }
         
-        @available(iOS 15.0, *)
+        @ViewBuilder
+        private func emptyTranslationView() -> some View {
+            if isTranslationChanged {
+                EmptyView()
+            }
+        }
+        
         private func topSection() -> some View {
             VStack {
                 Text(localizedKey: .otpTitle(operationType: operationType.rawValue, verificationType: verificationType.rawValue))
@@ -234,11 +248,7 @@ extension OwnID.UISDK.OneTimePassword {
                     .font(.system(size: Constants.messageFontSize))
                     .padding(.bottom, Constants.descriptionBottomPadding)
             }
-            .overlay {
-                if isTranslationChanged {
-                    EmptyView()
-                }
-            }
+            .modifier(Overlay(view: emptyTranslationView()))
         }
     }
 }

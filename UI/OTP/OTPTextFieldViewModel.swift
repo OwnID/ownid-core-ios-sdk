@@ -1,12 +1,15 @@
 import SwiftUI
 import Combine
 
-@available(iOS 15.0, *)
-extension OwnID.UISDK.OTPTextFieldView {
+extension OwnID.UISDK.OneTimePassword {
     final class ViewModel: ObservableObject {
         private enum Constants {
             static let characterLimit = 1
             static let zeroWidthSpaceCharacter = "\u{200B}"
+        }
+        
+        private enum Direction {
+            case forward, backward
         }
         
         init(codeLength: Int,
@@ -32,6 +35,8 @@ extension OwnID.UISDK.OTPTextFieldView {
         @Published var currentFocusedFieldIndex: Int?
         
         private var isResetting = false
+        private var direction: Direction = .forward
+        private var directionWasChanged = false
         
         private func storeFieldValue(index: Int, value: String) {
             storage[index] = value
@@ -78,6 +83,10 @@ extension OwnID.UISDK.OTPTextFieldView {
             
             let nextActionIsAddZero = nextUpdateAction == .addEmptySpace
             if actualValue.isEmpty, !nextActionIsAddZero {
+                if direction == .forward {
+                    direction = .backward
+                    directionWasChanged = true
+                }
                 binding.wrappedValue = Constants.zeroWidthSpaceCharacter
                 nextUpdateAction = .addEmptySpace
                 focusOnNextLeftField(fieldIndex: index)
@@ -85,6 +94,11 @@ extension OwnID.UISDK.OTPTextFieldView {
             }
             if nextActionIsAddZero {
                 nextUpdateAction = .none
+                //logic for UITextField
+                if #available(iOS 14.0, *), directionWasChanged {
+                    directionWasChanged = false
+                    return
+                }
             }
             if case .updatingFromPasteboard = nextUpdateAction {
                 return
@@ -120,8 +134,7 @@ extension OwnID.UISDK.OTPTextFieldView {
     }
 }
 
-@available(iOS 15.0, *)
-private extension OwnID.UISDK.OTPTextFieldView.ViewModel {
+private extension OwnID.UISDK.OneTimePassword.ViewModel {
     func moveFocusAndSubmitCodeIfNeeded(_ index: Int, _ actualValue: String) {
         if actualValue.isEmpty {
             focusOnNextLeftField(fieldIndex: index)
@@ -129,6 +142,10 @@ private extension OwnID.UISDK.OTPTextFieldView.ViewModel {
             if index == codeLength - 1 {
                 submitCode()
             } else {
+                if direction == .backward {
+                    direction = .forward
+                    directionWasChanged = true
+                }
                 currentFocusedFieldIndex = index + 1
                 if case .update(let value) = nextUpdateAction {
                     nextUpdateAction = .none
@@ -162,8 +179,7 @@ private extension OwnID.UISDK.OTPTextFieldView.ViewModel {
     }
 }
 
-@available(iOS 15.0, *)
-extension OwnID.UISDK.OTPTextFieldView.ViewModel {
+extension OwnID.UISDK.OneTimePassword.ViewModel {
     enum NextUpdateAcion: Equatable {
         case update(String)
         case updatingFromPasteboard
