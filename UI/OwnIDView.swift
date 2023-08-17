@@ -41,9 +41,8 @@ public extension OwnID.UISDK {
                            isLoading: $isLoading,
                            buttonState: $buttonState)
                 
-            case .iconButton(let variant):
+            case .iconButton:
                 IconButton(visualConfig: visualConfig,
-                           imageName: variant.rawValue,
                            actionHandler: { resultPublisher.send(()) },
                            isTooltipPresented: $isTooltipPresented,
                            isLoading: $isLoading,

@@ -26,13 +26,8 @@ public extension OwnID.UISDK {
         public var isEnabled: Bool
     }
     
-    enum IconButtonVariant: String {
-        case fingerprint = "touchidImage"
-        case faceId = "faceidImage"
-    }
-    
     enum ButtonVariant: Equatable {
-        case iconButton(IconButtonVariant)
+        case iconButton
         case authButton
     }
     
@@ -93,7 +88,7 @@ public extension OwnID.UISDK {
                     iconHeight: CGFloat = 28.0,
                     backgroundColor: Color = OwnID.Colors.biometricsButtonBackground,
                     borderColor: Color = OwnID.Colors.biometricsButtonBorder,
-                    variant: ButtonVariant = .iconButton(.faceId)) {
+                    variant: ButtonVariant = .iconButton) {
             self.iconColor = iconColor
             self.iconHeight = iconHeight
             self.backgroundColor = backgroundColor
@@ -144,15 +139,8 @@ extension OwnID.UISDK.VisualLookConfig {
         }
         
         switch self.buttonViewConfig.variant {
-        case .iconButton(let iconType):
-            switch iconType {
-            case .fingerprint:
-                current.widgetType = .fingerprint
-                
-            case .faceId:
-                current.widgetType = .faceid
-            }
-            
+        case .iconButton:
+            current.widgetType = .faceid
         case .authButton:
             current.widgetType = .auth
         }

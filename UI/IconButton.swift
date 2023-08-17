@@ -4,7 +4,6 @@ import SwiftUI
 extension OwnID.UISDK {
     struct IconButton: View {
         let visualConfig: VisualLookConfig
-        let imageName: String
         let actionHandler: (() -> Void)
         
         @Binding var isTooltipPresented: Bool
@@ -31,6 +30,10 @@ extension OwnID.UISDK {
 }
 
 private extension OwnID.UISDK.IconButton {
+    private enum Constants {
+        static let imageName = "faceidImage"
+    }
+    
     @ViewBuilder
     func orView() -> some View {
         if visualConfig.orViewConfig.isEnabled {
@@ -51,7 +54,7 @@ private extension OwnID.UISDK.IconButton {
     }
     
     func variantImage() -> some View {
-        let image = Image(imageName, bundle: .resourceBundle)
+        let image = Image(Constants.imageName, bundle: .resourceBundle)
             .resizable()
             .renderingMode(.template)
             .frame(width: visualConfig.buttonViewConfig.iconHeight, height: visualConfig.buttonViewConfig.iconHeight)
