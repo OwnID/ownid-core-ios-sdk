@@ -7,7 +7,6 @@ public extension OwnID.CoreSDK {
     }
     
     enum WidgetType: String, Encodable {
-        case fingerprint = "button-fingerprint"
         case faceid = "button-faceid"
         case client = "client-button"
         case auth = "ownid-auth-button"

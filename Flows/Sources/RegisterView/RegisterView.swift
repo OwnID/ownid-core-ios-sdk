@@ -28,7 +28,7 @@ private extension OwnID.FlowsSDK.RegisterView {
         var config = visualConfig
         switch visualConfig.buttonViewConfig.variant {
         case .authButton:
-            config.buttonViewConfig.variant = .iconButton(.faceId) // auth button is only available for login
+            config.buttonViewConfig.variant = .iconButton // auth button is only available for login
             
         case .iconButton:
             break
